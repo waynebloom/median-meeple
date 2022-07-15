@@ -1,12 +1,10 @@
-package com.waynebloom.highscores
+package com.waynebloom.highscores.screens
 
 import android.content.res.Configuration
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,14 +15,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.waynebloom.highscores.PreviewGameData
+import com.waynebloom.highscores.PreviewScoreData
+import com.waynebloom.highscores.R
 import com.waynebloom.highscores.model.Game
-import com.waynebloom.highscores.model.GamesViewModel
 import com.waynebloom.highscores.model.Score
 import com.waynebloom.highscores.ui.theme.HighScoresTheme
 import java.util.*
 
 @Composable
-fun MainScreen(
+fun OverviewScreen(
     games: List<Game>,
     onSeeAllGamesTap: () -> Unit,
     onSingleGameTap: (Game) -> Unit,
@@ -80,13 +80,22 @@ fun GamesHead(
         modifier = Modifier.padding(16.dp)
     ) {
         if (games.size >= 2) {
-            GamesHeadRow(games = games.subList(0, 2))
+            GamesHeadRow(
+                games = games.subList(0, 2),
+                onSingleGameTap = onSingleGameTap
+            )
         }
         if (games.size >= 4) {
-            GamesHeadRow(games = games.subList(2, 4))
+            GamesHeadRow(
+                games = games.subList(2, 4),
+                onSingleGameTap = onSingleGameTap
+            )
         }
         if (games.size >= 6) {
-            GamesHeadRow(games = games.subList(4, 6))
+            GamesHeadRow(
+                games = games.subList(4, 6),
+                onSingleGameTap = onSingleGameTap
+            )
         }
         if (games.size > 6) {
             Button(
@@ -103,7 +112,8 @@ fun GamesHead(
 
 @Composable
 fun GamesHeadRow(
-    games: List<Game>
+    games: List<Game>,
+    onSingleGameTap: (Game) -> Unit,
 ) {
     if (games.size > 1) {
         Row(
@@ -112,12 +122,12 @@ fun GamesHeadRow(
         ) {
             GameCard(
                 name = games[0].name,
-                onClick = { /*TODO*/ },
+                onClick = { onSingleGameTap(games[0]) },
                 modifier = Modifier.weight(1f)
             )
             GameCard(
                 name = games[1].name,
-                onClick = { /*TODO*/ },
+                onClick = { onSingleGameTap(games[1]) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -245,7 +255,7 @@ fun ScoreCardPreview() {
 @Composable
 fun GameListPreview() {
     HighScoresTheme {
-        GamesHead(PreviewGameData)
+        GamesHead(PreviewGameData, {}, {})
     }
 }
 
@@ -253,15 +263,7 @@ fun GameListPreview() {
 @Composable
 fun ScoresHeadPreview() {
     HighScoresTheme {
-        ScoresHead(PreviewScoreData)
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, backgroundColor = 0xFF333333)
-@Composable
-fun MainScreenPreview() {
-    HighScoresTheme {
-        MainScreen()
+        ScoresHead(PreviewScoreData) {}
     }
 }
 

@@ -7,5 +7,10 @@ import com.waynebloom.highscores.R
 data class Game(
     val name: String,
     @DrawableRes val image: Int = R.drawable.default_img,
-    val scores: MutableList<Score> = mutableListOf()
+    val scores: MutableList<Score> = MutableList(15) { i ->
+        Score(
+            name = "Score #$i",
+            score = i * 2
+        )
+    }
 )

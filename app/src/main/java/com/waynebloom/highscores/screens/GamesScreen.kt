@@ -1,9 +1,9 @@
-package com.waynebloom.highscores
+package com.waynebloom.highscores.screens
 
 import androidx.compose.runtime.Composable
 
 @Composable
-fun GamesListScreen(
+fun GamesScreen(
 
 ) {
 

@@ -7,7 +7,7 @@ val PreviewGameData: List<Game> = listOf(
     Game("Carcassonne"),
     Game("Wingspan"),
     Game("Century: Golem Edition"),
-    Game("Ticket to Ride: Rails & Sails"),
+    Game("Ticket to Ride: Rails & Sails Test Test Test"),
     Game("Mystic Vale"),
     Game("Mariposas"),
     Game("Azul: Queen's Garden"),
