@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import com.waynebloom.highscores.PreviewGameData
 import com.waynebloom.highscores.PreviewScoreData
 import java.security.InvalidParameterException
+import java.util.*
 
 class GamesViewModel : ViewModel() {
     private val _games = PreviewGameData.toMutableStateList()
@@ -29,8 +30,12 @@ class GamesViewModel : ViewModel() {
         return _games.find { it.name == name } ?: throw InvalidParameterException("No game exists with that name.")
     }
 
-    fun getScore(gameName: String?, scoreId: String?): Score {
+    fun getScore(gameName: String?, scoreId: UUID?): Score {
         val game = getGame(gameName)
+        return game.scores.find { it.id == scoreId } ?: throw InvalidParameterException("No score exists with that id.")
+    }
+
+    fun getScore(game: Game, scoreId: UUID?): Score {
         return game.scores.find { it.id == scoreId } ?: throw InvalidParameterException("No score exists with that id.")
     }
 
@@ -40,5 +45,11 @@ class GamesViewModel : ViewModel() {
 
     fun removeScore(game: Game, score: Score) {
         game.scores.remove(score)
+    }
+
+    fun updateScore(game: Game, newScore: Score) {
+        val score = getScore(game = game, scoreId = newScore.id)
+        val scoreIndex = game.scores.indexOf(score)
+        game.scores[scoreIndex] = newScore
     }
 }

@@ -1,6 +1,11 @@
 <resources>
     <string name="app_name">HighScores</string>
-    <string name="header_games">Your Games</string>
+    <string name="button_edit">Edit</string>
     <string name="button_games">See All Games</string>
+    <string name="button_new">New</string>
+    <string name="button_save">Save</string>
+    <string name="field_name">Name</string>
+    <string name="field_score">Score</string>
+    <string name="header_games">Your Games</string>
     <string name="header_scores">Recent Scores</string>
 </resources>

@@ -10,7 +10,8 @@ data class Game(
     val scores: MutableList<Score> = MutableList(15) { i ->
         Score(
             name = "Score #$i",
-            score = i * 2
+            score = i * 2,
+            forGame = name
         )
     }
 )

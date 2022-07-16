@@ -7,22 +7,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.MaterialTheme.colors
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.waynebloom.highscores.model.Game
+import com.waynebloom.highscores.model.Score
 
 @Composable
 fun SingleGameScreen(
     game: Game,
-    onAddScoreTap: () -> Unit,
+    onNewScoreTap: (String) -> Unit,
+    onSingleScoreTap: (Score) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -31,14 +35,17 @@ fun SingleGameScreen(
         SingleGameHeader(
             name = game.name,
             image = game.image,
-            onAddScoreTap = onAddScoreTap
+            onNewScoreTap = onNewScoreTap
         )
         LazyColumn(
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(game.scores) { score ->
-                ScoreCard(score)
+                ScoreCard(
+                    score = score,
+                    onSingleScoreTap = onSingleScoreTap
+                )
             }
         }
     }
@@ -48,7 +55,7 @@ fun SingleGameScreen(
 fun SingleGameHeader(
     name: String,
     @DrawableRes image: Int,
-    onAddScoreTap: () -> Unit
+    onNewScoreTap: (String) -> Unit
 ) {
     Box(
         contentAlignment = Alignment.BottomStart,
@@ -82,7 +89,7 @@ fun SingleGameHeader(
                     .padding(all = 16.dp)
             )
             Button(
-                onClick = { onAddScoreTap() },
+                onClick = { onNewScoreTap(name) },
                 colors = ButtonDefaults.buttonColors(backgroundColor = colors.secondary),
                 modifier = Modifier
                     .weight(0.25f)

@@ -179,7 +179,10 @@ fun ScoresHead(
         modifier = Modifier.padding(16.dp)
     ) {
         scores.take(5).forEach { score ->
-            ScoreCard(score = score)
+            ScoreCard(
+                score = score,
+                onSingleScoreTap = onSingleScoreTap
+            )
         }
     }
 }
@@ -187,11 +190,12 @@ fun ScoresHead(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ScoreCard(
-    score: Score
+    score: Score,
+    onSingleScoreTap: (Score) -> Unit
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,
-        onClick = {}
+        onClick = { onSingleScoreTap(score) }
     ) {
         Column(
             modifier = Modifier
@@ -243,10 +247,8 @@ fun GameCardPreview() {
 fun ScoreCardPreview() {
     HighScoresTheme {
         ScoreCard(
-            Score(
-                name = "Alyssa",
-                score = 0
-            )
+            score = PreviewScoreData[0],
+            onSingleScoreTap = {}
         )
     }
 }

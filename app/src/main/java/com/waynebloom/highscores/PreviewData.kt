@@ -15,12 +15,24 @@ val PreviewGameData: List<Game> = listOf(
 )
 
 val PreviewScoreData: List<Score> = listOf(
-    Score("Wayne", 2),
-    Score("Alyssa", 29928),
-    Score("Conor", 34),
-    Score("Brock", 123),
-    Score("Wayne", 56),
-    Score("Wayne", 23),
-    Score("Wayne", 24),
-    Score("Wayne", 25),
+    Score(
+        name = "Wayne",
+        score = 2,
+        forGame = "Wingspan"
+    ),
+    Score(
+        name = "Wayne",
+        score = 20,
+        forGame = "Carcassonne"
+    ),
+    Score(
+        name = "Wayne",
+        score = 200,
+        forGame = "Wingspan"
+    ),
+    Score(
+        name = "Wayne",
+        score = 2000,
+        forGame = "Mystic Vale"
+    ),
 )

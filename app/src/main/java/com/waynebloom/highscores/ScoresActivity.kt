@@ -16,13 +16,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.waynebloom.highscores.model.Game
 import com.waynebloom.highscores.model.GamesViewModel
-import com.waynebloom.highscores.screens.EditScoreScreen
+import com.waynebloom.highscores.model.Score
+import com.waynebloom.highscores.screens.SingleScoreScreen
 import com.waynebloom.highscores.screens.HighScoresScreen
 import com.waynebloom.highscores.screens.OverviewScreen
 import com.waynebloom.highscores.screens.SingleGameScreen
 import com.waynebloom.highscores.ui.theme.HighScoresTheme
+import java.util.*
 
 class ScoresActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -61,7 +62,7 @@ fun ScoresNavHost(
                 games = gamesViewModel.games,
                 onSeeAllGamesTap = { navController.navigate(HighScoresScreen.Games.name) },
                 onSingleGameTap = { game -> navigateToSingleGame(navController, game.name) },
-                onSingleScoreTap = {}
+                onSingleScoreTap = {  }
             )
         }
         composable(HighScoresScreen.Games.name) {
@@ -75,15 +76,16 @@ fun ScoresNavHost(
                 }
             )
         ) { entry ->
-            val gameName = entry.arguments?.getString("name")
-            val game = gamesViewModel.getGame(gameName)
+            val targetGameName = entry.arguments?.getString("name")
+            val game = gamesViewModel.getGame(targetGameName)
             SingleGameScreen(
                 game = game,
-                onAddScoreTap = {}
+                onNewScoreTap = { gameName -> navigateToNewScore(navController, gameName) },
+                onSingleScoreTap = { score -> navigateToSingleScore(navController, score.forGame, score.id) }
             )
         }
         composable(
-            route = "${HighScoresScreen.EditGame.name}/{gameName}/{scoreId}",
+            route = "${HighScoresScreen.EditScore.name}/{gameName}/{scoreId}",
             arguments = listOf(
                 navArgument("gameName") {
                     type = NavType.StringType
@@ -94,14 +96,24 @@ fun ScoresNavHost(
             )
         ) { entry ->
             val gameName = entry.arguments?.getString("gameName")
+            val game = gamesViewModel.getGame(gameName)
             val scoreId = entry.arguments?.getString("scoreId")
-            EditScoreScreen(
-                score = gamesViewModel.getScore(gameName, scoreId),
-                onSubmitTap = {}
-            )
-        }
-        composable(HighScoresScreen.EditScore.name) {
-
+            if (scoreId == "new") {
+                SingleScoreScreen(
+                    game = game,
+                    score = Score(
+                        forGame = game.name
+                    ),
+                    openInEditMode = true,
+                    onSaveTap = { score -> gamesViewModel.addScore(game, score) }
+                )
+            } else {
+                SingleScoreScreen(
+                    game = game,
+                    score = gamesViewModel.getScore(gameName, UUID.fromString(scoreId)),
+                    onSaveTap = { score -> gamesViewModel.updateScore(game, score) }
+                )
+            }
         }
     }
 }
@@ -110,8 +122,12 @@ private fun navigateToSingleGame(navController: NavController, gameName: String)
     navController.navigate("${HighScoresScreen.Games.name}/$gameName")
 }
 
-private fun navigateToSingleScore(navController: NavController, gameName: String, scoreId: String) {
+private fun navigateToSingleScore(navController: NavController, gameName: String, scoreId: UUID) {
     navController.navigate("${HighScoresScreen.EditScore.name}/$gameName/$scoreId")
+}
+
+private fun navigateToNewScore(navController: NavController, gameName: String) {
+    navController.navigate("${HighScoresScreen.EditScore.name}/$gameName/new")
 }
 
 @Preview
