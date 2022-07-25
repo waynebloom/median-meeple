@@ -2,10 +2,21 @@
     <string name="app_name">HighScores</string>
     <string name="button_edit">Edit</string>
     <string name="button_games">See All Games</string>
+    <string name="button_add_new_game">Add New Game</string>
     <string name="button_new">New</string>
     <string name="button_save">Save</string>
+    <string name="button_delete">Delete</string>
     <string name="field_name">Name</string>
     <string name="field_score">Score</string>
     <string name="header_games">Your Games</string>
     <string name="header_scores">Recent Scores</string>
+    <string name="header_new_game">New Game</string>
+    <string name="text_empty_games">No games to display</string>
+    <string name="text_empty_scores">No scores to display</string>
+    <string name="toast_game_created">Game Created</string>
+    <string name="toast_game_updated">Game Updated</string>
+    <string name="toast_game_deleted">Game Deleted</string>
+    <string name="toast_score_created">Score Created</string>
+    <string name="toast_score_updated">Score Updated</string>
+    <string name="toast_score_deleted">Score Deleted</string>
 </resources>

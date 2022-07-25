@@ -1,57 +1,87 @@
 package com.waynebloom.highscores.screens
 
-import androidx.annotation.DrawableRes
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.waynebloom.highscores.R
-import com.waynebloom.highscores.model.Game
-import com.waynebloom.highscores.model.Score
+import com.waynebloom.highscores.components.ScreenHeader
+import com.waynebloom.highscores.data.Game
+import com.waynebloom.highscores.data.Score
+import java.util.*
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SingleScoreScreen(
     game: Game,
     score: Score,
     onSaveTap: (Score) -> Unit,
     modifier: Modifier = Modifier,
-    openInEditMode: Boolean = false
+    onDeleteTap: (String, String) -> Unit = {_,_->},
+    openInEditMode: Boolean = false,
+    isNewScore: Boolean = false
 ) {
-    var editMode: Boolean by rememberSaveable { mutableStateOf(openInEditMode) }
-    var newName: String by rememberSaveable { mutableStateOf(score.name) }
-    var newScore: String by rememberSaveable { mutableStateOf(score.score.toString()) }
+    var editMode: Boolean by rememberSaveable(openInEditMode) { mutableStateOf(openInEditMode) }
+    var newName: String by rememberSaveable(score.name) { mutableStateOf(score.name) }
+    var newScore: String by rememberSaveable(score.score) { mutableStateOf(score.score.toString()) }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(modifier = modifier) {
-        ScoreDetailHeader(
-            gameName = game.name,
-            gameImage = game.image,
-            editMode = editMode,
-            onEditTap = { editMode = true },
-            onSaveTap = {
+        val buttonOnClick: () -> Unit
+        val buttonIcon: ImageVector
+        if (editMode) {
+            buttonIcon = Icons.Rounded.Done
+            buttonOnClick = {
                 editMode = false
+                keyboardController?.hide()
+                focusManager.clearFocus(true)
                 onSaveTap(
                     Score(
                         id = score.id,
-                        forGame = game.name,
+                        gameOwnerId = game.id,
                         name = newName,
-                        score = newScore.toInt()
+                        score = newScore.toInt(),
+                        timeModified = Date().time
                     )
                 )
+            }
+        } else {
+            buttonIcon = Icons.Rounded.Edit
+            buttonOnClick = { editMode = true }
+        }
+        ScreenHeader(
+            title = game.name,
+            image = game.imageId,
+            titleBarButton = {
+                Button(
+                    onClick = { buttonOnClick() },
+                    modifier = Modifier
+                        .padding(vertical = 16.dp)
+                        .padding(end = 16.dp)
+                ) {
+                    Icon(imageVector = buttonIcon, contentDescription = null)
+                }
             }
         )
         Column(
@@ -61,89 +91,69 @@ fun SingleScoreScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             val textFieldColors: TextFieldColors = TextFieldDefaults.textFieldColors(
-                focusedLabelColor = MaterialTheme.colors.secondary,
-                focusedIndicatorColor = MaterialTheme.colors.secondary,
+                focusedLabelColor = MaterialTheme.colors.primary,
+                focusedIndicatorColor = MaterialTheme.colors.primary,
                 backgroundColor = MaterialTheme.colors.background,
-                cursorColor = MaterialTheme.colors.secondary
+                cursorColor = MaterialTheme.colors.primary
             )
-            OutlinedTextField(
-                colors = textFieldColors,
-                label = { Text(text = stringResource(id = R.string.field_name)) },
-                onValueChange = { newName = it },
-                readOnly = !editMode,
-                value = newName,
-            )
-            OutlinedTextField(
-                colors = textFieldColors,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                label = { Text(text = stringResource(id = R.string.field_score)) },
-                onValueChange = { newScore = it },
-                readOnly = !editMode,
-                value = newScore,
-            )
-            Spacer(Modifier.height(16.dp))
-        }
-    }
-}
-
-@Composable
-fun ScoreDetailHeader(
-    gameName: String,
-    @DrawableRes gameImage: Int,
-    editMode: Boolean,
-    onEditTap: () -> Unit,
-    onSaveTap: () -> Unit
-) {
-    val buttonOnClick: () -> Unit
-    val buttonText: String
-    if (editMode) {
-        buttonOnClick = onSaveTap
-        buttonText = "Save"
-    } else {
-        buttonOnClick = onEditTap
-        buttonText = "Edit"
-    }
-    Box(
-        contentAlignment = Alignment.BottomStart,
-        modifier = Modifier
-            .height(200.dp)
-            .fillMaxWidth()
-    ) {
-        Image(
-            painter = painterResource(id = gameImage),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .height(200.dp)
-                .fillMaxWidth()
-        )
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .background(
-                    color = MaterialTheme.colors.background.copy(alpha = 1f),
-                    shape = MaterialTheme.shapes.medium.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0))
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth())
+            {
+                OutlinedTextField(
+                    value = newName,
+                    label = { Text(text = stringResource(id = R.string.field_name)) },
+                    colors = textFieldColors,
+                    onValueChange = { newName = it },
+                    enabled = editMode,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next,
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Right) }
+                    ),
+                    modifier = Modifier.weight(0.75f)
                 )
-        ) {
-            Text(
-                style = MaterialTheme.typography.h4,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 2,
-                text = gameName,
-                modifier = Modifier
-                    .weight(0.75f)
-                    .padding(all = 16.dp)
-            )
-            Button(
-                onClick = { buttonOnClick() },
-                colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary),
-                modifier = Modifier
-                    .weight(0.25f)
-                    .padding(vertical = 16.dp)
-                    .padding(end = 16.dp)
-            ) {
-                Text(text = buttonText)
+                OutlinedTextField(
+                    value = newScore,
+                    label = { Text(text = stringResource(id = R.string.field_score)) },
+                    colors = textFieldColors,
+                    onValueChange = { newScore = it },
+                    enabled = editMode,
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Number
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { buttonOnClick() }
+                    ),
+                    modifier = Modifier.weight(0.25f)
+                )
             }
+            if (!isNewScore) {
+                Button(
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
+                    onClick = { onDeleteTap(game.id, score.id) },
+                    modifier = Modifier
+                        .height(48.dp)
+                        .fillMaxWidth()
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
+                        Text(
+                            text = stringResource(id = R.string.button_delete),
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(16.dp))
         }
     }
 }

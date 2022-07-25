@@ -1,7 +1,5 @@
 package com.waynebloom.highscores.screens
 
-import android.content.res.Configuration
-import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -9,24 +7,21 @@ import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.waynebloom.highscores.PreviewGameData
-import com.waynebloom.highscores.PreviewScoreData
 import com.waynebloom.highscores.R
-import com.waynebloom.highscores.model.Game
-import com.waynebloom.highscores.model.Score
-import com.waynebloom.highscores.ui.theme.HighScoresTheme
+import com.waynebloom.highscores.components.GameCard
+import com.waynebloom.highscores.components.ScoreCard
+import com.waynebloom.highscores.data.Game
+import com.waynebloom.highscores.data.Score
 import java.util.*
 
 @Composable
 fun OverviewScreen(
     games: List<Game>,
+    scores: List<Score>,
     onSeeAllGamesTap: () -> Unit,
+    onAddNewGameTap: () -> Unit,
     onSingleGameTap: (Game) -> Unit,
     onSingleScoreTap: (Score) -> Unit,
     modifier: Modifier = Modifier
@@ -38,12 +33,13 @@ fun OverviewScreen(
             GamesHead(
                 games = games,
                 onSeeAllGamesTap = onSeeAllGamesTap,
+                onAddNewGameTap = onAddNewGameTap,
                 onSingleGameTap = onSingleGameTap
             )
         }
         MainScreenSection(title = R.string.header_scores) {
             ScoresHead(
-                scores = PreviewScoreData,
+                scores = scores,
                 onSingleScoreTap = onSingleScoreTap
             )
         }
@@ -68,44 +64,63 @@ fun MainScreenSection(
     }
 }
 
-// region Games
 @Composable
 fun GamesHead(
     games: List<Game>,
     onSeeAllGamesTap: () -> Unit,
+    onAddNewGameTap: () -> Unit,
     onSingleGameTap: (Game) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.padding(16.dp)
     ) {
-        if (games.size >= 2) {
+        val gameRows: MutableList<List<Game>> = mutableListOf()
+        var buttonClick = onSeeAllGamesTap
+        var buttonText = stringResource(id = R.string.button_games)
+
+        for (i in 1 until games.size step 2) {
+            gameRows.add(games.slice(i-1..i))
+        }
+        if (games.size % 2 == 1) {
+            gameRows.add(listOf(games.last()))
+        }
+        gameRows.forEach { gameRow ->
             GamesHeadRow(
-                games = games.subList(0, 2),
+                games = gameRow,
                 onSingleGameTap = onSingleGameTap
             )
         }
-        if (games.size >= 4) {
-            GamesHeadRow(
-                games = games.subList(2, 4),
-                onSingleGameTap = onSingleGameTap
-            )
-        }
-        if (games.size >= 6) {
-            GamesHeadRow(
-                games = games.subList(4, 6),
-                onSingleGameTap = onSingleGameTap
-            )
-        }
-        if (games.size > 6) {
-            Button(
-                onClick = { /*TODO*/ },
-                modifier = Modifier.fillMaxWidth()
+        if (games.isEmpty()) {
+            val emptyContentColor = MaterialTheme.colors.primary.copy(alpha = 0.5f)
+            buttonClick = onAddNewGameTap
+            buttonText = stringResource(id = R.string.button_add_new_game)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = emptyContentColor,
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .height(64.dp)
+                    .fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(id = R.string.button_games)
+                    color = emptyContentColor,
+                    text = stringResource(id = R.string.text_empty_games)
                 )
             }
+        }
+        Button(
+            onClick = { buttonClick() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+        ) {
+            Text(
+                text = buttonText
+            )
         }
     }
 }
@@ -115,60 +130,21 @@ fun GamesHeadRow(
     games: List<Game>,
     onSingleGameTap: (Game) -> Unit,
 ) {
-    if (games.size > 1) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            GameCard(
-                name = games[0].name,
-                onClick = { onSingleGameTap(games[0]) },
-                modifier = Modifier.weight(1f)
-            )
-            GameCard(
-                name = games[1].name,
-                onClick = { onSingleGameTap(games[1]) },
-                modifier = Modifier.weight(1f)
-            )
-        }
-    } else {
-        // TODO
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun GameCard(
-    name: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    @DrawableRes image: Int = R.drawable.default_img
-) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        onClick = onClick,
-        modifier = modifier.height(64.dp)
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Image(
-                painter = painterResource(id = image),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(64.dp)
-            )
-            Text(
-                text = name,
-                style = MaterialTheme.typography.subtitle2,
-                modifier = Modifier.padding(horizontal = 8.dp)
+        games.forEach { game ->
+            GameCard(
+                name = game.name,
+                image = game.imageId,
+                onClick = { onSingleGameTap(game) },
+                modifier = Modifier.weight(1f)
             )
         }
     }
 }
-// endregion Games
 
-// region Scores
 @Composable
 fun ScoresHead(
     scores: List<Score>,
@@ -178,60 +154,35 @@ fun ScoresHead(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = Modifier.padding(16.dp)
     ) {
-        scores.take(5).forEach { score ->
+        scores.forEach { score ->
             ScoreCard(
                 score = score,
                 onSingleScoreTap = onSingleScoreTap
             )
         }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun ScoreCard(
-    score: Score,
-    onSingleScoreTap: (Score) -> Unit
-) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        onClick = { onSingleScoreTap(score) }
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
-        ) {
-            Row() {
+        if (scores.isEmpty()) {
+            val emptyContentColor = MaterialTheme.colors.primary.copy(alpha = 0.5f)
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = emptyContentColor,
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .height(64.dp)
+                    .fillMaxWidth()
+            ) {
                 Text(
-                    text = score.name,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "<game>",
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Row() {
-                Text(
-                    text = score.score.toString(),
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = "<rank>",
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.weight(1f)
+                    color = emptyContentColor,
+                    text = stringResource(id = R.string.text_empty_scores)
                 )
             }
         }
     }
 }
-// endregion
 
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+/*@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun GameCardPreview() {
     HighScoresTheme {
@@ -267,5 +218,5 @@ fun ScoresHeadPreview() {
     HighScoresTheme {
         ScoresHead(PreviewScoreData) {}
     }
-}
+}*/
 

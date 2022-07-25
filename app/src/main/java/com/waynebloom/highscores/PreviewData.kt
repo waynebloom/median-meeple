@@ -1,8 +1,6 @@
 package com.waynebloom.highscores
 
-import com.waynebloom.highscores.model.Game
-import com.waynebloom.highscores.model.Score
-
+/*
 val PreviewGameData: List<Game> = listOf(
     Game("Carcassonne"),
     Game("Wingspan"),
@@ -18,21 +16,21 @@ val PreviewScoreData: List<Score> = listOf(
     Score(
         name = "Wayne",
         score = 2,
-        forGame = "Wingspan"
+        gameOwnerId = "Wingspan"
     ),
     Score(
         name = "Wayne",
         score = 20,
-        forGame = "Carcassonne"
+        gameOwnerId = "Carcassonne"
     ),
     Score(
         name = "Wayne",
         score = 200,
-        forGame = "Wingspan"
+        gameOwnerId = "Wingspan"
     ),
     Score(
         name = "Wayne",
         score = 2000,
-        forGame = "Mystic Vale"
+        gameOwnerId = "Mystic Vale"
     ),
-)
+)*/

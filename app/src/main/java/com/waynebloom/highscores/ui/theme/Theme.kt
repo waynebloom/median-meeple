@@ -2,15 +2,14 @@ package com.waynebloom.highscores.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.MaterialTheme.shapes
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val LightColorPalette = lightColors(
-    primary = gray900,
-    secondary = rust600,
+    primary = rust600,
+    secondary = gray900,
     background = taupe100,
     surface = Color.White.copy(alpha = .85f),
     onPrimary = Color.White,
@@ -20,14 +19,14 @@ private val LightColorPalette = lightColors(
 )
 
 private val DarkColorPalette = darkColors(
-    primary = Color.White,
-    secondary = rust300,
+    primary = rust300,
+    secondary = gray700,
     background = gray900,
-    surface = Color.White.copy(alpha = 0.15f),
+    surface = gray700,
     onPrimary = gray900,
-    onSecondary = gray900,
+    onSecondary = Color.White,
     onBackground = taupe100,
-    onSurface = Color.White.copy(alpha = .8f)
+    onSurface = Color.White
 )
 
 @Composable
