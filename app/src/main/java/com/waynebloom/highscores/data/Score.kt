@@ -17,15 +17,12 @@ data class Score(
     val id: String = UUID.randomUUID().toString(),
 
     @NonNull
-    @ColumnInfo(name = "game_owner_id")
-    val gameOwnerId: String = "",
+    @ColumnInfo(name = "match_id")
+    val matchId: String = "",
 
     @ColumnInfo(name = "name")
     var name: String = "",
 
     @ColumnInfo(name = "score")
-    var score: Int = 0,
-
-    @ColumnInfo(name = "time_modified")
-    var timeModified: Long = Date().time
+    var scoreValue: Int? = null
 )

@@ -5,5 +5,5 @@ enum class HighScoresScreen {
     Games,
     SingleGame,
     EditGame,
-    SingleScore;
+    SingleMatch;
 }

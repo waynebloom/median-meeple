@@ -1,7 +1,10 @@
 package com.waynebloom.highscores.screens
 
+import android.app.Activity
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,6 +15,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.waynebloom.highscores.R
 import com.waynebloom.highscores.components.ScreenHeader
@@ -26,6 +31,15 @@ fun EditGameScreen(
     isNewGame: Boolean = false
 ) {
     var newName by rememberSaveable(game.name) { mutableStateOf(game.name) }
+    val buttonOnClick = {
+        onSaveTap(
+            Game(
+                id = game.id,
+                name = newName,
+                imageId = game.imageId
+            )
+        )
+    }
 
     Column(modifier = modifier) {
         ScreenHeader(
@@ -33,15 +47,7 @@ fun EditGameScreen(
             image = game.imageId,
             titleBarButton = {
                 Button(
-                    onClick = {
-                        onSaveTap(
-                            Game(
-                                id = game.id,
-                                name = newName,
-                                imageId = game.imageId
-                            )
-                        )
-                    },
+                    onClick = { buttonOnClick() },
                     modifier = Modifier
                         .padding(vertical = 16.dp)
                         .padding(end = 16.dp)
@@ -57,9 +63,16 @@ fun EditGameScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             OutlinedTextField(
+                value = newName,
                 label = { Text(text = stringResource(id = R.string.field_name)) },
                 onValueChange = { newName = it },
-                value = newName,
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Done,
+                ),
+                keyboardActions = KeyboardActions(
+                    onDone = { buttonOnClick() }
+                ),
                 modifier = Modifier.fillMaxWidth()
             )
             if (!isNewGame) {

@@ -1,6 +1,10 @@
 package com.waynebloom.highscores
 
-/*
+import com.waynebloom.highscores.data.Game
+import com.waynebloom.highscores.data.Match
+import com.waynebloom.highscores.data.Score
+
+
 val PreviewGameData: List<Game> = listOf(
     Game("Carcassonne"),
     Game("Wingspan"),
@@ -15,22 +19,26 @@ val PreviewGameData: List<Game> = listOf(
 val PreviewScoreData: List<Score> = listOf(
     Score(
         name = "Wayne",
-        score = 2,
-        gameOwnerId = "Wingspan"
+        scoreValue = 2
     ),
     Score(
         name = "Wayne",
-        score = 20,
-        gameOwnerId = "Carcassonne"
+        scoreValue = 20
     ),
     Score(
         name = "Wayne",
-        score = 200,
-        gameOwnerId = "Wingspan"
+        scoreValue = 200
+    )
+)
+
+val PreviewMatchData: List<Match> = listOf(
+    Match(
+        matchNotes = "Example notes 1"
     ),
-    Score(
-        name = "Wayne",
-        score = 2000,
-        gameOwnerId = "Mystic Vale"
+    Match(
+        matchNotes = "Example notes 2"
     ),
-)*/
+    Match(
+        matchNotes = "Example notes 3"
+    ),
+)

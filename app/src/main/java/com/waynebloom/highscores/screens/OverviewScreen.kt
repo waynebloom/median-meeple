@@ -11,25 +11,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.waynebloom.highscores.R
 import com.waynebloom.highscores.components.GameCard
-import com.waynebloom.highscores.components.ScoreCard
+import com.waynebloom.highscores.components.HeadedSection
+import com.waynebloom.highscores.components.MatchCard
 import com.waynebloom.highscores.data.Game
-import com.waynebloom.highscores.data.Score
+import com.waynebloom.highscores.data.Match
 import java.util.*
 
 @Composable
 fun OverviewScreen(
     games: List<Game>,
-    scores: List<Score>,
+    matches: List<Match>,
     onSeeAllGamesTap: () -> Unit,
     onAddNewGameTap: () -> Unit,
     onSingleGameTap: (Game) -> Unit,
-    onSingleScoreTap: (Score) -> Unit,
+    onSingleMatchTap: (Match) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier.verticalScroll(rememberScrollState())
+        modifier = modifier
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
     ) {
-        MainScreenSection(title = R.string.header_games) {
+        HeadedSection(title = R.string.header_games) {
             GamesHead(
                 games = games,
                 onSeeAllGamesTap = onSeeAllGamesTap,
@@ -37,30 +40,12 @@ fun OverviewScreen(
                 onSingleGameTap = onSingleGameTap
             )
         }
-        MainScreenSection(title = R.string.header_scores) {
-            ScoresHead(
-                scores = scores,
-                onSingleScoreTap = onSingleScoreTap
+        HeadedSection(title = R.string.header_recent_matches) {
+            MatchesHead(
+                matches = matches,
+                onSingleMatchTap = onSingleMatchTap
             )
         }
-    }
-}
-
-@Composable
-fun MainScreenSection(
-    @StringRes title: Int,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Column(modifier) {
-        Text(
-            text = stringResource(title).uppercase(Locale.getDefault()),
-            style = MaterialTheme.typography.subtitle1,
-            modifier = Modifier
-                .paddingFromBaseline(top = 40.dp, bottom = 8.dp)
-                .padding(horizontal = 16.dp)
-        )
-        content()
     }
 }
 
@@ -73,7 +58,7 @@ fun GamesHead(
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(top = 16.dp)
     ) {
         val gameRows: MutableList<List<Game>> = mutableListOf()
         var buttonClick = onSeeAllGamesTap
@@ -146,21 +131,21 @@ fun GamesHeadRow(
 }
 
 @Composable
-fun ScoresHead(
-    scores: List<Score>,
-    onSingleScoreTap: (Score) -> Unit,
+fun MatchesHead(
+    matches: List<Match>,
+    onSingleMatchTap: (Match) -> Unit,
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(16.dp)
+        modifier = Modifier.padding(top = 16.dp)
     ) {
-        scores.forEach { score ->
-            ScoreCard(
-                score = score,
-                onSingleScoreTap = onSingleScoreTap
+        matches.forEach { match ->
+            MatchCard(
+                match = match,
+                onSingleMatchTap = onSingleMatchTap
             )
         }
-        if (scores.isEmpty()) {
+        if (matches.isEmpty()) {
             val emptyContentColor = MaterialTheme.colors.primary.copy(alpha = 0.5f)
             Box(
                 contentAlignment = Alignment.Center,
@@ -175,7 +160,7 @@ fun ScoresHead(
             ) {
                 Text(
                     color = emptyContentColor,
-                    text = stringResource(id = R.string.text_empty_scores)
+                    text = stringResource(id = R.string.text_empty_matches)
                 )
             }
         }

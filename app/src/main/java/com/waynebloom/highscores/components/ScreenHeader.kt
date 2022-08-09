@@ -42,7 +42,10 @@ fun ScreenHeader(
             modifier = Modifier
                 .background(
                     color = MaterialTheme.colors.background.copy(alpha = 1f),
-                    shape = MaterialTheme.shapes.medium.copy(bottomStart = CornerSize(0), bottomEnd = CornerSize(0))
+                    shape = MaterialTheme.shapes.medium.copy(
+                        bottomStart = CornerSize(0),
+                        bottomEnd = CornerSize(0)
+                    )
                 )
                 .fillMaxWidth()
         ) {
@@ -51,8 +54,7 @@ fun ScreenHeader(
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 2,
                 text = title,
-                modifier = Modifier
-                    .padding(all = 16.dp)
+                modifier = Modifier.padding(all = 16.dp)
             )
             titleBarButton()
         }

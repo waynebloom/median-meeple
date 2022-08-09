@@ -10,24 +10,24 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.waynebloom.highscores.components.ScoreCard
+import com.waynebloom.highscores.components.MatchCard
 import com.waynebloom.highscores.components.ScreenHeader
 import com.waynebloom.highscores.data.Game
-import com.waynebloom.highscores.data.Score
+import com.waynebloom.highscores.data.Match
 
 @Composable
 fun SingleGameScreen(
     game: Game,
-    scores: List<Score>,
+    matches: List<Match>,
     onEditGameTap: () -> Unit,
-    onNewScoreTap: (String) -> Unit,
-    onSingleScoreTap: (Score) -> Unit,
+    onNewMatchTap: (String) -> Unit,
+    onSingleMatchTap: (Match) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onNewScoreTap(game.id) },
+                onClick = { onNewMatchTap(game.id) },
                 shape = MaterialTheme.shapes.small,
                 backgroundColor = MaterialTheme.colors.primary
             ) {
@@ -57,10 +57,10 @@ fun SingleGameScreen(
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 64.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(scores) { score ->
-                    ScoreCard(
-                        score = score,
-                        onSingleScoreTap = onSingleScoreTap
+                items(matches) { match ->
+                    MatchCard(
+                        match = match,
+                        onSingleMatchTap = onSingleMatchTap
                     )
                 }
             }
