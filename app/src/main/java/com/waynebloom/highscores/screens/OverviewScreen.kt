@@ -1,6 +1,5 @@
 package com.waynebloom.highscores.screens
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -13,24 +12,23 @@ import com.waynebloom.highscores.R
 import com.waynebloom.highscores.components.GameCard
 import com.waynebloom.highscores.components.HeadedSection
 import com.waynebloom.highscores.components.MatchCard
-import com.waynebloom.highscores.data.Game
-import com.waynebloom.highscores.data.Match
-import java.util.*
+import com.waynebloom.highscores.data.*
 
 @Composable
 fun OverviewScreen(
-    games: List<Game>,
-    matches: List<Match>,
+    games: List<GameObject>,
+    matches: List<MatchEntity>,
     onSeeAllGamesTap: () -> Unit,
     onAddNewGameTap: () -> Unit,
-    onSingleGameTap: (Game) -> Unit,
-    onSingleMatchTap: (Match) -> Unit,
+    onSingleGameTap: (GameEntity) -> Unit,
+    onSingleMatchTap: (MatchEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 16.dp)
     ) {
         HeadedSection(title = R.string.header_games) {
             GamesHead(
@@ -43,6 +41,7 @@ fun OverviewScreen(
         HeadedSection(title = R.string.header_recent_matches) {
             MatchesHead(
                 matches = matches,
+                games = games,
                 onSingleMatchTap = onSingleMatchTap
             )
         }
@@ -51,16 +50,13 @@ fun OverviewScreen(
 
 @Composable
 fun GamesHead(
-    games: List<Game>,
+    games: List<GameEntity>,
     onSeeAllGamesTap: () -> Unit,
     onAddNewGameTap: () -> Unit,
-    onSingleGameTap: (Game) -> Unit,
+    onSingleGameTap: (GameEntity) -> Unit,
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(top = 16.dp)
-    ) {
-        val gameRows: MutableList<List<Game>> = mutableListOf()
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        val gameRows: MutableList<List<GameEntity>> = mutableListOf()
         var buttonClick = onSeeAllGamesTap
         var buttonText = stringResource(id = R.string.button_games)
 
@@ -112,8 +108,8 @@ fun GamesHead(
 
 @Composable
 fun GamesHeadRow(
-    games: List<Game>,
-    onSingleGameTap: (Game) -> Unit,
+    games: List<GameEntity>,
+    onSingleGameTap: (GameEntity) -> Unit,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -122,7 +118,7 @@ fun GamesHeadRow(
         games.forEach { game ->
             GameCard(
                 name = game.name,
-                image = game.imageId,
+                color = GameColor.valueOf(game.color).color,
                 onClick = { onSingleGameTap(game) },
                 modifier = Modifier.weight(1f)
             )
@@ -132,16 +128,20 @@ fun GamesHeadRow(
 
 @Composable
 fun MatchesHead(
-    matches: List<Match>,
-    onSingleMatchTap: (Match) -> Unit,
+    matches: List<MatchEntity>,
+    games: List<GameEntity>,
+    onSingleMatchTap: (MatchEntity) -> Unit
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(top = 16.dp)
-    ) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         matches.forEach { match ->
+            val parentGame = games.find { it.id == match.gameOwnerId }
+                ?: EMPTY_GAME
+//            val parentGame = games.find { it.id == match.gameOwnerId }
+//                ?: throw NoSuchElementException(stringResource(id = R.string.exc_no_game_with_id, match.gameOwnerId))
             MatchCard(
                 match = match,
+                gameInitial = parentGame.name.first().uppercase(),
+                gameColor = GameColor.valueOf(parentGame.color).color,
                 onSingleMatchTap = onSingleMatchTap
             )
         }

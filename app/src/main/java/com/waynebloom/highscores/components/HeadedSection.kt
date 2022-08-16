@@ -15,6 +15,7 @@ import java.util.*
 fun HeadedSection(
     @StringRes title: Int,
     modifier: Modifier = Modifier,
+    topPadding: Int = 56,
     content: @Composable () -> Unit
 ) {
     Column(modifier) {
@@ -22,7 +23,7 @@ fun HeadedSection(
             text = stringResource(title).uppercase(Locale.getDefault()),
             style = MaterialTheme.typography.subtitle1,
             modifier = Modifier
-                .paddingFromBaseline(top = 40.dp, bottom = 8.dp)
+                .paddingFromBaseline(top = topPadding.dp, bottom = 24.dp)
         )
         content()
     }

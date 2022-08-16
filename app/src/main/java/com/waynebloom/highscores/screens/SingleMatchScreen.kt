@@ -17,6 +17,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -33,10 +34,12 @@ import com.waynebloom.highscores.PreviewScoreData
 import com.waynebloom.highscores.R
 import com.waynebloom.highscores.components.HeadedSection
 import com.waynebloom.highscores.components.ScreenHeader
-import com.waynebloom.highscores.data.Game
-import com.waynebloom.highscores.data.Match
-import com.waynebloom.highscores.data.Score
+import com.waynebloom.highscores.data.GameEntity
+import com.waynebloom.highscores.data.GameColor
+import com.waynebloom.highscores.data.MatchEntity
+import com.waynebloom.highscores.data.ScoreEntity
 import com.waynebloom.highscores.ui.theme.HighScoresTheme
+import com.waynebloom.highscores.ui.theme.orange100
 import java.util.*
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -46,16 +49,16 @@ lateinit var focusManager: FocusManager
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SingleMatchScreen(
-    game: Game,
-    match: Match,
-    onSaveTap: (Match, List<Score>) -> Unit,
+    game: GameEntity,
+    match: MatchEntity,
+    onSaveTap: (MatchEntity, List<ScoreEntity>) -> Unit,
     modifier: Modifier = Modifier,
     onDeleteTap: (String, String) -> Unit = {_,_->},
     openInEditMode: Boolean = false,
     isNewMatch: Boolean = false
 ) {
     var editMode: Boolean by rememberSaveable(openInEditMode) { mutableStateOf(openInEditMode) }
-    var newScores: List<Score> by rememberSaveable(match.scores) { mutableStateOf(match.scores) }
+    var newScores: List<ScoreEntity> by rememberSaveable(match.scores) { mutableStateOf(match.scores) }
     var newNotes: String by rememberSaveable(match.matchNotes) { mutableStateOf(match.matchNotes) }
     keyboardController = LocalSoftwareKeyboardController.current
     focusManager = LocalFocusManager.current
@@ -70,7 +73,7 @@ fun SingleMatchScreen(
                 keyboardController?.hide()
                 focusManager.clearFocus(true)
                 onSaveTap(
-                    Match(
+                    MatchEntity(
                         id = match.id,
                         gameOwnerId = game.id,
                         timeModified = Date().time,
@@ -85,34 +88,27 @@ fun SingleMatchScreen(
         }
         ScreenHeader(
             title = stringResource(id = R.string.text_edit_match),
-            image = game.imageId,
-            titleBarButton = {
-                Button(
-                    onClick = { buttonOnClick() },
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .padding(end = 16.dp)
-                ) {
-                    Icon(imageVector = buttonIcon, contentDescription = null)
-                }
-            }
+            color = GameColor.valueOf(game.color).color
         )
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            HeadedSection(title = R.string.header_scores) {
+            HeadedSection(
+                title = R.string.header_scores,
+                topPadding = 40
+            ) {
                 ScoresSection(
                     scores = newScores,
+                    gameColor = GameColor.valueOf(game.color).color,
                     editMode = editMode,
                     onScoreChange = { newIndex, newScore ->
                         newScores = newScores.mapIndexed { existingIndex, existingScore ->
                             if (existingIndex == newIndex) newScore else existingScore
                         }
                     },
-                    onNewScoreTap = { newScores = newScores.plus(Score(matchId = match.id)) }
+                    onNewScoreTap = { newScores = newScores.plus(ScoreEntity(matchId = match.id)) }
                 )
             }
             HeadedSection(title = R.string.header_other) {
@@ -130,28 +126,32 @@ fun SingleMatchScreen(
                     keyboardActions = KeyboardActions(
                         onDone = { buttonOnClick() }
                     ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-            if (!isNewMatch && editMode) {
+            Row(modifier = Modifier.padding(top = 16.dp)) {
                 Button(
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                    onClick = { onDeleteTap(game.id, match.id) },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = GameColor.valueOf(game.color).color,
+                        contentColor = MaterialTheme.colors.onPrimary
+                    ),
+                    onClick = { buttonOnClick() },
                     modifier = Modifier
                         .height(48.dp)
-                        .fillMaxWidth()
+                        .weight(1f)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
+                    Icon(imageVector = buttonIcon, contentDescription = null)
+                }
+                if (!isNewMatch) {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
+                        onClick = { onDeleteTap(game.id, match.id) },
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .height(48.dp)
+                            .weight(1f)
                     ) {
                         Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                        Text(
-                            text = stringResource(id = R.string.button_delete),
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
                     }
                 }
             }
@@ -162,24 +162,25 @@ fun SingleMatchScreen(
 
 @Composable
 fun ScoresSection(
-    scores: List<Score>,
+    scores: List<ScoreEntity>,
+    gameColor: Color,
     editMode: Boolean,
-    onScoreChange: (Int, Score) -> Unit,
+    onScoreChange: (Int, ScoreEntity) -> Unit,
     onNewScoreTap: () -> Unit
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier.padding(top = 16.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         scores.forEachIndexed { index, score  ->
             ScoreCard(
                 score = score,
+                gameColor = gameColor,
                 editMode = editMode,
                 onNameChange = { name ->
                     onScoreChange(index, score.copy(name = name))
                 },
                 onScoreChange = { scoreValue ->
-                    onScoreChange(index, score.copy(scoreValue = scoreValue.toIntOrNull()))
+                    onScoreChange(index, score.copy(scoreValue = scoreValue.toLongOrNull()))
                 }
             )
         }
@@ -204,6 +205,10 @@ fun ScoresSection(
         }
         if (editMode) {
             Button(
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = gameColor,
+                    contentColor = MaterialTheme.colors.onPrimary
+                ),
                 onClick = { onNewScoreTap() },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -223,7 +228,8 @@ fun ScoresSection(
 
 @Composable
 fun ScoreCard(
-    score: Score,
+    score: ScoreEntity,
+    gameColor: Color,
     editMode: Boolean,
     onNameChange: (String) -> Unit,
     onScoreChange: (String) -> Unit
@@ -234,6 +240,7 @@ fun ScoreCard(
         Icon(
             imageVector = Icons.Rounded.Person,
             contentDescription = null,
+            tint = gameColor,
             modifier = Modifier
                 .padding(end = 16.dp, top = 20.dp)
                 .weight(0.15f)
@@ -300,6 +307,7 @@ fun ScoresSectionPreview() {
     HighScoresTheme {
         ScoresSection(
             scores = PreviewScoreData,
+            gameColor = orange100,
             editMode = false,
             onScoreChange = {_,_->},
             onNewScoreTap = {}

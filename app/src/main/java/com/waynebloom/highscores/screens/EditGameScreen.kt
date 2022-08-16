@@ -1,42 +1,56 @@
 package com.waynebloom.highscores.screens
 
-import android.app.Activity
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowDropDown
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.highscores.R
+import com.waynebloom.highscores.components.HeadedSection
 import com.waynebloom.highscores.components.ScreenHeader
-import com.waynebloom.highscores.data.Game
+import com.waynebloom.highscores.data.GameEntity
+import com.waynebloom.highscores.data.GameColor
+import com.waynebloom.highscores.ui.theme.HighScoresTheme
+
+// TODO: consolidate state into holders
 
 @Composable
 fun EditGameScreen(
-    game: Game,
-    onSaveTap: (Game) -> Unit,
+    game: GameEntity,
+    onSaveTap: (GameEntity) -> Unit,
     modifier: Modifier = Modifier,
     onDeleteTap: (String) -> Unit = {},
     isNewGame: Boolean = false
 ) {
     var newName by rememberSaveable(game.name) { mutableStateOf(game.name) }
+    var newColor by rememberSaveable(game.color) { mutableStateOf(game.color) }
+    var colorMenuVisible by rememberSaveable { mutableStateOf(false) }
     val buttonOnClick = {
         onSaveTap(
-            Game(
-                id = game.id,
+            game.copy(
                 name = newName,
-                imageId = game.imageId
+                color = newColor
             )
         )
     }
@@ -44,58 +58,179 @@ fun EditGameScreen(
     Column(modifier = modifier) {
         ScreenHeader(
             title = if (!isNewGame) game.name else stringResource(id = R.string.header_new_game),
-            image = game.imageId,
-            titleBarButton = {
-                Button(
-                    onClick = { buttonOnClick() },
-                    modifier = Modifier
-                        .padding(vertical = 16.dp)
-                        .padding(end = 16.dp)
-                ) {
-                    Icon(imageVector = Icons.Rounded.Done, contentDescription = null)
-                }
-            }
+            color = GameColor.valueOf(game.color).color
         )
         Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            OutlinedTextField(
-                value = newName,
-                label = { Text(text = stringResource(id = R.string.field_name)) },
-                onValueChange = { newName = it },
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(
-                    onDone = { buttonOnClick() }
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-            if (!isNewGame) {
+            HeadedSection(
+                title = R.string.header_details,
+                topPadding = 40
+            ) {
+                OutlinedTextField(
+                    value = newName,
+                    label = { Text(text = stringResource(id = R.string.field_name)) },
+                    onValueChange = { newName = it },
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Done,
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { buttonOnClick() }
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+            HeadedSection(title = R.string.header_theme) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (colorMenuVisible) {
+                        ColorSelectorOpen(
+                            currentColor = GameColor.valueOf(newColor),
+                            colorOptions = GameColor.values().toList(),
+                            onColorTap = { colorName ->
+                                newColor = colorName
+                                colorMenuVisible = false
+                            }
+                        )
+                    } else {
+                        ColorSelectorClosed(
+                            currentColor = GameColor.valueOf(newColor),
+                            onColorSelectorTap = { colorMenuVisible = true }
+                        )
+                    }
+                }
+            }
+            Row(modifier = Modifier.padding(top = 16.dp)) {
                 Button(
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                    onClick = { onDeleteTap(game.id) },
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = GameColor.valueOf(game.color).color,
+                        contentColor = MaterialTheme.colors.onPrimary
+                    ),
+                    onClick = { buttonOnClick() },
                     modifier = Modifier
                         .height(48.dp)
-                        .fillMaxWidth()
+                        .weight(1f)
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
+                    Icon(imageVector = Icons.Rounded.Done, contentDescription = null)
+                }
+                if (!isNewGame) {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
+                        onClick = { onDeleteTap(game.id) },
+                        modifier = Modifier
+                            .padding(start = 16.dp)
+                            .height(48.dp)
+                            .weight(1f)
                     ) {
                         Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                        Text(
-                            text = stringResource(id = R.string.button_delete),
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
                     }
                 }
             }
             Spacer(Modifier.height(16.dp))
         }
+    }
+}
+
+@Composable
+fun ColorSelectorOpen(
+    currentColor: GameColor,
+    colorOptions: List<GameColor>,
+    onColorTap: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = MaterialTheme.shapes.small,
+        modifier = modifier
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                reverseLayout = true,
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .height(64.dp)
+                    .weight(1f, fill = false)
+            ) {
+                items(colorOptions) { color ->
+                    if (color.name == currentColor.name) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = color.color),
+                            shape = MaterialTheme.shapes.small,
+                            onClick = { onColorTap(color.name) },
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .size(40.dp)
+                        ) {}
+                    } else {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(backgroundColor = color.color),
+                            shape = MaterialTheme.shapes.small,
+                            onClick = { onColorTap(color.name) },
+                            modifier = Modifier.size(64.dp)
+                        ) {}
+                    }
+                }
+            }
+            Image(
+                imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_left),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(Color.White),
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterialApi::class)
+@Composable
+fun ColorSelectorClosed(
+    currentColor: GameColor,
+    onColorSelectorTap: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        shape = MaterialTheme.shapes.small,
+        onClick = { onColorSelectorTap() },
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(vertical = 16.dp)
+                .padding(start = 16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .height(40.dp)
+                    .fillMaxWidth()
+                    .weight(1f, fill = false)
+                    .clip(MaterialTheme.shapes.small)
+                    .background(currentColor.color)
+            )
+            Icon(
+                imageVector = Icons.Rounded.ArrowDropDown,
+                contentDescription = null,
+                modifier = Modifier.size(32.dp)
+            )
+        }
+    }
+}
+
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+fun ColorSelectorPreview() {
+    HighScoresTheme {
+        ColorSelectorClosed(
+            currentColor = GameColor.ORANGE,
+            onColorSelectorTap = {}
+        )
     }
 }

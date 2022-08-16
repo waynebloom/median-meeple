@@ -94,8 +94,8 @@ fun ScoresNavHost(
                 }
             )
         ) { entry ->
-            val gameId = entry.arguments?.getString("id") ?: ""
-            gamesViewModel.deleteGameById(gameId)
+            val targetGameId = entry.arguments?.getString("id") ?: ""
+            LaunchedEffect(targetGameId) { gamesViewModel.deleteGameById(targetGameId) }
             GamesScreen(
                 games = gamesViewModel.games.collectAsState(listOf()).value,
                 onAddNewGameTap = { navigateToNewGame(navController) },
@@ -187,7 +187,7 @@ fun ScoresNavHost(
             val targetGameId = entry.arguments?.getString("gameId") ?: ""
             if (targetGameId == "new") {
                 EditGameScreen(
-                    game = Game(),
+                    game = GameEntity(),
                     onSaveTap = { newGame ->
                         val popSuccess = navController.popBackStack(
                             route = HighScoresScreen.Games.name,
@@ -249,7 +249,7 @@ fun ScoresNavHost(
             if (targetMatchId == "new") {
                 SingleMatchScreen(
                     game = game,
-                    match = Match(
+                    match = MatchEntity(
                         gameOwnerId = targetGameId
                     ),
                     openInEditMode = true,
@@ -301,6 +301,21 @@ fun ScoresNavHost(
         }
     }
 }
+
+/*private suspend fun deleteGame(gamesViewModel: GamesViewModel, gameId: String) {
+    gamesViewModel
+        .getMatchesByGameId(gameId)
+        .onEach { matchList ->
+            matchList.forEach { match ->
+                gamesViewModel.deleteScoresByMatchId(match.id)
+            }
+        }
+        .onCompletion {
+            gamesViewModel.deleteMatchesByGameId(gameId)
+            gamesViewModel.deleteGameById(gameId)
+        }
+        .collect()
+}*/
 
 private fun navigateToGamesWithDeletedGame(navController: NavController, gameId: String) {
     navController.navigate("${HighScoresScreen.Games.name}/delete/$gameId")

@@ -2,7 +2,6 @@ package com.waynebloom.highscores.data
 
 import android.app.Application
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.StateFlow
 
 class AppRepository(application: Application) {
     private var appDao: AppDao
@@ -12,47 +11,47 @@ class AppRepository(application: Application) {
         appDao = database.appDao()
     }
 
-    val getAllGames : Flow<List<Game>> = appDao.getAllGames()
-    val getAllMatches : Flow<List<Match>> = appDao.getAllMatches()
-    val getAllScores : Flow<List<Score>> = appDao.getAllScores()
+    val getAllGames : Flow<List<GameObject>> = appDao.getAllGames()
+    val getAllMatches : Flow<List<MatchObject>> = appDao.getAllMatches()
+    val getAllScores : Flow<List<ScoreEntity>> = appDao.getAllScores()
 
-    fun getGameById(id: String): Flow<Game?> {
+    fun getGameById(id: String): Flow<GameObject?> {
         return appDao.getGameById(id)
     }
 
-    fun getMatchById(id: String): Flow<Match?> {
+    fun getMatchById(id: String): Flow<MatchObject?> {
         return appDao.getMatchById(id)
     }
 
-    fun getMatchesByGameId(gameId: String): Flow<List<Match>> {
+    fun getMatchesByGameId(gameId: String): Flow<List<MatchEntity>> {
         return appDao.getMatchesByGameId(gameId)
     }
 
-    fun getScoresByMatchId(matchId: String): Flow<List<Score>> {
+    fun getScoresByMatchId(matchId: String): Flow<List<ScoreEntity>> {
         return appDao.getScoresByMatchId(matchId)
     }
 
-    suspend fun addGame(game: Game) {
+    suspend fun addGame(game: GameEntity) {
         appDao.insertGame(game)
     }
 
-    suspend fun addMatch(match: Match) {
+    suspend fun addMatch(match: MatchEntity) {
         appDao.insertMatch(match)
     }
 
-    suspend fun addScore(score: Score) {
+    suspend fun addScore(score: ScoreEntity) {
         appDao.insertScore(score)
     }
 
-    suspend fun updateGame(game: Game) {
+    suspend fun updateGame(game: GameEntity) {
         appDao.updateGame(game)
     }
 
-    suspend fun updateMatch(match: Match) {
+    suspend fun updateMatch(match: MatchEntity) {
         appDao.updateMatch(match)
     }
 
-    suspend fun updateScore(score: Score) {
+    suspend fun updateScore(score: ScoreEntity) {
         appDao.updateScore(score)
     }
 
@@ -64,7 +63,15 @@ class AppRepository(application: Application) {
         appDao.deleteMatchById(id)
     }
 
+    suspend fun deleteMatchesByGameId(id: String) {
+        appDao.deleteMatchesByGameId(id)
+    }
+
     suspend fun deleteScoreById(id: String) {
         appDao.deleteScoreById(id)
+    }
+
+    suspend fun deleteScoresByMatchId(id: String) {
+        appDao.deleteScoresByMatchId(id)
     }
 }

@@ -14,14 +14,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.waynebloom.highscores.R
 import com.waynebloom.highscores.components.GameCard
-import com.waynebloom.highscores.components.ScreenHeader
-import com.waynebloom.highscores.data.Game
+import com.waynebloom.highscores.components.HeadedSection
+import com.waynebloom.highscores.data.GameEntity
+import com.waynebloom.highscores.data.GameColor
 
 @Composable
 fun GamesScreen(
-    games: List<Game>,
+    games: List<GameEntity>,
     onAddNewGameTap: () -> Unit,
-    onSingleGameTap: (Game) -> Unit,
+    onSingleGameTap: (GameEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Scaffold(
@@ -36,23 +37,21 @@ fun GamesScreen(
         }
     ) {
         Column(
-            modifier = modifier
+            modifier = modifier.padding(horizontal = 16.dp)
         ) {
-            ScreenHeader(
-                title = "Your Games",
-                image = R.drawable.default_img
-            )
-            LazyColumn(
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 64.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(games) { game ->
-                    GameCard(
-                        name = game.name,
-                        image = game.imageId,
-                        onClick = { onSingleGameTap(game) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
+            HeadedSection(title = R.string.header_games) {
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = 64.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(games) { game ->
+                        GameCard(
+                            name = game.name,
+                            color = GameColor.valueOf(game.color).color,
+                            onClick = { onSingleGameTap(game) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
         }

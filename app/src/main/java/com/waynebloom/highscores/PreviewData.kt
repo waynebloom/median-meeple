@@ -1,44 +1,44 @@
 package com.waynebloom.highscores
 
-import com.waynebloom.highscores.data.Game
-import com.waynebloom.highscores.data.Match
-import com.waynebloom.highscores.data.Score
+import com.waynebloom.highscores.data.GameEntity
+import com.waynebloom.highscores.data.MatchEntity
+import com.waynebloom.highscores.data.ScoreEntity
 
 
-val PreviewGameData: List<Game> = listOf(
-    Game("Carcassonne"),
-    Game("Wingspan"),
-    Game("Century: Golem Edition"),
-    Game("Ticket to Ride: Rails & Sails Test Test Test"),
-    Game("Mystic Vale"),
-    Game("Mariposas"),
-    Game("Azul: Queen's Garden"),
-    Game("Catan"),
+val PreviewGameData: List<GameEntity> = listOf(
+    GameEntity("Carcassonne"),
+    GameEntity("Wingspan"),
+    GameEntity("Century: Golem Edition"),
+    GameEntity("Ticket to Ride: Rails & Sails Test Test Test"),
+    GameEntity("Mystic Vale"),
+    GameEntity("Mariposas"),
+    GameEntity("Azul: Queen's Garden"),
+    GameEntity("Catan"),
 )
 
-val PreviewScoreData: List<Score> = listOf(
-    Score(
+val PreviewScoreData: List<ScoreEntity> = listOf(
+    ScoreEntity(
         name = "Wayne",
         scoreValue = 2
     ),
-    Score(
+    ScoreEntity(
         name = "Wayne",
         scoreValue = 20
     ),
-    Score(
+    ScoreEntity(
         name = "Wayne",
         scoreValue = 200
     )
 )
 
-val PreviewMatchData: List<Match> = listOf(
-    Match(
+val PreviewMatchData: List<MatchEntity> = listOf(
+    MatchEntity(
         matchNotes = "Example notes 1"
     ),
-    Match(
+    MatchEntity(
         matchNotes = "Example notes 2"
     ),
-    Match(
+    MatchEntity(
         matchNotes = "Example notes 3"
     ),
 )

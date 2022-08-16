@@ -1,17 +1,18 @@
 package com.waynebloom.highscores.data
 
-import androidx.annotation.DrawableRes
 import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.waynebloom.highscores.R
+import androidx.room.Relation
 import java.util.*
 
-val EMPTY_GAME = Game()
+val EMPTY_GAME = GameEntity(
+    name = "Empty"
+)
 
-@Entity
-data class Game(
+@Entity(tableName = "game")
+data class GameEntity(
 
     @PrimaryKey
     val id: String = UUID.randomUUID().toString(),
@@ -20,6 +21,6 @@ data class Game(
     @ColumnInfo(name = "name")
     val name: String = "",
 
-    @ColumnInfo(name = "image")
-    @DrawableRes val imageId: Int = R.drawable.default_img,
+    @ColumnInfo(name = "color", defaultValue = "RED")
+    val color: String = GameColor.values().random().name
 )

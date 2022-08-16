@@ -1,18 +1,24 @@
 package com.waynebloom.highscores.data
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-
+import androidx.room.*
+import androidx.room.migration.AutoMigrationSpec
 
 @Database(
-    version = 1,
-    entities = [Game::class, Match::class, Score::class],
-    exportSchema = true
+    version = 4,
+    entities = [GameEntity::class, MatchEntity::class, ScoreEntity::class],
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration (from = 1, to = 2),
+        AutoMigration (from = 2, to = 3, spec = AppDatabase.DeleteGameImage::class),
+        AutoMigration (from = 3, to = 4)
+    ]
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun appDao(): AppDao
+
+    @DeleteColumn(tableName = "Game", columnName = "image")
+    class DeleteGameImage : AutoMigrationSpec
 
     companion object {
 
@@ -26,7 +32,6 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database")
                     .createFromAsset("database/scores_app.db")
-//                    .fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

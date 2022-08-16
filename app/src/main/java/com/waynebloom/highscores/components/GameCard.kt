@@ -1,11 +1,11 @@
 package com.waynebloom.highscores.components
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -13,15 +13,22 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.waynebloom.highscores.ui.theme.HighScoresTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun GameCard(
     name: String,
-    @DrawableRes image: Int,
+    color: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -33,17 +40,35 @@ fun GameCard(
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Image(
-                painter = painterResource(id = image),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(64.dp)
-            )
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(64.dp)
+                    .background(color.copy(alpha = 0.3f))
+            ) {
+                Text(
+                    text = name.first().uppercase(),
+                    color = color,
+                    style = MaterialTheme.typography.h5,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
             Text(
                 text = name,
-                style = MaterialTheme.typography.subtitle2,
-                modifier = Modifier.padding(horizontal = 8.dp)
+                style = MaterialTheme.typography.body1,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(horizontal = 12.dp)
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun GameCardPreview() {
+    HighScoresTheme {
+        GameCard(name = "Wingspan", color = MaterialTheme.colors.primary, onClick = {})
     }
 }

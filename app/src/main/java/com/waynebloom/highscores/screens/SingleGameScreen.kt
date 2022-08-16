@@ -10,58 +10,72 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.waynebloom.highscores.R
+import com.waynebloom.highscores.components.HeadedSection
 import com.waynebloom.highscores.components.MatchCard
 import com.waynebloom.highscores.components.ScreenHeader
-import com.waynebloom.highscores.data.Game
-import com.waynebloom.highscores.data.Match
+import com.waynebloom.highscores.data.GameEntity
+import com.waynebloom.highscores.data.GameColor
+import com.waynebloom.highscores.data.MatchEntity
 
 @Composable
 fun SingleGameScreen(
-    game: Game,
-    matches: List<Match>,
+    game: GameEntity,
+    matches: List<MatchEntity>,
     onEditGameTap: () -> Unit,
     onNewMatchTap: (String) -> Unit,
-    onSingleMatchTap: (Match) -> Unit,
+    onSingleMatchTap: (MatchEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val gameColorResource = GameColor.valueOf(game.color).color
+
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { onNewMatchTap(game.id) },
                 shape = MaterialTheme.shapes.small,
-                backgroundColor = MaterialTheme.colors.primary
+                backgroundColor = gameColorResource,
+                contentColor = MaterialTheme.colors.onPrimary
             ) {
                 Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
             }
         }
     ) {
-        Column(
-            modifier = modifier
-        ) {
+        Column(modifier = modifier) {
             ScreenHeader(
                 title = game.name,
-                image = game.imageId,
-                titleBarButton = {
+                color = GameColor.valueOf(game.color).color,
+                headerButton = {
                     Button(
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = gameColorResource,
+                            contentColor = MaterialTheme.colors.onPrimary
+                        ),
                         onClick = { onEditGameTap() },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.secondary),
-                        modifier = Modifier
-                            .padding(vertical = 16.dp)
-                            .padding(end = 16.dp)
+                        modifier = Modifier.padding(end = 16.dp)
                     ) {
                         Icon(Icons.Rounded.Edit, contentDescription = null)
                     }
                 }
             )
-            LazyColumn(
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 64.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            HeadedSection(
+                title = R.string.header_matches,
+                topPadding = 40,
+                modifier = Modifier.padding(horizontal = 16.dp)
             ) {
-                items(matches) { match ->
-                    MatchCard(
-                        match = match,
-                        onSingleMatchTap = onSingleMatchTap
-                    )
+                LazyColumn(
+                    contentPadding = PaddingValues(bottom = 64.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(matches) { match ->
+                        MatchCard(
+                            match = match,
+                            gameInitial = game.name.first().uppercase(),
+                            gameColor = gameColorResource,
+                            onSingleMatchTap = onSingleMatchTap,
+                            showGameIdentifier = false
+                        )
+                    }
                 }
             }
         }
