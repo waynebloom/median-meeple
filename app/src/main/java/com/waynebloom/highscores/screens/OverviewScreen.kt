@@ -17,11 +17,11 @@ import com.waynebloom.highscores.data.*
 @Composable
 fun OverviewScreen(
     games: List<GameObject>,
-    matches: List<MatchEntity>,
+    matches: List<MatchObject>,
     onSeeAllGamesTap: () -> Unit,
     onAddNewGameTap: () -> Unit,
-    onSingleGameTap: (GameEntity) -> Unit,
-    onSingleMatchTap: (MatchEntity) -> Unit,
+    onSingleGameTap: (Long) -> Unit,
+    onSingleMatchTap: (Long, Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -50,13 +50,13 @@ fun OverviewScreen(
 
 @Composable
 fun GamesHead(
-    games: List<GameEntity>,
+    games: List<GameObject>,
     onSeeAllGamesTap: () -> Unit,
     onAddNewGameTap: () -> Unit,
-    onSingleGameTap: (GameEntity) -> Unit,
+    onSingleGameTap: (Long) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        val gameRows: MutableList<List<GameEntity>> = mutableListOf()
+        val gameRows: MutableList<List<GameObject>> = mutableListOf()
         var buttonClick = onSeeAllGamesTap
         var buttonText = stringResource(id = R.string.button_games)
 
@@ -108,8 +108,8 @@ fun GamesHead(
 
 @Composable
 fun GamesHeadRow(
-    games: List<GameEntity>,
-    onSingleGameTap: (GameEntity) -> Unit,
+    games: List<GameObject>,
+    onSingleGameTap: (Long) -> Unit,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -117,9 +117,9 @@ fun GamesHeadRow(
     ) {
         games.forEach { game ->
             GameCard(
-                name = game.name,
-                color = GameColor.valueOf(game.color).color,
-                onClick = { onSingleGameTap(game) },
+                name = game.entity.name,
+                color = GameColor.valueOf(game.entity.color).color,
+                onClick = { onSingleGameTap(game.entity.id) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -128,14 +128,14 @@ fun GamesHeadRow(
 
 @Composable
 fun MatchesHead(
-    matches: List<MatchEntity>,
-    games: List<GameEntity>,
-    onSingleMatchTap: (MatchEntity) -> Unit
+    matches: List<MatchObject>,
+    games: List<GameObject>,
+    onSingleMatchTap: (Long, Long) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         matches.forEach { match ->
-            val parentGame = games.find { it.id == match.gameOwnerId }
-                ?: EMPTY_GAME
+            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity
+                ?: EMPTY_GAME_ENTITY
 //            val parentGame = games.find { it.id == match.gameOwnerId }
 //                ?: throw NoSuchElementException(stringResource(id = R.string.exc_no_game_with_id, match.gameOwnerId))
             MatchCard(

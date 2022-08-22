@@ -4,33 +4,33 @@ import androidx.annotation.NonNull
 import androidx.room.*
 import java.util.*
 
-val EMPTY_MATCH = MatchEntity()
+val EMPTY_MATCH_ENTITY = MatchEntity()
 
 @Entity(
-    tableName = "match",
+    tableName = "Match",
     foreignKeys = [ForeignKey(
         entity = GameEntity::class,
         parentColumns = arrayOf("id"),
         childColumns = arrayOf("game_owner_id"),
         onDelete = ForeignKey.CASCADE,
         onUpdate = ForeignKey.CASCADE
-    )]
+    )],
+    indices = [Index(value = ["game_owner_id"])]
 )
 data class MatchEntity(
-    @PrimaryKey
-    val id: String = UUID.randomUUID().toString(),
+    @NonNull
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(defaultValue = "0")
+    val id: Long = 0,
 
     @NonNull
     @ColumnInfo(name = "game_owner_id")
-    val gameOwnerId: String = "",
+    val gameOwnerId: Long = 0,
 
     @NonNull
     @ColumnInfo(name = "time_modified")
     var timeModified: Long = Date().time,
 
     @ColumnInfo(name = "match_notes")
-    var matchNotes: String = "",
-
-    @Relation(parentColumn = "id", entityColumn = "match_id")
-    var scores: List<ScoreEntity> = listOf()
+    var matchNotes: String = ""
 )

@@ -21,24 +21,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.highscores.PreviewScoreData
 import com.waynebloom.highscores.R
-import com.waynebloom.highscores.data.EMPTY_MATCH
-import com.waynebloom.highscores.data.MatchEntity
+import com.waynebloom.highscores.data.EMPTY_MATCH_ENTITY
+import com.waynebloom.highscores.data.EMPTY_MATCH_OBJECT
+import com.waynebloom.highscores.data.MatchObject
 import com.waynebloom.highscores.ui.theme.HighScoresTheme
 import com.waynebloom.highscores.ui.theme.orange100
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MatchCard(
-    match: MatchEntity,
+    match: MatchObject,
     gameInitial: String,
     gameColor: Color,
-    onSingleMatchTap: (MatchEntity) -> Unit,
+    onSingleMatchTap: (Long, Long) -> Unit,
     showGameIdentifier: Boolean = true
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,
         color = gameColor.copy(alpha = 0.3f),
-        onClick = { onSingleMatchTap(match) }
+        onClick = { onSingleMatchTap(match.entity.gameOwnerId, match.entity.id) }
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -184,12 +185,12 @@ fun PlayerCountCard(
 fun ScoreCardPreview() {
     HighScoresTheme() {
         MatchCard(
-            match = EMPTY_MATCH.apply {
+            match = EMPTY_MATCH_OBJECT.apply {
                 scores = PreviewScoreData
             },
             gameInitial = "W",
             gameColor = orange100,
-            onSingleMatchTap = {}
+            onSingleMatchTap = {_,_->}
         )
     }
 }

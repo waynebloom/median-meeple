@@ -4,8 +4,10 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.highscores.data.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
     private val appRepository: AppRepository = AppRepository(appObj)
@@ -18,55 +20,62 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
     val matches: Flow<List<MatchObject>>
         get() = _matches
 
-    private val _scores = appRepository.getAllScores
-    val scores: Flow<List<ScoreEntity>>
-        get() = _scores
-
-    fun addGame(game: GameEntity) {
-        viewModelScope.launch { appRepository.addGame(game) }
+    suspend fun insert(game: GameEntity, afterInsert: (Long) -> Unit) {
+        var insertedGameId: Long
+        withContext(Dispatchers.IO) { insertedGameId = appRepository.insert(game) }
+        withContext(Dispatchers.Main) { afterInsert(insertedGameId) }
     }
 
-    fun addMatch(match: MatchEntity) {
-        viewModelScope.launch { appRepository.addMatch(match) }
+    suspend fun insertMatchWithScores(match: MatchEntity, scores: List<ScoreEntity> = listOf()) {
+        withContext(Dispatchers.IO) {
+            val newMatchId = appRepository.insert(match)
+            scores.forEach { score ->
+                appRepository.insert(score.apply { matchId = newMatchId })
+            }
+        }
     }
 
-    fun addScore(score: ScoreEntity) {
-        viewModelScope.launch { appRepository.addScore(score) }
+    suspend fun insert(score: ScoreEntity, afterInsert: (Long) -> Unit) {
+        var insertedScoreId: Long
+        withContext(Dispatchers.IO) { insertedScoreId = appRepository.insert(score) }
+        withContext(Dispatchers.Main) { afterInsert(insertedScoreId) }
     }
 
-    suspend fun deleteGameById(id: String) {
-        appRepository.deleteGameById(id)
+    suspend fun deleteGameById(id: Long) {
+        withContext(Dispatchers.IO) {
+            appRepository.deleteGameById(id)
+        }
     }
 
-    fun deleteMatchById(id: String) {
+    fun deleteMatchById(id: Long) {
         viewModelScope.launch { appRepository.deleteMatchById(id) }
     }
 
-    fun deleteMatchesByGameId(id: String) {
+    fun deleteMatchesByGameId(id: Long) {
         viewModelScope.launch { appRepository.deleteMatchesByGameId(id) }
     }
 
-    fun deleteScoreById(id: String) {
+    fun deleteScoreById(id: Long) {
         viewModelScope.launch { appRepository.deleteScoreById(id) }
     }
 
-    fun deleteScoresByMatchId(id: String) {
+    fun deleteScoresByMatchId(id: Long) {
         viewModelScope.launch { appRepository.deleteScoresByMatchId(id) }
     }
 
-    fun getGameById(id: String): Flow<GameObject?> {
+    fun getGameById(id: Long): Flow<GameObject?> {
         return appRepository.getGameById(id)
     }
 
-    fun getMatchById(id: String): Flow<MatchObject?> {
+    fun getMatchById(id: Long): Flow<MatchObject?> {
         return appRepository.getMatchById(id)
     }
 
-    fun getMatchesByGameId(gameId: String): Flow<List<MatchEntity>> {
+    fun getMatchesByGameId(gameId: Long): Flow<List<MatchEntity>> {
         return appRepository.getMatchesByGameId(gameId)
     }
 
-    fun getScoresByMatchId(matchId: String): Flow<List<ScoreEntity>> {
+    fun getScoresByMatchId(matchId: Long): Flow<List<ScoreEntity>> {
         return appRepository.getScoresByMatchId(matchId)
     }
 
@@ -74,11 +83,15 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
         viewModelScope.launch { appRepository.updateGame(newGame) }
     }
 
-    fun updateMatch(newMatch: MatchEntity) {
-        viewModelScope.launch { appRepository.updateMatch(newMatch) }
+    suspend fun updateMatch(newMatch: MatchEntity) {
+        withContext(Dispatchers.IO) {
+            appRepository.updateMatch(newMatch)
+        }
     }
 
-    fun updateScore(newScore: ScoreEntity) {
-        viewModelScope.launch { appRepository.updateScore(newScore) }
+    suspend fun updateScore(newScore: ScoreEntity) {
+        withContext(Dispatchers.IO) {
+            appRepository.updateScore(newScore)
+        }
     }
 }

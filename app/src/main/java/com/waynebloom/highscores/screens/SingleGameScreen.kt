@@ -16,23 +16,23 @@ import com.waynebloom.highscores.components.MatchCard
 import com.waynebloom.highscores.components.ScreenHeader
 import com.waynebloom.highscores.data.GameEntity
 import com.waynebloom.highscores.data.GameColor
+import com.waynebloom.highscores.data.GameObject
 import com.waynebloom.highscores.data.MatchEntity
 
 @Composable
 fun SingleGameScreen(
-    game: GameEntity,
-    matches: List<MatchEntity>,
+    game: GameObject,
     onEditGameTap: () -> Unit,
-    onNewMatchTap: (String) -> Unit,
-    onSingleMatchTap: (MatchEntity) -> Unit,
+    onNewMatchTap: (Long) -> Unit,
+    onSingleMatchTap: (Long, Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val gameColorResource = GameColor.valueOf(game.color).color
+    val gameColorResource = GameColor.valueOf(game.entity.color).color
 
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onNewMatchTap(game.id) },
+                onClick = { onNewMatchTap(game.entity.id) },
                 shape = MaterialTheme.shapes.small,
                 backgroundColor = gameColorResource,
                 contentColor = MaterialTheme.colors.onPrimary
@@ -43,8 +43,8 @@ fun SingleGameScreen(
     ) {
         Column(modifier = modifier) {
             ScreenHeader(
-                title = game.name,
-                color = GameColor.valueOf(game.color).color,
+                title = game.entity.name,
+                color = GameColor.valueOf(game.entity.color).color,
                 headerButton = {
                     Button(
                         colors = ButtonDefaults.buttonColors(
@@ -67,10 +67,10 @@ fun SingleGameScreen(
                     contentPadding = PaddingValues(bottom = 64.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(matches) { match ->
+                    items(game.matches) { match ->
                         MatchCard(
                             match = match,
-                            gameInitial = game.name.first().uppercase(),
+                            gameInitial = game.entity.name.first().uppercase(),
                             gameColor = gameColorResource,
                             onSingleMatchTap = onSingleMatchTap,
                             showGameIdentifier = false

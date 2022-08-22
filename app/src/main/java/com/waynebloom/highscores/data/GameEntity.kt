@@ -1,26 +1,24 @@
 package com.waynebloom.highscores.data
 
 import androidx.annotation.NonNull
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.Relation
+import androidx.room.*
 import java.util.*
 
-val EMPTY_GAME = GameEntity(
+val EMPTY_GAME_ENTITY = GameEntity(
     name = "Empty"
 )
 
-@Entity(tableName = "game")
+@Entity(tableName = "Game")
 data class GameEntity(
-
-    @PrimaryKey
-    val id: String = UUID.randomUUID().toString(),
+    @NonNull
+    @PrimaryKey(autoGenerate = true)
+    @ColumnInfo(defaultValue = "0")
+    val id: Long = 0,
 
     @NonNull
-    @ColumnInfo(name = "name")
     val name: String = "",
 
-    @ColumnInfo(name = "color", defaultValue = "RED")
+    @NonNull
+    @ColumnInfo(defaultValue = "RED")
     val color: String = GameColor.values().random().name
 )

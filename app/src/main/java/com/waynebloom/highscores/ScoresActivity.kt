@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -20,6 +21,7 @@ import androidx.navigation.navArgument
 import com.waynebloom.highscores.data.*
 import com.waynebloom.highscores.screens.*
 import com.waynebloom.highscores.ui.theme.HighScoresTheme
+import kotlinx.coroutines.launch
 
 class ScoresActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -58,28 +60,24 @@ fun ScoresNavHost(
 
         // OverviewScreen
         composable(HighScoresScreen.Overview.name) {
-            val games by gamesViewModel.games.collectAsState(listOf())
+            val allGames by gamesViewModel.games.collectAsState(listOf())
             val allMatches by gamesViewModel.matches.collectAsState(listOf())
-            val allScores by gamesViewModel.scores.collectAsState(listOf())
             OverviewScreen(
-                games = games.take(6),
+                games = allGames.take(6),
                 matches = allMatches
-                    .sortedByDescending { it.timeModified }
-                    .take(5)
-                    .onEach { match ->
-                        match.scores = allScores.filter { score -> score.matchId == match.id }
-                    },
+                    .sortedByDescending { it.entity.timeModified }
+                    .take(5),
                 onSeeAllGamesTap = { navController.navigate(HighScoresScreen.Games.name) },
                 onAddNewGameTap = { navigateToNewGame(navController) },
-                onSingleGameTap = { game -> navigateToSingleGame(navController, game.id) },
-                onSingleMatchTap = { match -> navigateToSingleMatch(navController, match.gameOwnerId, match.id) }
+                onSingleGameTap = { gameId -> navigateToSingleGame(navController, gameId) },
+                onSingleMatchTap = { gameOwnerId, matchId -> navigateToSingleMatch(navController, gameOwnerId, matchId) }
             )
         }
 
         // GamesScreen
         composable(HighScoresScreen.Games.name) {
             GamesScreen(
-                games = gamesViewModel.games.collectAsState(listOf()).value,
+                games = gamesViewModel.games.collectAsState(listOf()).value.map { it.entity },
                 onAddNewGameTap = { navigateToNewGame(navController) },
                 onSingleGameTap = { game -> navigateToSingleGame(navController, game.id) },
             )
@@ -90,14 +88,14 @@ fun ScoresNavHost(
             route = "${HighScoresScreen.Games.name}/delete/{id}",
             arguments = listOf(
                 navArgument("id") {
-                    type = NavType.StringType
+                    type = NavType.LongType
                 }
             )
         ) { entry ->
-            val targetGameId = entry.arguments?.getString("id") ?: ""
+            val targetGameId = entry.arguments?.getLong("id", 0) ?: 0
             LaunchedEffect(targetGameId) { gamesViewModel.deleteGameById(targetGameId) }
             GamesScreen(
-                games = gamesViewModel.games.collectAsState(listOf()).value,
+                games = gamesViewModel.games.collectAsState(listOf()).value.map { it.entity },
                 onAddNewGameTap = { navigateToNewGame(navController) },
                 onSingleGameTap = { game -> navigateToSingleGame(navController, game.id) },
             )
@@ -108,32 +106,21 @@ fun ScoresNavHost(
             route = "${HighScoresScreen.SingleGame.name}/{id}",
             arguments = listOf(
                 navArgument("id") {
-                    type = NavType.StringType
+                    type = NavType.LongType
                 }
             )
         ) { entry ->
-            val targetGameId = entry.arguments?.getString("id") ?: ""
+            val targetGameId = entry.arguments?.getLong("id", 0) ?: 0
             val targetGame = gamesViewModel
                 .getGameById(targetGameId)
-                .collectAsState(EMPTY_GAME)
-                .value ?: EMPTY_GAME
-            val targetGameMatchList = gamesViewModel
-                .getMatchesByGameId(targetGame.id)
-                .collectAsState(initial = listOf())
-                .value
-            targetGameMatchList.forEach { match ->
-                match.scores = gamesViewModel
-                    .getScoresByMatchId(match.id)
-                    .collectAsState(initial = listOf())
-                    .value
-            }
+                .collectAsState(EMPTY_GAME_OBJECT)
+                .value ?: EMPTY_GAME_OBJECT
 
             SingleGameScreen(
                 game = targetGame,
-                matches = targetGameMatchList,
                 onEditGameTap = { navigateToEditGame(navController, targetGameId) },
                 onNewMatchTap = { gameId -> navigateToNewMatch(navController, gameId) },
-                onSingleMatchTap = { match -> navigateToSingleMatch(navController, match.gameOwnerId, match.id) }
+                onSingleMatchTap = { gameOwnerId, matchId -> navigateToSingleMatch(navController, gameOwnerId, matchId) }
             )
         }
 
@@ -142,36 +129,25 @@ fun ScoresNavHost(
             route = "${HighScoresScreen.SingleGame.name}/delete/{gameId}/{matchId}",
             arguments = listOf(
                 navArgument("gameId") {
-                    type = NavType.StringType
+                    type = NavType.LongType
                 },
                 navArgument("matchId") {
-                    type = NavType.StringType
+                    type = NavType.LongType
                 }
             )
         ) { entry ->
-            gamesViewModel.deleteMatchById(entry.arguments?.getString("matchId") ?: "")
-
-            val targetGameId = entry.arguments?.getString("gameId") ?: ""
+            gamesViewModel.deleteMatchById(entry.arguments?.getLong("matchId", 0) ?: 0)
+            val targetGameId = entry.arguments?.getLong("gameId", 0) ?: 0
             val targetGame = gamesViewModel
                 .getGameById(targetGameId)
-                .collectAsState(EMPTY_GAME)
-                .value ?: EMPTY_GAME
-            val targetGameMatchList = gamesViewModel
-                .getMatchesByGameId(targetGame.id)
-                .collectAsState(initial = listOf())
-                .value
-            targetGameMatchList.forEach { match ->
-                match.scores = gamesViewModel
-                    .getScoresByMatchId(match.id)
-                    .collectAsState(initial = listOf())
-                    .value
-            }
+                .collectAsState(EMPTY_GAME_OBJECT)
+                .value ?: EMPTY_GAME_OBJECT
+
             SingleGameScreen(
                 game = targetGame,
-                matches = targetGameMatchList,
                 onEditGameTap = { navigateToEditGame(navController, targetGameId) },
                 onNewMatchTap = { gameId -> navigateToNewMatch(navController, gameId) },
-                onSingleMatchTap = { match -> navigateToSingleMatch(navController, match.gameOwnerId, match.id) }
+                onSingleMatchTap = { gameOwnerId, matchId -> navigateToSingleMatch(navController, gameOwnerId, matchId) }
             )
         }
 
@@ -180,12 +156,12 @@ fun ScoresNavHost(
             route = "${HighScoresScreen.EditGame.name}/{gameId}",
             arguments = listOf(
                 navArgument("gameId") {
-                    type = NavType.StringType
+                    type = NavType.LongType
                 }
             )
         ) { entry ->
-            val targetGameId = entry.arguments?.getString("gameId") ?: ""
-            if (targetGameId == "new") {
+            val targetGameId = entry.arguments?.getLong("gameId", 0) ?: 0
+            if (targetGameId == -1L) {
                 EditGameScreen(
                     game = GameEntity(),
                     onSaveTap = { newGame ->
@@ -199,18 +175,22 @@ fun ScoresNavHost(
                                 inclusive = false
                             )
                         }
-                        navigateToSingleGame(navController, newGame.id)
-                        gamesViewModel.addGame(newGame)
-                        Toast.makeText(context, R.string.toast_game_created, Toast.LENGTH_SHORT).show()
+                        gamesViewModel.viewModelScope.launch {
+                            gamesViewModel.insert(newGame) { newGameId ->
+                                navigateToSingleGame(navController, newGameId)
+                                Toast.makeText(context, R.string.toast_game_created, Toast.LENGTH_SHORT).show()
+                            }
+                        }
                     },
                     isNewGame = true
                 )
             } else {
+                val targetGame = gamesViewModel
+                    .getGameById(targetGameId)
+                    .collectAsState(EMPTY_GAME_OBJECT)
+                    .value ?: EMPTY_GAME_OBJECT
                 EditGameScreen(
-                    game = gamesViewModel
-                        .getGameById(targetGameId)
-                        .collectAsState(EMPTY_GAME)
-                        .value ?: EMPTY_GAME,
+                    game = targetGame.entity,
                     onDeleteTap = { gameId ->
                         Toast.makeText(context, R.string.toast_game_deleted, Toast.LENGTH_SHORT).show()
                         navController.popBackStack(
@@ -233,60 +213,58 @@ fun ScoresNavHost(
             route = "${HighScoresScreen.SingleMatch.name}/{gameId}/{matchId}",
             arguments = listOf(
                 navArgument("gameId") {
-                    type = NavType.StringType
+                    type = NavType.LongType
                 },
                 navArgument("matchId") {
-                    type = NavType.StringType
+                    type = NavType.LongType
                 }
             )
         ) { entry ->
-            val targetMatchId = entry.arguments?.getString("matchId") ?: ""
-            val targetGameId = entry.arguments?.getString("gameId") ?: ""
+            val targetMatchId = entry.arguments?.getLong("matchId", 0) ?: 0
+            val targetGameId = entry.arguments?.getLong("gameId", 0) ?: 0
             val game = gamesViewModel
                 .getGameById(targetGameId)
-                .collectAsState(EMPTY_GAME)
-                .value ?: EMPTY_GAME
-            if (targetMatchId == "new") {
+                .collectAsState(EMPTY_GAME_OBJECT)
+                .value ?: EMPTY_GAME_OBJECT
+            if (targetMatchId == -1L) {
                 SingleMatchScreen(
-                    game = game,
-                    match = MatchEntity(
-                        gameOwnerId = targetGameId
-                    ),
+                    game = game.entity,
+                    match = MatchObject().apply {
+                        entity = MatchEntity(gameOwnerId = game.entity.id)
+                    },
                     openInEditMode = true,
                     isNewMatch = true,
                     onSaveTap = { newMatch, newScores ->
-                        Toast.makeText(context, R.string.toast_score_created, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.toast_match_created, Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
-                        gamesViewModel.addMatch(newMatch)
-                        newScores.forEach { score ->
-                            gamesViewModel.addScore(score)
+                        gamesViewModel.viewModelScope.launch {
+                            gamesViewModel.insertMatchWithScores(newMatch, newScores)
                         }
                     }
                 )
             } else {
                 val targetMatch = gamesViewModel
                     .getMatchById(targetMatchId)
-                    .collectAsState(EMPTY_MATCH)
-                    .value ?: EMPTY_MATCH
-                targetMatch.scores = gamesViewModel
-                    .getScoresByMatchId(targetMatchId)
-                    .collectAsState(listOf())
-                    .value
+                    .collectAsState(EMPTY_MATCH_OBJECT)
+                    .value ?: EMPTY_MATCH_OBJECT
                 SingleMatchScreen(
-                    game = game,
+                    game = game.entity,
                     match = targetMatch,
                     onSaveTap = { match, newScores ->
-                        Toast.makeText(context, R.string.toast_score_updated, Toast.LENGTH_SHORT).show()
-                        gamesViewModel.updateMatch(match)
-                        newScores.forEach { score ->
-                            if (targetMatch.scores.find { it.id == score.id } != null) {
-                                gamesViewModel.updateScore(score)
-                            } else {
-                                gamesViewModel.addScore(score)
+                        Toast.makeText(context, R.string.toast_match_updated, Toast.LENGTH_SHORT).show()
+                        gamesViewModel.viewModelScope.launch {
+                            gamesViewModel.updateMatch(match)
+                            newScores.forEach { score ->
+                                when(score.action) {
+                                    DatabaseAction.UPDATE -> gamesViewModel.updateScore(score)
+                                    DatabaseAction.INSERT -> gamesViewModel.insert(score) {}
+                                    DatabaseAction.DELETE -> gamesViewModel.deleteScoreById(score.id)
+                                    else -> {}
+                                }
                             }
                         }
                     },
-                    onDeleteTap = { gameId, matchId ->
+                    onDeleteMatchTap = { gameId, matchId ->
                         val popSuccess = navController.popBackStack(
                             route = "${HighScoresScreen.SingleGame.name}/{id}",
                             inclusive = true
@@ -294,7 +272,7 @@ fun ScoresNavHost(
                         if (!popSuccess) navController.popBackStack()
 
                         navigateToSingleGameWithDeletedMatch(navController, gameId, matchId)
-                        Toast.makeText(context, R.string.toast_score_deleted, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, R.string.toast_match_deleted, Toast.LENGTH_SHORT).show()
                     }
                 )
             }
@@ -302,45 +280,30 @@ fun ScoresNavHost(
     }
 }
 
-/*private suspend fun deleteGame(gamesViewModel: GamesViewModel, gameId: String) {
-    gamesViewModel
-        .getMatchesByGameId(gameId)
-        .onEach { matchList ->
-            matchList.forEach { match ->
-                gamesViewModel.deleteScoresByMatchId(match.id)
-            }
-        }
-        .onCompletion {
-            gamesViewModel.deleteMatchesByGameId(gameId)
-            gamesViewModel.deleteGameById(gameId)
-        }
-        .collect()
-}*/
-
-private fun navigateToGamesWithDeletedGame(navController: NavController, gameId: String) {
+private fun navigateToGamesWithDeletedGame(navController: NavController, gameId: Long) {
     navController.navigate("${HighScoresScreen.Games.name}/delete/$gameId")
 }
 
-private fun navigateToSingleGame(navController: NavController, gameId: String) {
+private fun navigateToSingleGame(navController: NavController, gameId: Long) {
     navController.navigate("${HighScoresScreen.SingleGame.name}/$gameId")
 }
 
-private fun navigateToEditGame(navController: NavController, gameId: String) {
+private fun navigateToEditGame(navController: NavController, gameId: Long) {
     navController.navigate("${HighScoresScreen.EditGame.name}/$gameId")
 }
 
 private fun navigateToNewGame(navController: NavController) {
-    navController.navigate("${HighScoresScreen.EditGame.name}/new")
+    navController.navigate("${HighScoresScreen.EditGame.name}/-1")
 }
 
-private fun navigateToSingleGameWithDeletedMatch(navController: NavController, gameId: String, matchId: String) {
+private fun navigateToSingleGameWithDeletedMatch(navController: NavController, gameId: Long, matchId: Long) {
     navController.navigate("${HighScoresScreen.SingleGame.name}/delete/$gameId/$matchId")
 }
 
-private fun navigateToSingleMatch(navController: NavController, gameId: String, matchId: String) {
+private fun navigateToSingleMatch(navController: NavController, gameId: Long, matchId: Long) {
     navController.navigate("${HighScoresScreen.SingleMatch.name}/$gameId/$matchId")
 }
 
-private fun navigateToNewMatch(navController: NavController, gameId: String) {
-    navController.navigate("${HighScoresScreen.SingleMatch.name}/$gameId/new")
+private fun navigateToNewMatch(navController: NavController, gameId: Long) {
+    navController.navigate("${HighScoresScreen.SingleMatch.name}/$gameId/-1")
 }

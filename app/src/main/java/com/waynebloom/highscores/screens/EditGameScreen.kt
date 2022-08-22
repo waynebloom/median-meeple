@@ -40,7 +40,7 @@ fun EditGameScreen(
     game: GameEntity,
     onSaveTap: (GameEntity) -> Unit,
     modifier: Modifier = Modifier,
-    onDeleteTap: (String) -> Unit = {},
+    onDeleteTap: (Long) -> Unit = {},
     isNewGame: Boolean = false
 ) {
     var newName by rememberSaveable(game.name) { mutableStateOf(game.name) }
@@ -56,9 +56,10 @@ fun EditGameScreen(
     }
 
     Column(modifier = modifier) {
+        val gameColor = GameColor.valueOf(newColor).color
         ScreenHeader(
             title = if (!isNewGame) game.name else stringResource(id = R.string.header_new_game),
-            color = GameColor.valueOf(game.color).color
+            color = gameColor
         )
         Column(
             modifier = Modifier
@@ -73,6 +74,12 @@ fun EditGameScreen(
                     value = newName,
                     label = { Text(text = stringResource(id = R.string.field_name)) },
                     onValueChange = { newName = it },
+                    colors = TextFieldDefaults.textFieldColors(
+                        focusedIndicatorColor = gameColor,
+                        focusedLabelColor = gameColor,
+                        cursorColor = gameColor,
+                        backgroundColor = MaterialTheme.colors.background
+                    ),
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
                         imeAction = ImeAction.Done,
@@ -108,7 +115,7 @@ fun EditGameScreen(
             Row(modifier = Modifier.padding(top = 16.dp)) {
                 Button(
                     colors = ButtonDefaults.buttonColors(
-                        backgroundColor = GameColor.valueOf(game.color).color,
+                        backgroundColor = gameColor,
                         contentColor = MaterialTheme.colors.onPrimary
                     ),
                     onClick = { buttonOnClick() },

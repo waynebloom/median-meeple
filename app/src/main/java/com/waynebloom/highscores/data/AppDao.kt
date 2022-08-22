@@ -1,6 +1,7 @@
 package com.waynebloom.highscores.data
 
 import androidx.room.*
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -13,32 +14,29 @@ interface AppDao {
     @Query("SELECT * FROM `match`")
     fun getAllMatches(): Flow<List<MatchObject>>
 
-    @Query("SELECT * FROM score")
-    fun getAllScores(): Flow<List<ScoreEntity>>
-
     @Transaction
     @Query("SELECT * FROM game WHERE id = :id")
-    fun getGameById(id: String): Flow<GameObject?>
+    fun getGameById(id: Long): Flow<GameObject?>
 
     @Transaction
     @Query("SELECT * FROM `match` WHERE id = :id")
-    fun getMatchById(id: String): Flow<MatchObject?>
+    fun getMatchById(id: Long): Flow<MatchObject?>
 
     @Transaction
     @Query("SELECT * FROM `match` WHERE game_owner_id = :gameId")
-    fun getMatchesByGameId(gameId: String): Flow<List<MatchEntity>>
+    fun getMatchesByGameId(gameId: Long): Flow<List<MatchEntity>>
 
     @Query("SELECT * FROM score WHERE match_id = :matchId")
-    fun getScoresByMatchId(matchId: String): Flow<List<ScoreEntity>>
+    fun getScoresByMatchId(matchId: Long): Flow<List<ScoreEntity>>
 
     @Insert
-    suspend fun insertGame(game: GameEntity)
+    suspend fun insert(game: GameEntity): Long
 
     @Insert
-    suspend fun insertMatch(match: MatchEntity)
+    suspend fun insert(match: MatchEntity): Long
 
     @Insert
-    suspend fun insertScore(score: ScoreEntity)
+    suspend fun insert(score: ScoreEntity): Long
 
     @Update
     suspend fun updateGame(game: GameEntity)
@@ -50,17 +48,17 @@ interface AppDao {
     suspend fun updateScore(score: ScoreEntity)
 
     @Query("DELETE FROM game WHERE id = :id")
-    suspend fun deleteGameById(id: String)
+    suspend fun deleteGameById(id: Long)
 
     @Query("DELETE FROM `match` WHERE id = :id")
-    suspend fun deleteMatchById(id: String)
+    suspend fun deleteMatchById(id: Long)
 
     @Query("DELETE FROM `match` WHERE game_owner_id = :id")
-    suspend fun deleteMatchesByGameId(id: String)
+    suspend fun deleteMatchesByGameId(id: Long)
 
     @Query("DELETE FROM score WHERE id = :id")
-    suspend fun deleteScoreById(id: String)
+    suspend fun deleteScoreById(id: Long)
 
     @Query("DELETE FROM score WHERE match_id = :id")
-    suspend fun deleteScoresByMatchId(id: String)
+    suspend fun deleteScoresByMatchId(id: Long)
 }

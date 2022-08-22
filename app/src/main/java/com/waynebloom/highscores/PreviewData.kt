@@ -6,14 +6,14 @@ import com.waynebloom.highscores.data.ScoreEntity
 
 
 val PreviewGameData: List<GameEntity> = listOf(
-    GameEntity("Carcassonne"),
-    GameEntity("Wingspan"),
-    GameEntity("Century: Golem Edition"),
-    GameEntity("Ticket to Ride: Rails & Sails Test Test Test"),
-    GameEntity("Mystic Vale"),
-    GameEntity("Mariposas"),
-    GameEntity("Azul: Queen's Garden"),
-    GameEntity("Catan"),
+    GameEntity(name = "Carcassonne"),
+    GameEntity(name = "Wingspan"),
+    GameEntity(name = "Century: Golem Edition"),
+    GameEntity(name = "Ticket to Ride: Rails & Sails Test Test Test"),
+    GameEntity(name = "Mystic Vale"),
+    GameEntity(name = "Mariposas"),
+    GameEntity(name = "Azul: Queen's Garden"),
+    GameEntity(name = "Catan"),
 )
 
 val PreviewScoreData: List<ScoreEntity> = listOf(
