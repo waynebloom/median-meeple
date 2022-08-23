@@ -101,20 +101,26 @@ fun SingleMatchScreen(
                     scores = newScores,
                     gameColor = GameColor.valueOf(game.color).color,
                     editMode = editMode,
-                    onScoreChange = { newIndex, newScore ->
-                        newScores = newScores.mapIndexed { existingIndex, existingScore ->
-                            if (existingIndex == newIndex) newScore else existingScore
+                    onScoreChange = { scoreToChange, updatedScore ->
+                        newScores = newScores.updateElement({it == scoreToChange}) {
+                            updatedScore.copy(
+                                action = if (scoreToChange.action != DatabaseAction.INSERT) {
+                                    DatabaseAction.UPDATE
+                                } else scoreToChange.action
+                            )
                         }
                     },
                     onNewScoreTap = {
-                        val newScore = ScoreEntity(matchId = match.entity.id)
-                        newScore.action = DatabaseAction.INSERT
+                        val newScore = ScoreEntity().apply {
+                            matchId = match.entity.id
+                            action = DatabaseAction.INSERT
+                        }
                         newScores = newScores.plus(newScore)
                     },
                     onDeleteScoreTap = { score ->
                         newScores = if (score.action != DatabaseAction.INSERT) {
                             newScores.updateElement({it == score}) {
-                                ScoreEntity(score, DatabaseAction.DELETE)
+                                score.copy(action = DatabaseAction.DELETE)
                             }
                         } else {
                             newScores.minus(score)
@@ -176,22 +182,20 @@ fun ScoresSection(
     scores: List<ScoreEntity>,
     gameColor: Color,
     editMode: Boolean,
-    onScoreChange: (Int, ScoreEntity) -> Unit,
+    onScoreChange: (ScoreEntity, ScoreEntity) -> Unit,
     onNewScoreTap: () -> Unit,
     onDeleteScoreTap: (ScoreEntity) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        scores.forEachIndexed { index, score ->
+        scores.forEach { score ->
             if (score.action != DatabaseAction.DELETE)
                 ScoreCard(
                     score = score,
                     gameColor = gameColor,
                     editMode = editMode,
-                    onScoreChange = { changedScore ->
-                        onScoreChange(index, changedScore)
-                    },
+                    onScoreChange = { scoreToChange, updatedScore -> onScoreChange(scoreToChange, updatedScore) },
                     onDeleteTap = onDeleteScoreTap
                 )
         }
@@ -242,7 +246,7 @@ fun ScoreCard(
     score: ScoreEntity,
     gameColor: Color,
     editMode: Boolean,
-    onScoreChange: (ScoreEntity) -> Unit,
+    onScoreChange: (ScoreEntity, ScoreEntity) -> Unit,
     onDeleteTap: (ScoreEntity) -> Unit
 ) {
     val textFieldHeight = TextFieldDefaults.MinHeight
@@ -262,14 +266,7 @@ fun ScoreCard(
                 value = score.name,
                 label = { Text(text = stringResource(id = R.string.field_name)) },
                 onValueChange = {
-                    val changedScore = ScoreEntity(
-                        matchId = score.matchId,
-                        name = it,
-                        scoreValue = score.scoreValue,
-                        action = score.action
-                    )
-                    if (changedScore.action != DatabaseAction.INSERT) changedScore.action = DatabaseAction.UPDATE
-                    onScoreChange(changedScore)
+                    onScoreChange(score, score.copy(name = it))
                 },
                 enabled = editMode,
                 singleLine = true,
@@ -289,14 +286,7 @@ fun ScoreCard(
                     value = score.scoreValue?.toString() ?: "",
                     label = { Text(text = stringResource(id = R.string.field_score)) },
                     onValueChange = {
-                        onScoreChange(score
-                            .copy(scoreValue = it.toLongOrNull())
-                            .apply {
-                                if (action.name != DatabaseAction.INSERT.name) {
-                                    action = DatabaseAction.UPDATE
-                                }
-                            }
-                        )
+                        onScoreChange(score, score.copy(scoreValue = it.toLongOrNull()))
                     },
                     enabled = editMode,
                     singleLine = true,

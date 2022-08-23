@@ -17,18 +17,18 @@ val PreviewGameData: List<GameEntity> = listOf(
 )
 
 val PreviewScoreData: List<ScoreEntity> = listOf(
-    ScoreEntity(
-        name = "Wayne",
+    ScoreEntity().apply {
+        name = "Wayne"
         scoreValue = 2
-    ),
-    ScoreEntity(
-        name = "Wayne",
+    },
+    ScoreEntity().apply {
+        name = "Wayne"
         scoreValue = 20
-    ),
-    ScoreEntity(
-        name = "Wayne",
+    },
+    ScoreEntity().apply {
+        name = "Wayne"
         scoreValue = 200
-    )
+    }
 )
 
 val PreviewMatchData: List<MatchEntity> = listOf(

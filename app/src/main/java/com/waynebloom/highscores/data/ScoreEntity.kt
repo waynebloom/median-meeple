@@ -2,7 +2,6 @@ package com.waynebloom.highscores.data
 
 import androidx.annotation.NonNull
 import androidx.room.*
-import java.util.*
 
 @Entity(
     tableName = "Score",
@@ -15,38 +14,48 @@ import java.util.*
     )],
     indices = [Index(value = ["match_id"])]
 )
-data class ScoreEntity(
+class ScoreEntity() {
     @NonNull
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(defaultValue = "0")
-    var id: Long = 0,
+    var id: Long = 0
 
     @NonNull
     @ColumnInfo(name = "match_id")
-    var matchId: Long = 0,
+    var matchId: Long = 0
 
     @NonNull
     @ColumnInfo(name = "name")
-    var name: String = "",
+    var name: String = ""
 
     @NonNull
     @ColumnInfo(name = "score")
     var scoreValue: Long? = null
-) {
+
     @Ignore
     var action: DatabaseAction = DatabaseAction.NO_ACTION
 
-    constructor(matchId: Long, name: String, scoreValue: Long?, action: DatabaseAction) : this() {
-        this.matchId = matchId
-        this.name = name
-        this.scoreValue = scoreValue
-        this.action = action
-    }
-
     constructor(previousScore: ScoreEntity, action: DatabaseAction) : this() {
+        this.id = previousScore.id
         this.matchId = previousScore.matchId
         this.name = previousScore.name
         this.scoreValue = previousScore.scoreValue
         this.action = action
+    }
+
+    fun copy(
+        id: Long = this.id,
+        matchId: Long = this.matchId,
+        name: String = this.name,
+        scoreValue: Long? = this.scoreValue,
+        action: DatabaseAction = this.action
+    ): ScoreEntity {
+        return ScoreEntity().apply {
+            this.id = id
+            this.matchId = matchId
+            this.name = name
+            this.scoreValue = scoreValue
+            this.action = action
+        }
     }
 }
