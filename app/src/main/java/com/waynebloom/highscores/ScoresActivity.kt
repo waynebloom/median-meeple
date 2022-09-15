@@ -238,7 +238,7 @@ fun ScoresNavHost(
                         Toast.makeText(context, R.string.toast_match_created, Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
                         gamesViewModel.viewModelScope.launch {
-                            gamesViewModel.insertMatchWithScores(newMatch, newScores)
+                            gamesViewModel.insertMatchWithScores(newMatch, newScores.map { it.entity })
                         }
                     }
                 )
@@ -256,9 +256,9 @@ fun ScoresNavHost(
                             gamesViewModel.updateMatch(match)
                             newScores.forEach { score ->
                                 when(score.action) {
-                                    DatabaseAction.UPDATE -> gamesViewModel.updateScore(score)
-                                    DatabaseAction.INSERT -> gamesViewModel.insert(score) {}
-                                    DatabaseAction.DELETE -> gamesViewModel.deleteScoreById(score.id)
+                                    DatabaseAction.UPDATE -> gamesViewModel.updateScore(score.entity)
+                                    DatabaseAction.INSERT -> gamesViewModel.insert(score.entity) {}
+                                    DatabaseAction.DELETE -> gamesViewModel.deleteScoreById(score.entity.id)
                                     else -> {}
                                 }
                             }

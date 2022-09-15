@@ -22,14 +22,6 @@ class AppRepository(application: Application) {
         return appDao.getMatchById(id)
     }
 
-    fun getMatchesByGameId(gameId: Long): Flow<List<MatchEntity>> {
-        return appDao.getMatchesByGameId(gameId)
-    }
-
-    fun getScoresByMatchId(matchId: Long): Flow<List<ScoreEntity>> {
-        return appDao.getScoresByMatchId(matchId)
-    }
-
     suspend fun insert(game: GameEntity): Long {
         return appDao.insert(game)
     }
@@ -62,15 +54,7 @@ class AppRepository(application: Application) {
         appDao.deleteMatchById(id)
     }
 
-    suspend fun deleteMatchesByGameId(id: Long) {
-        appDao.deleteMatchesByGameId(id)
-    }
-
     suspend fun deleteScoreById(id: Long) {
         appDao.deleteScoreById(id)
-    }
-
-    suspend fun deleteScoresByMatchId(id: Long) {
-        appDao.deleteScoresByMatchId(id)
     }
 }

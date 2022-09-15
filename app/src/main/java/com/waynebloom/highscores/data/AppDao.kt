@@ -22,13 +22,6 @@ interface AppDao {
     @Query("SELECT * FROM `match` WHERE id = :id")
     fun getMatchById(id: Long): Flow<MatchObject?>
 
-    @Transaction
-    @Query("SELECT * FROM `match` WHERE game_owner_id = :gameId")
-    fun getMatchesByGameId(gameId: Long): Flow<List<MatchEntity>>
-
-    @Query("SELECT * FROM score WHERE match_id = :matchId")
-    fun getScoresByMatchId(matchId: Long): Flow<List<ScoreEntity>>
-
     @Insert
     suspend fun insert(game: GameEntity): Long
 
@@ -53,12 +46,6 @@ interface AppDao {
     @Query("DELETE FROM `match` WHERE id = :id")
     suspend fun deleteMatchById(id: Long)
 
-    @Query("DELETE FROM `match` WHERE game_owner_id = :id")
-    suspend fun deleteMatchesByGameId(id: Long)
-
     @Query("DELETE FROM score WHERE id = :id")
     suspend fun deleteScoreById(id: Long)
-
-    @Query("DELETE FROM score WHERE match_id = :id")
-    suspend fun deleteScoresByMatchId(id: Long)
 }

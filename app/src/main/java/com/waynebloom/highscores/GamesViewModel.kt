@@ -51,16 +51,8 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
         viewModelScope.launch { appRepository.deleteMatchById(id) }
     }
 
-    fun deleteMatchesByGameId(id: Long) {
-        viewModelScope.launch { appRepository.deleteMatchesByGameId(id) }
-    }
-
     fun deleteScoreById(id: Long) {
         viewModelScope.launch { appRepository.deleteScoreById(id) }
-    }
-
-    fun deleteScoresByMatchId(id: Long) {
-        viewModelScope.launch { appRepository.deleteScoresByMatchId(id) }
     }
 
     fun getGameById(id: Long): Flow<GameObject?> {
@@ -69,14 +61,6 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
 
     fun getMatchById(id: Long): Flow<MatchObject?> {
         return appRepository.getMatchById(id)
-    }
-
-    fun getMatchesByGameId(gameId: Long): Flow<List<MatchEntity>> {
-        return appRepository.getMatchesByGameId(gameId)
-    }
-
-    fun getScoresByMatchId(matchId: Long): Flow<List<ScoreEntity>> {
-        return appRepository.getScoresByMatchId(matchId)
     }
 
     fun updateGame(newGame: GameEntity) {

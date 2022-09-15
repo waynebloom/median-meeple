@@ -41,7 +41,7 @@ fun GamesScreen(
         ) {
             HeadedSection(title = R.string.header_games) {
                 LazyColumn(
-                    contentPadding = PaddingValues(bottom = 64.dp),
+                    contentPadding = PaddingValues(bottom = 88.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(games) { game ->

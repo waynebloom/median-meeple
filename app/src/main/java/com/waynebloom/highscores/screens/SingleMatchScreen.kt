@@ -49,14 +49,16 @@ lateinit var focusManager: FocusManager
 fun SingleMatchScreen(
     game: GameEntity,
     match: MatchObject,
-    onSaveTap: (MatchEntity, List<ScoreEntity>) -> Unit,
+    onSaveTap: (MatchEntity, List<ScoreObject>) -> Unit,
     modifier: Modifier = Modifier,
     onDeleteMatchTap: (Long, Long) -> Unit = {_, _->},
     openInEditMode: Boolean = false,
     isNewMatch: Boolean = false
 ) {
     var editMode: Boolean by rememberSaveable(openInEditMode) { mutableStateOf(openInEditMode) }
-    var newScores: List<ScoreEntity> by rememberSaveable(match.scores) { mutableStateOf(match.scores) }
+    var newScores: List<ScoreObject> by rememberSaveable(match.scores) {
+        mutableStateOf(match.scores.map { ScoreObject(it) })
+    }
     var newNotes: String by rememberSaveable(match.entity.matchNotes) { mutableStateOf(match.entity.matchNotes) }
     keyboardController = LocalSoftwareKeyboardController.current
     focusManager = LocalFocusManager.current
@@ -85,7 +87,7 @@ fun SingleMatchScreen(
             buttonOnClick = { editMode = true }
         }
         ScreenHeader(
-            title = stringResource(id = R.string.text_edit_match),
+            title = game.name,
             color = GameColor.valueOf(game.color).color
         )
         Column(
@@ -101,9 +103,10 @@ fun SingleMatchScreen(
                     scores = newScores,
                     gameColor = GameColor.valueOf(game.color).color,
                     editMode = editMode,
-                    onScoreChange = { scoreToChange, updatedScore ->
+                    onScoreChange = { scoreToChange, updatedEntity ->
                         newScores = newScores.updateElement({it == scoreToChange}) {
-                            updatedScore.copy(
+                            scoreToChange.copy(
+                                entity = updatedEntity,
                                 action = if (scoreToChange.action != DatabaseAction.INSERT) {
                                     DatabaseAction.UPDATE
                                 } else scoreToChange.action
@@ -111,10 +114,10 @@ fun SingleMatchScreen(
                         }
                     },
                     onNewScoreTap = {
-                        val newScore = ScoreEntity().apply {
-                            matchId = match.entity.id
+                        val newScore = ScoreObject(
+                            entity = ScoreEntity(matchId = match.entity.id),
                             action = DatabaseAction.INSERT
-                        }
+                        )
                         newScores = newScores.plus(newScore)
                     },
                     onDeleteScoreTap = { score ->
@@ -179,12 +182,12 @@ fun SingleMatchScreen(
 
 @Composable
 fun ScoresSection(
-    scores: List<ScoreEntity>,
+    scores: List<ScoreObject>,
     gameColor: Color,
     editMode: Boolean,
-    onScoreChange: (ScoreEntity, ScoreEntity) -> Unit,
+    onScoreChange: (ScoreObject, ScoreEntity) -> Unit,
     onNewScoreTap: () -> Unit,
-    onDeleteScoreTap: (ScoreEntity) -> Unit
+    onDeleteScoreTap: (ScoreObject) -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -199,8 +202,8 @@ fun ScoresSection(
                     onDeleteTap = onDeleteScoreTap
                 )
         }
-        if (scores.isEmpty()) {
-            val emptyContentColor = MaterialTheme.colors.primary.copy(alpha = 0.5f)
+        if (scores.isEmpty() || scores.find { it.action != DatabaseAction.DELETE } == null) {
+            val emptyContentColor = gameColor.copy(alpha = 0.5f)
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -243,11 +246,11 @@ fun ScoresSection(
 
 @Composable
 fun ScoreCard(
-    score: ScoreEntity,
+    score: ScoreObject,
     gameColor: Color,
     editMode: Boolean,
-    onScoreChange: (ScoreEntity, ScoreEntity) -> Unit,
-    onDeleteTap: (ScoreEntity) -> Unit
+    onScoreChange: (ScoreObject, ScoreEntity) -> Unit,
+    onDeleteTap: (ScoreObject) -> Unit
 ) {
     val textFieldHeight = TextFieldDefaults.MinHeight
 
@@ -263,10 +266,10 @@ fun ScoreCard(
         )
         Column(modifier = Modifier.weight(0.9f)) {
             OutlinedTextField(
-                value = score.name,
+                value = score.entity.name,
                 label = { Text(text = stringResource(id = R.string.field_name)) },
                 onValueChange = {
-                    onScoreChange(score, score.copy(name = it))
+                    onScoreChange(score, score.entity.copy(name = it))
                 },
                 enabled = editMode,
                 singleLine = true,
@@ -283,10 +286,10 @@ fun ScoreCard(
             )
             Row(verticalAlignment = Alignment.Bottom) {
                 OutlinedTextField(
-                    value = score.scoreValue?.toString() ?: "",
+                    value = score.entity.scoreValue?.toString() ?: "",
                     label = { Text(text = stringResource(id = R.string.field_score)) },
                     onValueChange = {
-                        onScoreChange(score, score.copy(scoreValue = it.toLongOrNull()))
+                        onScoreChange(score, score.entity.copy(scoreValue = it.toLongOrNull()))
                     },
                     enabled = editMode,
                     singleLine = true,
@@ -325,7 +328,7 @@ fun ScoreCard(
 fun ScoresSectionPreview() {
     HighScoresTheme {
         ScoresSection(
-            scores = PreviewScoreData,
+            scores = listOf(),
             gameColor = orange100,
             editMode = false,
             onScoreChange = {_,_->},
