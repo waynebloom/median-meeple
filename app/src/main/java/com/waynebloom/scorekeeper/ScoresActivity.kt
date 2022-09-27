@@ -6,7 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
@@ -21,13 +24,22 @@ import androidx.navigation.navArgument
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.screens.*
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener
 import kotlinx.coroutines.launch
+
 
 class ScoresActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val gamesViewModel = ViewModelProvider(this)[GamesViewModel::class.java]
+<<<<<<< HEAD:app/src/main/java/com/waynebloom/scorekeeper/ScoresActivity.kt
         setContent { ScorekeeperApp(gamesViewModel = gamesViewModel) }
+=======
+        setContent { HighScoresApp(gamesViewModel = gamesViewModel) }
+
+        MobileAds.initialize(this)
+>>>>>>> d8ae1ec (some setup and experimental changes):app/src/main/java/com/waynebloom/highscores/ScoresActivity.kt
     }
 }
 
