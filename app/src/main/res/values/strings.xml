@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HighScores</string>
+    <string name="app_name">Scorekeeper</string>
     <string name="button_edit">Edit</string>
     <string name="button_games">See All Games</string>
     <string name="button_add_new_game">Add New Game</string>
@@ -28,4 +28,5 @@
     <string name="toast_match_created">Match Created</string>
     <string name="toast_match_updated">Match Updated</string>
     <string name="toast_match_deleted">Match Deleted</string>
+    <string name="search_placeholder_match">Search matches</string>
 </resources>
