@@ -9,13 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
+import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.AdCard
 import com.waynebloom.scorekeeper.components.GameCard
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.MatchCard
 import com.waynebloom.scorekeeper.data.*
-import com.waynebloom.scorekeeper.ui.theme.LocalGameColors
 
 @Composable
 fun OverviewScreen(
@@ -36,7 +36,7 @@ fun OverviewScreen(
     ) {
         HeadedSection(title = R.string.header_games) {
             GamesHead(
-                games = games,
+                games = games.take(6),
                 onSeeAllGamesTap = onSeeAllGamesTap,
                 onAddNewGameTap = onAddNewGameTap,
                 onSingleGameTap = onSingleGameTap
@@ -140,7 +140,7 @@ fun MatchesHead(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         matches.forEachIndexed { index, match ->
-//            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity
+//            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity  TODO
 //                ?: throw NoSuchElementException(
 //                    stringResource(id = R.string.exc_no_game_with_id, match.entity.gameOwnerId)
 //                )

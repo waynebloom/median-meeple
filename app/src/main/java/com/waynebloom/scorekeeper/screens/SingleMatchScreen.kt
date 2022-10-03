@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.PreviewGameData
 import com.waynebloom.scorekeeper.PreviewMatchData
 import com.waynebloom.scorekeeper.R
@@ -37,7 +38,6 @@ import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.ext.updateElement
-import com.waynebloom.scorekeeper.ui.theme.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.waynebloom.scorekeeper.ui.theme.orange100
 import java.util.*

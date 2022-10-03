@@ -17,20 +17,16 @@ val EMPTY_SCORE_ENTITY = ScoreEntity()
     indices = [Index(value = ["match_id"])]
 )
 data class ScoreEntity(
-    @NonNull
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(defaultValue = "0")
     var id: Long = 0,
 
-    @NonNull
     @ColumnInfo(name = "match_id")
     var matchId: Long = 0,
 
-    @NonNull
     @ColumnInfo(name = "name")
     var name: String = "",
 
-    @NonNull
     @ColumnInfo(name = "score")
     var scoreValue: Long? = null
 ) {

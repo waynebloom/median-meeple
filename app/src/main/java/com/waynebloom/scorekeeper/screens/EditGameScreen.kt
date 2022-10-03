@@ -30,11 +30,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.GameEntity
-import com.waynebloom.scorekeeper.ui.theme.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
 // TODO: consolidate state into holders

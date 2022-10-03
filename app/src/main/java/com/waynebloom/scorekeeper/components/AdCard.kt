@@ -18,7 +18,7 @@ import com.waynebloom.scorekeeper.databinding.AdCardBinding
 
 @Composable
 fun AdCard(
-    currentAd: NativeAd?,
+    currentAd: NativeAd? = null,
     themeColor: Int = MaterialTheme.colors.primary.toArgb(),
     onThemeColor: Int = MaterialTheme.colors.onPrimary.toArgb(),
     onSurface: Int = MaterialTheme.colors.onSurface.toArgb()
@@ -33,9 +33,9 @@ fun AdCard(
                 adCtaButton.setBackgroundColor(themeColor)
                 adCtaButton.setTextColor(onThemeColor)
                 adHeadline.setTextColor(onSurface)
-                adLoadingTag.visibility = View.GONE
+                adLoadingTag.visibility = View.INVISIBLE
                 adPrice.setTextColor(onSurface)
-                adProgressBar.visibility = View.GONE
+                adProgressBar.visibility = View.INVISIBLE
                 adSourceStore.setTextColor(onSurface)
                 adStars.progressDrawable.setTint(themeColor)
                 adTag.background.setTint(themeColor)
@@ -59,7 +59,7 @@ fun AdCard(
                 adLoadingTag.visibility = View.VISIBLE
                 adProgressBar.indeterminateDrawable.setTint(themeColor)
                 adProgressBar.visibility = View.VISIBLE
-                adView.visibility = View.GONE
+                adView.visibility = View.INVISIBLE
             }
         }
     }

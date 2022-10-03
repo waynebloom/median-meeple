@@ -26,12 +26,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
+import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.AdCard
 import com.waynebloom.scorekeeper.components.MatchCard
 import com.waynebloom.scorekeeper.components.showAdAtIndex
 import com.waynebloom.scorekeeper.data.*
-import com.waynebloom.scorekeeper.ui.theme.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
 @Composable

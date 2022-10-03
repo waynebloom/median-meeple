@@ -33,8 +33,6 @@ private val DarkColorPalette = darkColors(
     onSurface = gray400
 )
 
-val LocalGameColors: ProvidableCompositionLocal<GameColors> = compositionLocalOf { DarkThemeGameColors() }
-
 @Composable
 fun ScoreKeeperTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),

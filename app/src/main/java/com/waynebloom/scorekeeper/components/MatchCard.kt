@@ -37,7 +37,6 @@ fun MatchCard(
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,
-//        color = gameColor.copy(alpha = 0.3f),
         onClick = { onSingleMatchTap(match.entity.gameOwnerId, match.entity.id) }
     ) {
         Row(
