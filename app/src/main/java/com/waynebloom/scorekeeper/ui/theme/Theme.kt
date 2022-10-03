@@ -43,24 +43,4 @@ fun ScoreKeeperTheme(
         shapes = ScorekeeperShapes,
         content = content
     )
-
-    /*if (darkTheme) {  TODO: remove
-        CustomThemePalette = listOf(
-            deepOrange100,
-            orange100,
-            amber100,
-            yellow100,
-            lime100,
-            lightGreen100,
-            green100,
-            teal100,
-            cyan100,
-            lightBlue100,
-            blue100,
-            indigo100,
-            deepPurple100,
-            purple100,
-            pink100
-        )
-    }*/
 }

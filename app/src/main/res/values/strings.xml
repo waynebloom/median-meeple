@@ -23,6 +23,8 @@
     <string name="text_empty_games">No games to display</string>
     <string name="text_empty_matches">No matches to display</string>
     <string name="text_empty_scores">Add your matches\' scores here</string>
+    <string name="text_empty_search_results">No matches found containing \"%s\"</string>
+    <string name="text_no_name">No Name</string>
     <string name="text_edit_match">Edit Match</string>
     <string name="toast_game_created">Game Created</string>
     <string name="toast_game_updated">Game Updated</string>

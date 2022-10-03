@@ -37,8 +37,6 @@ import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.GameEntity
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
-// TODO: consolidate state into holders
-
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditGameScreen(
