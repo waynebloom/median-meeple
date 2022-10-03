@@ -29,30 +29,41 @@ fun AdCard(
             modifier = Modifier.padding(16.dp)
         ) {
             if (currentAd != null) {
-                adBody.setTextColor(onSurface)
-                adCtaButton.setBackgroundColor(themeColor)
-                adCtaButton.setTextColor(onThemeColor)
-                adHeadline.setTextColor(onSurface)
                 adLoadingTag.visibility = View.INVISIBLE
-                adPrice.setTextColor(onSurface)
                 adProgressBar.visibility = View.INVISIBLE
-                adSourceStore.setTextColor(onSurface)
-                adStars.progressDrawable.setTint(themeColor)
                 adTag.background.setTint(themeColor)
                 adTag.setTextColor(onThemeColor)
-                adView.visibility = View.VISIBLE
 
                 adView.apply {
-                    bodyView = adBody.apply { text = currentAd.body }
+                    setNativeAd(currentAd)
+                    visibility = View.VISIBLE
+
+                    bodyView = adBody.apply {
+                        text = currentAd.body
+                        setTextColor(onSurface)
+                    }
                     callToActionView = adCtaButton.apply {
                         text = currentAd.callToAction?.sentenceCase() ?: "Learn More"
+                        setBackgroundColor(themeColor)
+                        setTextColor(onThemeColor)
                     }
-                    headlineView = adHeadline.apply { text = currentAd.headline }
+                    headlineView = adHeadline.apply {
+                        text = currentAd.headline
+                        setTextColor(onSurface)
+                    }
                     iconView = adAppIcon.apply { setImageDrawable(currentAd.icon?.drawable) }
-                    priceView = adPrice.apply { text = currentAd.price }
-                    starRatingView = adStars.apply { rating = currentAd.starRating?.toFloat() ?: 0f }
-                    storeView = adSourceStore.apply { text = currentAd.store }
-                    setNativeAd(currentAd)
+                    priceView = adPrice.apply {
+                        text = currentAd.price
+                        setTextColor(onSurface)
+                    }
+                    starRatingView = adStars.apply {
+                        rating = currentAd.starRating?.toFloat() ?: 0f
+                        progressDrawable.setTint(themeColor)
+                    }
+                    storeView = adSourceStore.apply {
+                        text = currentAd.store
+                        setTextColor(onSurface)
+                    }
                 }
             } else {
                 adLoadingTag.setTextColor(themeColor)
