@@ -19,6 +19,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.PreviewScoreData
 import com.waynebloom.scorekeeper.data.EMPTY_MATCH_OBJECT
 import com.waynebloom.scorekeeper.data.MatchObject
@@ -36,7 +37,7 @@ fun MatchCard(
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,
-        color = gameColor.copy(alpha = 0.3f),
+//        color = gameColor.copy(alpha = 0.3f),
         onClick = { onSingleMatchTap(match.entity.gameOwnerId, match.entity.id) }
     ) {
         Row(

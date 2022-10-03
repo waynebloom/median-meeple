@@ -1,16 +1,16 @@
 package com.waynebloom.scorekeeper
 
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -21,25 +21,40 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.google.android.gms.ads.AdListener
+import com.google.android.gms.ads.AdLoader
+import com.google.android.gms.ads.AdRequest
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.screens.*
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener
+import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.waynebloom.scorekeeper.data.color.DarkThemeGameColors
+import com.waynebloom.scorekeeper.data.color.LightThemeGameColors
+import com.waynebloom.scorekeeper.ui.theme.LocalGameColors
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+var LocalNativeAd: ProvidableCompositionLocal<NativeAd?> = compositionLocalOf { null }
 
 class ScoresActivity : ComponentActivity() {
+    private lateinit var gamesViewModel: GamesViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val gamesViewModel = ViewModelProvider(this)[GamesViewModel::class.java]
-<<<<<<< HEAD:app/src/main/java/com/waynebloom/scorekeeper/ScoresActivity.kt
-        setContent { ScorekeeperApp(gamesViewModel = gamesViewModel) }
-=======
-        setContent { HighScoresApp(gamesViewModel = gamesViewModel) }
+
+        gamesViewModel = ViewModelProvider(this)[GamesViewModel::class.java]
+        setContent {
+            ScorekeeperApp(gamesViewModel = gamesViewModel)
+        }
 
         MobileAds.initialize(this)
->>>>>>> d8ae1ec (some setup and experimental changes):app/src/main/java/com/waynebloom/highscores/ScoresActivity.kt
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        gamesViewModel.adService.destroyAd()
     }
 }
 
@@ -47,12 +62,17 @@ class ScoresActivity : ComponentActivity() {
 fun ScorekeeperApp(gamesViewModel: GamesViewModel) {
     ScoreKeeperTheme {
         val navController = rememberNavController()
-        Scaffold() { innerPadding ->
-            ScoresNavHost(
-                navController = navController,
-                gamesViewModel = gamesViewModel,
-                modifier = Modifier.padding(innerPadding)
-            )
+
+        CompositionLocalProvider(
+            LocalGameColors provides if (isSystemInDarkTheme()) DarkThemeGameColors() else LightThemeGameColors(),
+        ) {
+            Scaffold() { innerPadding ->
+                ScoresNavHost(
+                    navController = navController,
+                    gamesViewModel = gamesViewModel,
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
         }
     }
 }
@@ -64,12 +84,32 @@ fun ScoresNavHost(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    var currentAd: NativeAd? by remember { mutableStateOf(null) }
+
+    if (gamesViewModel.adService.adLoader != null) {
+        gamesViewModel.adService.adLoader = AdLoader.Builder(
+            context,
+            if (BuildConfig.DEBUG) AdmobID.DEBUG.id else AdmobID.RELEASE.id
+        )
+            .forNativeAd {
+                currentAd = it
+                gamesViewModel.adService.currentAd = it
+            }
+            .build()
+    }
+
+    LaunchedEffect(true) {
+        while (true) {
+            gamesViewModel.adService.loadNewAd()
+            delay(60000)
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = ScorekeeperScreen.Overview.name,
         modifier = modifier
     ) {
-
         // OverviewScreen
         composable(ScorekeeperScreen.Overview.name) {
             val allGames by gamesViewModel.games.collectAsState(listOf())
@@ -78,7 +118,8 @@ fun ScoresNavHost(
                 games = allGames.take(6),
                 matches = allMatches
                     .sortedByDescending { it.entity.timeModified }
-                    .take(5),
+                    .take(6),
+                currentAd = currentAd,
                 onSeeAllGamesTap = { navController.navigate(ScorekeeperScreen.Games.name) },
                 onAddNewGameTap = { navigateToNewGame(navController) },
                 onSingleGameTap = { gameId -> navigateToSingleGame(navController, gameId) },
@@ -130,6 +171,7 @@ fun ScoresNavHost(
 
             SingleGameScreen(
                 game = targetGame,
+                currentAd = currentAd,
                 onEditGameTap = { navigateToEditGame(navController, targetGameId) },
                 onNewMatchTap = { gameId -> navigateToNewMatch(navController, gameId) },
                 onSingleMatchTap = { gameOwnerId, matchId -> navigateToSingleMatch(navController, gameOwnerId, matchId) }
@@ -148,7 +190,9 @@ fun ScoresNavHost(
                 }
             )
         ) { entry ->
-            gamesViewModel.deleteMatchById(entry.arguments?.getLong("matchId", 0) ?: 0)
+            val targetMatchId = entry.arguments?.getLong("matchId", 0) ?: 0
+            LaunchedEffect(key1 = targetMatchId) { gamesViewModel.deleteMatchById(targetMatchId) }
+
             val targetGameId = entry.arguments?.getLong("gameId", 0) ?: 0
             val targetGame = gamesViewModel
                 .getGameById(targetGameId)
@@ -157,6 +201,7 @@ fun ScoresNavHost(
 
             SingleGameScreen(
                 game = targetGame,
+                currentAd = currentAd,
                 onEditGameTap = { navigateToEditGame(navController, targetGameId) },
                 onNewMatchTap = { gameId -> navigateToNewMatch(navController, gameId) },
                 onSingleMatchTap = { gameOwnerId, matchId -> navigateToSingleMatch(navController, gameOwnerId, matchId) }
@@ -173,6 +218,7 @@ fun ScoresNavHost(
             )
         ) { entry ->
             val targetGameId = entry.arguments?.getLong("gameId", 0) ?: 0
+
             if (targetGameId == -1L) {
                 EditGameScreen(
                     game = GameEntity(),
@@ -193,6 +239,7 @@ fun ScoresNavHost(
                                 Toast.makeText(context, R.string.toast_game_created, Toast.LENGTH_SHORT).show()
                             }
                         }
+
                     },
                     isNewGame = true
                 )
@@ -214,7 +261,9 @@ fun ScoresNavHost(
                     onSaveTap = { updatedGame ->
                         Toast.makeText(context, R.string.toast_game_updated, Toast.LENGTH_SHORT).show()
                         navController.popBackStack()
-                        gamesViewModel.updateGame(updatedGame)
+                        gamesViewModel.viewModelScope.launch {
+                            gamesViewModel.updateGame(updatedGame)
+                        }
                     }
                 )
             }

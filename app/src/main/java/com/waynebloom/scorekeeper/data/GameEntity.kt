@@ -18,6 +18,6 @@ data class GameEntity(
     val name: String = "",
 
     @NonNull
-    @ColumnInfo(defaultValue = "RED")
-    val color: String = GameColor.values().random().name
+    @ColumnInfo(defaultValue = "ORANGE")
+    val color: String = "ORANGE"
 )

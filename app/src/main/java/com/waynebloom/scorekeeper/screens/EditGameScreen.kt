@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowDropDown
@@ -15,11 +17,13 @@ import androidx.compose.material.icons.rounded.Done
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
@@ -30,11 +34,12 @@ import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.GameEntity
-import com.waynebloom.scorekeeper.data.GameColor
+import com.waynebloom.scorekeeper.ui.theme.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
 // TODO: consolidate state into holders
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditGameScreen(
     game: GameEntity,
@@ -46,17 +51,29 @@ fun EditGameScreen(
     var newName by rememberSaveable(game.name) { mutableStateOf(game.name) }
     var newColor by rememberSaveable(game.color) { mutableStateOf(game.color) }
     var colorMenuVisible by rememberSaveable { mutableStateOf(false) }
+    var saveTapped by rememberSaveable { mutableStateOf(false) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
     val buttonOnClick = {
-        onSaveTap(
-            game.copy(
-                name = newName,
-                color = newColor
+        if (!saveTapped) {
+            keyboardController?.hide()
+            onSaveTap(
+                game.copy(
+                    name = newName,
+                    color = newColor
+                )
             )
-        )
+            saveTapped = true
+        }
     }
 
     Column(modifier = modifier) {
-        val gameColor = GameColor.valueOf(newColor).color
+        val gameColor = LocalGameColors.current.getColorByKey(newColor)
+        val textSelectionColors = TextSelectionColors(
+            handleColor = gameColor,
+            backgroundColor = gameColor.copy(0.3f)
+        )
+
         ScreenHeader(
             title = if (!isNewGame) game.name else stringResource(id = R.string.header_new_game),
             color = gameColor
@@ -70,25 +87,29 @@ fun EditGameScreen(
                 title = R.string.header_details,
                 topPadding = 40
             ) {
-                OutlinedTextField(
-                    value = newName,
-                    label = { Text(text = stringResource(id = R.string.field_name)) },
-                    onValueChange = { newName = it },
-                    colors = TextFieldDefaults.textFieldColors(
-                        focusedIndicatorColor = gameColor,
-                        focusedLabelColor = gameColor,
-                        cursorColor = gameColor,
-                        backgroundColor = MaterialTheme.colors.background
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                        capitalization = KeyboardCapitalization.Words,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { buttonOnClick() }
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                CompositionLocalProvider(
+                    LocalTextSelectionColors.provides(textSelectionColors)
+                ) {
+                    OutlinedTextField(
+                        value = newName,
+                        label = { Text(text = stringResource(id = R.string.field_name)) },
+                        onValueChange = { newName = it },
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = gameColor,
+                            focusedLabelColor = gameColor,
+                            cursorColor = gameColor,
+                            backgroundColor = MaterialTheme.colors.background
+                        ),
+                        keyboardOptions = KeyboardOptions(
+                            capitalization = KeyboardCapitalization.Words,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { buttonOnClick() }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
             HeadedSection(title = R.string.header_theme) {
                 Row(
@@ -97,8 +118,8 @@ fun EditGameScreen(
                 ) {
                     if (colorMenuVisible) {
                         ColorSelectorOpen(
-                            currentColor = GameColor.valueOf(newColor),
-                            colorOptions = GameColor.values().toList(),
+                            currentColorKey = newColor,
+                            colorOptions = LocalGameColors.current.getColorsAsKeyList(),
                             onColorTap = { colorName ->
                                 newColor = colorName
                                 colorMenuVisible = false
@@ -106,7 +127,7 @@ fun EditGameScreen(
                         )
                     } else {
                         ColorSelectorClosed(
-                            currentColor = GameColor.valueOf(newColor),
+                            currentColorKey = newColor,
                             onColorSelectorTap = { colorMenuVisible = true }
                         )
                     }
@@ -145,8 +166,8 @@ fun EditGameScreen(
 
 @Composable
 fun ColorSelectorOpen(
-    currentColor: GameColor,
-    colorOptions: List<GameColor>,
+    currentColorKey: String,
+    colorOptions: List<String>,
     onColorTap: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -164,21 +185,22 @@ fun ColorSelectorOpen(
                     .height(64.dp)
                     .weight(1f, fill = false)
             ) {
-                items(colorOptions) { color ->
-                    if (color.name == currentColor.name) {
+                items(colorOptions) { colorKey ->
+                    val color = LocalGameColors.current.getColorByKey(colorKey)
+                    if (colorKey == currentColorKey) {
                         Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = color.color),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = color),
                             shape = MaterialTheme.shapes.small,
-                            onClick = { onColorTap(color.name) },
+                            onClick = { onColorTap(colorKey) },
                             modifier = Modifier
                                 .padding(12.dp)
                                 .size(40.dp)
                         ) {}
                     } else {
                         Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = color.color),
+                            colors = ButtonDefaults.buttonColors(backgroundColor = color),
                             shape = MaterialTheme.shapes.small,
-                            onClick = { onColorTap(color.name) },
+                            onClick = { onColorTap(colorKey) },
                             modifier = Modifier.size(64.dp)
                         ) {}
                     }
@@ -197,7 +219,7 @@ fun ColorSelectorOpen(
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ColorSelectorClosed(
-    currentColor: GameColor,
+    currentColorKey: String,
     onColorSelectorTap: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -220,7 +242,7 @@ fun ColorSelectorClosed(
                     .fillMaxWidth()
                     .weight(1f, fill = false)
                     .clip(MaterialTheme.shapes.small)
-                    .background(currentColor.color)
+                    .background(LocalGameColors.current.getColorByKey(currentColorKey))
             )
             Icon(
                 imageVector = Icons.Rounded.ArrowDropDown,
@@ -236,7 +258,7 @@ fun ColorSelectorClosed(
 fun ColorSelectorPreview() {
     ScoreKeeperTheme {
         ColorSelectorClosed(
-            currentColor = GameColor.ORANGE,
+            currentColorKey = "DEEP_ORANGE",
             onColorSelectorTap = {}
         )
     }

@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.LocalTextSelectionColors
+import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -35,13 +37,10 @@ import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.ext.updateElement
+import com.waynebloom.scorekeeper.ui.theme.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.waynebloom.scorekeeper.ui.theme.orange100
 import java.util.*
-
-@OptIn(ExperimentalComposeUiApi::class)
-var keyboardController: SoftwareKeyboardController? = null
-lateinit var focusManager: FocusManager
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -59,122 +58,137 @@ fun SingleMatchScreen(
         mutableStateOf(match.scores.map { ScoreObject(it) })
     }
     var newNotes: String by rememberSaveable(match.entity.matchNotes) { mutableStateOf(match.entity.matchNotes) }
-    keyboardController = LocalSoftwareKeyboardController.current
-    focusManager = LocalFocusManager.current
 
-    Column(modifier = modifier) {
-        val buttonOnClick: () -> Unit
-        val buttonIcon: ImageVector
-        if (editMode) {
-            buttonIcon = Icons.Rounded.Done
-            buttonOnClick = {
-                editMode = false
-                keyboardController?.hide()
-                focusManager.clearFocus(true)
-                onSaveTap(
-                    MatchEntity(
-                        id = match.entity.id,
-                        gameOwnerId = game.id,
-                        timeModified = Date().time,
-                        matchNotes = newNotes
-                    ),
-                    newScores
-                )
-            }
-        } else {
-            buttonIcon = Icons.Rounded.Edit
-            buttonOnClick = { editMode = true }
-        }
-        ScreenHeader(
-            title = game.name,
-            color = GameColor.valueOf(game.color).color
-        )
-        Column(
-            modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            HeadedSection(
-                title = R.string.header_scores,
-                topPadding = 40
-            ) {
-                ScoresSection(
-                    scores = newScores,
-                    gameColor = GameColor.valueOf(game.color).color,
-                    editMode = editMode,
-                    onScoreChange = { scoreToChange, updatedEntity ->
-                        newScores = newScores.updateElement({it == scoreToChange}) {
-                            scoreToChange.copy(
-                                entity = updatedEntity,
-                                action = if (scoreToChange.action != DatabaseAction.INSERT) {
-                                    DatabaseAction.UPDATE
-                                } else scoreToChange.action
-                            )
-                        }
-                    },
-                    onNewScoreTap = {
-                        val newScore = ScoreObject(
-                            entity = ScoreEntity(matchId = match.entity.id),
-                            action = DatabaseAction.INSERT
-                        )
-                        newScores = newScores.plus(newScore)
-                    },
-                    onDeleteScoreTap = { score ->
-                        newScores = if (score.action != DatabaseAction.INSERT) {
-                            newScores.updateElement({it == score}) {
-                                score.copy(action = DatabaseAction.DELETE)
-                            }
-                        } else {
-                            newScores.minus(score)
-                        }
-                    }
-                )
-            }
-            HeadedSection(title = R.string.header_other) {
-                OutlinedTextField(
-                    value = newNotes,
-                    label = { Text(text = stringResource(id = R.string.field_notes)) },
-                    onValueChange = { newNotes = it },
-                    enabled = editMode,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        autoCorrect = true,
-                        capitalization = KeyboardCapitalization.Sentences,
-                        imeAction = ImeAction.Done,
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { buttonOnClick() }
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-            Row(modifier = Modifier.padding(top = 16.dp)) {
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = GameColor.valueOf(game.color).color,
-                        contentColor = MaterialTheme.colors.onPrimary
-                    ),
-                    onClick = { buttonOnClick() },
-                    modifier = Modifier
-                        .height(48.dp)
-                        .weight(1f)
-                ) {
-                    Icon(imageVector = buttonIcon, contentDescription = null)
+    val gameColor = LocalGameColors.current.getColorByKey(game.color)
+    val textSelectionColors = TextSelectionColors(
+        handleColor = gameColor,
+        backgroundColor = gameColor.copy(0.3f)
+    )
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    CompositionLocalProvider(
+        LocalTextSelectionColors.provides(textSelectionColors)
+    ) {
+        Column(modifier = modifier) {
+            val buttonOnClick: () -> Unit
+            val buttonIcon: ImageVector
+            if (editMode) {
+                buttonIcon = Icons.Rounded.Done
+                buttonOnClick = {
+                    editMode = false
+                    keyboardController?.hide()
+                    focusManager.clearFocus(true)
+                    onSaveTap(
+                        MatchEntity(
+                            id = match.entity.id,
+                            gameOwnerId = game.id,
+                            timeModified = Date().time,
+                            matchNotes = newNotes
+                        ),
+                        newScores
+                    )
                 }
-                if (!isNewMatch) {
+            } else {
+                buttonIcon = Icons.Rounded.Edit
+                buttonOnClick = { editMode = true }
+            }
+            ScreenHeader(
+                title = game.name,
+                color = gameColor
+            )
+            Column(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                HeadedSection(
+                    title = R.string.header_scores,
+                    topPadding = 40
+                ) {
+                    ScoresSection(
+                        scores = newScores,
+                        gameColor = gameColor,
+                        editMode = editMode,
+                        focusManager = focusManager,
+                        onScoreChange = { scoreToChange, updatedEntity ->
+                            newScores = newScores.updateElement({it == scoreToChange}) {
+                                scoreToChange.copy(
+                                    entity = updatedEntity,
+                                    action = if (scoreToChange.action != DatabaseAction.INSERT) {
+                                        DatabaseAction.UPDATE
+                                    } else scoreToChange.action
+                                )
+                            }
+                        },
+                        onNewScoreTap = {
+                            val newScore = ScoreObject(
+                                entity = ScoreEntity(matchId = match.entity.id),
+                                action = DatabaseAction.INSERT
+                            )
+                            newScores = newScores.plus(newScore)
+                        },
+                        onDeleteScoreTap = { score ->
+                            newScores = if (score.action != DatabaseAction.INSERT) {
+                                newScores.updateElement({it == score}) {
+                                    score.copy(action = DatabaseAction.DELETE)
+                                }
+                            } else {
+                                newScores.minus(score)
+                            }
+                        }
+                    )
+                }
+                HeadedSection(title = R.string.header_other) {
+                    OutlinedTextField(
+                        value = newNotes,
+                        label = { Text(text = stringResource(id = R.string.field_notes)) },
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            focusedBorderColor = gameColor,
+                            focusedLabelColor = gameColor
+                        ),
+                        onValueChange = { newNotes = it },
+                        enabled = editMode,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(
+                            autoCorrect = true,
+                            capitalization = KeyboardCapitalization.Sentences,
+                            imeAction = ImeAction.Done,
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = { buttonOnClick() }
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                Row(modifier = Modifier.padding(top = 16.dp)) {
                     Button(
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                        onClick = { onDeleteMatchTap(game.id, match.entity.id) },
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = gameColor,
+                            contentColor = MaterialTheme.colors.onPrimary
+                        ),
+                        onClick = { buttonOnClick() },
                         modifier = Modifier
-                            .padding(start = 16.dp)
                             .height(48.dp)
                             .weight(1f)
                     ) {
-                        Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
+                        Icon(imageVector = buttonIcon, contentDescription = null)
+                    }
+                    if (!isNewMatch) {
+                        Button(
+                            colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
+                            onClick = { onDeleteMatchTap(game.id, match.entity.id) },
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .height(48.dp)
+                                .weight(1f)
+                        ) {
+                            Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
+                        }
                     }
                 }
+                Spacer(Modifier.height(16.dp))
             }
-            Spacer(Modifier.height(16.dp))
         }
     }
 }
@@ -184,6 +198,7 @@ fun ScoresSection(
     scores: List<ScoreObject>,
     gameColor: Color,
     editMode: Boolean,
+    focusManager: FocusManager,
     onScoreChange: (ScoreObject, ScoreEntity) -> Unit,
     onNewScoreTap: () -> Unit,
     onDeleteScoreTap: (ScoreObject) -> Unit
@@ -197,6 +212,7 @@ fun ScoresSection(
                     score = score,
                     gameColor = gameColor,
                     editMode = editMode,
+                    focusManager = focusManager,
                     onScoreChange = { scoreToChange, updatedScore -> onScoreChange(scoreToChange, updatedScore) },
                     onDeleteTap = onDeleteScoreTap
                 )
@@ -248,6 +264,7 @@ fun ScoreCard(
     score: ScoreObject,
     gameColor: Color,
     editMode: Boolean,
+    focusManager: FocusManager,
     onScoreChange: (ScoreObject, ScoreEntity) -> Unit,
     onDeleteTap: (ScoreObject) -> Unit
 ) {
@@ -267,6 +284,10 @@ fun ScoreCard(
             OutlinedTextField(
                 value = score.entity.name,
                 label = { Text(text = stringResource(id = R.string.field_name)) },
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    focusedBorderColor = gameColor,
+                    focusedLabelColor = gameColor
+                ),
                 onValueChange = {
                     onScoreChange(score, score.entity.copy(name = it))
                 },
@@ -287,6 +308,10 @@ fun ScoreCard(
                 OutlinedTextField(
                     value = score.entity.scoreValue?.toString() ?: "",
                     label = { Text(text = stringResource(id = R.string.field_score)) },
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = gameColor,
+                        focusedLabelColor = gameColor
+                    ),
                     onValueChange = {
                         onScoreChange(score, score.entity.copy(scoreValue = it.toLongOrNull()))
                     },
@@ -330,6 +355,7 @@ fun ScoresSectionPreview() {
             scores = listOf(),
             gameColor = orange100,
             editMode = false,
+            focusManager = LocalFocusManager.current,
             onScoreChange = {_,_->},
             onNewScoreTap = {},
             onDeleteScoreTap = {}

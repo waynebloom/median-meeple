@@ -1,8 +1,10 @@
 package com.waynebloom.scorekeeper.screens
 
+import android.graphics.Color.toArgb
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
@@ -11,11 +13,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
+import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.components.AdCard
 import com.waynebloom.scorekeeper.components.GameCard
 import com.waynebloom.scorekeeper.components.HeadedSection
+import com.waynebloom.scorekeeper.components.showAdAtIndex
 import com.waynebloom.scorekeeper.data.GameEntity
-import com.waynebloom.scorekeeper.data.GameColor
+import com.waynebloom.scorekeeper.ui.theme.LocalGameColors
 
 @Composable
 fun GamesScreen(
@@ -43,13 +49,17 @@ fun GamesScreen(
                     contentPadding = PaddingValues(bottom = 88.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(games) { game ->
+                    itemsIndexed(games) { index, game ->
                         GameCard(
                             name = game.name,
-                            color = GameColor.valueOf(game.color).color,
+                            color = LocalGameColors.current.getColorByKey(game.color),
                             onClick = { onSingleGameTap(game) },
                             modifier = Modifier.fillMaxWidth()
                         )
+                        if (showAdAtIndex(index, games.size)) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            AdCard()
+                        }
                     }
                 }
             }

@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper
 
 import android.app.Application
+import androidx.compose.runtime.remember
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.data.*
@@ -10,6 +11,7 @@ import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -25,22 +27,7 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
     val matches: Flow<List<MatchObject>>
         get() = _matches
 
-    val adLoader = AdLoader.Builder(appObj, "ca-app-pub-3940256099942544/2247696110")
-        .forNativeAd { ad : NativeAd ->
-            // Show the ad.
-        }
-        .withAdListener(object : AdListener() {
-            override fun onAdFailedToLoad(adError: LoadAdError) {
-                // Handle the failure by logging, altering the UI, and so on.
-            }
-        })
-        .withNativeAdOptions(
-            NativeAdOptions.Builder()
-                // Methods in the NativeAdOptions.Builder class can be
-                // used here to specify individual options settings.
-                .build()
-        )
-        .build()
+    val adService = AdService(appObj)
 
     suspend fun insert(game: GameEntity, afterInsert: (Long) -> Unit) {
         var insertedGameId: Long
@@ -69,12 +56,16 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
         }
     }
 
-    fun deleteMatchById(id: Long) {
-        viewModelScope.launch { appRepository.deleteMatchById(id) }
+    suspend fun deleteMatchById(id: Long) {
+        withContext(Dispatchers.IO) {
+            appRepository.deleteMatchById(id)
+        }
     }
 
-    fun deleteScoreById(id: Long) {
-        viewModelScope.launch { appRepository.deleteScoreById(id) }
+    suspend fun deleteScoreById(id: Long) {
+        withContext(Dispatchers.IO) {
+            appRepository.deleteScoreById(id)
+        }
     }
 
     fun getGameById(id: Long): Flow<GameObject?> {
@@ -85,8 +76,10 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
         return appRepository.getMatchById(id)
     }
 
-    fun updateGame(newGame: GameEntity) {
-        viewModelScope.launch { appRepository.updateGame(newGame) }
+    suspend fun updateGame(newGame: GameEntity) {
+        withContext(Dispatchers.IO) {
+            appRepository.updateGame(newGame)
+        }
     }
 
     suspend fun updateMatch(newMatch: MatchEntity) {

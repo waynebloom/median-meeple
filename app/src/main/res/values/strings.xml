@@ -1,4 +1,5 @@
 <resources>
+    <string name="ad_indicator">Ad</string>
     <string name="app_name">Scorekeeper</string>
     <string name="button_edit">Edit</string>
     <string name="button_games">See All Games</string>
@@ -18,6 +19,7 @@
     <string name="header_recent_matches">Recent Matches</string>
     <string name="header_scores">Scores</string>
     <string name="header_theme">Custom Theme</string>
+    <string name="learn_more_cta">Learn More</string>
     <string name="text_empty_games">No games to display</string>
     <string name="text_empty_matches">No matches to display</string>
     <string name="text_empty_scores">Add your matches\' scores here</string>
