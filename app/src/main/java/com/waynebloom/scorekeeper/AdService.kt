@@ -33,6 +33,9 @@ class AdService(context: Context) {
     }
 
     fun loadNewAd() {
-        adLoader?.loadAd(AdRequest.Builder().build())
+        adLoader?.loadAd(
+            AdRequest.Builder()
+                .build()
+        )
     }
 }

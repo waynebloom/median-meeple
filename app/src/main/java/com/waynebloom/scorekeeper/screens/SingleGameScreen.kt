@@ -2,10 +2,12 @@ package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.*
@@ -20,6 +22,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -29,6 +32,7 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.AdCard
+import com.waynebloom.scorekeeper.components.EmptyContentCard
 import com.waynebloom.scorekeeper.components.MatchCard
 import com.waynebloom.scorekeeper.components.showAdAtIndex
 import com.waynebloom.scorekeeper.data.*
@@ -80,7 +84,34 @@ fun SingleGameScreen(
                         showGameIdentifier = false
                     )
                     if (showAdAtIndex(index, displayedMatches.size)) {
-                        Spacer(modifier = Modifier.height(8.dp))
+//                        Spacer(modifier = Modifier.height(8.dp))
+//                        AdCard(
+//                            currentAd = currentAd,
+//                            themeColor = gameColor.toArgb()
+//                        )
+                    }
+                }
+                if (game.matches.isEmpty()) {
+                    item {
+                        EmptyContentCard(
+                            text = stringResource(R.string.text_empty_matches),
+                            color = gameColor
+                        )
+                    }
+                    item {
+                        AdCard(
+                            currentAd = currentAd,
+                            themeColor = gameColor.toArgb()
+                        )
+                    }
+                } else if (displayedMatches.isEmpty()) {
+                    item {
+                        EmptyContentCard(
+                            text = stringResource(id = R.string.text_empty_search_results, searchString),
+                            color = gameColor
+                        )
+                    }
+                    item {
                         AdCard(
                             currentAd = currentAd,
                             themeColor = gameColor.toArgb()
@@ -92,6 +123,7 @@ fun SingleGameScreen(
     }
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SearchAndFilterBar(
     searchString: String,
@@ -113,6 +145,8 @@ fun SearchAndFilterBar(
             handleColor = gameColor,
             backgroundColor = gameColor.copy(0.3f)
         )
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val focusManager = LocalFocusManager.current
 
         Icon(
             imageVector = Icons.Rounded.Search,
@@ -129,29 +163,21 @@ fun SearchAndFilterBar(
                         stringResource(R.string.search_placeholder_match)
                     } else ""
                 },
-                onValueChange = { onSearchStringChanged(it) },
                 textStyle = MaterialTheme.typography.body1.copy(
                     color = MaterialTheme.colors.onSurface,
                 ),
+                singleLine = true,
                 cursorBrush = SolidColor(gameColor),
+                onValueChange = { onSearchStringChanged(it) },
+                keyboardActions = KeyboardActions (
+                    onDone = {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    }
+                ),
                 modifier = Modifier
                     .weight(1f)
                     .onFocusChanged { searchBarFocused = it.hasFocus }
-            )
-        }
-        Button(
-            onClick = { /*TODO*/ },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Transparent
-            ),
-            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_sort),
-                tint = gameColor,
-                contentDescription = null
             )
         }
         Button(

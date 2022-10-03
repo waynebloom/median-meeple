@@ -11,14 +11,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.AdCard
-import com.waynebloom.scorekeeper.components.GameCard
-import com.waynebloom.scorekeeper.components.HeadedSection
-import com.waynebloom.scorekeeper.components.showAdAtIndex
+import com.waynebloom.scorekeeper.components.*
 import com.waynebloom.scorekeeper.data.GameEntity
 
 @Composable
@@ -56,8 +54,16 @@ fun GamesScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                         if (showAdAtIndex(index, games.size)) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            AdCard(currentAd)
+//                            Spacer(modifier = Modifier.height(8.dp))
+//                            AdCard(currentAd)
+                        }
+                    }
+                    if (games.isEmpty()) {
+                        item {
+                            EmptyContentCard(text = stringResource(R.string.text_empty_games))
+                        }
+                        item {
+                            AdCard(currentAd = currentAd)
                         }
                     }
                 }

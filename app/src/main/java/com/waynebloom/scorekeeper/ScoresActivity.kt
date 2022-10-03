@@ -202,7 +202,6 @@ fun ScoresNavHost(
             )
         ) { entry ->
             val targetGameId = entry.arguments?.getLong("gameId", 0) ?: 0
-
             if (targetGameId == -1L) {
                 EditGameScreen(
                     game = GameEntity(),

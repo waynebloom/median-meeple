@@ -11,10 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.AdCard
-import com.waynebloom.scorekeeper.components.GameCard
-import com.waynebloom.scorekeeper.components.HeadedSection
-import com.waynebloom.scorekeeper.components.MatchCard
+import com.waynebloom.scorekeeper.components.*
 import com.waynebloom.scorekeeper.data.*
 
 @Composable
@@ -78,25 +75,9 @@ fun GamesHead(
             )
         }
         if (games.isEmpty()) {
-            val emptyContentColor = MaterialTheme.colors.primary.copy(alpha = 0.5f)
             buttonClick = onAddNewGameTap
             buttonText = stringResource(id = R.string.button_add_new_game)
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = emptyContentColor,
-                        shape = MaterialTheme.shapes.small
-                    )
-                    .height(64.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    color = emptyContentColor,
-                    text = stringResource(id = R.string.text_empty_games)
-                )
-            }
+            EmptyContentCard(text = stringResource(R.string.text_empty_games))
         }
         Button(
             onClick = { buttonClick() },
@@ -140,7 +121,7 @@ fun MatchesHead(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         matches.forEachIndexed { index, match ->
-            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity  TODO
+            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity
                 ?: throw NoSuchElementException(
                     stringResource(id = R.string.exc_no_game_with_id, match.entity.gameOwnerId)
                 )
@@ -150,28 +131,10 @@ fun MatchesHead(
                 gameColor = LocalGameColors.current.getColorByKey(parentGame.color),
                 onSingleMatchTap = onSingleMatchTap
             )
-            if (index == 2) { AdCard(currentAd) }
+//            if (index == 2) { AdCard(currentAd) }
         }
         if (matches.isEmpty()) {
-            val emptyContentColor = MaterialTheme.colors.primary.copy(alpha = 0.5f)
-            Column {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp,
-                            color = emptyContentColor,
-                            shape = MaterialTheme.shapes.small
-                        )
-                        .height(64.dp)
-                        .fillMaxWidth()
-                ) {
-                    Text(
-                        color = emptyContentColor,
-                        text = stringResource(id = R.string.text_empty_matches)
-                    )
-                }
-            }
+            EmptyContentCard(text = stringResource(R.string.text_empty_matches))
         }
         if (matches.size < 3) {
             AdCard(currentAd)

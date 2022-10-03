@@ -145,7 +145,9 @@ fun SingleMatchScreen(
                         label = { Text(text = stringResource(id = R.string.field_notes)) },
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             focusedBorderColor = gameColor,
-                            focusedLabelColor = gameColor
+                            focusedLabelColor = gameColor,
+                            cursorColor = gameColor,
+                            disabledBorderColor = gameColor.copy(0.75f)
                         ),
                         onValueChange = { newNotes = it },
                         enabled = editMode,
@@ -269,6 +271,12 @@ fun ScoreCard(
     onDeleteTap: (ScoreObject) -> Unit
 ) {
     val textFieldHeight = TextFieldDefaults.MinHeight
+    val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
+        focusedBorderColor = gameColor,
+        focusedLabelColor = gameColor,
+        cursorColor = gameColor,
+        disabledBorderColor = gameColor.copy(0.75f)
+    )
 
     Row {
         Icon(
@@ -284,10 +292,7 @@ fun ScoreCard(
             OutlinedTextField(
                 value = score.entity.name,
                 label = { Text(text = stringResource(id = R.string.field_name)) },
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = gameColor,
-                    focusedLabelColor = gameColor
-                ),
+                colors = textFieldColors,
                 onValueChange = {
                     onScoreChange(score, score.entity.copy(name = it))
                 },
@@ -308,10 +313,7 @@ fun ScoreCard(
                 OutlinedTextField(
                     value = score.entity.scoreValue?.toString() ?: "",
                     label = { Text(text = stringResource(id = R.string.field_score)) },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = gameColor,
-                        focusedLabelColor = gameColor
-                    ),
+                    colors = textFieldColors,
                     onValueChange = {
                         onScoreChange(score, score.entity.copy(scoreValue = it.toLongOrNull()))
                     },
