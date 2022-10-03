@@ -84,11 +84,11 @@ fun SingleGameScreen(
                         showGameIdentifier = false
                     )
                     if (showAdAtIndex(index, displayedMatches.size)) {
-//                        Spacer(modifier = Modifier.height(8.dp))
-//                        AdCard(
-//                            currentAd = currentAd,
-//                            themeColor = gameColor.toArgb()
-//                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        AdCard(
+                            currentAd = currentAd,
+                            themeColor = gameColor.toArgb()
+                        )
                     }
                 }
                 if (game.matches.isEmpty()) {

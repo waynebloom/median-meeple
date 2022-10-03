@@ -54,8 +54,8 @@ fun GamesScreen(
                             modifier = Modifier.fillMaxWidth()
                         )
                         if (showAdAtIndex(index, games.size)) {
-//                            Spacer(modifier = Modifier.height(8.dp))
-//                            AdCard(currentAd)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            AdCard(currentAd)
                         }
                     }
                     if (games.isEmpty()) {

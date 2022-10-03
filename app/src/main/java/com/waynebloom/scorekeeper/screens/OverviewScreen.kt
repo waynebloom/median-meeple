@@ -131,7 +131,7 @@ fun MatchesHead(
                 gameColor = LocalGameColors.current.getColorByKey(parentGame.color),
                 onSingleMatchTap = onSingleMatchTap
             )
-//            if (index == 2) { AdCard(currentAd) }
+            if (index == 2) { AdCard(currentAd) }
         }
         if (matches.isEmpty()) {
             EmptyContentCard(text = stringResource(R.string.text_empty_matches))
