@@ -140,12 +140,10 @@ fun MatchesHead(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         matches.forEachIndexed { index, match ->
-//            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity  TODO
-//                ?: throw NoSuchElementException(
-//                    stringResource(id = R.string.exc_no_game_with_id, match.entity.gameOwnerId)
-//                )
-            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity
-                ?: EMPTY_GAME_ENTITY
+            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity  TODO
+                ?: throw NoSuchElementException(
+                    stringResource(id = R.string.exc_no_game_with_id, match.entity.gameOwnerId)
+                )
             MatchCard(
                 match = match,
                 gameInitial = parentGame.name.first().uppercase(),

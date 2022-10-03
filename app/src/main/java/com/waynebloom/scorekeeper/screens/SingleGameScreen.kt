@@ -218,7 +218,7 @@ fun SingleGameScreenPreview() {
                 )
             ),
             currentAd = null,
-            onEditGameTap = { /*TODO*/ },
+            onEditGameTap = {},
             onNewMatchTap = {},
             onSingleMatchTap = {_,_->}
         )
