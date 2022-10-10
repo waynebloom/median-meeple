@@ -46,13 +46,43 @@
             android:layout_gravity="center"
             android:minHeight="60dp">
 
+            <TextView
+                android:id="@+id/ad_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:background="@drawable/ad_rounded_corner_shape"
+                android:text="@string/ad_indicator"
+                android:textColor="@color/rust_300"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/ad_app_icon"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:id="@+id/ad_source_store"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:maxLines="1"
+                android:textColor="@color/gray_200"
+                android:textSize="14sp"
+                app:layout_constraintStart_toEndOf="@id/ad_tag"
+                app:layout_constraintTop_toTopOf="@id/ad_tag"
+                app:layout_constraintBottom_toBottomOf="@id/ad_tag"
+                tools:text="Google Play" />
+
             <ImageView
                 android:id="@+id/ad_app_icon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
+                android:layout_marginTop="8dp"
                 android:adjustViewBounds="true"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ad_tag"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -62,52 +92,35 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:ellipsize="end"
-                android:maxLines="2"
+                android:maxLines="1"
                 android:minWidth="100dp"
                 android:textColor="@color/gray_200"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:layout_constraintHorizontal_chainStyle="spread_inside"
-                app:layout_constraintBottom_toTopOf="@id/ad_stars"
-                app:layout_constraintEnd_toStartOf="@id/ad_tag"
-                app:layout_constraintStart_toEndOf="@id/ad_app_icon"
                 app:layout_constraintTop_toTopOf="@id/ad_app_icon"
+                app:layout_constraintStart_toEndOf="@id/ad_app_icon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/ad_stars"
                 tools:text="Test Ad : Google Ads" />
 
             <TextView
-                android:id="@+id/ad_tag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:background="@drawable/ad_rounded_corner_shape"
-                android:text="@string/ad_indicator"
-                android:textColor="@color/rust_300"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@id/ad_price"
-                app:layout_constraintTop_toTopOf="@id/ad_headline"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toBottomOf="@id/ad_headline"
-                tools:ignore="SmallSp" />
-
-            <TextView
                 android:id="@+id/ad_price"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:includeFontPadding="false"
                 android:maxLines="1"
                 android:paddingHorizontal="4dp"
                 android:paddingVertical="2dp"
                 android:textColor="@color/gray_200"
                 android:textSize="14sp"
-                app:layout_constraintStart_toEndOf="@id/ad_headline"
-                app:layout_constraintTop_toTopOf="@id/ad_headline"
-                app:layout_constraintEnd_toStartOf="@id/ad_tag"
-                app:layout_constraintBottom_toBottomOf="@id/ad_headline"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toEndOf="@id/ad_stars"
+                app:layout_constraintTop_toBottomOf="@id/ad_headline"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/ad_body"
                 tools:text="Free" />
 
             <RatingBar
@@ -115,28 +128,30 @@
                 style="?android:attr/ratingBarStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 android:isIndicator="true"
                 android:numStars="5"
                 android:progressTint="@color/rust_300"
                 android:stepSize="0.5"
                 app:layout_constraintHorizontal_chainStyle="packed"
-                app:layout_constraintBottom_toBottomOf="@id/ad_app_icon"
                 app:layout_constraintStart_toStartOf="@id/ad_headline"
                 app:layout_constraintTop_toBottomOf="@id/ad_headline"
+                app:layout_constraintEnd_toStartOf="@id/ad_price"
+                app:layout_constraintBottom_toTopOf="@id/ad_body"
                 tools:rating="4.5" />
 
             <TextView
-                android:id="@+id/ad_source_store"
-                android:layout_width="wrap_content"
+                android:id="@+id/ad_body"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:maxLines="1"
+                android:layout_marginTop="8dp"
+                android:paddingVertical="2dp"
                 android:textColor="@color/gray_200"
-                android:textSize="14sp"
-                app:layout_constraintTop_toTopOf="@id/ad_stars"
-                app:layout_constraintStart_toEndOf="@id/ad_stars"
-                app:layout_constraintBottom_toBottomOf="@id/ad_stars"
-                tools:text="Google Play" />
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ad_app_icon"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:text="Stay up to date with your Ads Check how your ads are performing" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/ad_cta_button"
@@ -152,20 +167,6 @@
                 app:layout_constraintTop_toBottomOf="@id/ad_body"
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:text="Install" />
-
-            <TextView
-                android:id="@+id/ad_body"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
-                android:layout_marginTop="4dp"
-                android:paddingVertical="2dp"
-                android:textColor="@color/gray_200"
-                android:textSize="16sp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/ad_app_icon"
-                app:layout_constraintEnd_toEndOf="parent"
-                tools:text="Stay up to date with your Ads Check how your ads are performing" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.gms.ads.nativead.NativeAdView>
