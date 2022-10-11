@@ -46,43 +46,13 @@
             android:layout_gravity="center"
             android:minHeight="60dp">
 
-            <TextView
-                android:id="@+id/ad_tag"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:background="@drawable/ad_rounded_corner_shape"
-                android:text="@string/ad_indicator"
-                android:textColor="@color/rust_300"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/ad_app_icon"
-                tools:ignore="SmallSp" />
-
-            <TextView
-                android:id="@+id/ad_source_store"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:maxLines="1"
-                android:textColor="@color/gray_200"
-                android:textSize="14sp"
-                app:layout_constraintStart_toEndOf="@id/ad_tag"
-                app:layout_constraintTop_toTopOf="@id/ad_tag"
-                app:layout_constraintBottom_toBottomOf="@id/ad_tag"
-                tools:text="Google Play" />
-
             <ImageView
                 android:id="@+id/ad_app_icon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:layout_marginTop="8dp"
                 android:adjustViewBounds="true"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/ad_tag"
+                app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="ContentDescription" />
 
             <TextView
@@ -167,6 +137,55 @@
                 app:layout_constraintTop_toBottomOf="@id/ad_body"
                 app:layout_constraintEnd_toEndOf="parent"
                 tools:text="Install" />
+
+            <TextView
+                android:id="@+id/ad_advertiser_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textAlignment="viewEnd"
+                android:textColor="@color/gray_200"
+                android:textSize="14sp"
+                app:layout_constraintHorizontal_chainStyle="packed"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@id/ad_tag"
+                app:layout_constraintEnd_toStartOf="@id/ad_tag"
+                app:layout_constraintBottom_toBottomOf="@id/ad_tag"
+                tools:text="John Doe" />
+
+            <TextView
+                android:id="@+id/ad_tag"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="2dp"
+                android:background="@drawable/ad_rounded_corner_shape"
+                android:text="@string/ad_indicator"
+                android:textColor="@color/rust_300"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toEndOf="@id/ad_advertiser_name"
+                app:layout_constraintTop_toBottomOf="@id/ad_cta_button"
+                app:layout_constraintEnd_toStartOf="@id/ad_source_store"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:id="@+id/ad_source_store"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/gray_200"
+                android:textSize="14sp"
+                app:layout_constraintStart_toEndOf="@id/ad_tag"
+                app:layout_constraintTop_toTopOf="@id/ad_tag"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/ad_tag"
+                tools:text="Google Play" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.gms.ads.nativead.NativeAdView>
