@@ -14,6 +14,7 @@ import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.*
+import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.databinding.AdCardBinding
 
 @Composable
@@ -38,6 +39,12 @@ fun AdCard(
                     setNativeAd(currentAd)
                     visibility = View.VISIBLE
 
+                    advertiserView = adAdvertiserName.apply {
+                        text = if (currentAd.advertiser.isNullOrBlank()) {
+                            context.getString(R.string.ad_no_advertiser)
+                        } else currentAd.advertiser
+                        setTextColor(onSurface)
+                    }
                     bodyView = adBody.apply {
                         text = currentAd.body
                         setTextColor(onSurface)
