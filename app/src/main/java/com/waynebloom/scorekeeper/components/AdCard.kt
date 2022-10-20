@@ -84,6 +84,7 @@ fun AdCard(
 }
 
 fun showAdAtIndex(index: Int, listSize: Int): Boolean {
+    if (listSize == 0) return true
     val offset = if (listSize <= 5) listSize - 1 else 4
     return (index - offset) % 10 == 0
 }

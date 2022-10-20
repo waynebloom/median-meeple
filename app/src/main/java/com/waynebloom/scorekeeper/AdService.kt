@@ -2,11 +2,11 @@ package com.waynebloom.scorekeeper
 
 import android.content.Context
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.mutableStateOf
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.nativead.NativeAd
+import com.waynebloom.scorekeeper.enums.AdmobID
 
 class AdService(context: Context) {
     var adLoader: AdLoader? = null

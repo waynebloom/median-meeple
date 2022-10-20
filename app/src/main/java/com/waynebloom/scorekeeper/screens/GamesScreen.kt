@@ -1,24 +1,37 @@
 package com.waynebloom.scorekeeper.screens
 
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.FloatingActionButton
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
 import com.waynebloom.scorekeeper.data.GameEntity
+import com.waynebloom.scorekeeper.enums.GamesTopBarState
+import com.waynebloom.scorekeeper.enums.ListState
+import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun GamesScreen(
     games: List<GameEntity>,
@@ -27,7 +40,18 @@ fun GamesScreen(
     onSingleGameTap: (GameEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var listState: ListState by rememberSaveable { mutableStateOf(ListState.Default) }
+    var searchString: String by rememberSaveable { mutableStateOf("") }
+
     Scaffold(
+        topBar = {
+            GamesTopBar(
+                title = stringResource(id = R.string.header_games),
+                themeColor = MaterialTheme.colors.primary,
+                searchString = searchString,
+                onSearchStringChanged = { searchString = it }
+            )
+        },
         floatingActionButton = {
             FloatingActionButton(
                 shape = MaterialTheme.shapes.small,
@@ -41,30 +65,170 @@ fun GamesScreen(
         Column(
             modifier = modifier.padding(horizontal = 16.dp)
         ) {
-            HeadedSection(title = R.string.header_games) {
-                LazyColumn(
-                    contentPadding = PaddingValues(bottom = 88.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    itemsIndexed(games) { index, game ->
+            val gamesToDisplay = games.filter { it.name.contains(searchString) }
+            listState = when {
+                games.isEmpty() -> ListState.ListEmpty
+                gamesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
+                searchString.isNotBlank() -> ListState.SearchResultsNotEmpty
+                else -> ListState.Default
+            }
+
+            AnimatedVisibility(
+                visible = listState != ListState.Default,
+                enter = scaleIn(),
+                exit = scaleOut(),
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                DullColoredTextCard { color, _ ->
+                    AnimatedContent(
+                        targetState = listState,
+                        transitionSpec = {
+                            fadeIn(animationSpec = tween(220, delayMillis = 90))
+                                .with(fadeOut(animationSpec = tween(90)))
+                        }
+                    ) { state ->
+                        when (state) {
+                            ListState.Default -> Unit
+                            ListState.ListEmpty -> {
+                                Text(
+                                    text = stringResource(R.string.text_empty_games),
+                                    color = color,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                            ListState.SearchResultsEmpty -> {
+                                Text(
+                                    text = stringResource(
+                                        id = R.string.text_empty_game_search_results,
+                                        searchString
+                                    ),
+                                    color = color,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                            ListState.SearchResultsNotEmpty -> {
+                                Text(
+                                    text = stringResource(
+                                        R.string.text_showing_search_results,
+                                        searchString
+                                    ),
+                                    color = color,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            LazyColumn(
+                contentPadding = PaddingValues(bottom = 88.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                gamesToDisplay.toAdSeparatedListlets().forEachIndexed { index, listlet ->
+                    items(listlet) { game ->
                         GameCard(
                             name = game.name,
                             color = LocalGameColors.current.getColorByKey(game.color),
                             onClick = { onSingleGameTap(game) },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        if (showAdAtIndex(index, games.size)) {
-                            Spacer(modifier = Modifier.height(8.dp))
+                    }
+                    item {
+                        if (index == 0 || listlet.size >= 10) {
                             AdCard(currentAd)
                         }
                     }
-                    if (games.isEmpty()) {
-                        item {
-                            EmptyContentCard(text = stringResource(R.string.text_empty_games))
-                        }
-                        item {
-                            AdCard(currentAd = currentAd)
-                        }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GamesDefaultActionBar(
+    themeColor: Color,
+    onOpenSearchTap: () -> Unit
+) {
+    Row {
+        Button(
+            onClick = { onOpenSearchTap() },
+            colors = ButtonDefaults.buttonColors(
+                backgroundColor = Color.Transparent
+            ),
+            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Search,
+                tint = themeColor,
+                contentDescription = null
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
+@Composable
+fun GamesTopBar(
+    title: String,
+    themeColor: Color,
+    searchString: String,
+    onSearchStringChanged: (String) -> Unit
+) {
+    var topBarState: GamesTopBarState by rememberSaveable { mutableStateOf(GamesTopBarState.Default) }
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+            .padding(16.dp)
+            .defaultMinSize(minHeight = 48.dp)
+            .fillMaxWidth()
+    ) {
+        AnimatedVisibility(visible = topBarState == GamesTopBarState.Default) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = title,
+                    color = themeColor,
+                    style = MaterialTheme.typography.h5
+                )
+            }
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+        ) {
+            AnimatedContent(targetState = topBarState) { state ->
+                when (state) {
+                    GamesTopBarState.Default -> {
+                        GamesDefaultActionBar(
+                            themeColor = themeColor,
+                            onOpenSearchTap = { topBarState = GamesTopBarState.SearchBarOpen }
+                        )
+                    }
+                    GamesTopBarState.SearchBarOpen -> {
+                        SearchActionBar(
+                            searchString = searchString,
+                            themeColor = themeColor,
+                            onSearchStringChanged = onSearchStringChanged,
+                            onCloseTap = {
+                                topBarState = GamesTopBarState.Default
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                            }
+                        )
                     }
                 }
             }

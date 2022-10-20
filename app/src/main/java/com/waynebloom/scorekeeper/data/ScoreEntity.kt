@@ -1,7 +1,7 @@
 package com.waynebloom.scorekeeper.data
 
-import androidx.annotation.NonNull
 import androidx.room.*
+import com.waynebloom.scorekeeper.enums.DatabaseAction
 
 val EMPTY_SCORE_ENTITY = ScoreEntity()
 

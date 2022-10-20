@@ -18,12 +18,15 @@
     <string name="header_other">Other</string>
     <string name="header_recent_matches">Recent Matches</string>
     <string name="header_scores">Scores</string>
+    <string name="header_sort_menu">Sort by:</string>
     <string name="header_theme">Custom Theme</string>
     <string name="learn_more_cta">Learn More</string>
     <string name="text_empty_games">No games to display</string>
     <string name="text_empty_matches">No matches to display</string>
     <string name="text_empty_scores">Add your matches\' scores here</string>
-    <string name="text_empty_search_results">No matches found containing \"%s\"</string>
+    <string name="text_empty_match_search_results">No matches found containing \"%s\"</string>
+    <string name="text_empty_game_search_results">No games found containing \"%s\"</string>
+    <string name="text_showing_search_results">Searching for \"%s\"</string>
     <string name="text_no_name">No Name</string>
     <string name="text_edit_match">Edit Match</string>
     <string name="toast_game_created">Game Created</string>
@@ -33,4 +36,11 @@
     <string name="toast_match_updated">Match Updated</string>
     <string name="toast_match_deleted">Match Deleted</string>
     <string name="search_placeholder_match">Search matches</string>
+
+    <!-- region Sorting Menu Options -->
+    <string name="sort_option_age">Date of Match</string>
+    <string name="sort_option_name">Winning Player</string>
+    <string name="sort_option_score">Winning Score</string>
+    <string name="sort_option_players">Player Count</string>
+    <!-- endregion -->
 </resources>

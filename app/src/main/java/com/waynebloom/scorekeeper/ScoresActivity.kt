@@ -26,7 +26,10 @@ import com.google.android.gms.ads.MobileAds
 import com.waynebloom.scorekeeper.data.color.DarkThemeGameColors
 import com.waynebloom.scorekeeper.data.color.GameColors
 import com.waynebloom.scorekeeper.data.color.LightThemeGameColors
+import com.waynebloom.scorekeeper.enums.DatabaseAction
+import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 
 val LocalGameColors: ProvidableCompositionLocal<GameColors> = compositionLocalOf { DarkThemeGameColors() }
