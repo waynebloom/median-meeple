@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper
+package com.waynebloom.scorekeeper.enums
 
 enum class AdmobID(val id: String) {
     RELEASE("ca-app-pub-1507290914426110/9235076477"),

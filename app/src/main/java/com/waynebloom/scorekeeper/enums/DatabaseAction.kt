@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.data
+package com.waynebloom.scorekeeper.enums
 
 enum class DatabaseAction {
     NO_ACTION,

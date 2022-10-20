@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.enums
 
 enum class ScorekeeperScreen {
     Overview,

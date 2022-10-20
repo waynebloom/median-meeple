@@ -59,16 +59,17 @@ android {
 dependencies {
 
     // Misc
-    implementation "androidx.navigation:navigation-compose:$nav_version"
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation "androidx.compose.ui:ui:$compose_version"
     implementation 'androidx.compose.material:material:1.1.1'
-    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
     implementation 'androidx.activity:activity-compose:1.5.1'
     implementation 'androidx.compose.runtime:runtime-livedata:1.1.1'
     implementation 'androidx.compose.ui:ui-viewbinding:1.2.0-beta03'
     implementation 'com.google.android.material:material:1.7.0-rc01'
+
+    // Navigation
+    implementation "androidx.navigation:navigation-compose:$nav_version"
 
     // Admob
     implementation 'com.google.android.gms:play-services-ads:21.2.0'
@@ -89,6 +90,7 @@ dependencies {
     // UI Tooling
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+    implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
 
     // Tests
     testImplementation 'junit:junit:4.13.2'

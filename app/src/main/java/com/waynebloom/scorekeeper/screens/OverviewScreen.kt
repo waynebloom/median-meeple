@@ -4,7 +4,6 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -77,7 +76,7 @@ fun GamesHead(
         if (games.isEmpty()) {
             buttonClick = onAddNewGameTap
             buttonText = stringResource(id = R.string.button_add_new_game)
-            EmptyContentCard(text = stringResource(R.string.text_empty_games))
+            DullColoredTextCard(text = stringResource(R.string.text_empty_games))
         }
         Button(
             onClick = { buttonClick() },
@@ -134,7 +133,7 @@ fun MatchesHead(
             if (index == 2) { AdCard(currentAd) }
         }
         if (matches.isEmpty()) {
-            EmptyContentCard(text = stringResource(R.string.text_empty_matches))
+            DullColoredTextCard(text = stringResource(R.string.text_empty_matches))
         }
         if (matches.size < 3) {
             AdCard(currentAd)
