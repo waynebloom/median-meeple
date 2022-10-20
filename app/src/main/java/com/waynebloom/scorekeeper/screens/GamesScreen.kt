@@ -65,7 +65,7 @@ fun GamesScreen(
         Column(
             modifier = modifier.padding(horizontal = 16.dp)
         ) {
-            val gamesToDisplay = games.filter { it.name.contains(searchString) }
+            val gamesToDisplay = games.filter { it.name.lowercase().contains(searchString.lowercase()) }
             listState = when {
                 games.isEmpty() -> ListState.ListEmpty
                 gamesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
