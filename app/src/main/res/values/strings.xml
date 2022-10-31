@@ -22,6 +22,7 @@
     <string name="header_theme">Custom Theme</string>
     <string name="learn_more_cta">Learn More</string>
     <string name="text_empty_games">No games to display</string>
+    <string name="text_empty_match_scores">No Players Added</string>
     <string name="text_empty_matches">No matches to display</string>
     <string name="text_empty_scores">Add your matches\' scores here</string>
     <string name="text_empty_match_search_results">No matches found containing \"%s\"</string>
@@ -36,6 +37,11 @@
     <string name="toast_match_updated">Match Updated</string>
     <string name="toast_match_deleted">Match Deleted</string>
     <string name="search_placeholder_match">Search matches</string>
+
+    <!-- region Scoring Mode Options -->
+    <string name="scoring_option_ascending">Lowest Score Wins</string>
+    <string name="scoring_option_descending">Highest Score Wins</string>
+    <!-- endregion -->
 
     <!-- region Sorting Menu Options -->
     <string name="sort_option_age">Date of Match</string>

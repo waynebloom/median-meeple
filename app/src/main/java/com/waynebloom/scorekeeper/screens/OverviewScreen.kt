@@ -125,9 +125,8 @@ fun MatchesHead(
                     stringResource(id = R.string.exc_no_game_with_id, match.entity.gameOwnerId)
                 )
             MatchCard(
+                game = parentGame,
                 match = match,
-                gameInitial = parentGame.name.first().uppercase(),
-                gameColor = LocalGameColors.current.getColorByKey(parentGame.color),
                 onSingleMatchTap = onSingleMatchTap
             )
             if (index == 2) { AdCard(currentAd) }
