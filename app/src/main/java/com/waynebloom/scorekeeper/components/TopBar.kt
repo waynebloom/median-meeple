@@ -21,6 +21,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.enums.MatchSortingMode
@@ -113,6 +114,7 @@ fun SortingMenuOption(
         Text(
             text = stringResource(menuOption.label),
             style = MaterialTheme.typography.body1,
+            fontWeight = FontWeight.SemiBold,
         )
     }
 }

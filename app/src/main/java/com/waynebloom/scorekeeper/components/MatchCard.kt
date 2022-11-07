@@ -128,6 +128,7 @@ fun EmptyPlayersCard() {
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.body1,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f, fill = false)
             )
         }
@@ -168,6 +169,7 @@ fun VictorCard(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.body1,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f, fill = false)
             )
             Spacer(modifier = Modifier.width(16.dp))

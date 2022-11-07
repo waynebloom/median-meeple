@@ -18,7 +18,7 @@
     <string name="header_other">Other</string>
     <string name="header_recent_matches">Recent Matches</string>
     <string name="header_scores">Scores</string>
-    <string name="header_sort_menu">Sort by:</string>
+    <string name="header_sort_menu">Sort by...</string>
     <string name="header_theme">Custom Theme</string>
     <string name="learn_more_cta">Learn More</string>
     <string name="text_empty_games">No games to display</string>
