@@ -2,6 +2,7 @@ package com.waynebloom.scorekeeper.screens
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,7 +32,7 @@ import com.waynebloom.scorekeeper.enums.GamesTopBarState
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun GamesScreen(
     games: List<GameEntity>,
@@ -129,12 +130,17 @@ fun GamesScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 gamesToDisplay.toAdSeparatedListlets().forEachIndexed { index, listlet ->
-                    items(listlet) { game ->
+                    items(
+                        items = listlet,
+                        key = { it.id }
+                    ) { game ->
                         GameCard(
                             name = game.name,
                             color = LocalGameColors.current.getColorByKey(game.color),
                             onClick = { onSingleGameTap(game) },
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItemPlacement()
                         )
                     }
                     item {

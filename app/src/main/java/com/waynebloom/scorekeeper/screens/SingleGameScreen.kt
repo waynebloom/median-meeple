@@ -3,6 +3,7 @@ package com.waynebloom.scorekeeper.screens
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -39,7 +40,7 @@ import com.waynebloom.scorekeeper.ext.getWinningScore
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SingleGameScreen(
     game: GameObject,
@@ -150,12 +151,16 @@ fun SingleGameScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 matchesToDisplay.toAdSeparatedListlets().forEachIndexed { index, listlet ->
-                    items(listlet) { match ->
+                    items(
+                        items = listlet,
+                        key = { it.entity.id }
+                    ) { match ->
                         MatchCard(
                             game = game.entity,
                             match = match,
                             onSingleMatchTap = onSingleMatchTap,
-                            showGameIdentifier = false
+                            showGameIdentifier = false,
+                            modifier = Modifier.animateItemPlacement()
                         )
                     }
                     item {
@@ -244,7 +249,6 @@ fun SingleGameSortMenuActionBar(
                 )
             }
         }
-
     }
 }
 

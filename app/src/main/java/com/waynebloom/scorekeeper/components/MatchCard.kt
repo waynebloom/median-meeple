@@ -36,6 +36,7 @@ fun MatchCard(
     game: GameEntity,
     match: MatchObject,
     onSingleMatchTap: (Long, Long) -> Unit,
+    modifier: Modifier = Modifier,
     showGameIdentifier: Boolean = true
 ) {
     val gameInitial = game.name.first().uppercase()
@@ -43,7 +44,8 @@ fun MatchCard(
 
     Surface(
         shape = MaterialTheme.shapes.small,
-        onClick = { onSingleMatchTap(match.entity.gameOwnerId, match.entity.id) }
+        onClick = { onSingleMatchTap(match.entity.gameOwnerId, match.entity.id) },
+        modifier = modifier
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
