@@ -2,6 +2,7 @@ package com.waynebloom.scorekeeper.screens
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,13 +32,13 @@ import com.waynebloom.scorekeeper.enums.GamesTopBarState
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun GamesScreen(
     games: List<GameEntity>,
     currentAd: NativeAd?,
     onAddNewGameTap: () -> Unit,
-    onSingleGameTap: (GameEntity) -> Unit,
+    onSingleGameTap: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var listState: ListState by rememberSaveable { mutableStateOf(ListState.Default) }
@@ -61,11 +62,14 @@ fun GamesScreen(
                 Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
             }
         }
-    ) {
+    ) { contentPadding ->
         Column(
-            modifier = modifier.padding(horizontal = 16.dp)
+            modifier = modifier
+                .padding(contentPadding)
+                .padding(horizontal = 16.dp)
         ) {
-            val gamesToDisplay = games.filter { it.name.contains(searchString) }
+            val gamesToDisplay = games
+                .filter { it.name.lowercase().contains(searchString.lowercase()) }
             listState = when {
                 games.isEmpty() -> ListState.ListEmpty
                 gamesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
@@ -129,12 +133,17 @@ fun GamesScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 gamesToDisplay.toAdSeparatedListlets().forEachIndexed { index, listlet ->
-                    items(listlet) { game ->
+                    items(
+                        items = listlet,
+                        key = { it.id }
+                    ) { game ->
                         GameCard(
                             name = game.name,
                             color = LocalGameColors.current.getColorByKey(game.color),
-                            onClick = { onSingleGameTap(game) },
-                            modifier = Modifier.fillMaxWidth()
+                            onClick = { onSingleGameTap(game.id) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItemPlacement()
                         )
                     }
                     item {

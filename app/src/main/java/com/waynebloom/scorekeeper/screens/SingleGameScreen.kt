@@ -3,11 +3,11 @@ package com.waynebloom.scorekeeper.screens
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -32,18 +33,20 @@ import com.waynebloom.scorekeeper.components.*
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.enums.MatchSortingMode
+import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameTopBarState
+import com.waynebloom.scorekeeper.ext.getWinningScore
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SingleGameScreen(
     game: GameObject,
     currentAd: NativeAd?,
     onEditGameTap: () -> Unit,
-    onNewMatchTap: (Long) -> Unit,
-    onSingleMatchTap: (Long, Long) -> Unit,
+    onNewMatchTap: () -> Unit,
+    onSingleMatchTap: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val gameColor = LocalGameColors.current.getColorByKey(game.entity.color)
@@ -68,7 +71,7 @@ fun SingleGameScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onNewMatchTap(game.entity.id) },
+                onClick = { onNewMatchTap() },
                 shape = MaterialTheme.shapes.small,
                 backgroundColor = gameColor,
                 contentColor = MaterialTheme.colors.onPrimary
@@ -76,9 +79,19 @@ fun SingleGameScreen(
                 Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
             }
         }
-    ) {
-        Column(modifier = modifier.padding(horizontal = 16.dp)) {
-            val matchesToDisplay = filterAndSortMatches(game.matches, searchString, sortingMode, sortDescending)
+    ) { contentPadding ->
+        Column(
+            modifier = modifier
+                .padding(contentPadding)
+                .padding(horizontal = 16.dp)
+        ) {
+            val matchesToDisplay = filterAndSortMatches(
+                scoringMode = ScoringMode.getModeByOrdinal(game.entity.scoringMode),
+                matches = game.matches,
+                searchString = searchString,
+                sortingMode = sortingMode,
+                sortDescending = sortDescending
+            )
             listState = when {
                 game.matches.isEmpty() -> ListState.ListEmpty
                 matchesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
@@ -141,13 +154,16 @@ fun SingleGameScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 matchesToDisplay.toAdSeparatedListlets().forEachIndexed { index, listlet ->
-                    items(listlet) { match ->
+                    items(
+                        items = listlet,
+                        key = { it.entity.id }
+                    ) { match ->
                         MatchCard(
+                            game = game.entity,
                             match = match,
-                            gameInitial = game.entity.name.first().uppercase(),
-                            gameColor = gameColor,
                             onSingleMatchTap = onSingleMatchTap,
-                            showGameIdentifier = false
+                            showGameIdentifier = false,
+                            modifier = Modifier.animateItemPlacement()
                         )
                     }
                     item {
@@ -186,6 +202,7 @@ fun SingleGameSortMenuActionBar(
                 text = stringResource(R.string.header_sort_menu),
                 color = themeColor,
                 style = MaterialTheme.typography.body1,
+                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f)
             )
             Button(
@@ -235,7 +252,6 @@ fun SingleGameSortMenuActionBar(
                 )
             }
         }
-
     }
 }
 
@@ -378,27 +394,48 @@ fun SingleGameTopBar(
 
 // endregion
 
+/**
+ * This will filter and sort the passed matches based on
+ * the current string being searched and the current sort
+ * mode.
+ *
+ * Order of operations:
+ *      1. Iterate through the list, adding items that match the search string
+ *         to a sublist.
+ *          a. If a match has no scores, add it to a separate sublist.
+ *      2. Sort the filtered items sublist as designated by the sorting mode.
+ *      3. Reverse the order of the list if the user selects descending sort.
+ *      4. Add the empty matches sublist to the end of the sorted list.
+ *      5. Return
+ */
 private fun filterAndSortMatches(
+    scoringMode: ScoringMode,
     matches: List<MatchObject>,
     searchString: String,
     sortingMode: MatchSortingMode,
     sortDescending: Boolean
 ): List<MatchObject> {
-    val matchesToDisplay = matches.filter { showMatch(it, searchString) }
+    val matchesToSort: MutableList<MatchObject> = mutableListOf()
+    val emptyMatches: MutableList<MatchObject> = mutableListOf()
+    matches.forEach {
+        if (showMatch(it, searchString)) {
+            if (it.scores.isEmpty()) {
+                emptyMatches.add(it)
+            } else matchesToSort.add(it)
+        }
+    }
     var matchesInOrder: List<MatchObject> = when (sortingMode) {
-        MatchSortingMode.ByMatchAge -> matchesToDisplay.reversed()
-        MatchSortingMode.ByWinningPlayer -> matchesToDisplay.sortedBy { match ->
-            match.scores.maxByOrNull { it.scoreValue ?: 0 }?.name
+        MatchSortingMode.ByMatchAge -> matchesToSort.reversed()
+        MatchSortingMode.ByWinningPlayer -> matchesToSort.sortedBy { match ->
+            match.scores.getWinningScore(scoringMode)?.name
         }
-        MatchSortingMode.ByWinningScore -> matchesToDisplay.sortedBy { match ->
-            match.scores.maxByOrNull { it.scoreValue ?: 0 }?.scoreValue
+        MatchSortingMode.ByWinningScore -> matchesToSort.sortedBy { match ->
+            match.scores.getWinningScore(scoringMode)?.scoreValue
         }
-        MatchSortingMode.ByPlayerCount -> matchesToDisplay.sortedBy { it.scores.size }
+        MatchSortingMode.ByPlayerCount -> matchesToSort.sortedBy { it.scores.size }
     }
-    if (sortDescending) {
-        matchesInOrder = matchesInOrder.reversed()
-    }
-    return matchesInOrder
+    if (sortDescending) matchesInOrder = matchesInOrder.reversed()
+    return matchesInOrder.plus(emptyMatches)
 }
 
 private fun matchContainsPlayerWithString(
@@ -449,7 +486,7 @@ fun SingleGameScreenPreview() {
             currentAd = null,
             onEditGameTap = {},
             onNewMatchTap = {},
-            onSingleMatchTap = {_,_->}
+            onSingleMatchTap = {}
         )
     }
 }

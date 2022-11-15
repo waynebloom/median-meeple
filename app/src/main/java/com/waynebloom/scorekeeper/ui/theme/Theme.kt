@@ -2,14 +2,12 @@ package com.waynebloom.scorekeeper.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Shapes
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
-import com.waynebloom.scorekeeper.data.color.DarkThemeGameColors
-import com.waynebloom.scorekeeper.data.color.GameColors
+import androidx.compose.material.Typography
 
 private val LightColorPalette = lightColors(
     primary = rust600,
@@ -36,11 +34,14 @@ private val DarkColorPalette = darkColors(
 @Composable
 fun ScoreKeeperTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    shapes: Shapes = ScorekeeperShapes,
+    typography: Typography = ScorekeeperTypography,
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
         colors = if (darkTheme) DarkColorPalette else LightColorPalette,
-        shapes = ScorekeeperShapes,
+        shapes = shapes,
+        typography = typography,
         content = content
     )
 }

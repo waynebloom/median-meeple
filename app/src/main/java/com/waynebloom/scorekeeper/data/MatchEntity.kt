@@ -4,7 +4,7 @@ import androidx.annotation.NonNull
 import androidx.room.*
 import java.util.*
 
-val EMPTY_MATCH_ENTITY = MatchEntity()
+val EMPTY_MATCH_ENTITY = MatchEntity(id = -1)
 
 @Entity(
     tableName = "Match",

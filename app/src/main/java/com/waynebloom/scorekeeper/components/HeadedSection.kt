@@ -8,6 +8,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import java.util.*
 
@@ -22,6 +23,7 @@ fun HeadedSection(
         Text(
             text = stringResource(title).uppercase(Locale.getDefault()),
             style = MaterialTheme.typography.subtitle1,
+            fontWeight = FontWeight.SemiBold,
             modifier = Modifier
                 .paddingFromBaseline(top = topPadding.dp, bottom = 24.dp)
         )

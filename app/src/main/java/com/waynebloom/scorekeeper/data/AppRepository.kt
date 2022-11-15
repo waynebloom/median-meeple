@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.data
 
 import android.app.Application
+import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.flow.Flow
 
 class AppRepository(application: Application) {
@@ -12,6 +13,7 @@ class AppRepository(application: Application) {
     }
 
     val getAllGames : Flow<List<GameObject>> = appDao.getAllGames()
+    val rxGetAllGames: Single<List<GameObject>> = appDao.rxGetAllGames()
     val getAllMatches : Flow<List<MatchObject>> = appDao.getAllMatches()
 
     fun getGameById(id: Long): Flow<GameObject?> {

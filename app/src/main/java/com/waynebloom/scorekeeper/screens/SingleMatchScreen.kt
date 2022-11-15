@@ -49,7 +49,7 @@ fun SingleMatchScreen(
     match: MatchObject,
     onSaveTap: (MatchEntity, List<ScoreObject>) -> Unit,
     modifier: Modifier = Modifier,
-    onDeleteMatchTap: (Long, Long) -> Unit = {_, _->},
+    onDeleteMatchTap: (Long) -> Unit = {},
     openInEditMode: Boolean = false,
     isNewMatch: Boolean = false
 ) {
@@ -179,7 +179,7 @@ fun SingleMatchScreen(
                     if (!isNewMatch) {
                         Button(
                             colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                            onClick = { onDeleteMatchTap(game.id, match.entity.id) },
+                            onClick = { onDeleteMatchTap(match.entity.id) },
                             modifier = Modifier
                                 .padding(start = 16.dp)
                                 .height(48.dp)
