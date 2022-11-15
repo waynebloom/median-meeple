@@ -35,7 +35,7 @@ import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 fun MatchCard(
     game: GameEntity,
     match: MatchObject,
-    onSingleMatchTap: (Long, Long) -> Unit,
+    onSingleMatchTap: (Long) -> Unit,
     modifier: Modifier = Modifier,
     showGameIdentifier: Boolean = true
 ) {
@@ -44,7 +44,7 @@ fun MatchCard(
 
     Surface(
         shape = MaterialTheme.shapes.small,
-        onClick = { onSingleMatchTap(match.entity.gameOwnerId, match.entity.id) },
+        onClick = { onSingleMatchTap(match.entity.id) },
         modifier = modifier
     ) {
         Row(
@@ -247,7 +247,7 @@ fun ScoreCardPreview() {
             match = EMPTY_MATCH_OBJECT.apply {
                 scores = PreviewScoreData
             },
-            onSingleMatchTap = {_,_->}
+            onSingleMatchTap = {}
         )
     }
 }

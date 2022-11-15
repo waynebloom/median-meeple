@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.data
 
 import androidx.room.*
+import io.reactivex.rxjava3.core.Single
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -8,6 +9,10 @@ interface AppDao {
     @Transaction
     @Query("SELECT * FROM game")
     fun getAllGames(): Flow<List<GameObject>>
+
+    @Transaction
+    @Query("SELECT * FROM game")
+    fun rxGetAllGames(): Single<List<GameObject>>
 
     @Transaction
     @Query("SELECT * FROM `match`")

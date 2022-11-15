@@ -38,7 +38,7 @@ fun GamesScreen(
     games: List<GameEntity>,
     currentAd: NativeAd?,
     onAddNewGameTap: () -> Unit,
-    onSingleGameTap: (GameEntity) -> Unit,
+    onSingleGameTap: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var listState: ListState by rememberSaveable { mutableStateOf(ListState.Default) }
@@ -62,11 +62,14 @@ fun GamesScreen(
                 Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
             }
         }
-    ) {
+    ) { contentPadding ->
         Column(
-            modifier = modifier.padding(horizontal = 16.dp)
+            modifier = modifier
+                .padding(contentPadding)
+                .padding(horizontal = 16.dp)
         ) {
-            val gamesToDisplay = games.filter { it.name.lowercase().contains(searchString.lowercase()) }
+            val gamesToDisplay = games
+                .filter { it.name.lowercase().contains(searchString.lowercase()) }
             listState = when {
                 games.isEmpty() -> ListState.ListEmpty
                 gamesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
@@ -137,7 +140,7 @@ fun GamesScreen(
                         GameCard(
                             name = game.name,
                             color = LocalGameColors.current.getColorByKey(game.color),
-                            onClick = { onSingleGameTap(game) },
+                            onClick = { onSingleGameTap(game.id) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .animateItemPlacement()

@@ -4,6 +4,7 @@ import androidx.room.*
 import com.waynebloom.scorekeeper.enums.ScoringMode
 
 val EMPTY_GAME_ENTITY = GameEntity(
+    id = -1,
     name = "Empty"
 )
 

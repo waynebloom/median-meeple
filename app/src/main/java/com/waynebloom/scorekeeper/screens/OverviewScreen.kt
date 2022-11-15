@@ -21,7 +21,7 @@ fun OverviewScreen(
     onSeeAllGamesTap: () -> Unit,
     onAddNewGameTap: () -> Unit,
     onSingleGameTap: (Long) -> Unit,
-    onSingleMatchTap: (Long, Long) -> Unit,
+    onSingleMatchTap: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -116,7 +116,7 @@ fun MatchesHead(
     matches: List<MatchObject>,
     games: List<GameObject>,
     currentAd: NativeAd?,
-    onSingleMatchTap: (Long, Long) -> Unit
+    onSingleMatchTap: (Long) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         matches.forEachIndexed { index, match ->

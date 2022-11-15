@@ -46,8 +46,8 @@ fun SingleGameScreen(
     game: GameObject,
     currentAd: NativeAd?,
     onEditGameTap: () -> Unit,
-    onNewMatchTap: (Long) -> Unit,
-    onSingleMatchTap: (Long, Long) -> Unit,
+    onNewMatchTap: () -> Unit,
+    onSingleMatchTap: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val gameColor = LocalGameColors.current.getColorByKey(game.entity.color)
@@ -72,7 +72,7 @@ fun SingleGameScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { onNewMatchTap(game.entity.id) },
+                onClick = { onNewMatchTap() },
                 shape = MaterialTheme.shapes.small,
                 backgroundColor = gameColor,
                 contentColor = MaterialTheme.colors.onPrimary
@@ -80,8 +80,12 @@ fun SingleGameScreen(
                 Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
             }
         }
-    ) {
-        Column(modifier = modifier.padding(horizontal = 16.dp)) {
+    ) { contentPadding ->
+        Column(
+            modifier = modifier
+                .padding(contentPadding)
+                .padding(horizontal = 16.dp)
+        ) {
             val matchesToDisplay = filterAndSortMatches(
                 scoringMode = ScoringMode.getModeByOrdinal(game.entity.scoringMode),
                 matches = game.matches,
@@ -483,7 +487,7 @@ fun SingleGameScreenPreview() {
             currentAd = null,
             onEditGameTap = {},
             onNewMatchTap = {},
-            onSingleMatchTap = {_,_->}
+            onSingleMatchTap = {}
         )
     }
 }
