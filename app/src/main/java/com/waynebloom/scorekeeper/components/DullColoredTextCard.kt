@@ -17,7 +17,6 @@ import com.waynebloom.scorekeeper.ui.theme.rust300
 
 @Composable
 fun DullColoredTextCard(
-    modifier: Modifier = Modifier,
     text: String = "",
     color: Color = MaterialTheme.colors.primary,
     content: @Composable (Color, String) -> Unit = { mColor, mText ->
@@ -32,7 +31,7 @@ fun DullColoredTextCard(
     val lowEmphasisColor = color.copy(alpha = 0.75f)
     Box(
         contentAlignment = Alignment.Center,
-        modifier = modifier
+        modifier = Modifier
             .border(
                 width = 1.dp,
                 color = lowEmphasisColor,
