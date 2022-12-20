@@ -29,14 +29,14 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.waynebloom.scorekeeper.LocalGameColors
-import com.waynebloom.scorekeeper.PreviewGameData
-import com.waynebloom.scorekeeper.PreviewMatchData
+import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.enums.DatabaseAction
+import com.waynebloom.scorekeeper.exceptions.NullGameCache
+import com.waynebloom.scorekeeper.exceptions.NullMatchCache
 import com.waynebloom.scorekeeper.ext.updateElement
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.waynebloom.scorekeeper.ui.theme.orange100
@@ -88,6 +88,7 @@ fun SingleMatchScreen(
                         ),
                         newScores
                     )
+                    newScores = match.scores.map { ScoreObject(it) }
                 }
             } else {
                 buttonIcon = Icons.Rounded.Edit
@@ -354,27 +355,13 @@ fun ScoreCard(
 fun ScoresSectionPreview() {
     ScoreKeeperTheme {
         ScoresSection(
-            scores = listOf(),
+            scores = PreviewScoreData.map { ScoreObject(it) },
             gameColor = orange100,
             editMode = false,
             focusManager = LocalFocusManager.current,
             onScoreChange = {_,_->},
             onNewScoreTap = {},
             onDeleteScoreTap = {}
-        )
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun SingleMatchScreenPreview() {
-    ScoreKeeperTheme {
-        SingleMatchScreen(
-            game = PreviewGameData[0],
-            match = EMPTY_MATCH_OBJECT.apply {
-                 entity = PreviewMatchData[0]
-            },
-            onSaveTap = {_,_->}
         )
     }
 }

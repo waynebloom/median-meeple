@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
@@ -336,17 +337,22 @@ fun SingleGameTopBar(
             .defaultMinSize(minHeight = 48.dp)
             .fillMaxWidth()
     ) {
-        AnimatedVisibility(visible = topBarState == SingleGameTopBarState.Default) {
+        AnimatedVisibility(
+            visible = topBarState == SingleGameTopBarState.Default,
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 16.dp)
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
+                modifier = Modifier.height(48.dp)
             ) {
                 Text(
                     text = title,
                     color = themeColor,
-                    style = MaterialTheme.typography.h5
+                    style = MaterialTheme.typography.h5,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
             }
         }

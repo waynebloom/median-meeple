@@ -13,7 +13,8 @@
         <activity
             android:name=".ScoresActivity"
             android:exported="true"
-            android:theme="@style/Theme.Scorekeeper">
+            android:theme="@style/Theme.Scorekeeper"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

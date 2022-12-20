@@ -1,11 +1,16 @@
 package com.waynebloom.scorekeeper
 
 import android.app.Application
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.data.*
-import kotlinx.coroutines.Dispatchers
+import com.waynebloom.scorekeeper.enums.DatabaseAction
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.withContext
 
 class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
     // region Data Access
@@ -16,108 +21,213 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
     val games: Flow<List<GameObject>>
         get() = _games
 
-    val rxGames = appRepository.rxGetAllGames
-
     private val _matches = appRepository.getAllMatches
     val matches: Flow<List<MatchObject>>
         get() = _matches
+
+    private val dbJobChannel = Channel<Job>(capacity = Channel.UNLIMITED)
 
     // endregion
 
     // region Object Caching
 
-    var cachedGameObject: GameObject? = EMPTY_GAME_OBJECT
-    var cachedMatchObject: MatchObject? = EMPTY_MATCH_OBJECT
+    var cachedGameObject: GameObject by mutableStateOf(EMPTY_GAME_OBJECT)
+    var cachedMatchObject: MatchObject by mutableStateOf(EMPTY_MATCH_OBJECT)
+
+    private var gameCacheNeedsUpdate = false
+    private var matchCacheNeedsUpdate = false
 
     // endregion
 
     val adService = AdService(appObj)
 
-    suspend fun insert(game: GameEntity, afterInsert: () -> Unit) {
-        withContext(Dispatchers.IO) {
-            val insertedGameId = appRepository.insert(game)
-            cachedGameObject = GameObject(entity = game.copy(id = insertedGameId))
-        }
-        withContext(Dispatchers.Main) { afterInsert() }
+    // region Game
+
+    fun deleteGameById(id: Long) {
+        dbJobChannel.trySend(
+            viewModelScope.launch {
+                appRepository.deleteGameById(id)
+                if (cachedGameObject.entity.id == id) {
+                    cachedGameObject = EMPTY_GAME_OBJECT
+                    cachedMatchObject = EMPTY_MATCH_OBJECT
+                }
+            }
+        )
     }
 
-    suspend fun insertMatchWithScores(match: MatchEntity, scores: List<ScoreEntity> = listOf()) {
-        withContext(Dispatchers.IO) {
-            val insertedMatchId = appRepository.insert(match)
-            scores.forEach { appRepository.insert(it.apply { matchId = insertedMatchId }) }
-            cachedMatchObject = MatchObject(
-                entity = match.copy(id = insertedMatchId),
-                scores = scores
+    fun insertGame(game: GameEntity, afterInsert: () -> Unit) {
+        dbJobChannel.trySend(
+            viewModelScope.launch {
+                val insertedGameId = appRepository.insert(game)
+                cachedGameObject = GameObject(
+                    entity = game.copy(id = insertedGameId)
+                )
+                afterInsert()
+            }
+        )
+    }
+
+    fun updateGame(newGame: GameEntity) {
+        dbJobChannel.trySend(
+            viewModelScope.launch {
+                appRepository.updateGame(newGame)
+                gameCacheNeedsUpdate = true
+            }
+        )
+    }
+
+    // endregion
+
+    // region Match
+
+    fun deleteMatchById(id: Long) {
+        dbJobChannel.trySend(
+            viewModelScope.launch {
+                appRepository.deleteMatchById(id)
+                if (cachedMatchObject.entity.id == id) {
+                    cachedMatchObject = EMPTY_MATCH_OBJECT
+                }
+                gameCacheNeedsUpdate = true
+            }
+        )
+    }
+
+    fun insertMatchWithScores(match: MatchEntity, scores: List<ScoreEntity> = listOf()) {
+        dbJobChannel.trySend(
+            viewModelScope.launch {
+                val insertedMatchId = appRepository.insert(match)
+                scores.forEach {
+                    dbJobChannel.trySend(
+                        viewModelScope.launch {
+                            appRepository.insert(
+                                it.apply { matchId = insertedMatchId }
+                            )
+                        }
+                    )
+                }
+                cachedMatchObject = MatchObject(
+                    entity = match.copy(id = insertedMatchId),
+                    scores = scores
+                )
+                gameCacheNeedsUpdate = true
+            }
+        )
+    }
+
+    fun updateMatch(updatedMatch: MatchEntity) {
+        dbJobChannel.trySend(
+            viewModelScope.launch {
+                appRepository.updateMatch(updatedMatch)
+                gameCacheNeedsUpdate = true
+                matchCacheNeedsUpdate = true
+            }
+        )
+    }
+
+    // endregion
+
+    // region Score
+
+    fun forwardScoreListUpdatesToDb(updatedScores: List<ScoreObject>) {
+        updatedScores.forEach { score ->
+            when(score.action) {
+                DatabaseAction.UPDATE -> updateScore(score.entity)
+                DatabaseAction.INSERT -> insertScore(score.entity)
+                DatabaseAction.DELETE -> deleteScoreById(score.entity.id)
+                DatabaseAction.NO_ACTION -> {}
+            }
+        }
+    }
+
+    private fun deleteScoreById(id: Long) {
+        addJobToDbChannel(
+            block = {
+                appRepository.deleteScoreById(id)
+                gameCacheNeedsUpdate = true
+                matchCacheNeedsUpdate = true
+            }
+        )
+    }
+
+    private fun insertScore(score: ScoreEntity) {
+        addJobToDbChannel(
+            block = {
+                appRepository.insert(score)
+                gameCacheNeedsUpdate = true
+                matchCacheNeedsUpdate = true
+            }
+        )
+    }
+
+    private fun updateScore(updatedScore: ScoreEntity) {
+        addJobToDbChannel(
+            block = {
+                appRepository.updateScore(updatedScore)
+                gameCacheNeedsUpdate = true
+                matchCacheNeedsUpdate = true
+            }
+        )
+    }
+
+    // endregion
+
+    // region DB Helpers
+
+    private fun addJobToDbChannel(block: suspend () -> Unit) {
+        dbJobChannel.trySend(
+            element = viewModelScope.launch(start = CoroutineStart.LAZY) {
+                block()
+            }
+        )
+    }
+
+    fun executeDbOperation(operation: () -> Unit) {
+        operation()
+        consumeDbJobs()
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private fun consumeDbJobs() {
+        viewModelScope.launch {
+            for (job in dbJobChannel) {
+                job.join()
+                if (dbJobChannel.isEmpty) {
+                    updateGameCacheWithChanges()
+                    updateMatchCacheWithChanges()
+                }
+            }
+        }
+    }
+
+    private fun updateGameCacheWithChanges() {
+        val requiredCachedGameObject = cachedGameObject
+        if (gameCacheNeedsUpdate) {
+            gameCacheNeedsUpdate = false
+            addJobToDbChannel(
+                block = {
+                    cachedGameObject = games
+                        .first()
+                        .find { it.entity.id == requiredCachedGameObject.entity.id }
+                        ?: EMPTY_GAME_OBJECT
+                }
             )
-            updateGameCacheWithChanges()
         }
     }
 
-    suspend fun insert(score: ScoreEntity) {
-        withContext(Dispatchers.IO) {
-            appRepository.insert(score)
-            updateCachesWithChanges()
+    private fun updateMatchCacheWithChanges() {
+        val requiredCachedMatchObject = cachedMatchObject
+        if (matchCacheNeedsUpdate) {
+            matchCacheNeedsUpdate = false
+            addJobToDbChannel(
+                block = {
+                    cachedMatchObject = matches
+                        .first()
+                        .find { it.entity.id == requiredCachedMatchObject.entity.id }
+                        ?: EMPTY_MATCH_OBJECT
+                }
+            )
         }
     }
 
-    suspend fun deleteGameById(id: Long) {
-        withContext(Dispatchers.IO) {
-            appRepository.deleteGameById(id)
-            if (cachedGameObject?.entity?.id == id) {
-                cachedGameObject = null
-                cachedMatchObject = null
-            }
-        }
-    }
-
-    suspend fun deleteMatchById(id: Long) {
-        withContext(Dispatchers.IO) {
-            appRepository.deleteMatchById(id)
-            updateGameCacheWithChanges()
-            if (cachedMatchObject?.entity?.id == id) {
-                cachedMatchObject = null
-            }
-        }
-    }
-
-    suspend fun deleteScoreById(id: Long) {
-        withContext(Dispatchers.IO) {
-            appRepository.deleteScoreById(id)
-            updateCachesWithChanges()
-        }
-    }
-
-    suspend fun updateGame(newGame: GameEntity) {
-        withContext(Dispatchers.IO) {
-            appRepository.updateGame(newGame)
-            updateGameCacheWithChanges()
-        }
-    }
-
-    suspend fun updateMatch(newMatch: MatchEntity) {
-        withContext(Dispatchers.IO) {
-            appRepository.updateMatch(newMatch)
-            updateCachesWithChanges()
-        }
-    }
-
-    suspend fun updateScore(newScore: ScoreEntity) {
-        withContext(Dispatchers.IO) {
-            appRepository.updateScore(newScore)
-            updateCachesWithChanges()
-        }
-    }
-
-    private suspend fun updateGameCacheWithChanges() {
-        games.collectLatest { games ->
-            cachedGameObject = games.find { it.entity.id == cachedGameObject?.entity?.id }
-        }
-    }
-
-    suspend fun updateCachesWithChanges() {
-        updateGameCacheWithChanges()
-        matches.collectLatest { matches ->
-            cachedMatchObject = matches.find { it.entity.id == cachedMatchObject?.entity?.id }
-        }
-    }
+    // endregion
 }
