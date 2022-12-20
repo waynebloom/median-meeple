@@ -11,10 +11,6 @@ interface AppDao {
     fun getAllGames(): Flow<List<GameObject>>
 
     @Transaction
-    @Query("SELECT * FROM game")
-    fun rxGetAllGames(): Single<List<GameObject>>
-
-    @Transaction
     @Query("SELECT * FROM `match`")
     fun getAllMatches(): Flow<List<MatchObject>>
 

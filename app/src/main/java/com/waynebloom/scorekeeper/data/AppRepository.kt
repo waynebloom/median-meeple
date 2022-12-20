@@ -13,7 +13,6 @@ class AppRepository(application: Application) {
     }
 
     val getAllGames : Flow<List<GameObject>> = appDao.getAllGames()
-    val rxGetAllGames: Single<List<GameObject>> = appDao.rxGetAllGames()
     val getAllMatches : Flow<List<MatchObject>> = appDao.getAllMatches()
 
     fun getGameById(id: Long): Flow<GameObject?> {

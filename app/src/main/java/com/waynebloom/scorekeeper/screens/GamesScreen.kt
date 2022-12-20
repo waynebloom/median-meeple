@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
@@ -201,17 +202,22 @@ fun GamesTopBar(
             .defaultMinSize(minHeight = 48.dp)
             .fillMaxWidth()
     ) {
-        AnimatedVisibility(visible = topBarState == GamesTopBarState.Default) {
+        AnimatedVisibility(
+            visible = topBarState == GamesTopBarState.Default,
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 16.dp)
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
+                modifier = Modifier.height(48.dp)
             ) {
                 Text(
                     text = title,
                     color = themeColor,
-                    style = MaterialTheme.typography.h5
+                    style = MaterialTheme.typography.h5,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
             }
         }

@@ -29,36 +29,4 @@ data class ScoreEntity(
 
     @ColumnInfo(name = "score")
     var scoreValue: Long? = null
-) {
-    @Ignore
-    var action: DatabaseAction = DatabaseAction.NO_ACTION
-
-    constructor(
-        previousScore: ScoreEntity,
-        action: DatabaseAction
-    ) : this(
-        previousScore.id,
-        previousScore.matchId,
-        previousScore.name,
-        previousScore.scoreValue
-    ) {
-        this.action = action
-    }
-
-    fun copy(
-        id: Long = this.id,
-        matchId: Long = this.matchId,
-        name: String = this.name,
-        scoreValue: Long? = this.scoreValue,
-        action: DatabaseAction = this.action
-    ): ScoreEntity {
-        val newEntity = ScoreEntity(
-            id = id,
-            matchId = matchId,
-            name = name,
-            scoreValue = scoreValue
-        )
-        newEntity.action = action
-        return newEntity
-    }
-}
+)
