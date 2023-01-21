@@ -5,6 +5,7 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFocusManager
@@ -31,12 +33,15 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
-import com.waynebloom.scorekeeper.data.*
+import com.waynebloom.scorekeeper.data.model.EMPTY_MATCH_OBJECT
+import com.waynebloom.scorekeeper.data.model.GameEntity
+import com.waynebloom.scorekeeper.data.model.GameObject
+import com.waynebloom.scorekeeper.data.model.MatchObject
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.enums.MatchSortingMode
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameTopBarState
-import com.waynebloom.scorekeeper.ext.getWinningScore
+import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
@@ -192,13 +197,13 @@ fun SingleGameSortMenuActionBar(
     onSortingModeChanged: (MatchSortingMode) -> Unit,
     onCloseTap: () -> Unit
 ) {
-    Column(
-        modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)
-    ) {
+    Column(modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)) {
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
+
             Text(
                 text = stringResource(R.string.header_sort_menu),
                 color = themeColor,
@@ -206,39 +211,40 @@ fun SingleGameSortMenuActionBar(
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f)
             )
-            Button(
-                onClick = { onSortDirectionChanged(!sortDescending) },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color.Transparent
-                ),
-                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-                contentPadding = PaddingValues(0.dp),
-                modifier = Modifier.size(48.dp)
+
+            Box(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable { onSortDirectionChanged(!sortDescending) }
             ) {
                 Icon(
                     imageVector = if (sortDescending) {
                         Icons.Rounded.KeyboardArrowDown
                     } else Icons.Rounded.KeyboardArrowUp,
                     tint = themeColor,
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(12.dp)
                 )
             }
-            Button(
-                onClick = { onCloseTap() },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = Color.Transparent
-                ),
-                elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-                contentPadding = PaddingValues(0.dp),
-                modifier = Modifier.size(48.dp)
+
+            Box(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable { onCloseTap() }
             ) {
                 Icon(
                     imageVector = Icons.Rounded.Close,
                     tint = themeColor,
-                    contentDescription = null
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(12.dp)
                 )
             }
         }
+
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -264,49 +270,49 @@ fun SingleGameDefaultActionBar(
     onEditGameTap: () -> Unit,
 ) {
     Row {
-        Button(
-            onClick = { onOpenSearchTap() },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Transparent
-            ),
-            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.size(48.dp)
+
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable { onOpenSearchTap() }
         ) {
             Icon(
                 imageVector = Icons.Rounded.Search,
                 tint = themeColor,
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(12.dp)
             )
         }
-        Button(
-            onClick = { onSortTap() },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Transparent
-            ),
-            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.size(48.dp)
+
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable { onSortTap() }
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_sort),
                 tint = themeColor,
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(12.dp)
             )
         }
-        Button(
-            onClick = { onEditGameTap() },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Transparent
-            ),
-            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.size(48.dp)
+
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable { onEditGameTap() }
         ) {
             Icon(
                 imageVector = Icons.Rounded.Edit,
                 tint = themeColor,
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(12.dp)
             )
         }
     }
@@ -425,7 +431,7 @@ private fun filterAndSortMatches(
     val emptyMatches: MutableList<MatchObject> = mutableListOf()
     matches.forEach {
         if (showMatch(it, searchString)) {
-            if (it.scores.isEmpty()) {
+            if (it.players.isEmpty()) {
                 emptyMatches.add(it)
             } else matchesToSort.add(it)
         }
@@ -433,12 +439,12 @@ private fun filterAndSortMatches(
     var matchesInOrder: List<MatchObject> = when (sortingMode) {
         MatchSortingMode.ByMatchAge -> matchesToSort.reversed()
         MatchSortingMode.ByWinningPlayer -> matchesToSort.sortedBy { match ->
-            match.scores.getWinningScore(scoringMode)?.name
+            match.players.getWinningPlayer(scoringMode)?.entity?.name
         }
         MatchSortingMode.ByWinningScore -> matchesToSort.sortedBy { match ->
-            match.scores.getWinningScore(scoringMode)?.scoreValue
+            match.players.getWinningPlayer(scoringMode)?.entity?.score
         }
-        MatchSortingMode.ByPlayerCount -> matchesToSort.sortedBy { it.scores.size }
+        MatchSortingMode.ByPlayerCount -> matchesToSort.sortedBy { it.players.size }
     }
     if (sortDescending) matchesInOrder = matchesInOrder.reversed()
     return matchesInOrder.plus(emptyMatches)
@@ -448,8 +454,8 @@ private fun matchContainsPlayerWithString(
     match: MatchObject,
     substring: String
 ): Boolean {
-    return match.scores.any {
-        it.name.lowercase().contains(substring.lowercase())
+    return match.players.any {
+        it.entity.name.lowercase().contains(substring.lowercase())
     }
 }
 
@@ -458,8 +464,8 @@ private fun matchContainsExactScoreMatch(
     scoreValue: Long?
 ): Boolean {
     return if (scoreValue != null) {
-        match.scores.any {
-            it.scoreValue == scoreValue
+        match.players.any {
+            it.entity.score == scoreValue
         }
     } else false
 }

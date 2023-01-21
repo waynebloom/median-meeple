@@ -1,12 +1,11 @@
-package com.waynebloom.scorekeeper.data
+package com.waynebloom.scorekeeper.data.model
 
 import androidx.room.*
-import com.waynebloom.scorekeeper.enums.DatabaseAction
 
-val EMPTY_SCORE_ENTITY = ScoreEntity()
+val EMPTY_PLAYER_ENTITY = PlayerEntity()
 
 @Entity(
-    tableName = "Score",
+    tableName = "Player",
     foreignKeys = [ForeignKey(
         entity = MatchEntity::class,
         parentColumns = arrayOf("id"),
@@ -16,7 +15,7 @@ val EMPTY_SCORE_ENTITY = ScoreEntity()
     )],
     indices = [Index(value = ["match_id"])]
 )
-data class ScoreEntity(
+data class PlayerEntity(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(defaultValue = "0")
     var id: Long = 0,
@@ -24,9 +23,13 @@ data class ScoreEntity(
     @ColumnInfo(name = "match_id")
     var matchId: Long = 0,
 
-    @ColumnInfo(name = "name")
     var name: String = "",
 
-    @ColumnInfo(name = "score")
-    var scoreValue: Long? = null
+    // TODO make this non-nullable, default 0
+    var score: Long? = null,
+
+    var position: Int = 0,
+
+    @ColumnInfo(name = "show_detailed_score")
+    var showDetailedScore: Boolean = false
 )

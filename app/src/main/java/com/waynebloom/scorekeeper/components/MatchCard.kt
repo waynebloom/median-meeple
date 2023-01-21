@@ -24,10 +24,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.PreviewScoreData
+import com.waynebloom.scorekeeper.PreviewPlayerEntityData
 import com.waynebloom.scorekeeper.data.*
+import com.waynebloom.scorekeeper.data.model.EMPTY_MATCH_OBJECT
+import com.waynebloom.scorekeeper.data.model.GameEntity
+import com.waynebloom.scorekeeper.data.model.MatchObject
+import com.waynebloom.scorekeeper.data.model.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.ext.getWinningScore
+import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -54,7 +58,7 @@ fun MatchCard(
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min)
         ) {
-            val winningScore = match.scores.getWinningScore(ScoringMode.getModeByOrdinal(game.scoringMode))
+            val winningPlayer = match.players.getWinningPlayer(ScoringMode.getModeByOrdinal(game.scoringMode))
 
             if (showGameIdentifier) {
                 GameIdentifier(
@@ -62,10 +66,10 @@ fun MatchCard(
                     color = gameColor
                 )
             }
-            if (match.scores.isNotEmpty()) {
+            if (match.players.isNotEmpty()) {
                 VictorCard(
-                    name = winningScore?.name ?: "",
-                    score = winningScore?.scoreValue ?: 0,
+                    name = winningPlayer?.entity?.name ?: "",
+                    score = winningPlayer?.entity?.score ?: 0,
                     color = gameColor,
                     modifier = Modifier.weight(1f, fill = false)
                 )
@@ -73,7 +77,7 @@ fun MatchCard(
                 EmptyPlayersCard()
             }
             PlayerCountCard(
-                count = match.scores.size,
+                count = match.players.size,
                 color = gameColor
             )
         }
@@ -112,20 +116,18 @@ fun EmptyPlayersCard() {
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(all = 8.dp)
+            modifier = Modifier.padding(all = 8.dp)
         ) {
             Image(
                 imageVector = Icons.Rounded.Warning,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(MaterialTheme.colors.error),
                 modifier = Modifier
-                    .padding(horizontal = 2.dp)
-                    .padding(end = 4.dp)
+                    .padding(end = 8.dp)
                     .size(20.dp)
             )
             Text(
-                text = stringResource(id = R.string.text_empty_match_scores),
+                text = stringResource(id = R.string.text_empty_match_players),
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -229,23 +231,28 @@ fun PlayerCountCard(
     }
 }
 
-private fun getWinningScore(
-    scores: List<ScoreEntity>,
-    scoringMode: ScoringMode
-): ScoreEntity? {
-    return if (scoringMode == ScoringMode.Descending) {
-        scores.maxByOrNull { it.scoreValue ?: 0 }
-    } else scores.minByOrNull { it.scoreValue ?: 0 }
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun ScoreCardPreview() {
+    ScoreKeeperTheme {
+        MatchCard(
+            game = GameEntity(name = "WWWW"),
+            match = EMPTY_MATCH_OBJECT.apply {
+                players = PreviewPlayerEntityData.map { PlayerObject(entity = it) }
+            },
+            onSingleMatchTap = {}
+        )
+    }
 }
 
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-fun ScoreCardPreview() {
-    ScoreKeeperTheme() {
+fun EmptyScoreCardPreview() {
+    ScoreKeeperTheme {
         MatchCard(
             game = GameEntity(name = "WWWW"),
             match = EMPTY_MATCH_OBJECT.apply {
-                scores = PreviewScoreData
+                players = listOf()
             },
             onSingleMatchTap = {}
         )

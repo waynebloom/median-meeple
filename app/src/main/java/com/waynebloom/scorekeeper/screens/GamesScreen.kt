@@ -4,10 +4,10 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -28,7 +29,7 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
-import com.waynebloom.scorekeeper.data.GameEntity
+import com.waynebloom.scorekeeper.data.model.GameEntity
 import com.waynebloom.scorekeeper.enums.GamesTopBarState
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
@@ -163,22 +164,19 @@ fun GamesDefaultActionBar(
     themeColor: Color,
     onOpenSearchTap: () -> Unit
 ) {
-    Row {
-        Button(
-            onClick = { onOpenSearchTap() },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Transparent
-            ),
-            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.size(48.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Search,
-                tint = themeColor,
-                contentDescription = null
-            )
-        }
+    Box(
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .clickable { onOpenSearchTap() }
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.Search,
+            tint = themeColor,
+            contentDescription = null,
+            modifier = Modifier
+                .size(48.dp)
+                .padding(12.dp)
+        )
     }
 }
 

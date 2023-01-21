@@ -12,6 +12,8 @@ import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
 import com.waynebloom.scorekeeper.data.*
+import com.waynebloom.scorekeeper.data.model.GameObject
+import com.waynebloom.scorekeeper.data.model.MatchObject
 
 @Composable
 fun OverviewScreen(
@@ -120,9 +122,9 @@ fun MatchesHead(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         matches.forEachIndexed { index, match ->
-            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity
+            val parentGame = games.find { it.entity.id == match.entity.gameId }?.entity
                 ?: throw NoSuchElementException(
-                    stringResource(id = R.string.exc_no_game_with_id, match.entity.gameOwnerId)
+                    stringResource(id = R.string.exc_no_game_with_id, match.entity.gameId)
                 )
             MatchCard(
                 game = parentGame,

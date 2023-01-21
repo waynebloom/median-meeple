@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.data
+package com.waynebloom.scorekeeper.data.model
 
 import androidx.room.*
 import com.waynebloom.scorekeeper.enums.ScoringMode
@@ -10,13 +10,14 @@ val EMPTY_GAME_ENTITY = GameEntity(
 
 @Entity(tableName = "Game")
 data class GameEntity(
+
     @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    var id: Long = 0,
 
-    val color: String = "ORANGE",
+    var color: String = "ORANGE",
 
-    val name: String = "",
+    var name: String = "",
 
     @ColumnInfo(name = "scoring_mode", defaultValue = "1")
-    val scoringMode: Int = ScoringMode.Descending.ordinal
+    var scoringMode: Int = ScoringMode.Descending.ordinal
 )

@@ -1,6 +1,6 @@
 package com.waynebloom.scorekeeper.ext
 
-import com.waynebloom.scorekeeper.data.ScoreEntity
+import com.waynebloom.scorekeeper.data.model.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScoringMode
 
 fun <T> List<T>.updateElement(predicate: (T) -> Boolean, transform: (T) -> T): List<T> {
@@ -26,8 +26,8 @@ fun <T> List<T>.toAdSeparatedListlets(): List<List<T>> {
     return result
 }
 
-fun List<ScoreEntity>.getWinningScore(scoringMode: ScoringMode): ScoreEntity? {
+fun List<PlayerObject>.getWinningPlayer(scoringMode: ScoringMode): PlayerObject? {
     return if (scoringMode == ScoringMode.Descending) {
-        maxByOrNull { it.scoreValue ?: 0 }
-    } else minByOrNull { it.scoreValue ?: 0 }
+        maxByOrNull { it.entity.score ?: 0 }
+    } else minByOrNull { it.entity.score ?: 0 }
 }
