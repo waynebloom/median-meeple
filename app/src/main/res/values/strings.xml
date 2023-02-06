@@ -42,9 +42,7 @@
 
     <!-- region DetailedPlayerScoresScreen -->
 
-    <string name="button_add_player">Add Player</string>
     <string name="header_simple_scores">Simple Scores</string>
-    <string name="text_no_player_name">No name</string>
 
     <!-- endregion -->
 
@@ -63,6 +61,7 @@
 
     <!-- region EditPlayerScoreScreen -->
 
+    <string name="error_invalid_score">This is not a valid number.</string>
     <string name="field_detailed_view">Detailed Score</string>
     <string name="field_total_score">Total Score</string>
     <string name="field_uncategorized">Uncategorized</string>

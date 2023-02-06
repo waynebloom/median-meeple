@@ -1,8 +1,7 @@
-package com.waynebloom.scorekeeper.data.model
+package com.waynebloom.scorekeeper.data.model.subscoretitle
 
 import androidx.room.*
-
-val EMPTY_SUBSCORE_TITLE_ENTITY = SubscoreTitleEntity()
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
 
 @Entity(
     tableName = "SubscoreTitle",

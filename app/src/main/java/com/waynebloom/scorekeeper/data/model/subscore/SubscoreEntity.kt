@@ -1,8 +1,8 @@
-package com.waynebloom.scorekeeper.data.model
+package com.waynebloom.scorekeeper.data.model.subscore
 
 import androidx.room.*
-
-val EMPTY_SUBSCORE_ENTITY = SubscoreEntity()
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 
 @Entity(
     tableName = "Subscore",
@@ -38,6 +38,6 @@ data class SubscoreEntity(
     @ColumnInfo(name = "player_id")
     var playerId: Long = 0,
 
-    // TODO make this non-nullable, default 0
-    var value: Long? = null
+    var value: Long = 0
 )
+

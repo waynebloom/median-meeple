@@ -9,9 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
@@ -81,10 +78,4 @@ fun AdCard(
             }
         }
     }
-}
-
-fun showAdAtIndex(index: Int, listSize: Int): Boolean {
-    if (listSize == 0) return true
-    val offset = if (listSize <= 5) listSize - 1 else 4
-    return (index - offset) % 10 == 0
 }

@@ -5,30 +5,50 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.SoftwareKeyboardController
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
+import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
-import com.waynebloom.scorekeeper.ext.updateElement
+import com.waynebloom.scorekeeper.ext.statefulUpdateElement
+
+// TODO total and uncategorized score fields don't disable submit button when they are invalid
 
 class EditPlayerScoreViewModel(
     playerObject: PlayerObject,
     private val playerSubscores: MutableList<SubscoreEntity>,
     var subscoreTitles: List<SubscoreTitleEntity>,
     private val saveCallback: (EntityStateBundle<PlayerEntity>,
-        List<EntityStateBundle<SubscoreEntity>>) -> Unit
+        List<SubscoreStateBundle>) -> Unit
 ): ViewModel() {
 
     private var playerEntityNeedsUpdate = false
     private var saveWasTapped = false
 
     var initialPlayerEntity = playerObject.entity
-    var nameState: String by mutableStateOf(initialPlayerEntity.name)
-    var showDetailedScoreState: Boolean by mutableStateOf(initialPlayerEntity.showDetailedScore)
-    var subscoreStateBundles: List<EntityStateBundle<SubscoreEntity>> by mutableStateOf(listOf())
-    var totalScoreState: Long by mutableStateOf(initialPlayerEntity.score ?: 0)
-    var uncategorizedScoreRemainderState: Long by
-        mutableStateOf(playerObject.getUncategorizedScoreRemainder())
+    var nameState by mutableStateOf(initialPlayerEntity.name)
+    var showDetailedScoreState by mutableStateOf(initialPlayerEntity.showDetailedScore)
+    var subscoreStateBundles by mutableStateOf(listOf<SubscoreStateBundle>())
+    var totalScoreBundle by mutableStateOf(
+        SubscoreStateBundle(
+            entity = SubscoreEntity(
+                value = initialPlayerEntity.score
+            )
+        )
+    )
+    var scoreValuesAreValid by mutableStateOf(true)
+    var uncategorizedScoreBundle by mutableStateOf(
+        SubscoreStateBundle(
+            entity = SubscoreEntity(
+                value = playerObject.getUncategorizedScoreRemainder()
+            )
+        )
+    )
 
     // region Initialization
 
@@ -44,9 +64,9 @@ class EditPlayerScoreViewModel(
                     .find { it.subscoreTitleId == subscoreTitle.id }
 
                 if (correspondingSubscore != null) {
-                    EntityStateBundle(entity = correspondingSubscore)
+                    SubscoreStateBundle(entity = correspondingSubscore)
                 } else {
-                    EntityStateBundle(
+                    SubscoreStateBundle(
                         entity = SubscoreEntity(
                             subscoreTitleId = subscoreTitle.id,
                             playerId = initialPlayerEntity.id
@@ -59,12 +79,27 @@ class EditPlayerScoreViewModel(
 
     // endregion
 
+    private fun checkForInvalidScoreValues(latestInput: String) {
+        if (latestInput.toLongOrNull() != null) {
+            subscoreStateBundles.forEach {
+                if (!it.scoreStringIsValidLong) {
+                    scoreValuesAreValid = false
+                    return
+                }
+            }
+            scoreValuesAreValid = true
+        } else {
+            scoreValuesAreValid = false
+        }
+    }
+
     private fun getPlayerToCommit(): EntityStateBundle<PlayerEntity> {
         return EntityStateBundle(
-            entity = initialPlayerEntity.copy (
+            entity = initialPlayerEntity.copy(
                 name = nameState,
                 showDetailedScore = showDetailedScoreState,
-                score = subscoreStateBundles.sumOf { it.entity.value ?: 0 } + uncategorizedScoreRemainderState
+                score = subscoreStateBundles.sumOf { it.entity.value }
+                    + uncategorizedScoreBundle.entity.value
             ),
             databaseAction = if (playerEntityNeedsUpdate) {
                 DatabaseAction.UPDATE
@@ -81,6 +116,14 @@ class EditPlayerScoreViewModel(
         }
     }
 
+    private fun recalculateTotalScore() {
+        if (scoreValuesAreValid) {
+            val sumOfSubscores = subscoreStateBundles.sumOf { it.entity.value } +
+                uncategorizedScoreBundle.entity.value
+            totalScoreBundle.setScoreFromLong(sumOfSubscores)
+        }
+    }
+
     fun setName(name: String) {
         nameState = name
         playerEntityNeedsUpdate = true
@@ -91,32 +134,45 @@ class EditPlayerScoreViewModel(
         playerEntityNeedsUpdate = true
     }
 
-    fun updateSubscore(subscoreTitleId: Long, value: String) {
-        playerEntityNeedsUpdate = true
-        subscoreStateBundles = subscoreStateBundles.updateElement(
+    fun updateSubscoreStateById(subscoreTitleId: Long, textFieldValue: TextFieldValue) {
+        subscoreStateBundles = subscoreStateBundles.statefulUpdateElement(
             predicate = { it.entity.subscoreTitleId == subscoreTitleId },
-            transform = {
-                it.copy(
-                    entity = it.entity.copy(
-                        value = value.toLongOrNull()
-                    )
-                ).apply { databaseAction = DatabaseAction.UPDATE }
+            update = {
+                val textWasChanged = it.textFieldValue.text != textFieldValue.text
+                if (textWasChanged) {
+                    it.updateDatabaseAction(DatabaseAction.UPDATE)
+                    it.setScoreFromTextValue(textFieldValue)
+                    playerEntityNeedsUpdate = true
+                } else {
+                    it.textFieldValue = textFieldValue
+                }
             }
         )
+
+        checkForInvalidScoreValues(latestInput = textFieldValue.text)
+        recalculateTotalScore()
     }
 
-    fun updateTotalScore(score: String) {
-        val scoreToLong = score.toLongOrNull() ?: 0
-        uncategorizedScoreRemainderState += scoreToLong - totalScoreState
-        totalScoreState = scoreToLong
-        playerEntityNeedsUpdate = true
+    fun updateTotalScore(textFieldValue: TextFieldValue) {
+        val scoreLong = textFieldValue.text.toLongOrNull()
+        if (scoreLong != null) {
+            val adjustedUncategorizedScore =
+                uncategorizedScoreBundle.entity.value + scoreLong - totalScoreBundle.entity.value
+            uncategorizedScoreBundle.setScoreFromLong(adjustedUncategorizedScore)
+            playerEntityNeedsUpdate = true
+        }
+        totalScoreBundle.setScoreFromTextValue(textFieldValue)
     }
 
-    fun updateUncategorizedScoreRemainder(score: String) {
-        val scoreToLong = score.toLongOrNull() ?: 0
-        totalScoreState += scoreToLong - uncategorizedScoreRemainderState
-        uncategorizedScoreRemainderState = scoreToLong
-        playerEntityNeedsUpdate = true
+    fun updateUncategorizedScoreRemainder(textFieldValue: TextFieldValue) {
+        val scoreLong = textFieldValue.text.toLongOrNull()
+        if (scoreLong != null) {
+            val adjustedTotalScore =
+                totalScoreBundle.entity.value + scoreLong - uncategorizedScoreBundle.entity.value
+            totalScoreBundle.setScoreFromLong(adjustedTotalScore)
+            playerEntityNeedsUpdate = true
+        }
+        uncategorizedScoreBundle.setScoreFromTextValue(textFieldValue)
     }
 }
 
@@ -125,7 +181,7 @@ class EditPlayerScoreViewModelFactory(
     private val playerSubscores: List<SubscoreEntity>,
     private val subscoreTitles: List<SubscoreTitleEntity>,
     private val saveCallback: (EntityStateBundle<PlayerEntity>,
-        List<EntityStateBundle<SubscoreEntity>>) -> Unit
+        List<SubscoreStateBundle>) -> Unit
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = EditPlayerScoreViewModel(
         playerObject = playerObject,

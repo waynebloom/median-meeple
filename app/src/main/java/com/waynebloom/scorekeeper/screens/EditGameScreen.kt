@@ -39,11 +39,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.LocalGameColors
+import com.waynebloom.scorekeeper.PreviewGameEntities
+import com.waynebloom.scorekeeper.PreviewGameObjects
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.DullColoredTextCard
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
@@ -745,7 +750,7 @@ fun ColorSelectorClosed(
 fun EditGameScreenPreview() {
     ScoreKeeperTheme {
         EditGameScreen(
-            game = EMPTY_GAME_OBJECT,
+            game = PreviewGameObjects[0],
             saveGame = { _, _ -> },
             onDeleteTap = {}
         )

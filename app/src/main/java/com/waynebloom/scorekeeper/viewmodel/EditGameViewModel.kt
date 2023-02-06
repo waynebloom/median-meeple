@@ -7,9 +7,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.data.model.EntityStateBundle
-import com.waynebloom.scorekeeper.data.model.GameEntity
-import com.waynebloom.scorekeeper.data.model.GameObject
-import com.waynebloom.scorekeeper.data.model.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 
 enum class SubscoreTitleSectionHeaderState {
@@ -26,7 +26,7 @@ enum class SubscoreTitleSectionListState {
 class EditGameViewModel(
     initialGame: GameObject,
     private val saveCallback: (EntityStateBundle<GameEntity>,
-        List<EntityStateBundle<SubscoreTitleEntity>>) -> Unit
+                               List<EntityStateBundle<SubscoreTitleEntity>>) -> Unit
 ): ViewModel() {
 
     var initialGameEntity = initialGame.entity

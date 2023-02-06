@@ -8,6 +8,15 @@ import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.data.database.AppRepository
 import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.match.MatchEntity
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
+import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -159,7 +168,7 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
 
     // region Subscore
 
-    fun commitSubscoreBundles(bundles: List<EntityStateBundle<SubscoreEntity>>) {
+    fun commitSubscoreBundles(bundles: List<SubscoreStateBundle>) {
         bundles.forEach {
             when(it.databaseAction) {
                 DatabaseAction.INSERT -> { insertSubscore(it.entity) }
@@ -240,30 +249,30 @@ class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
 
     private fun clearMatchCache() {
         matchCache.apply {
-            dataObject = EMPTY_MATCH_OBJECT
+            dataObject = MatchObject()
             databaseEntityId = -1
         }
     }
 
     private fun clearPlayerCache() {
         playerCache.apply {
-            dataObject = EMPTY_PLAYER_OBJECT
+            dataObject = PlayerObject()
             databaseEntityId = -1
         }
     }
 
     fun updateGameCacheById(id: Long, games: List<GameObject>) {
-        gameCache.dataObject = games.find { it.entity.id == id } ?: EMPTY_GAME_OBJECT
+        gameCache.dataObject = games.find { it.entity.id == id } ?: GameObject()
         gameCache.databaseEntityId = id
     }
 
     fun updateMatchCacheById(id: Long, matches: List<MatchObject>) {
-        matchCache.dataObject = matches.find { it.entity.id == id } ?: EMPTY_MATCH_OBJECT
+        matchCache.dataObject = matches.find { it.entity.id == id } ?: MatchObject()
         matchCache.databaseEntityId = id
     }
 
     fun updatePlayerCacheById(id: Long, players: List<PlayerObject>) {
-        playerCache.dataObject = players.find { it.entity.id == id } ?: EMPTY_PLAYER_OBJECT
+        playerCache.dataObject = players.find { it.entity.id == id } ?: PlayerObject()
         playerCache.databaseEntityId = id
     }
 

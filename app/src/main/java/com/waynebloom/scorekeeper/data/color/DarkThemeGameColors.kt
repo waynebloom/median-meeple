@@ -1,6 +1,5 @@
 package com.waynebloom.scorekeeper.data.color
 
-import androidx.compose.ui.graphics.Color
 import com.waynebloom.scorekeeper.ui.theme.*
 
 class DarkThemeGameColors: GameColors() {

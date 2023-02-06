@@ -39,6 +39,11 @@ import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.data.model.match.MatchEntity
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.waynebloom.scorekeeper.ui.theme.orange100
@@ -290,7 +295,7 @@ fun PlayerCard(
                             .size(24.dp)
                     )
                     Text(
-                        text = player.score?.toString() ?: "?",
+                        text = player.score.toString(),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.body1,
                         fontWeight = FontWeight.SemiBold
@@ -310,7 +315,7 @@ fun PlayerCard(
 fun ScoresSectionPreview() {
     ScoreKeeperTheme {
         PlayersSection(
-            players = PreviewPlayerEntityData.map { PlayerObject(entity = it) },
+            players = PreviewPlayerEntities.map { PlayerObject(entity = it) },
             themeColor = orange100,
             onAddPlayerTap = {},
             onPlayerTap = {},
@@ -328,11 +333,11 @@ fun ScoresSectionPreview() {
 fun SingleMatchScreenPreview() {
     ScoreKeeperTheme {
         SingleMatchScreen(
-            game = PreviewGameData[0],
-            match = EMPTY_MATCH_OBJECT.apply {
-                entity = PreviewMatchData[0]
-                players = PreviewPlayerEntityData.map { PlayerObject(entity = it) }
-            },
+            game = PreviewGameEntities[0],
+            match = MatchObject(
+                entity = PreviewMatchEntities[0],
+                players = PreviewPlayerEntities.map { PlayerObject(entity = it) }
+            ),
             onAddPlayerTap = {},
             onDeleteMatchTap = {},
             onPlayerTap = {},

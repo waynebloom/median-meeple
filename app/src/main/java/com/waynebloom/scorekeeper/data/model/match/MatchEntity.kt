@@ -1,9 +1,8 @@
-package com.waynebloom.scorekeeper.data.model
+package com.waynebloom.scorekeeper.data.model.match
 
 import androidx.room.*
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import java.util.*
-
-val EMPTY_MATCH_ENTITY = MatchEntity(id = -1)
 
 @Entity(
     tableName = "Match",

@@ -1,12 +1,7 @@
-package com.waynebloom.scorekeeper.data.model
+package com.waynebloom.scorekeeper.data.model.game
 
 import androidx.room.*
 import com.waynebloom.scorekeeper.enums.ScoringMode
-
-val EMPTY_GAME_ENTITY = GameEntity(
-    id = -1,
-    name = "Empty"
-)
 
 @Entity(tableName = "Game")
 data class GameEntity(

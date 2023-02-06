@@ -29,7 +29,7 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
-import com.waynebloom.scorekeeper.data.model.GameEntity
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.enums.GamesTopBarState
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets

@@ -1,11 +1,10 @@
-package com.waynebloom.scorekeeper.data.model
+package com.waynebloom.scorekeeper.data.model.game
 
 import androidx.room.Embedded
 import androidx.room.Relation
-
-val EMPTY_GAME_OBJECT = GameObject(
-    entity = EMPTY_GAME_ENTITY
-)
+import com.waynebloom.scorekeeper.data.model.match.MatchEntity
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 
 data class GameObject(
     @Embedded

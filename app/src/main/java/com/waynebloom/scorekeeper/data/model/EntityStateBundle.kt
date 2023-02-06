@@ -2,7 +2,7 @@ package com.waynebloom.scorekeeper.data.model
 
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 
-class EntityStateBundle<T>(
+open class EntityStateBundle<T>(
     var entity: T,
     databaseAction: DatabaseAction = DatabaseAction.NO_ACTION
 ) {
@@ -11,7 +11,7 @@ class EntityStateBundle<T>(
             if (field == DatabaseAction.NO_ACTION) field = value
         }
 
-    fun copy(
+    open fun copy(
         entity: T = this.entity,
         databaseAction: DatabaseAction = this.databaseAction
     ) = EntityStateBundle(entity, databaseAction)

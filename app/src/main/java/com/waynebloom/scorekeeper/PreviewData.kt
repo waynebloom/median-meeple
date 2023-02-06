@@ -1,9 +1,15 @@
 package com.waynebloom.scorekeeper
 
-import com.waynebloom.scorekeeper.data.*
-import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.match.MatchEntity
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 
-val PreviewGameData: List<GameEntity> = listOf(
+val PreviewGameEntities: List<GameEntity> = listOf(
     GameEntity(name = "Carcassonne"),
     GameEntity(name = "Wingspan"),
     GameEntity(name = "Century: Golem Edition"),
@@ -14,7 +20,9 @@ val PreviewGameData: List<GameEntity> = listOf(
     GameEntity(name = "Catan"),
 )
 
-val PreviewPlayerEntityData: List<PlayerEntity> = listOf(
+val PreviewGameObjects: List<GameObject> = PreviewGameEntities.map { GameObject(entity = it) }
+
+val PreviewPlayerEntities: List<PlayerEntity> = listOf(
     PlayerEntity(
         name = "Wayne",
         score = 32
@@ -33,14 +41,14 @@ val PreviewPlayerEntityData: List<PlayerEntity> = listOf(
     )
 )
 
-val PreviewPlayerObjectData: List<PlayerObject> = PreviewPlayerEntityData.map {
+val PreviewPlayerObjects: List<PlayerObject> = PreviewPlayerEntities.map {
     PlayerObject(
         entity = it,
         score = listOf(SubscoreEntity(value = it.score))
     )
 }
 
-val PreviewMatchData: List<MatchEntity> = listOf(
+val PreviewMatchEntities: List<MatchEntity> = listOf(
     MatchEntity(
         matchNotes = "Example notes 1"
     ),
@@ -51,6 +59,8 @@ val PreviewMatchData: List<MatchEntity> = listOf(
         matchNotes = "Example notes 3"
     ),
 )
+
+val PreviewMatchObjects = PreviewMatchEntities.map { MatchObject(entity = it) }
 
 val PreviewSubscoreTitleEntities: List<SubscoreTitleEntity> = listOf(
     SubscoreTitleEntity(

@@ -1,8 +1,7 @@
-package com.waynebloom.scorekeeper.data.model
+package com.waynebloom.scorekeeper.data.model.player
 
 import androidx.room.*
-
-val EMPTY_PLAYER_ENTITY = PlayerEntity()
+import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 
 @Entity(
     tableName = "Player",
@@ -25,8 +24,7 @@ data class PlayerEntity(
 
     var name: String = "",
 
-    // TODO make this non-nullable, default 0
-    var score: Long? = null,
+    var score: Long = 0,
 
     var position: Int = 0,
 

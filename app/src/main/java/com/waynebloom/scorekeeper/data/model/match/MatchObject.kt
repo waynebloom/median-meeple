@@ -1,13 +1,13 @@
-package com.waynebloom.scorekeeper.data.model
+package com.waynebloom.scorekeeper.data.model.match
 
 import androidx.room.Embedded
 import androidx.room.Relation
-
-val EMPTY_MATCH_OBJECT = MatchObject()
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 
 data class MatchObject(
     @Embedded
-    var entity: MatchEntity = EMPTY_MATCH_ENTITY,
+    var entity: MatchEntity = MatchEntity(),
 
     @Relation(parentColumn = "id", entityColumn = "match_id", entity = PlayerEntity::class)
     var players: List<PlayerObject> = listOf()

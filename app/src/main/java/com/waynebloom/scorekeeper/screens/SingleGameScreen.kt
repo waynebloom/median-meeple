@@ -31,12 +31,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
+import com.waynebloom.scorekeeper.PreviewMatchObjects
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
-import com.waynebloom.scorekeeper.data.model.EMPTY_MATCH_OBJECT
-import com.waynebloom.scorekeeper.data.model.GameEntity
-import com.waynebloom.scorekeeper.data.model.GameObject
-import com.waynebloom.scorekeeper.data.model.MatchObject
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.enums.MatchSortingMode
 import com.waynebloom.scorekeeper.enums.ScoringMode
@@ -489,11 +489,7 @@ fun SingleGameScreenPreview() {
                     name = "Wingspan",
                     color = "ORANGE"
                 ),
-                matches = listOf(
-                    EMPTY_MATCH_OBJECT,
-                    EMPTY_MATCH_OBJECT,
-                    EMPTY_MATCH_OBJECT
-                )
+                matches = PreviewMatchObjects
             ),
             currentAd = null,
             onEditGameTap = {},

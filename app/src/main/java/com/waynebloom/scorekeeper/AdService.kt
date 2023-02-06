@@ -9,7 +9,7 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.enums.AdmobID
 
 class AdService(context: Context) {
-    var adLoader: AdLoader? = null
+    private var adLoader: AdLoader? = null
     var currentAd: MutableState<NativeAd?> = mutableStateOf(null)
 
     companion object {

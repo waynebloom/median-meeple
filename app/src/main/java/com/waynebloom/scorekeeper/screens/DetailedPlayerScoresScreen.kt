@@ -1,6 +1,5 @@
 package com.waynebloom.scorekeeper.screens
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,7 +10,6 @@ import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.runtime.Composable
@@ -24,6 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,13 +31,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.DullColoredTextCard
-import com.waynebloom.scorekeeper.data.model.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.PlayerObject
-import com.waynebloom.scorekeeper.data.model.SubscoreEntity
-import com.waynebloom.scorekeeper.data.model.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
-import com.waynebloom.scorekeeper.ui.theme.taupe100
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModel
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModelFactory
 import java.util.*
@@ -427,8 +425,8 @@ fun EditScoresPageActions(
 fun EditScoresScreenPreview() {
     ScoreKeeperTheme {
         DetailedPlayerScoresScreen(
-            players = PreviewPlayerObjectData.plus(
-                PreviewPlayerObjectData[0].apply {
+            players = PreviewPlayerObjects.plus(
+                PreviewPlayerObjects[0].apply {
                     entity.showDetailedScore = true
                     score = PreviewSubscoreEntities
                 }

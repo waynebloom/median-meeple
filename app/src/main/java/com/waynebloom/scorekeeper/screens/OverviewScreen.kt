@@ -11,9 +11,8 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
-import com.waynebloom.scorekeeper.data.*
-import com.waynebloom.scorekeeper.data.model.GameObject
-import com.waynebloom.scorekeeper.data.model.MatchObject
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
 
 @Composable
 fun OverviewScreen(

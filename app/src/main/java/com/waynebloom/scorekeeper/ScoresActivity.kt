@@ -21,7 +21,8 @@ import com.google.android.gms.ads.MobileAds
 import com.waynebloom.scorekeeper.data.color.DarkThemeGameColors
 import com.waynebloom.scorekeeper.data.color.GameColors
 import com.waynebloom.scorekeeper.data.color.LightThemeGameColors
-import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
 import com.waynebloom.scorekeeper.viewmodel.GamesViewModel
