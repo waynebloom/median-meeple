@@ -119,7 +119,16 @@ fun ScoresNavHost(
                         .take(6),
                     currentAd = currentAd,
                     onSeeAllGamesTap = { navController.navigate(ScorekeeperScreen.Games.name) },
-                    onAddNewGameTap = { navController.navigate(ScorekeeperScreen.EditGame.name) },
+                    onAddNewGameTap = {
+                        with(viewModel) {
+                            executeDbOperation(
+                                operation = {
+                                    insertNewEmptyGame()
+                                }
+                            )
+                            navController.navigate(ScorekeeperScreen.EditGame.name)
+                        }
+                    },
                     onSingleGameTap = { gameId ->
                         viewModel.updateGameCacheById(id = gameId, games = allGames)
                         navController.navigate(ScorekeeperScreen.SingleGame.name)
