@@ -22,7 +22,9 @@ class DetailedPlayerScoresViewModel(
 
     init {
         subscoreTitles = subscoreTitles.sortedBy { it.position }
-        includeUncategorizedScoreColumn = players.any { it.uncategorizedScore != 0L }
+        includeUncategorizedScoreColumn = players
+            .filter { it.entity.showDetailedScore }
+            .any { it.uncategorizedScore != 0L }
         subscoreTitleStrings = getSubscoreTitleStrings(resources)
     }
 
