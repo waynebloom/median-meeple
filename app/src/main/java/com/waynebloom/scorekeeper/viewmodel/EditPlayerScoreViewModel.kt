@@ -45,7 +45,7 @@ class EditPlayerScoreViewModel(
     var uncategorizedScoreBundle by mutableStateOf(
         SubscoreStateBundle(
             entity = SubscoreEntity(
-                value = playerObject.getUncategorizedScoreRemainder()
+                value = playerObject.uncategorizedScore
             )
         )
     )

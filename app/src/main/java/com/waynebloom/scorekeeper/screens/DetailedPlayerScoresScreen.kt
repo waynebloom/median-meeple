@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -56,6 +55,7 @@ fun DetailedPlayerScoresScreen(
         key = ScorekeeperScreen.DetailedPlayerScores.name,
         factory = DetailedPlayerScoresViewModelFactory(
             initialSubscoreTitles = subscoreTitles,
+            players = players,
             resources = LocalContext.current.resources
         )
     )
@@ -106,7 +106,7 @@ fun DetailedPlayerScoresScreen(
                     DetailedPlayerCard(
                         playerName = player.entity.name,
                         subscores = viewModel
-                            .getSubscoreColumnsInOrder(player)
+                            .getSubscoresInOrder(player)
                             .slice(subscoreIndicesToDisplay),
                         isFirstSubscoreDisplayed = isFirstSubscoreDisplayed,
                         playerIdentifierScreenPortion = playerIdentifierWeight,
