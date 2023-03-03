@@ -1,6 +1,5 @@
 *.iml
 .gradle
-/app/schemas
 /app/release
 /local.properties
 /.idea/.name

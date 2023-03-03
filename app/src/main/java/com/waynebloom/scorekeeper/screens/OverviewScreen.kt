@@ -11,7 +11,8 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
-import com.waynebloom.scorekeeper.data.*
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
 
 @Composable
 fun OverviewScreen(
@@ -120,9 +121,9 @@ fun MatchesHead(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         matches.forEachIndexed { index, match ->
-            val parentGame = games.find { it.entity.id == match.entity.gameOwnerId }?.entity
+            val parentGame = games.find { it.entity.id == match.entity.gameId }?.entity
                 ?: throw NoSuchElementException(
-                    stringResource(id = R.string.exc_no_game_with_id, match.entity.gameOwnerId)
+                    stringResource(id = R.string.exc_no_game_with_id, match.entity.gameId)
                 )
             MatchCard(
                 game = parentGame,
@@ -139,42 +140,4 @@ fun MatchesHead(
         }
     }
 }
-
-/*@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun GameCardPreview() {
-    HighScoresTheme {
-        GameCard(
-            name = "Carcassonne",
-            onClick = {}
-        )
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun ScoreCardPreview() {
-    HighScoresTheme {
-        ScoreCard(
-            score = PreviewScoreData[0],
-            onSingleScoreTap = {}
-        )
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun GameListPreview() {
-    HighScoresTheme {
-        GamesHead(PreviewGameData, {}, {})
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun ScoresHeadPreview() {
-    HighScoresTheme {
-        ScoresHead(PreviewScoreData) {}
-    }
-}*/
 

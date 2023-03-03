@@ -9,8 +9,6 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
-import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -42,12 +40,14 @@ fun SearchActionBar(
     Row(
         verticalAlignment = Alignment.CenterVertically
     ) {
+
         Icon(
             imageVector = Icons.Rounded.Search,
             contentDescription = null,
             tint = themeColor,
             modifier = Modifier.padding(horizontal = 16.dp)
         )
+
         CompositionLocalProvider(
             LocalTextSelectionColors.provides(textSelectionColors)
         ) {
@@ -71,19 +71,19 @@ fun SearchActionBar(
                     .onFocusChanged { searchBarFocused = it.hasFocus }
             )
         }
-        Button(
-            onClick = { onCloseTap() },
-            colors = ButtonDefaults.buttonColors(
-                backgroundColor = Color.Transparent
-            ),
-            elevation = ButtonDefaults.elevation(defaultElevation = 0.dp),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier.size(48.dp)
+
+        Box(
+            modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
+                .clickable { onCloseTap() }
         ) {
             Icon(
                 imageVector = Icons.Rounded.Close,
                 tint = themeColor,
-                contentDescription = null
+                contentDescription = null,
+                modifier = Modifier
+                    .size(48.dp)
+                    .padding(12.dp)
             )
         }
     }

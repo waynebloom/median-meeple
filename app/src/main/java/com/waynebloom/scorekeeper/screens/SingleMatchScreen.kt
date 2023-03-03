@@ -1,7 +1,8 @@
 package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration
-import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -13,33 +14,42 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.components.DullColoredTextCard
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.*
-import com.waynebloom.scorekeeper.enums.DatabaseAction
-import com.waynebloom.scorekeeper.exceptions.NullGameCache
-import com.waynebloom.scorekeeper.exceptions.NullMatchCache
-import com.waynebloom.scorekeeper.ext.updateElement
+import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.data.model.match.MatchEntity
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.ext.toShortScoreFormat
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.waynebloom.scorekeeper.ui.theme.orange100
+import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModel
+import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModelFactory
 import java.util.*
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -47,321 +57,293 @@ import java.util.*
 fun SingleMatchScreen(
     game: GameEntity,
     match: MatchObject,
-    onSaveTap: (MatchEntity, List<ScoreObject>) -> Unit,
-    modifier: Modifier = Modifier,
-    onDeleteMatchTap: (Long) -> Unit = {},
-    openInEditMode: Boolean = false,
-    isNewMatch: Boolean = false
+    onAddPlayerTap: () -> Unit,
+    onDeleteMatchTap: (Long) -> Unit,
+    onPlayerTap: (Long) -> Unit,
+    onViewDetailedScoresTap: () -> Unit,
+    saveMatch: (EntityStateBundle<MatchEntity>) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    var editMode: Boolean by rememberSaveable(openInEditMode) { mutableStateOf(openInEditMode) }
-    var newScores: List<ScoreObject> by rememberSaveable(match.scores) {
-        mutableStateOf(match.scores.map { ScoreObject(it) })
-    }
-    var newNotes: String by rememberSaveable(match.entity.matchNotes) { mutableStateOf(match.entity.matchNotes) }
-
-    val gameColor = LocalGameColors.current.getColorByKey(game.color)
-    val textSelectionColors = TextSelectionColors(
-        handleColor = gameColor,
-        backgroundColor = gameColor.copy(0.3f)
+    val viewModel = viewModel<SingleMatchViewModel>(
+        key = ScorekeeperScreen.SingleMatch.name,
+        factory = SingleMatchViewModelFactory(
+            matchEntity = match.entity,
+            saveCallback = saveMatch
+        )
     )
-    val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val themeColor: Color = LocalGameColors.current.getColorByKey(game.color)
+    val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
+        focusedBorderColor = themeColor,
+        focusedLabelColor = themeColor,
+        cursorColor = themeColor,
+        disabledBorderColor = themeColor.copy(0.75f)
+    )
+    val textSelectionColors = TextSelectionColors(
+        handleColor = themeColor,
+        backgroundColor = themeColor.copy(0.3f)
+    )
 
-    CompositionLocalProvider(
-        LocalTextSelectionColors.provides(textSelectionColors)
-    ) {
-        Column(modifier = modifier) {
-            val buttonOnClick: () -> Unit
-            val buttonIcon: ImageVector
-            if (editMode) {
-                buttonIcon = Icons.Rounded.Done
-                buttonOnClick = {
-                    editMode = false
-                    keyboardController?.hide()
-                    focusManager.clearFocus(true)
-                    onSaveTap(
-                        MatchEntity(
-                            id = match.entity.id,
-                            gameOwnerId = game.id,
-                            timeModified = Date().time,
-                            matchNotes = newNotes
-                        ),
-                        newScores
-                    )
-                    newScores = match.scores.map { ScoreObject(it) }
-                }
-            } else {
-                buttonIcon = Icons.Rounded.Edit
-                buttonOnClick = { editMode = true }
-            }
-            ScreenHeader(
-                title = game.name,
-                color = gameColor
-            )
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState())
+    Column(modifier = modifier) {
+        ScreenHeader(
+            title = game.name,
+            color = themeColor
+        )
+
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
+
+            HeadedSection(
+                title = R.string.header_players,
+                topPadding = 40
             ) {
-                HeadedSection(
-                    title = R.string.header_scores,
-                    topPadding = 40
+                PlayersSection(
+                    players = match.players,
+                    themeColor = themeColor,
+                    onAddPlayerTap = onAddPlayerTap,
+                    onPlayerTap = onPlayerTap,
+                    onViewDetailedScoresTap = onViewDetailedScoresTap
+                )
+            }
+
+            HeadedSection(title = R.string.header_other) {
+                CompositionLocalProvider(
+                    LocalTextSelectionColors.provides(textSelectionColors)
                 ) {
-                    ScoresSection(
-                        scores = newScores,
-                        gameColor = gameColor,
-                        editMode = editMode,
-                        focusManager = focusManager,
-                        onScoreChange = { scoreToChange, updatedEntity ->
-                            newScores = newScores.updateElement({it == scoreToChange}) {
-                                scoreToChange.copy(
-                                    entity = updatedEntity,
-                                    action = if (scoreToChange.action != DatabaseAction.INSERT) {
-                                        DatabaseAction.UPDATE
-                                    } else scoreToChange.action
-                                )
-                            }
-                        },
-                        onNewScoreTap = {
-                            val newScore = ScoreObject(
-                                entity = ScoreEntity(matchId = match.entity.id),
-                                action = DatabaseAction.INSERT
-                            )
-                            newScores = newScores.plus(newScore)
-                        },
-                        onDeleteScoreTap = { score ->
-                            newScores = if (score.action != DatabaseAction.INSERT) {
-                                newScores.updateElement({it == score}) {
-                                    score.copy(action = DatabaseAction.DELETE)
-                                }
-                            } else {
-                                newScores.minus(score)
-                            }
-                        }
-                    )
-                }
-                HeadedSection(title = R.string.header_other) {
                     OutlinedTextField(
-                        value = newNotes,
+                        value = viewModel.notesState,
                         label = { Text(text = stringResource(id = R.string.field_notes)) },
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = gameColor,
-                            focusedLabelColor = gameColor,
-                            cursorColor = gameColor,
-                            disabledBorderColor = gameColor.copy(0.75f)
-                        ),
-                        onValueChange = { newNotes = it },
-                        enabled = editMode,
-                        singleLine = true,
+                        colors = textFieldColors,
+                        onValueChange = { viewModel.updateNotes(it) },
                         keyboardOptions = KeyboardOptions(
                             autoCorrect = true,
                             capitalization = KeyboardCapitalization.Sentences,
                             imeAction = ImeAction.Done,
                         ),
                         keyboardActions = KeyboardActions(
-                            onDone = { buttonOnClick() }
+                            onDone = { viewModel.onSaveTap(keyboardController, focusManager) }
                         ),
+                        maxLines = 8,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
-                Row(modifier = Modifier.padding(top = 16.dp)) {
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = gameColor,
-                            contentColor = MaterialTheme.colors.onPrimary
-                        ),
-                        onClick = { buttonOnClick() },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .weight(1f)
-                    ) {
-                        Icon(imageVector = buttonIcon, contentDescription = null)
-                    }
-                    if (!isNewMatch) {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                            onClick = { onDeleteMatchTap(match.entity.id) },
-                            modifier = Modifier
-                                .padding(start = 16.dp)
-                                .height(48.dp)
-                                .weight(1f)
-                        ) {
-                            Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                        }
-                    }
-                }
-                Spacer(Modifier.height(16.dp))
             }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = 16.dp)
+            ) {
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(
+                        backgroundColor = themeColor,
+                        contentColor = MaterialTheme.colors.onPrimary
+                    ),
+                    onClick = { viewModel.onSaveTap(keyboardController, focusManager) },
+                    modifier = Modifier
+                        .height(48.dp)
+                        .weight(1f),
+                    content = {
+                        Icon(imageVector = Icons.Rounded.Done, contentDescription = null)
+                    }
+                )
+
+                Button(
+                    colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
+                    onClick = { onDeleteMatchTap(match.entity.id) },
+                    modifier = Modifier
+                        .height(48.dp)
+                        .weight(1f),
+                    content = {
+                        Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun ScoresSection(
-    scores: List<ScoreObject>,
-    gameColor: Color,
-    editMode: Boolean,
-    focusManager: FocusManager,
-    onScoreChange: (ScoreObject, ScoreEntity) -> Unit,
-    onNewScoreTap: () -> Unit,
-    onDeleteScoreTap: (ScoreObject) -> Unit
+fun PlayersSection(
+    players: List<PlayerObject>,
+    themeColor: Color,
+    onAddPlayerTap: () -> Unit,
+    onPlayerTap: (Long) -> Unit,
+    onViewDetailedScoresTap: () -> Unit
 ) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        scores.forEach { score ->
-            if (score.action != DatabaseAction.DELETE)
-                ScoreCard(
-                    score = score,
-                    gameColor = gameColor,
-                    editMode = editMode,
-                    focusManager = focusManager,
-                    onScoreChange = { scoreToChange, updatedScore -> onScoreChange(scoreToChange, updatedScore) },
-                    onDeleteTap = onDeleteScoreTap
-                )
-        }
-        if (scores.isEmpty() || scores.find { it.action != DatabaseAction.DELETE } == null) {
-            val emptyContentColor = gameColor.copy(alpha = 0.5f)
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .border(
-                        width = 1.dp,
-                        color = emptyContentColor,
-                        shape = MaterialTheme.shapes.small
-                    )
-                    .height(64.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    color = emptyContentColor,
-                    text = stringResource(id = R.string.text_empty_scores)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+        if (players.isNotEmpty()) {
+            val playersInRankOrder = players.sortedBy { it.entity.score.toBigDecimal() }.reversed()
+            playersInRankOrder.forEachIndexed { index, score ->
+                PlayerCard(
+                    player = score.entity,
+                    rank = index + 1,
+                    themeColor = themeColor,
+                    onPlayerTap = onPlayerTap
                 )
             }
+        } else {
+            DullColoredTextCard(
+                text = stringResource(id = R.string.text_empty_players),
+                color = themeColor
+            )
         }
-        if (editMode) {
+
+        Row(modifier = Modifier.padding(top = 8.dp)) {
+
             Button(
+                onClick = { onViewDetailedScoresTap() },
                 colors = ButtonDefaults.buttonColors(
-                    backgroundColor = gameColor,
-                    contentColor = MaterialTheme.colors.onPrimary
+                    backgroundColor = MaterialTheme.colors.surface,
+                    contentColor = themeColor
                 ),
-                onClick = { onNewScoreTap() },
                 modifier = Modifier
-                    .fillMaxWidth()
                     .height(48.dp)
+                    .weight(1f),
+                content = {
+                    Icon(imageVector = Icons.Rounded.List, contentDescription = null)
+                }
+            )
+
+            Button(
+                onClick = { onAddPlayerTap() },
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = MaterialTheme.colors.surface,
+                    contentColor = themeColor
+                ),
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .height(48.dp)
+                    .weight(1f),
+                content = {
+                    Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun PlayerCard(
+    player: PlayerEntity,
+    rank: Int,
+    themeColor: Color,
+    onPlayerTap: (Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            text = rank.toString(),
+            modifier = Modifier
+                .padding(end = 16.dp)
+                .sizeIn(minWidth = 16.dp),
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.h6,
+        )
+
+        Surface(
+            shape = MaterialTheme.shapes.small,
+            modifier = modifier
+                .fillMaxWidth()
+                .clip(MaterialTheme.shapes.small)
+                .clickable { onPlayerTap(player.id) },
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
                 ) {
-                    Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
-                    Icon(imageVector = Icons.Rounded.Person, contentDescription = null)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun ScoreCard(
-    score: ScoreObject,
-    gameColor: Color,
-    editMode: Boolean,
-    focusManager: FocusManager,
-    onScoreChange: (ScoreObject, ScoreEntity) -> Unit,
-    onDeleteTap: (ScoreObject) -> Unit
-) {
-    val textFieldHeight = TextFieldDefaults.MinHeight
-    val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        focusedBorderColor = gameColor,
-        focusedLabelColor = gameColor,
-        cursorColor = gameColor,
-        disabledBorderColor = gameColor.copy(0.75f)
-    )
-
-    Row {
-        Icon(
-            imageVector = Icons.Rounded.Person,
-            contentDescription = null,
-            tint = gameColor,
-            modifier = Modifier
-                .padding(end = 16.dp, top = 20.dp)
-                .weight(0.15f)
-                .size(32.dp)
-        )
-        Column(modifier = Modifier.weight(0.9f)) {
-            OutlinedTextField(
-                value = score.entity.name,
-                label = { Text(text = stringResource(id = R.string.field_name)) },
-                colors = textFieldColors,
-                onValueChange = {
-                    onScoreChange(score, score.entity.copy(name = it))
-                },
-                enabled = editMode,
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words,
-                    imeAction = ImeAction.Next
-                ),
-                keyboardActions = KeyboardActions(
-                    onNext = { focusManager.moveFocus(FocusDirection.Next) }
-                ),
-                modifier = Modifier
-                    .padding(bottom = 8.dp)
-                    .fillMaxWidth()
-            )
-            Row(verticalAlignment = Alignment.Bottom) {
-                OutlinedTextField(
-                    value = score.entity.scoreValue?.toString() ?: "",
-                    label = { Text(text = stringResource(id = R.string.field_score)) },
-                    colors = textFieldColors,
-                    onValueChange = {
-                        onScoreChange(score, score.entity.copy(scoreValue = it.toLongOrNull()))
-                    },
-                    enabled = editMode,
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onNext = { focusManager.moveFocus(FocusDirection.Next) }
-                    ),
-                    modifier = Modifier
-                        .weight(0.85f)
-                )
-                if (editMode) {
-                    Button(
-                        onClick = { onDeleteTap(score) },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.error),
+                    Image(
+                        painterResource(id = R.drawable.ic_person),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(themeColor),
                         modifier = Modifier
-                            .weight(0.25f)
-                            .height(textFieldHeight)
-                            .padding(start = 16.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Delete,
-                            contentDescription = null
-                        )
-                    }
+                            .padding(end = 8.dp)
+                            .size(20.dp)
+                    )
+                    Text(
+                        text = player.name,
+                        textAlign = TextAlign.Start,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.body1,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f, fill = false)
+                ) {
+                    Image(
+                        painterResource(id = R.drawable.ic_star),
+                        contentDescription = null,
+                        colorFilter = ColorFilter.tint(themeColor),
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .size(24.dp)
+                    )
+                    Text(
+                        text = player.score.toShortScoreFormat(),
+                        textAlign = TextAlign.Start,
+                        style = MaterialTheme.typography.body1,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
             }
         }
     }
 }
 
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(
+    backgroundColor = 0xFF333333,
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
 @Composable
 fun ScoresSectionPreview() {
     ScoreKeeperTheme {
-        ScoresSection(
-            scores = PreviewScoreData.map { ScoreObject(it) },
-            gameColor = orange100,
-            editMode = false,
-            focusManager = LocalFocusManager.current,
-            onScoreChange = {_,_->},
-            onNewScoreTap = {},
-            onDeleteScoreTap = {}
+        PlayersSection(
+            players = PreviewPlayerEntities.map { PlayerObject(entity = it) },
+            themeColor = orange100,
+            onAddPlayerTap = {},
+            onPlayerTap = {},
+            onViewDetailedScoresTap = {},
+        )
+    }
+}
+
+@Preview(
+    backgroundColor = 0xFF333333,
+    showBackground = true,
+    uiMode = Configuration.UI_MODE_NIGHT_YES
+)
+@Composable
+fun SingleMatchScreenPreview() {
+    ScoreKeeperTheme {
+        SingleMatchScreen(
+            game = PreviewGameEntities[0],
+            match = MatchObject(
+                entity = PreviewMatchEntities[0],
+                players = PreviewPlayerEntities.map { PlayerObject(entity = it) }
+            ),
+            onAddPlayerTap = {},
+            onDeleteMatchTap = {},
+            onPlayerTap = {},
+            onViewDetailedScoresTap = {},
+            saveMatch = {}
         )
     }
 }

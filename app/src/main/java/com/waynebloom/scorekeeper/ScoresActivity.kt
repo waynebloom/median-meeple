@@ -11,23 +11,21 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.screens.*
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.google.android.gms.ads.MobileAds
 import com.waynebloom.scorekeeper.data.color.DarkThemeGameColors
 import com.waynebloom.scorekeeper.data.color.GameColors
 import com.waynebloom.scorekeeper.data.color.LightThemeGameColors
+import com.waynebloom.scorekeeper.data.model.game.GameObject
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
+import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
-import com.waynebloom.scorekeeper.exceptions.NullGameCache
-import com.waynebloom.scorekeeper.exceptions.NullNavArgument
+import com.waynebloom.scorekeeper.viewmodel.GamesViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 
@@ -42,7 +40,7 @@ class ScoresActivity : ComponentActivity() {
         gamesViewModel = ViewModelProvider(this)[GamesViewModel::class.java]
         MobileAds.initialize(this)
         setContent {
-            ScorekeeperApp(gamesViewModel = gamesViewModel)
+            ScorekeeperApp(viewModel = gamesViewModel)
         }
     }
 
@@ -53,15 +51,15 @@ class ScoresActivity : ComponentActivity() {
 }
 
 @Composable
-fun ScorekeeperApp(gamesViewModel: GamesViewModel) {
+fun ScorekeeperApp(viewModel: GamesViewModel) {
     ScoreKeeperTheme {
         val navController = rememberNavController()
 
         LaunchedEffect(true) {
             while (true) {
-                gamesViewModel.adService.loadNewAd()
+                viewModel.adService.loadNewAd()
                 delay(AdService.NEW_AD_REQUEST_DELAY_MS)
-                gamesViewModel.adService.currentAd.value = null
+                viewModel.adService.currentAd.value = null
                 delay(AdService.BETWEEN_ADS_DELAY_MS)
             }
         }
@@ -72,7 +70,7 @@ fun ScorekeeperApp(gamesViewModel: GamesViewModel) {
             Scaffold { innerPadding ->
                 ScoresNavHost(
                     navController = navController,
-                    gamesViewModel = gamesViewModel,
+                    viewModel = viewModel,
                     modifier = Modifier.padding(innerPadding)
                 )
             }
@@ -83,26 +81,27 @@ fun ScorekeeperApp(gamesViewModel: GamesViewModel) {
 @Composable
 fun ScoresNavHost(
     navController: NavHostController,
-    gamesViewModel: GamesViewModel,
+    viewModel: GamesViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val currentAd = gamesViewModel.adService.currentAd.value
+    val currentAd = viewModel.adService.currentAd.value
 
     NavHost(
         navController = navController,
         startDestination = ScorekeeperScreen.Overview.name,
         modifier = modifier
     ) {
-        // OverviewScreen
+        // region OverviewScreen
+
         composable(ScorekeeperScreen.Overview.name) {
             var allGames: List<GameObject> by remember { mutableStateOf(listOf()) }
             var allMatches: List<MatchObject> by remember { mutableStateOf(listOf()) }
             var isLoading: Boolean by remember { mutableStateOf(true) }
 
             LaunchedEffect("$route%getData") {
-                gamesViewModel.games
-                    .combine(gamesViewModel.matches) { games, matches ->
+                viewModel.games
+                    .combine(viewModel.matches) { games, matches ->
                         allGames = games
                         allMatches = matches
                     }
@@ -120,31 +119,44 @@ fun ScoresNavHost(
                         .take(6),
                     currentAd = currentAd,
                     onSeeAllGamesTap = { navController.navigate(ScorekeeperScreen.Games.name) },
-                    onAddNewGameTap = { navigateToEditGame(navController, isNewGame = true) },
+                    onAddNewGameTap = {
+                        with(viewModel) {
+                            executeDbOperation(
+                                operation = {
+                                    insertNewEmptyGame()
+                                }
+                            )
+                            navController.navigate(ScorekeeperScreen.EditGame.name)
+                        }
+                    },
                     onSingleGameTap = { gameId ->
-                        gamesViewModel.cachedGameObject = findGameById(gameId, allGames)
+                        viewModel.updateGameCacheById(id = gameId, games = allGames)
                         navController.navigate(ScorekeeperScreen.SingleGame.name)
                     },
                     onSingleMatchTap = { matchId ->
-                        val selectedMatch = findMatchById(matchId, allMatches)
-                        gamesViewModel.cachedMatchObject = selectedMatch
-                        gamesViewModel.cachedGameObject = findGameById(
-                            id = selectedMatch.entity.gameOwnerId,
-                            games = allGames
-                        )
-                        navigateToSingleMatch(navController, isNewMatch = false)
+                        with(viewModel) {
+                            updateMatchCacheById(id = matchId, matches = allMatches)
+                            updateGameCacheById(
+                                id = matchCache.dataObject.entity.gameId,
+                                games = allGames
+                            )
+                        }
+                        navController.navigate(ScorekeeperScreen.SingleMatch.name)
                     }
                 )
             }
         }
 
-        // GamesScreen
+        // endregion
+
+        // region GamesScreen
+
         composable(ScorekeeperScreen.Games.name) {
             var isLoading by remember { mutableStateOf(true) }
             var allGames: List<GameObject> by remember { mutableStateOf(listOf()) }
 
             LaunchedEffect("$route%getGames") {
-                gamesViewModel.games.collectLatest {
+                viewModel.games.collectLatest {
                     allGames = it
                     isLoading = false
                 }
@@ -156,245 +168,212 @@ fun ScoresNavHost(
                 GamesScreen(
                     games = allGames.map { it.entity },
                     currentAd = currentAd,
-                    onAddNewGameTap = { navigateToEditGame(navController, isNewGame = true) },
+                    onAddNewGameTap = {
+                        with(viewModel) {
+                            executeDbOperation(
+                                operation = {
+                                    insertNewEmptyGame()
+                                }
+                            )
+                            navController.navigate(ScorekeeperScreen.EditGame.name)
+                        }
+                    },
                     onSingleGameTap = { gameId ->
-                        gamesViewModel.cachedGameObject = findGameById(gameId, allGames)
+                        viewModel.updateGameCacheById(id = gameId, games = allGames)
                         navController.navigate(ScorekeeperScreen.SingleGame.name)
                     }
                 )
             }
         }
 
-        // GamesScreen w/ delete intent
-        composable(
-            route = "${ScorekeeperScreen.Games.name}/delete/{id}",
-            arguments = listOf(
-                navArgument("id") {
-                    type = NavType.LongType
-                }
-            )
-        ) { entry ->
-            val targetGameId = entry.arguments?.getLong("id", 0) ?: 0
-            with(gamesViewModel) {
-                executeDbOperation { deleteGameById(targetGameId) }
-            }
-            val allGames = gamesViewModel.games.collectAsState(listOf()).value
+        // endregion
 
-            GamesScreen(
-                games = allGames.map { it.entity },
-                currentAd = currentAd,
-                onAddNewGameTap = { navigateToEditGame(navController, isNewGame = true) },
-                onSingleGameTap = { gameId ->
-                    gamesViewModel.cachedGameObject = findGameById(gameId, allGames)
-                    navController.navigate(ScorekeeperScreen.SingleGame.name)
-                }
-            )
-        }
+        // region SingleGameScreen
 
-        // SingleGameScreen
         composable(route = ScorekeeperScreen.SingleGame.name) {
             SingleGameScreen(
-                game = gamesViewModel.cachedGameObject,
+                game = viewModel.gameCache.dataObject,
                 currentAd = currentAd,
-                onEditGameTap = { navigateToEditGame(navController, isNewGame = false) },
-                onNewMatchTap = { navigateToSingleMatch(navController, isNewMatch = true) },
-                onSingleMatchTap = { matchId ->
-                    gamesViewModel.cachedMatchObject = findMatchById(
-                        id = matchId,
-                        matches = gamesViewModel.cachedGameObject.matches
-                    )
-
-                    navigateToSingleMatch(navController, isNewMatch = false)
-                }
-            )
-        }
-
-        // SingleGameScreen w/ delete intent
-        composable(
-            route = "${ScorekeeperScreen.SingleGame.name}/delete/{matchId}",
-            arguments = listOf(
-                navArgument("matchId") {
-                    type = NavType.LongType
-                }
-            )
-        ) { entry ->
-            val deleteTargetMatchId = entry.arguments?.getLong("matchId", 0) ?: 0
-            with(gamesViewModel) {
-                executeDbOperation { deleteMatchById(deleteTargetMatchId) }
-            }
-
-            SingleGameScreen(
-                game = gamesViewModel.cachedGameObject,
-                currentAd = currentAd,
-                onEditGameTap = { navigateToEditGame(navController, isNewGame = false) },
-                onNewMatchTap = { navigateToSingleMatch(navController, isNewMatch = true) },
-                onSingleMatchTap = { matchId ->
-                    gamesViewModel.cachedMatchObject = findMatchById(
-                        id = matchId,
-                        matches = gamesViewModel.cachedGameObject.matches
-                    )
-
-                    navigateToSingleMatch(navController, isNewMatch = false)
-                }
-            )
-        }
-
-        // EditGameScreen
-        composable(
-            route = "${ScorekeeperScreen.EditGame.name}/{isNewGame}",
-            arguments = listOf(
-                navArgument("isNewGame") {
-                    type = NavType.BoolType
-                }
-            )
-        ) { entry ->
-            val isNewGame = entry.arguments?.getBoolean("isNewGame")
-                ?: throw NullNavArgument(route, "isNewGame")
-
-            if (isNewGame) {
-                EditGameScreen(
-                    game = GameEntity(),
-                    onSaveTap = { newGameEntity ->
-                        val popSuccess = navController.popBackStack(
-                            route = ScorekeeperScreen.Games.name,
-                            inclusive = false
-                        )
-                        if (!popSuccess) {
-                            navController.popBackStack(
-                                route = ScorekeeperScreen.Overview.name,
-                                inclusive = false
-                            )
+                onEditGameTap = { navController.navigate(ScorekeeperScreen.EditGame.name) },
+                onNewMatchTap = {
+                    with(viewModel) {
+                        executeDbOperation {
+                            insertNewEmptyMatch()
                         }
-                        with(gamesViewModel) {
+                    }
+                    navController.navigate(ScorekeeperScreen.SingleMatch.name)
+                },
+                onSingleMatchTap = { matchId ->
+                    viewModel.updateMatchCacheById(
+                        id = matchId,
+                        matches = viewModel.gameCache.dataObject.matches
+                    )
+                    navController.navigate(ScorekeeperScreen.SingleMatch.name)
+                }
+            )
+        }
+
+        // endregion
+
+        // region EditGameScreen
+
+        composable(route = ScorekeeperScreen.EditGame.name) {
+
+            if (!viewModel.gameCache.needsUpdate) {
+                EditGameScreen(
+                    game = viewModel.gameCache.dataObject,
+                    saveGame = { gameBundle, subscoreTitleBundles ->
+                        with(viewModel) {
                             executeDbOperation {
-                                insertGame(newGameEntity) {
-                                    navController.navigate(ScorekeeperScreen.SingleGame.name)
-                                    Toast.makeText(
-                                        context,
-                                        R.string.toast_game_created,
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
+                                commitGameBundle(gameBundle)
+                                commitSubscoreTitleBundles(subscoreTitleBundles)
                             }
                         }
+                        navController.popBackStack()
+                        Toast.makeText(context, R.string.toast_game_updated, Toast.LENGTH_SHORT).show()
                     },
-                    isNewGame = true
-                )
-            } else {
-                EditGameScreen(
-                    game = gamesViewModel.cachedGameObject.entity,
                     onDeleteTap = { gameId ->
-                        Toast.makeText(context, R.string.toast_game_deleted, Toast.LENGTH_SHORT).show()
                         navController.popBackStack(
                             route = ScorekeeperScreen.Overview.name,
                             inclusive = false
                         )
-                        navigateToGamesWithDeletedGame(navController, gameId)
-                    },
-                    onSaveTap = { updatedGame ->
-                        Toast.makeText(context, R.string.toast_game_updated, Toast.LENGTH_SHORT)
-                            .show()
-                        navController.popBackStack()
-                        with(gamesViewModel) {
-                            executeDbOperation { updateGame(updatedGame) }
-                        }
-                    }
-                )
-            }
-        }
-
-        // SingleMatchScreen
-        composable(
-            route = "${ScorekeeperScreen.SingleMatch.name}/{isNewMatch}",
-            arguments = listOf(
-                navArgument("isNewMatch") {
-                    type = NavType.BoolType
-                }
-            )
-        ) { entry ->
-            val isNewMatch = entry.arguments?.getBoolean("isNewMatch")
-
-            if (isNewMatch == true) {
-                SingleMatchScreen(
-                    game = gamesViewModel.cachedGameObject.entity,
-                    match = MatchObject().apply {
-                        entity = MatchEntity(gameOwnerId = gamesViewModel.cachedGameObject.entity.id)
-                    },
-                    openInEditMode = true,
-                    isNewMatch = true,
-                    onSaveTap = { newMatch, newScores ->
-                        Toast.makeText(context, R.string.toast_match_created, Toast.LENGTH_SHORT).show()
-                        navController.popBackStack()
-                        with(gamesViewModel) {
+                        with(viewModel) {
                             executeDbOperation {
-                                insertMatchWithScores(newMatch, newScores.map { it.entity })
+                                deleteGameById(gameId)
                             }
                         }
+                        navController.navigate(ScorekeeperScreen.Games.name)
+                        Toast.makeText(context, R.string.toast_game_deleted, Toast.LENGTH_SHORT).show()
                     }
                 )
             } else {
+                Loading()
+            }
+        }
+
+        // endregion
+
+        // region SingleMatchScreen
+
+        composable(route = ScorekeeperScreen.SingleMatch.name) {
+            if (!viewModel.matchCache.needsUpdate) {
                 SingleMatchScreen(
-                    game = gamesViewModel.cachedGameObject.entity,
-                    match = gamesViewModel.cachedMatchObject,
-                    onSaveTap = { updatedMatch, updatedScores ->
-                        Toast.makeText(context, R.string.toast_match_updated, Toast.LENGTH_SHORT).show()
-                        updateMatchAndScores(gamesViewModel, updatedMatch, updatedScores)
+                    game = viewModel.gameCache.dataObject.entity,
+                    match = viewModel.matchCache.dataObject,
+                    onAddPlayerTap = {
+                        with(viewModel) {
+                            executeDbOperation {
+                                insertNewEmptyPlayer()
+                            }
+                        }
+                        navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
                     },
                     onDeleteMatchTap = { matchId ->
-                        Toast.makeText(context, R.string.toast_match_deleted, Toast.LENGTH_SHORT).show()
                         val popSuccess = navController.popBackStack(
                             route = ScorekeeperScreen.SingleGame.name,
                             inclusive = true
                         )
                         if (!popSuccess) navController.popBackStack()
+                        with(viewModel) {
+                            executeDbOperation {
+                                deleteMatchById(matchId)
+                            }
+                        }
 
-                        navigateToSingleGameWithDeletedMatch(navController, matchId)
-                    }
+                        navController.navigate(ScorekeeperScreen.SingleGame.name)
+                        Toast.makeText(context, R.string.toast_match_deleted, Toast.LENGTH_SHORT).show()
+                    },
+                    onPlayerTap = { playerId ->
+                        viewModel.updatePlayerCacheById(
+                            id = playerId,
+                            players = viewModel.matchCache.dataObject.players
+                        )
+                        navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
+                    },
+                    onViewDetailedScoresTap = {
+                        navController.navigate(ScorekeeperScreen.DetailedPlayerScores.name)
+                    },
+                    saveMatch = { updatedMatch ->
+                        if (updatedMatch.databaseAction == DatabaseAction.UPDATE) {
+                            with(viewModel) {
+                                executeDbOperation {
+                                    updateMatch(updatedMatch.entity)
+                                }
+                            }
+                        }
+                        navController.popBackStack()
+                        Toast.makeText(context, R.string.toast_match_updated, Toast.LENGTH_SHORT).show()
+                    },
                 )
+            } else {
+                Loading()
             }
         }
-    }
-}
 
-// region Helpers
+        // endregion
 
-private fun findGameById(id: Long?, games: List<GameObject>) =
-    games.find { it.entity.id == id } ?: EMPTY_GAME_OBJECT
+        // region DetailedPlayerScoresScreen
 
-private fun findMatchById(id: Long?, matches: List<MatchObject>) =
-    matches.find { it.entity.id == id } ?: EMPTY_MATCH_OBJECT
-
-private fun updateMatchAndScores(
-    gamesViewModel: GamesViewModel,
-    updatedMatch: MatchEntity,
-    updatedScores: List<ScoreObject>
-) {
-    with(gamesViewModel) {
-        executeDbOperation {
-            updateMatch(updatedMatch)
-            forwardScoreListUpdatesToDb(updatedScores)
+        composable(route = ScorekeeperScreen.DetailedPlayerScores.name) {
+            if (viewModel.allCachesUpToDate()) {
+                DetailedPlayerScoresScreen(
+                    players = viewModel.matchCache.dataObject.players,
+                    subscoreTitles = viewModel.gameCache.dataObject.subscoreTitles,
+                    themeColor = LocalGameColors.current.getColorByKey(viewModel.gameCache.dataObject.entity.color),
+                    onExistingPlayerTap = { playerId ->
+                        viewModel.updatePlayerCacheById(
+                            id = playerId,
+                            players = viewModel.matchCache.dataObject.players
+                        )
+                        navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
+                    },
+                    onAddPlayerTap = {
+                        with(viewModel) {
+                            executeDbOperation {
+                                insertNewEmptyPlayer()
+                            }
+                        }
+                        navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
+                    }
+                )
+            } else {
+                Loading()
+            }
         }
+
+        // endregion
+
+        // region EditPlayerScoreScreen
+
+        composable(route = ScorekeeperScreen.EditPlayerScore.name) {
+            if (!viewModel.playerCache.needsUpdate) {
+                EditPlayerScoreScreen(
+                    initialPlayer = viewModel.playerCache.dataObject,
+                    subscoreTitles = viewModel.gameCache.dataObject.subscoreTitles,
+                    themeColor = LocalGameColors.current.getColorByKey(viewModel.gameCache.dataObject.entity.color),
+                    onSaveTap = { playerBundle, subscoreBundles ->
+                        with(viewModel) {
+                            executeDbOperation {
+                                commitPlayerBundle(playerBundle)
+                                commitSubscoreBundles(subscoreBundles)
+                            }
+                        }
+                        navController.popBackStack()
+                    },
+                    onDeleteTap = { playerId ->
+                        with(viewModel) {
+                            executeDbOperation {
+                                deletePlayerById(playerId)
+                            }
+                        }
+                        navController.popBackStack()
+                    }
+                )
+            } else {
+                Loading()
+            }
+        }
+
+        // endregion
     }
 }
-
-// endregion
-
-// region Navigation
-
-private fun navigateToGamesWithDeletedGame(navController: NavController, gameId: Long) {
-    navController.navigate("${ScorekeeperScreen.Games.name}/delete/$gameId")
-}
-
-private fun navigateToEditGame(navController: NavController, isNewGame: Boolean) {
-    navController.navigate("${ScorekeeperScreen.EditGame.name}/$isNewGame")
-}
-
-private fun navigateToSingleGameWithDeletedMatch(navController: NavController, matchId: Long) {
-    navController.navigate("${ScorekeeperScreen.SingleGame.name}/delete/$matchId")
-}
-
-private fun navigateToSingleMatch(navController: NavController, isNewMatch: Boolean) {
-    navController.navigate("${ScorekeeperScreen.SingleMatch.name}/$isNewMatch")
-}
-
-// endregion

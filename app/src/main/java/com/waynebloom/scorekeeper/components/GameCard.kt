@@ -48,7 +48,7 @@ fun GameCard(
                 )
             }
             Text(
-                text = name.ifEmpty { stringResource(id = R.string.text_no_name) },
+                text = name.ifEmpty { stringResource(id = R.string.text_no_game_name) },
                 style = MaterialTheme.typography.body1,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
