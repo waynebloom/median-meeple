@@ -31,6 +31,7 @@ import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
+import com.waynebloom.scorekeeper.ext.toShortScoreFormat
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -57,24 +58,28 @@ fun MatchCard(
                 .fillMaxWidth()
                 .height(IntrinsicSize.Min)
         ) {
-            val winningPlayer = match.players.getWinningPlayer(ScoringMode.getModeByOrdinal(game.scoringMode))
-
             if (showGameIdentifier) {
                 GameIdentifier(
                     initial = gameInitial,
                     color = gameColor
                 )
             }
+
             if (match.players.isNotEmpty()) {
+                val winningPlayer = match
+                    .players
+                    .getWinningPlayer(ScoringMode.getModeByOrdinal(game.scoringMode))
+
                 VictorCard(
-                    name = winningPlayer?.entity?.name ?: "",
-                    score = winningPlayer?.entity?.score ?: 0,
+                    name = winningPlayer.entity.name,
+                    score = winningPlayer.entity.score.toShortScoreFormat(),
                     color = gameColor,
                     modifier = Modifier.weight(1f, fill = false)
                 )
             } else {
                 EmptyPlayersCard()
             }
+
             PlayerCountCard(
                 count = match.players.size,
                 color = gameColor
@@ -141,7 +146,7 @@ fun EmptyPlayersCard() {
 @Composable
 fun VictorCard(
     name: String,
-    score: Long,
+    score: String,
     color: Color,
     modifier: Modifier = Modifier
 ) {
@@ -185,7 +190,7 @@ fun VictorCard(
                     .size(24.dp)
             )
             Text(
-                text = score.toString(),
+                text = score,
                 textAlign = TextAlign.Start,
                 style = MaterialTheme.typography.body1,
                 fontWeight = FontWeight.SemiBold

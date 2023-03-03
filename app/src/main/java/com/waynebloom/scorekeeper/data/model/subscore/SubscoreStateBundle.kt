@@ -5,39 +5,41 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.enums.DatabaseAction
+import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
+import com.waynebloom.scorekeeper.ext.getScoreValidityState
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class SubscoreStateBundle(
     var entity: SubscoreEntity,
     databaseAction: DatabaseAction = DatabaseAction.NO_ACTION
 ) {
     var databaseAction by mutableStateOf(databaseAction)
-    var scoreStringIsValidLong by mutableStateOf(true)
+    var validityState by mutableStateOf(ScoreStringValidityState.Valid)
     var textFieldValue by mutableStateOf(
-        value = TextFieldValue(text = entity.value.toString()))
-
-    fun copy(
-        entity: SubscoreEntity = this.entity,
-        databaseAction: DatabaseAction = this.databaseAction
-    ) = SubscoreStateBundle(entity, databaseAction)
+        value = TextFieldValue(text = entity.value))
+    var bigDecimal by mutableStateOf(
+        entity.value.toBigDecimal())
 
     fun updateDatabaseAction(databaseAction: DatabaseAction) {
         if (this.databaseAction != DatabaseAction.NO_ACTION) return
         this.databaseAction = databaseAction
     }
 
-    fun setScoreFromLong(scoreLong: Long) {
-        textFieldValue = textFieldValue.copy(text = scoreLong.toString())
-        entity.value = scoreLong
+    fun setScoreFromBigDecimal(scoreBigDecimal: BigDecimal) {
+        validityState = ScoreStringValidityState.Valid
+        this.bigDecimal = beautifyBigDecimal(scoreBigDecimal)
+        textFieldValue = textFieldValue.copy(text = this.bigDecimal.toPlainString())
     }
 
     fun setScoreFromTextValue(textFieldValue: TextFieldValue) {
+        validityState = textFieldValue.text.getScoreValidityState()
         this.textFieldValue = textFieldValue
-        val scoreLong = textFieldValue.text.toLongOrNull()
-        if (scoreLong == null) {
-            scoreStringIsValidLong = false
-        } else {
-            this.entity.value = scoreLong
-            scoreStringIsValidLong = true
-        }
+        if (validityState == ScoreStringValidityState.Valid)
+            bigDecimal = beautifyBigDecimal(textFieldValue.text.toBigDecimal())
     }
+
+    private fun beautifyBigDecimal(original: BigDecimal) = original
+        .setScale(3, RoundingMode.HALF_UP)
+        .stripTrailingZeros()
 }

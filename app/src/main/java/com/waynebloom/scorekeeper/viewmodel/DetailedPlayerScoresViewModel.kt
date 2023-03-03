@@ -10,6 +10,10 @@ import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
 import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.ext.isEqualTo
+import com.waynebloom.scorekeeper.ext.toShortScoreFormat
+import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
+import java.math.BigDecimal
 
 class DetailedPlayerScoresViewModel(
     players: List<PlayerObject>,
@@ -24,13 +28,13 @@ class DetailedPlayerScoresViewModel(
         subscoreTitles = subscoreTitles.sortedBy { it.position }
         includeUncategorizedScoreColumn = players
             .filter { it.entity.showDetailedScore }
-            .any { it.uncategorizedScore != 0L }
+            .any { !it.getUncategorizedScore().isEqualTo(BigDecimal.ZERO) }
         subscoreTitleStrings = getSubscoreTitleStrings(resources)
     }
 
-    fun getScoreString(scoreLong: Long?): String {
-        return if (scoreLong != null && scoreLong != 0L) {
-            scoreLong.toString()
+    fun getScoreToDisplay(scoreString: String): String {
+        return if (!scoreString.toBigDecimal().isEqualTo(BigDecimal.ZERO)) {
+            scoreString.toShortScoreFormat()
         } else "-"
     }
 
@@ -40,7 +44,7 @@ class DetailedPlayerScoresViewModel(
         }
         return if (includeUncategorizedScoreColumn) {
             categorizedSubscores.plus(
-                SubscoreEntity(value = player.uncategorizedScore)
+                SubscoreEntity(value = player.getUncategorizedScore().toTrimmedScoreString())
             )
         } else categorizedSubscores
     }

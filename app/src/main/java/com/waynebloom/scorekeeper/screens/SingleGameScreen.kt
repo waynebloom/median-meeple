@@ -42,8 +42,10 @@ import com.waynebloom.scorekeeper.enums.MatchSortingMode
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameTopBarState
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
+import com.waynebloom.scorekeeper.ext.isEqualTo
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import java.math.BigDecimal
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
@@ -439,10 +441,10 @@ private fun filterAndSortMatches(
     var matchesInOrder: List<MatchObject> = when (sortingMode) {
         MatchSortingMode.ByMatchAge -> matchesToSort.reversed()
         MatchSortingMode.ByWinningPlayer -> matchesToSort.sortedBy { match ->
-            match.players.getWinningPlayer(scoringMode)?.entity?.name
+            match.players.getWinningPlayer(scoringMode).entity.name
         }
         MatchSortingMode.ByWinningScore -> matchesToSort.sortedBy { match ->
-            match.players.getWinningPlayer(scoringMode)?.entity?.score
+            match.players.getWinningPlayer(scoringMode).entity.score
         }
         MatchSortingMode.ByPlayerCount -> matchesToSort.sortedBy { it.players.size }
     }
@@ -461,11 +463,11 @@ private fun matchContainsPlayerWithString(
 
 private fun matchContainsExactScoreMatch(
     match: MatchObject,
-    scoreValue: Long?
+    bigDecimalToSearch: BigDecimal?
 ): Boolean {
-    return if (scoreValue != null) {
+    return if (bigDecimalToSearch != null) {
         match.players.any {
-            it.entity.score == scoreValue
+            it.entity.score.toBigDecimal().isEqualTo(bigDecimalToSearch)
         }
     } else false
 }
@@ -476,7 +478,7 @@ private fun showMatch(
 ): Boolean {
     if (searchString.isEmpty()) return true
     return matchContainsPlayerWithString(match, searchString) ||
-            matchContainsExactScoreMatch(match, searchString.toLongOrNull())
+            matchContainsExactScoreMatch(match, searchString.toBigDecimalOrNull())
 }
 
 @Preview(uiMode = UI_MODE_NIGHT_YES)

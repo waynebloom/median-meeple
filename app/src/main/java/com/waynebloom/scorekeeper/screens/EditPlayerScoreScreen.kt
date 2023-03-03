@@ -40,6 +40,7 @@ import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
 import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
 import com.waynebloom.scorekeeper.ext.onFocusSelectAll
 import com.waynebloom.scorekeeper.ui.theme.deepOrange500
@@ -124,14 +125,14 @@ fun EditPlayerScoreScreen(
                             uncategorizedScoreBundle = viewModel.uncategorizedScoreBundle,
                             focusManager = focusManager,
                             onDoneTap = { viewModel.onSaveTap(keyboardController) },
-                            onSubscoreTextFieldValueChange = { id, textFieldValue -> viewModel.updateSubscoreStateById(id, textFieldValue) },
-                            onUncategorizedTextFieldValueChange = { viewModel.updateUncategorizedScoreRemainder(it) }
+                            onSubscoreTextFieldValueChange = { id, textFieldValue -> viewModel.onSubscoreFieldUpdate(id, textFieldValue) },
+                            onUncategorizedTextFieldValueChange = { viewModel.onUncategorizedFieldUpdate(it) }
                         )
                     } else {
                         TotalScoreField(
                             totalScoreBundle = viewModel.totalScoreBundle,
                             textFieldColors = textFieldColors,
-                            onChange = { viewModel.updateTotalScore(it) },
+                            onChange = { viewModel.onTotalScoreFieldUpdate(it) },
                             onDoneTap = { viewModel.onSaveTap(keyboardController) }
                         )
                     }
@@ -144,7 +145,7 @@ fun EditPlayerScoreScreen(
                         backgroundColor = themeColor,
                         contentColor = MaterialTheme.colors.onPrimary
                     ),
-                    enabled = viewModel.scoreValuesAreValid,
+                    enabled = viewModel.submitButtonEnabled,
                     onClick = { viewModel.onSaveTap(keyboardController) },
                     modifier = Modifier
                         .height(48.dp)
@@ -186,7 +187,7 @@ fun TotalScoreField(
             .fillMaxWidth()
             .padding(bottom = 8.dp),
         label = { Text(text = stringResource(id = R.string.field_total_score)) },
-        isError = !totalScoreBundle.scoreStringIsValidLong,
+        isError = totalScoreBundle.validityState != ScoreStringValidityState.Valid,
         colors = textFieldColors,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
@@ -195,7 +196,7 @@ fun TotalScoreField(
         keyboardActions = KeyboardActions(
             onDone = { onDoneTap() }
         ),
-        errorDescription = R.string.error_invalid_score,
+        errorDescription = totalScoreBundle.validityState.descriptionResource,
         selectAllOnFocus = true
     )
 }
@@ -211,7 +212,7 @@ fun OutlinedTextFieldWithErrorDescription(
     colors: TextFieldColors,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
-    maxLines: Int = 1,
+    singleLine: Boolean = true,
     @StringRes errorDescription: Int,
     selectAllOnFocus: Boolean
 ) {
@@ -236,7 +237,7 @@ fun OutlinedTextFieldWithErrorDescription(
             isError = isError,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
-            maxLines = maxLines,
+            singleLine = singleLine,
             modifier = textFieldModifier
         )
 
@@ -270,7 +271,7 @@ private fun SubscoreFields(
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
             label = { Text(text = subscoreTitles[index].title) },
-            isError = !subscore.scoreStringIsValidLong,
+            isError = subscore.validityState != ScoreStringValidityState.Valid,
             colors = textFieldColors,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
@@ -279,7 +280,7 @@ private fun SubscoreFields(
             keyboardActions = KeyboardActions(
                 onNext = { focusManager.moveFocus(FocusDirection.Next) }
             ),
-            errorDescription = R.string.error_invalid_score,
+            errorDescription = subscore.validityState.descriptionResource,
             selectAllOnFocus = true
         )
     }
@@ -291,7 +292,7 @@ private fun SubscoreFields(
             .padding(bottom = 8.dp),
         onValueChange = { onUncategorizedTextFieldValueChange(it) },
         label = { Text(text = stringResource(id = R.string.field_uncategorized)) },
-        isError = !uncategorizedScoreBundle.scoreStringIsValidLong,
+        isError = uncategorizedScoreBundle.validityState != ScoreStringValidityState.Valid,
         colors = textFieldColors,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
@@ -300,7 +301,7 @@ private fun SubscoreFields(
         keyboardActions = KeyboardActions(
             onDone = { onDoneTap() }
         ),
-        errorDescription = R.string.error_invalid_score,
+        errorDescription = uncategorizedScoreBundle.validityState.descriptionResource,
         selectAllOnFocus = true
     )
 }

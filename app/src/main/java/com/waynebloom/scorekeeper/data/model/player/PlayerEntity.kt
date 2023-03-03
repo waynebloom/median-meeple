@@ -24,7 +24,7 @@ data class PlayerEntity(
 
     var name: String = "",
 
-    var score: Long = 0,
+    var score: String = "0",
 
     var position: Int = 0,
 

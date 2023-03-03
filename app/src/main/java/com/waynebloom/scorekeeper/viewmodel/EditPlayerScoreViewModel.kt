@@ -8,16 +8,18 @@ import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.EntityStateBundle
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
 import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
+import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
+import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
 import com.waynebloom.scorekeeper.ext.statefulUpdateElement
-
-// TODO total and uncategorized score fields don't disable submit button when they are invalid
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 class EditPlayerScoreViewModel(
     playerObject: PlayerObject,
@@ -41,20 +43,15 @@ class EditPlayerScoreViewModel(
             )
         )
     )
-    var scoreValuesAreValid by mutableStateOf(true)
-    var uncategorizedScoreBundle by mutableStateOf(
-        SubscoreStateBundle(
-            entity = SubscoreEntity(
-                value = playerObject.uncategorizedScore
-            )
-        )
-    )
+    var submitButtonEnabled by mutableStateOf(true)
+    var uncategorizedScoreBundle by mutableStateOf(SubscoreStateBundle(entity = SubscoreEntity()))
 
     // region Initialization
 
     init {
         subscoreTitles = subscoreTitles.sortedBy { it.position }
         initializeSubscores()
+        initializeUncategorizedSubscore(playerObject)
     }
 
     private fun initializeSubscores() {
@@ -77,38 +74,44 @@ class EditPlayerScoreViewModel(
             }
     }
 
-    // endregion
-
-    private fun checkForInvalidScoreValues(latestInput: String) {
-        if (latestInput.toLongOrNull() != null) {
-            subscoreStateBundles.forEach {
-                if (!it.scoreStringIsValidLong) {
-                    scoreValuesAreValid = false
-                    return
-                }
-            }
-            scoreValuesAreValid = true
-        } else {
-            scoreValuesAreValid = false
+    private fun initializeUncategorizedSubscore(playerObject: PlayerObject) {
+        uncategorizedScoreBundle.apply {
+            bigDecimal = playerObject.getUncategorizedScore()
+            textFieldValue = TextFieldValue(
+                text = playerObject.getUncategorizedScore().toTrimmedScoreString()
+            )
         }
     }
 
+    // endregion
+
     private fun getPlayerToCommit(): EntityStateBundle<PlayerEntity> {
+        val subscoreSum = subscoreStateBundles.sumOf { it.bigDecimal }
+        val uncategorizedScore = uncategorizedScoreBundle.bigDecimal
+        val scoreTotalAsString = (subscoreSum + uncategorizedScore).toTrimmedScoreString()
+
         return EntityStateBundle(
             entity = initialPlayerEntity.copy(
                 name = nameState,
                 showDetailedScore = showDetailedScoreState,
-                score = subscoreStateBundles.sumOf { it.entity.value }
-                    + uncategorizedScoreBundle.entity.value
+                score = scoreTotalAsString
             ),
             databaseAction = if (playerEntityNeedsUpdate) {
                 DatabaseAction.UPDATE
             } else DatabaseAction.NO_ACTION
         )
     }
+    
+    private fun prepareSubscoreEntitiesForCommit() {
+        subscoreStateBundles.forEach { 
+            it.entity.value = it.bigDecimal.toTrimmedScoreString()
+        }
+    }
 
     @OptIn(ExperimentalComposeUiApi::class)
     fun onSaveTap(keyboardController: SoftwareKeyboardController?) {
+        prepareSubscoreEntitiesForCommit()
+
         if (!saveWasTapped) {
             saveWasTapped = true
             keyboardController?.hide()
@@ -116,26 +119,8 @@ class EditPlayerScoreViewModel(
         }
     }
 
-    private fun recalculateTotalScore() {
-        if (scoreValuesAreValid) {
-            val sumOfSubscores = subscoreStateBundles.sumOf { it.entity.value } +
-                uncategorizedScoreBundle.entity.value
-            totalScoreBundle.setScoreFromLong(sumOfSubscores)
-        }
-    }
-
-    fun setName(name: String) {
-        nameState = name
-        playerEntityNeedsUpdate = true
-    }
-
-    fun setShowDetailedScore(showDetailedScore: Boolean) {
-        showDetailedScoreState = showDetailedScore
-        playerEntityNeedsUpdate = true
-    }
-
-    fun updateSubscoreStateById(subscoreTitleId: Long, textFieldValue: TextFieldValue) {
-        subscoreStateBundles = subscoreStateBundles.statefulUpdateElement(
+    fun onSubscoreFieldUpdate(subscoreTitleId: Long, textFieldValue: TextFieldValue) {
+        subscoreStateBundles.statefulUpdateElement(
             predicate = { it.entity.subscoreTitleId == subscoreTitleId },
             update = {
                 val textWasChanged = it.textFieldValue.text != textFieldValue.text
@@ -149,30 +134,64 @@ class EditPlayerScoreViewModel(
             }
         )
 
-        checkForInvalidScoreValues(latestInput = textFieldValue.text)
+        updateSubmitButtonEnabledState(latestInput = textFieldValue.text)
         recalculateTotalScore()
     }
 
-    fun updateTotalScore(textFieldValue: TextFieldValue) {
-        val scoreLong = textFieldValue.text.toLongOrNull()
-        if (scoreLong != null) {
+    fun onTotalScoreFieldUpdate(textFieldValue: TextFieldValue) {
+        val scoreBigDecimal = textFieldValue.text.toBigDecimalOrNull()
+        val textWasChanged = totalScoreBundle.textFieldValue.text != textFieldValue.text
+
+        if (textWasChanged && scoreBigDecimal != null) {
             val adjustedUncategorizedScore =
-                uncategorizedScoreBundle.entity.value + scoreLong - totalScoreBundle.entity.value
-            uncategorizedScoreBundle.setScoreFromLong(adjustedUncategorizedScore)
+                uncategorizedScoreBundle.bigDecimal + scoreBigDecimal - totalScoreBundle.bigDecimal
+            uncategorizedScoreBundle.setScoreFromBigDecimal(adjustedUncategorizedScore)
             playerEntityNeedsUpdate = true
         }
+
         totalScoreBundle.setScoreFromTextValue(textFieldValue)
+        updateSubmitButtonEnabledState(latestInput = textFieldValue.text)
     }
 
-    fun updateUncategorizedScoreRemainder(textFieldValue: TextFieldValue) {
-        val scoreLong = textFieldValue.text.toLongOrNull()
-        if (scoreLong != null) {
+    fun onUncategorizedFieldUpdate(textFieldValue: TextFieldValue) {
+        val scoreBigDecimal = textFieldValue.text.toBigDecimalOrNull()
+        val textWasChanged = uncategorizedScoreBundle.textFieldValue.text != textFieldValue.text
+
+        if (textWasChanged && scoreBigDecimal != null) {
             val adjustedTotalScore =
-                totalScoreBundle.entity.value + scoreLong - uncategorizedScoreBundle.entity.value
-            totalScoreBundle.setScoreFromLong(adjustedTotalScore)
+                totalScoreBundle.bigDecimal + scoreBigDecimal - uncategorizedScoreBundle.bigDecimal
+            totalScoreBundle.setScoreFromBigDecimal(adjustedTotalScore)
             playerEntityNeedsUpdate = true
         }
+
         uncategorizedScoreBundle.setScoreFromTextValue(textFieldValue)
+        updateSubmitButtonEnabledState(latestInput = textFieldValue.text)
+    }
+
+    private fun recalculateTotalScore() {
+        if (submitButtonEnabled) {
+            val sumOfSubscores = subscoreStateBundles.sumOf { it.bigDecimal } +
+                uncategorizedScoreBundle.bigDecimal
+            totalScoreBundle.setScoreFromBigDecimal(sumOfSubscores)
+        }
+    }
+
+    fun setName(name: String) {
+        nameState = name
+        playerEntityNeedsUpdate = true
+    }
+
+    fun setShowDetailedScore(showDetailedScore: Boolean) {
+        showDetailedScoreState = showDetailedScore
+        playerEntityNeedsUpdate = true
+    }
+
+    private fun updateSubmitButtonEnabledState(latestInput: String) {
+        submitButtonEnabled = if (latestInput.toBigDecimalOrNull() != null) {
+            subscoreStateBundles
+                .plus(listOf(totalScoreBundle, uncategorizedScoreBundle))
+                .all { it.validityState == ScoreStringValidityState.Valid }
+        } else false
     }
 }
 

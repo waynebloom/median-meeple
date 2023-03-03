@@ -45,6 +45,7 @@ import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.ext.toShortScoreFormat
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.waynebloom.scorekeeper.ui.theme.orange100
 import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModel
@@ -118,7 +119,6 @@ fun SingleMatchScreen(
                         label = { Text(text = stringResource(id = R.string.field_notes)) },
                         colors = textFieldColors,
                         onValueChange = { viewModel.updateNotes(it) },
-                        singleLine = true,
                         keyboardOptions = KeyboardOptions(
                             autoCorrect = true,
                             capitalization = KeyboardCapitalization.Sentences,
@@ -127,6 +127,7 @@ fun SingleMatchScreen(
                         keyboardActions = KeyboardActions(
                             onDone = { viewModel.onSaveTap(keyboardController, focusManager) }
                         ),
+                        maxLines = 8,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -179,7 +180,7 @@ fun PlayersSection(
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
         if (players.isNotEmpty()) {
-            val playersInRankOrder = players.sortedBy { it.entity.score }.reversed()
+            val playersInRankOrder = players.sortedBy { it.entity.score.toBigDecimal() }.reversed()
             playersInRankOrder.forEachIndexed { index, score ->
                 PlayerCard(
                     player = score.entity,
@@ -295,7 +296,7 @@ fun PlayerCard(
                             .size(24.dp)
                     )
                     Text(
-                        text = player.score.toString(),
+                        text = player.score.toShortScoreFormat(),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.body1,
                         fontWeight = FontWeight.SemiBold

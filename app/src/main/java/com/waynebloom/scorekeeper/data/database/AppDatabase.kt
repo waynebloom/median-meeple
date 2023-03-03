@@ -10,7 +10,7 @@ import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
 import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 
 @Database(
-    version = 10,
+    version = 11,
     entities = [
         GameEntity::class,
         MatchEntity::class,
@@ -45,7 +45,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database")
                     .createFromAsset("database/scores_app.db")
-                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                     .build()
                 INSTANCE = instance
                 instance

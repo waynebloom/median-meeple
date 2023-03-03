@@ -25,19 +25,19 @@ val PreviewGameObjects: List<GameObject> = PreviewGameEntities.map { GameObject(
 val PreviewPlayerEntities: List<PlayerEntity> = listOf(
     PlayerEntity(
         name = "Wayne",
-        score = 32
+        score = "32"
     ),
     PlayerEntity(
         name = "Conor",
-        score = 37
+        score = "37"
     ),
     PlayerEntity(
         name = "Alyssa",
-        score = 45
+        score = "45"
     ),
     PlayerEntity(
         name = "",
-        score = 22
+        score = "22"
     )
 )
 
@@ -100,34 +100,34 @@ val PreviewSubscoreTitleEntities: List<SubscoreTitleEntity> = listOf(
 val PreviewSubscoreEntities: List<SubscoreEntity> = listOf(
     SubscoreEntity(
         subscoreTitleId = 1,
-        value = 1
+        value = "1"
     ),
     SubscoreEntity(
         subscoreTitleId = 2,
-        value = 1
+        value = "1"
     ),
     SubscoreEntity(
         subscoreTitleId = 3,
-        value = 2
+        value = "2"
     ),
     SubscoreEntity(
         subscoreTitleId = 4,
-        value = 4
+        value = "4"
     ),
     SubscoreEntity(
         subscoreTitleId = 5,
-        value = 2
+        value = "2"
     ),
     SubscoreEntity(
         subscoreTitleId = 6,
-        value = 1
+        value = "1"
     ),
     SubscoreEntity(
         subscoreTitleId = 7,
-        value = 5
+        value = "5"
     ),
     SubscoreEntity(
         subscoreTitleId = 8,
-        value = 3
+        value = "3"
     )
 )

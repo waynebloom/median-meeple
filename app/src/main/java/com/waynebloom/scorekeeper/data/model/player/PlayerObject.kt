@@ -4,6 +4,7 @@ import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
+import java.math.BigDecimal
 
 class PlayerObject(
     @Embedded
@@ -14,5 +15,9 @@ class PlayerObject(
 ) {
 
     @Ignore
-    val uncategorizedScore = entity.score - score.sumOf { it.value }
+    fun getUncategorizedScore(): BigDecimal {
+        val subscoreSum = score.sumOf { it.value.toBigDecimal() }
+        val totalScoreBigDecimal = entity.score.toBigDecimal()
+        return totalScoreBigDecimal - subscoreSum
+    }
 }

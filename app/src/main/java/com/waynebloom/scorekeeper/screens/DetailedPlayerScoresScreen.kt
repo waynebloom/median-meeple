@@ -112,7 +112,7 @@ fun DetailedPlayerScoresScreen(
                         playerIdentifierScreenPortion = playerIdentifierWeight,
                         scoresScreenPortion = subscoresSectionWeight,
                         onPlayerTap = { onExistingPlayerTap(player.entity.id) },
-                        getScoreString = { viewModel.getScoreString(it) }
+                        getScoreString = { viewModel.getScoreToDisplay(it) }
                     )
                 }
 
@@ -131,7 +131,7 @@ fun DetailedPlayerScoresScreen(
                 items(simplePlayers) { player ->
                     SimplePlayerCard(
                         playerEntity = player.entity,
-                        playerTotalScoreString = viewModel.getScoreString(player.entity.score),
+                        playerTotalScoreString = viewModel.getScoreToDisplay(player.entity.score),
                         themeColor = themeColor,
                         onPlayerTap = { onExistingPlayerTap(player.entity.id) }
                     )
@@ -168,7 +168,7 @@ fun DetailedPlayerCard(
     playerIdentifierScreenPortion: Float,
     scoresScreenPortion: Float,
     onPlayerTap: () -> Unit,
-    getScoreString: (Long?) -> String,
+    getScoreString: (String) -> String,
     modifier: Modifier = Modifier
 ) {
     Surface(

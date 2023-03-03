@@ -38,6 +38,6 @@ data class SubscoreEntity(
     @ColumnInfo(name = "player_id")
     var playerId: Long = 0,
 
-    var value: Long = 0
+    var value: String = "0"
 )
 

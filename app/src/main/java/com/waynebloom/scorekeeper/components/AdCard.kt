@@ -13,6 +13,7 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.databinding.AdCardBinding
+import com.waynebloom.scorekeeper.ext.sentenceCase
 
 @Composable
 fun AdCard(

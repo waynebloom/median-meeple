@@ -38,8 +38,6 @@
 
     <!-- endregion -->
 
-
-
     <!-- region DetailedPlayerScoresScreen -->
 
     <string name="header_simple_scores">Simple Scores</string>
@@ -105,6 +103,14 @@
     <string name="header_players">Players</string>
     <string name="search_placeholder_match">Search matches</string>
     <string name="text_empty_players">No players have been added.</string>
+
+    <!-- endregion -->
+
+    <!-- region ScoreStringValidityState descriptions -->
+
+    <string name="validity_state_invalid_number">This is not a valid number.</string>
+    <string name="validity_state_excessive_decimals">Use a maximum of 3 decimal places.</string>
+    <string name="validity_state_no_error">No error.</string>
 
     <!-- endregion -->
 </resources>
