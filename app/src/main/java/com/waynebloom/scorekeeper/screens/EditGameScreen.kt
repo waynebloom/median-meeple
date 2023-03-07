@@ -104,10 +104,7 @@ fun EditGameScreen(
                     .verticalScroll(rememberScrollState())
             ) {
 
-                HeadedSection(
-                    title = R.string.header_details,
-                    topPadding = 40
-                ) {
+                HeadedSection(title = R.string.header_details) {
 
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
@@ -122,16 +119,23 @@ fun EditGameScreen(
                             initialMode = ScoringMode.getModeByOrdinal(viewModel.gameScoringMode),
                             onItemTap = { viewModel.selectMode(it.ordinal) }
                         )
-
-                        SubscoreTitlesSection(
-                            viewModel = viewModel,
-                            themeColor = themeColor,
-                            textFieldColors = textFieldColors
-                        )
                     }
                 }
 
-                HeadedSection(title = R.string.header_theme) {
+                Spacer(modifier = Modifier.height(40.dp))
+
+                SubscoreTitlesSection(
+                    viewModel = viewModel,
+                    themeColor = themeColor,
+                    textFieldColors = textFieldColors
+                )
+                
+                Spacer(modifier = Modifier.height(40.dp))
+
+                HeadedSection(
+                    title = R.string.header_theme,
+                    topPadding = 0
+                ) {
 
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(16.dp),

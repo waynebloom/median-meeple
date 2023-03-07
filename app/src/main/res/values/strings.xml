@@ -103,6 +103,7 @@
     <string name="header_players">Players</string>
     <string name="search_placeholder_match">Search matches</string>
     <string name="text_empty_players">No players have been added.</string>
+    <string name="text_no_detailed_scores">No players have detailed scores. Add some by tapping a player and switching on \"Detailed Score.\"</string>
 
     <!-- endregion -->
 

@@ -1,15 +1,13 @@
 package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.*
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
@@ -39,7 +37,7 @@ import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.data.model.*
-import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
@@ -55,7 +53,7 @@ import java.util.*
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SingleMatchScreen(
-    game: GameEntity,
+    game: GameObject,
     match: MatchObject,
     onAddPlayerTap: () -> Unit,
     onDeleteMatchTap: (Long) -> Unit,
@@ -73,7 +71,7 @@ fun SingleMatchScreen(
     )
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val themeColor: Color = LocalGameColors.current.getColorByKey(game.color)
+    val themeColor: Color = LocalGameColors.current.getColorByKey(game.entity.color)
     val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         focusedBorderColor = themeColor,
         focusedLabelColor = themeColor,
@@ -86,8 +84,9 @@ fun SingleMatchScreen(
     )
 
     Column(modifier = modifier) {
+
         ScreenHeader(
-            title = game.name,
+            title = game.entity.name,
             color = themeColor
         )
 
@@ -96,19 +95,20 @@ fun SingleMatchScreen(
                 .padding(horizontal = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+            
+            Spacer(modifier = Modifier.padding(top = 40.dp))
 
-            HeadedSection(
-                title = R.string.header_players,
-                topPadding = 40
-            ) {
-                PlayersSection(
-                    players = match.players,
-                    themeColor = themeColor,
-                    onAddPlayerTap = onAddPlayerTap,
-                    onPlayerTap = onPlayerTap,
-                    onViewDetailedScoresTap = onViewDetailedScoresTap
-                )
-            }
+            PlayersSection(
+                players = match.players,
+                showDetailedScoresButton = viewModel.shouldShowDetailedScoresButton(
+                    players = match.players.map { it.entity },
+                    subscoreTitles = game.subscoreTitles
+                ),
+                themeColor = themeColor,
+                onAddPlayerTap = onAddPlayerTap,
+                onPlayerTap = onPlayerTap,
+                onViewDetailedScoresTap = onViewDetailedScoresTap
+            )
 
             HeadedSection(title = R.string.header_other) {
                 CompositionLocalProvider(
@@ -170,14 +170,85 @@ fun SingleMatchScreen(
 }
 
 @Composable
+private fun PlayersSectionHeader(
+    showDetailedScoresButton: Boolean,
+    themeColor: Color,
+    onAddPlayerTap: () -> Unit,
+    onViewDetailedScoresTap: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.Bottom,
+        modifier = modifier.fillMaxWidth()
+    ) {
+
+        Text(
+            text = stringResource(id = R.string.header_players)
+                .uppercase(Locale.getDefault()),
+            style = MaterialTheme.typography.subtitle1,
+            fontWeight = FontWeight.SemiBold
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+        ) {
+
+            if (showDetailedScoresButton) {
+                Box(
+                    modifier = Modifier
+                        .clip(MaterialTheme.shapes.small)
+                        .clickable { onViewDetailedScoresTap() }
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.List,
+                        tint = themeColor,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .padding(12.dp)
+                    )
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable { onAddPlayerTap() }
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Add,
+                    tint = themeColor,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(48.dp)
+                        .padding(12.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun PlayersSection(
     players: List<PlayerObject>,
+    showDetailedScoresButton: Boolean,
     themeColor: Color,
     onAddPlayerTap: () -> Unit,
     onPlayerTap: (Long) -> Unit,
     onViewDetailedScoresTap: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+        PlayersSectionHeader(
+            showDetailedScoresButton = showDetailedScoresButton,
+            themeColor = themeColor,
+            onAddPlayerTap = onAddPlayerTap,
+            onViewDetailedScoresTap = onViewDetailedScoresTap,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
 
         if (players.isNotEmpty()) {
             val playersInRankOrder = players.sortedBy { it.entity.score.toBigDecimal() }.reversed()
@@ -193,38 +264,6 @@ fun PlayersSection(
             DullColoredTextCard(
                 text = stringResource(id = R.string.text_empty_players),
                 color = themeColor
-            )
-        }
-
-        Row(modifier = Modifier.padding(top = 8.dp)) {
-
-            Button(
-                onClick = { onViewDetailedScoresTap() },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.surface,
-                    contentColor = themeColor
-                ),
-                modifier = Modifier
-                    .height(48.dp)
-                    .weight(1f),
-                content = {
-                    Icon(imageVector = Icons.Rounded.List, contentDescription = null)
-                }
-            )
-
-            Button(
-                onClick = { onAddPlayerTap() },
-                colors = ButtonDefaults.buttonColors(
-                    backgroundColor = MaterialTheme.colors.surface,
-                    contentColor = themeColor
-                ),
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .height(48.dp)
-                    .weight(1f),
-                content = {
-                    Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
-                }
             )
         }
     }
@@ -317,6 +356,7 @@ fun ScoresSectionPreview() {
     ScoreKeeperTheme {
         PlayersSection(
             players = PreviewPlayerEntities.map { PlayerObject(entity = it) },
+            showDetailedScoresButton = true,
             themeColor = orange100,
             onAddPlayerTap = {},
             onPlayerTap = {},
@@ -334,7 +374,7 @@ fun ScoresSectionPreview() {
 fun SingleMatchScreenPreview() {
     ScoreKeeperTheme {
         SingleMatchScreen(
-            game = PreviewGameEntities[0],
+            game = PreviewGameObjects[0],
             match = MatchObject(
                 entity = PreviewMatchEntities[0],
                 players = PreviewPlayerEntities.map { PlayerObject(entity = it) }
