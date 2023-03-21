@@ -9,22 +9,25 @@ import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchEntity
+import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import java.util.*
 
 class SingleMatchViewModel(
-    private val initialMatchEntity: MatchEntity,
+    private val matchEntity: MatchEntity,
     private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
 ): ViewModel() {
 
     private var matchEntityWasChanged = false
     private var saveWasTapped = false
 
-    var notesState: String by mutableStateOf(initialMatchEntity.matchNotes)
+    var notesState: String by mutableStateOf(matchEntity.matchNotes)
 
     private fun getMatchToCommit() = EntityStateBundle(
-        entity = initialMatchEntity.copy(
+        entity = matchEntity.copy(
             matchNotes = notesState,
             timeModified = Date().time
         ),
@@ -43,6 +46,15 @@ class SingleMatchViewModel(
         }
     }
 
+    fun shouldShowDetailedScoresButton(
+        players: List<PlayerEntity>,
+        subscoreTitles: List<SubscoreTitleEntity>
+    ): Boolean {
+        val categoriesExist = subscoreTitles.isNotEmpty()
+        val detailedScoresExist = players.any { it.showDetailedScore }
+        return categoriesExist && detailedScoresExist
+    }
+
     fun updateNotes(value: String) {
         matchEntityWasChanged = true
         notesState = value
@@ -54,7 +66,7 @@ class SingleMatchViewModelFactory (
     private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = SingleMatchViewModel(
-        initialMatchEntity = matchEntity,
+        matchEntity = matchEntity,
         saveCallback = saveCallback
     ) as T
 }

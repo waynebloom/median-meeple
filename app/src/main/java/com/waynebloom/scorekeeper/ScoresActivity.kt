@@ -258,7 +258,7 @@ fun ScoresNavHost(
         composable(route = ScorekeeperScreen.SingleMatch.name) {
             if (!viewModel.matchCache.needsUpdate) {
                 SingleMatchScreen(
-                    game = viewModel.gameCache.dataObject.entity,
+                    game = viewModel.gameCache.dataObject,
                     match = viewModel.matchCache.dataObject,
                     onAddPlayerTap = {
                         with(viewModel) {
@@ -303,7 +303,7 @@ fun ScoresNavHost(
                         }
                         navController.popBackStack()
                         Toast.makeText(context, R.string.toast_match_updated, Toast.LENGTH_SHORT).show()
-                    },
+                    }
                 )
             } else {
                 Loading()

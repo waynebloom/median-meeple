@@ -102,21 +102,30 @@ fun DetailedPlayerScoresScreen(
                 val detailedPlayers = players.filter { it.entity.showDetailedScore }
                 val simplePlayers = players.filter { !it.entity.showDetailedScore }
 
-                items(detailedPlayers) { player ->
-                    DetailedPlayerCard(
-                        playerName = player.entity.name,
-                        subscores = viewModel
-                            .getSubscoresInOrder(player)
-                            .slice(subscoreIndicesToDisplay),
-                        isFirstSubscoreDisplayed = isFirstSubscoreDisplayed,
-                        playerIdentifierScreenPortion = playerIdentifierWeight,
-                        scoresScreenPortion = subscoresSectionWeight,
-                        onPlayerTap = { onExistingPlayerTap(player.entity.id) },
-                        getScoreString = { viewModel.getScoreToDisplay(it) }
-                    )
+                if (detailedPlayers.isNotEmpty()) {
+                    items(detailedPlayers) { player ->
+                        DetailedPlayerCard(
+                            playerName = player.entity.name,
+                            subscores = viewModel
+                                .getSubscoresInOrder(player)
+                                .slice(subscoreIndicesToDisplay),
+                            isFirstSubscoreDisplayed = isFirstSubscoreDisplayed,
+                            playerIdentifierScreenPortion = playerIdentifierWeight,
+                            scoresScreenPortion = subscoresSectionWeight,
+                            onPlayerTap = { onExistingPlayerTap(player.entity.id) },
+                            getScoreString = { viewModel.getScoreToDisplay(it) }
+                        )
+                    }
+                } else {
+                    item {
+                        DullColoredTextCard(
+                            text = stringResource(id = R.string.text_no_detailed_scores),
+                            color = themeColor
+                        )
+                    }
                 }
 
-                if (simplePlayers.isNotEmpty() && detailedPlayers.isNotEmpty()) {
+                if (simplePlayers.isNotEmpty()) {
                     item {
                         Text(
                             text = stringResource(id = R.string.header_simple_scores)
