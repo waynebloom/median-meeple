@@ -77,7 +77,7 @@ fun EditPlayerScoreScreen(
     Column {
 
         ScreenHeader(
-            title = viewModel.nameState,
+            title = viewModel.nameTextFieldValue.text,
             color = themeColor
         )
 
@@ -98,15 +98,30 @@ fun EditPlayerScoreScreen(
             ) {
                 HeadedSection(title = R.string.header_player_info) {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextField(
-                            value = viewModel.nameState,
+                        OutlinedTextFieldWithErrorDescription(
+                            textFieldValue = viewModel.nameTextFieldValue,
+                            onValueChange = { viewModel.setName(it) },
+                            label = { Text(text = stringResource(id = R.string.field_name)) },
+                            isError = !viewModel.nameIsValid,
+                            colors = textFieldColors,
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Next
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onNext = { focusManager.moveFocus(FocusDirection.Next) }
+                            ),
+                            errorDescription = R.string.error_empty_name,
+                            selectAllOnFocus = true
+                        )
+                        /*OutlinedTextField(
+                            value = viewModel.nameTextFieldValue,
                             onValueChange = { viewModel.setName(it) },
                             label = { Text(text = stringResource(id = R.string.field_name)) },
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                             colors = textFieldColors,
                             maxLines = 1,
                             modifier = Modifier.fillMaxWidth()
-                        )
+                        )*/
                     }
                 }
 
@@ -145,7 +160,7 @@ fun EditPlayerScoreScreen(
                         backgroundColor = themeColor,
                         contentColor = MaterialTheme.colors.onPrimary
                     ),
-                    enabled = viewModel.submitButtonEnabled,
+                    enabled = viewModel.isSubmitButtonEnabled(),
                     onClick = { viewModel.onSaveTap(keyboardController) },
                     modifier = Modifier
                         .height(48.dp)
@@ -183,9 +198,7 @@ fun TotalScoreField(
     OutlinedTextFieldWithErrorDescription(
         textFieldValue = totalScoreBundle.textFieldValue,
         onValueChange = { onChange(it) },
-        groupModifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
+        groupModifier = Modifier.padding(bottom = 8.dp),
         label = { Text(text = stringResource(id = R.string.field_total_score)) },
         isError = totalScoreBundle.validityState != ScoreStringValidityState.Valid,
         colors = textFieldColors,
@@ -218,16 +231,16 @@ fun OutlinedTextFieldWithErrorDescription(
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = groupModifier
+        modifier = groupModifier.fillMaxWidth()
     ) {
         val textFieldModifier = if (selectAllOnFocus) {
-            Modifier.onFocusSelectAll(
-                textFieldValueState = textFieldValue,
-                onTextFieldValueChanged = { onValueChange(it) }
-            )
-        } else {
             Modifier
-        }
+                .onFocusSelectAll(
+                    textFieldValueState = textFieldValue,
+                    onTextFieldValueChanged = { onValueChange(it) }
+                )
+                .fillMaxWidth()
+        } else Modifier
 
         OutlinedTextField(
             value = textFieldValue,

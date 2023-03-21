@@ -18,8 +18,6 @@ import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
 import com.waynebloom.scorekeeper.ext.statefulUpdateElement
-import java.math.BigDecimal
-import java.math.RoundingMode
 
 class EditPlayerScoreViewModel(
     playerObject: PlayerObject,
@@ -33,7 +31,9 @@ class EditPlayerScoreViewModel(
     private var saveWasTapped = false
 
     var initialPlayerEntity = playerObject.entity
-    var nameState by mutableStateOf(initialPlayerEntity.name)
+    var nameTextFieldValue by mutableStateOf(
+        TextFieldValue(initialPlayerEntity.name)
+    )
     var showDetailedScoreState by mutableStateOf(initialPlayerEntity.showDetailedScore)
     var subscoreStateBundles by mutableStateOf(listOf<SubscoreStateBundle>())
     var totalScoreBundle by mutableStateOf(
@@ -43,7 +43,8 @@ class EditPlayerScoreViewModel(
             )
         )
     )
-    var submitButtonEnabled by mutableStateOf(true)
+    var subscoresAreValid by mutableStateOf(true)
+    var nameIsValid by mutableStateOf(nameTextFieldValue.text.isNotBlank())
     var uncategorizedScoreBundle by mutableStateOf(SubscoreStateBundle(entity = SubscoreEntity()))
 
     // region Initialization
@@ -92,7 +93,7 @@ class EditPlayerScoreViewModel(
 
         return EntityStateBundle(
             entity = initialPlayerEntity.copy(
-                name = nameState,
+                name = nameTextFieldValue.text,
                 showDetailedScore = showDetailedScoreState,
                 score = scoreTotalAsString
             ),
@@ -134,7 +135,7 @@ class EditPlayerScoreViewModel(
             }
         )
 
-        updateSubmitButtonEnabledState(latestInput = textFieldValue.text)
+        updateSubscoresAreValidState(latestInput = textFieldValue.text)
         recalculateTotalScore()
     }
 
@@ -150,7 +151,7 @@ class EditPlayerScoreViewModel(
         }
 
         totalScoreBundle.setScoreFromTextValue(textFieldValue)
-        updateSubmitButtonEnabledState(latestInput = textFieldValue.text)
+        updateSubscoresAreValidState(latestInput = textFieldValue.text)
     }
 
     fun onUncategorizedFieldUpdate(textFieldValue: TextFieldValue) {
@@ -165,19 +166,20 @@ class EditPlayerScoreViewModel(
         }
 
         uncategorizedScoreBundle.setScoreFromTextValue(textFieldValue)
-        updateSubmitButtonEnabledState(latestInput = textFieldValue.text)
+        updateSubscoresAreValidState(latestInput = textFieldValue.text)
     }
 
     private fun recalculateTotalScore() {
-        if (submitButtonEnabled) {
+        if (subscoresAreValid) {
             val sumOfSubscores = subscoreStateBundles.sumOf { it.bigDecimal } +
                 uncategorizedScoreBundle.bigDecimal
             totalScoreBundle.setScoreFromBigDecimal(sumOfSubscores)
         }
     }
 
-    fun setName(name: String) {
-        nameState = name
+    fun setName(name: TextFieldValue) {
+        nameIsValid = name.text.isNotBlank()
+        nameTextFieldValue = name
         playerEntityNeedsUpdate = true
     }
 
@@ -186,8 +188,10 @@ class EditPlayerScoreViewModel(
         playerEntityNeedsUpdate = true
     }
 
-    private fun updateSubmitButtonEnabledState(latestInput: String) {
-        submitButtonEnabled = if (latestInput.toBigDecimalOrNull() != null) {
+    fun isSubmitButtonEnabled() = subscoresAreValid && nameIsValid
+
+    private fun updateSubscoresAreValidState(latestInput: String) {
+        subscoresAreValid = if (latestInput.toBigDecimalOrNull() != null) {
             subscoreStateBundles
                 .plus(listOf(totalScoreBundle, uncategorizedScoreBundle))
                 .all { it.validityState == ScoreStringValidityState.Valid }
