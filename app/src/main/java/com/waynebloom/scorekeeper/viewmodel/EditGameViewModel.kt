@@ -3,6 +3,7 @@ package com.waynebloom.scorekeeper.viewmodel
 import androidx.compose.runtime.*
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.SoftwareKeyboardController
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.R
@@ -26,13 +27,15 @@ enum class SubscoreTitleSectionListState {
 class EditGameViewModel(
     initialGame: GameObject,
     private val saveCallback: (EntityStateBundle<GameEntity>,
-                               List<EntityStateBundle<SubscoreTitleEntity>>) -> Unit
+        List<EntityStateBundle<SubscoreTitleEntity>>) -> Unit
 ): ViewModel() {
 
     var initialGameEntity = initialGame.entity
-    var gameColor: String by mutableStateOf(initialGame.entity.color)
-    var gameName: String by mutableStateOf(initialGame.entity.name)
-    var gameScoringMode: Int by mutableStateOf(initialGame.entity.scoringMode)
+    var themeColorString: String by mutableStateOf(initialGame.entity.color)
+    var nameTextFieldValue: TextFieldValue by mutableStateOf(
+        TextFieldValue(initialGame.entity.name)
+    )
+    var scoringMode: Int by mutableStateOf(initialGame.entity.scoringMode)
     private var subscoreTitleCommitBundles: List<EntityStateBundle<SubscoreTitleEntity>> by mutableStateOf(
         initialGame
             .subscoreTitles
@@ -45,6 +48,7 @@ class EditGameViewModel(
     var subscoreTitleInput: String by mutableStateOf("")
     var subscoreTitleSectionHeaderState by mutableStateOf(SubscoreTitleSectionHeaderState.TitleAndActionBar)
     var subscoreTitleSectionListState by mutableStateOf(SubscoreTitleSectionListState.Horizontal)
+    var nameIsValid by mutableStateOf(nameTextFieldValue.text.isNotBlank())
     private var gameEntityWasEdited = false
     private var saveWasTapped = false
     private var selectedSubscoreIndex = 0
@@ -135,9 +139,9 @@ class EditGameViewModel(
     private fun getGameToCommit(): EntityStateBundle<GameEntity> {
         return EntityStateBundle(
             entity = initialGameEntity.apply {
-                color = gameColor
-                name = gameName
-                scoringMode = gameScoringMode
+                color = themeColorString
+                name = nameTextFieldValue.text
+                scoringMode = this@EditGameViewModel.scoringMode
             },
             databaseAction = if (gameEntityWasEdited) {
                 DatabaseAction.UPDATE
@@ -157,19 +161,19 @@ class EditGameViewModel(
     }
 
     fun selectColor(color: String) {
-        gameColor = color
+        themeColorString = color
         colorMenuVisible = false
         gameEntityWasEdited = true
     }
 
     fun selectMode(mode: Int) {
-        gameScoringMode = mode
+        scoringMode = mode
         gameEntityWasEdited = true
     }
 
-    @JvmName("setGameName1")
-    fun setGameName(name: String) {
-        gameName = name
+    fun setName(textFieldValue: TextFieldValue) {
+        nameIsValid = textFieldValue.text.isNotBlank()
+        nameTextFieldValue = textFieldValue
         gameEntityWasEdited = true
     }
 }
