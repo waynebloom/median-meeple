@@ -11,8 +11,8 @@ android {
         applicationId "com.waynebloom.scorekeeper"
         minSdk 21
         targetSdk 33
-        versionCode 9
-        versionName "2023.1.1"
+        versionCode 10
+        versionName "2023.1.2"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
