@@ -9,6 +9,7 @@
 
     <!-- region Common -->
 
+    <string name="error_empty_name">Please enter a name.</string>
     <string name="header_games">Your Games</string>
     <string name="text_empty_games">No games to display</string>
     <string name="text_empty_matches">No matches to display</string>
@@ -58,8 +59,6 @@
     <!-- endregion -->
 
     <!-- region EditPlayerScoreScreen -->
-
-    <string name="error_invalid_score">This is not a valid number.</string>
     <string name="field_detailed_view">Detailed Score</string>
     <string name="field_total_score">Total Score</string>
     <string name="field_uncategorized">Uncategorized</string>

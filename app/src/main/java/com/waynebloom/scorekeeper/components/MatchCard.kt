@@ -43,7 +43,9 @@ fun MatchCard(
     modifier: Modifier = Modifier,
     showGameIdentifier: Boolean = true
 ) {
-    val gameInitial = game.name.first().uppercase()
+    val gameInitial = if (game.name.isNotEmpty()) {
+        game.name.first().uppercase()
+    } else "?"
     val gameColor = LocalGameColors.current.getColorByKey(game.color)
 
     Surface(

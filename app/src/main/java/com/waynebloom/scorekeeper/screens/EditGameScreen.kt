@@ -32,14 +32,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.LocalGameColors
-import com.waynebloom.scorekeeper.PreviewGameEntities
 import com.waynebloom.scorekeeper.PreviewGameObjects
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.DullColoredTextCard
@@ -75,7 +74,7 @@ fun EditGameScreen(
         )
     ).also { it.initialGameEntity.id = game.entity.id }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val themeColor = LocalGameColors.current.getColorByKey(viewModel.gameColor)
+    val themeColor = LocalGameColors.current.getColorByKey(viewModel.themeColorString)
     val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         focusedBorderColor = themeColor,
         focusedLabelColor = themeColor,
@@ -94,7 +93,7 @@ fun EditGameScreen(
         Column(modifier = modifier) {
 
             ScreenHeader(
-                title = viewModel.gameName,
+                title = viewModel.nameTextFieldValue.text,
                 color = themeColor
             )
 
@@ -109,14 +108,14 @@ fun EditGameScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
                         NameField(
-                            initialName = viewModel.gameName,
+                            nameTextFieldValue = viewModel.nameTextFieldValue,
                             textFieldColors = textFieldColors,
-                            imeSubmitTapped = { viewModel.onSaveTap(keyboardController) },
-                            onNameChanged = { viewModel.setGameName(it) }
+                            isError = !viewModel.nameIsValid,
+                            onNameChanged = { viewModel.setName(it) }
                         )
 
                         ScoringModeSelector(
-                            initialMode = ScoringMode.getModeByOrdinal(viewModel.gameScoringMode),
+                            initialMode = ScoringMode.getModeByOrdinal(viewModel.scoringMode),
                             onItemTap = { viewModel.selectMode(it.ordinal) }
                         )
                     }
@@ -144,13 +143,13 @@ fun EditGameScreen(
 
                         if (viewModel.colorMenuVisible) {
                             ColorSelectorOpen(
-                                currentColorKey = viewModel.gameColor,
+                                currentColorKey = viewModel.themeColorString,
                                 colorOptions = LocalGameColors.current.getColorsAsKeyList(),
                                 onColorTap = { colorString -> viewModel.selectColor(colorString) }
                             )
                         } else {
                             ColorSelectorClosed(
-                                currentColorKey = viewModel.gameColor,
+                                currentColorKey = viewModel.themeColorString,
                                 onColorSelectorTap = { viewModel.colorMenuVisible = true }
                             )
                         }
@@ -171,6 +170,7 @@ fun EditGameScreen(
                         modifier = Modifier
                             .height(48.dp)
                             .weight(1f),
+                        enabled = viewModel.nameIsValid,
                         content = {
                             Icon(imageVector = Icons.Rounded.Done, contentDescription = null)
                         }
@@ -196,13 +196,22 @@ fun EditGameScreen(
 
 @Composable
 private fun NameField(
-    initialName: String,
+    nameTextFieldValue: TextFieldValue,
     textFieldColors: TextFieldColors,
-    imeSubmitTapped: () -> Unit,
-    onNameChanged: (String) -> Unit
+    isError: Boolean,
+    onNameChanged: (TextFieldValue) -> Unit
 ) {
-    OutlinedTextField(
-        value = initialName,
+    OutlinedTextFieldWithErrorDescription(
+        textFieldValue = nameTextFieldValue,
+        onValueChange = onNameChanged,
+        label = { Text(text = stringResource(id = R.string.field_name)) },
+        isError = isError,
+        colors = textFieldColors,
+        errorDescription = R.string.error_empty_name,
+        selectAllOnFocus = true
+    )
+    /*OutlinedTextField(
+        value = nameTextFieldValue,
         label = { Text(text = stringResource(id = R.string.field_name)) },
         onValueChange = { onNameChanged(it) },
         colors = textFieldColors,
@@ -214,7 +223,7 @@ private fun NameField(
             onDone = { imeSubmitTapped() }
         ),
         modifier = Modifier.fillMaxWidth()
-    )
+    )*/
 }
 
 @Composable
