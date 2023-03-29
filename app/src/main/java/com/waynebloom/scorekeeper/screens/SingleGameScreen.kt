@@ -113,7 +113,7 @@ fun SingleGameScreen(
                 exit = scaleOut(),
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
-                DullColoredTextCard(color = gameColor) { color, _ ->
+                DullColoredTextCard(color = gameColor) { color, _, _ ->
                     AnimatedContent(
                         targetState = listState,
                         transitionSpec = {
@@ -214,37 +214,19 @@ fun SingleGameSortMenuActionBar(
                 modifier = Modifier.weight(1f)
             )
 
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { onSortDirectionChanged(!sortDescending) }
-            ) {
-                Icon(
-                    imageVector = if (sortDescending) {
-                        Icons.Rounded.KeyboardArrowDown
-                    } else Icons.Rounded.KeyboardArrowUp,
-                    tint = themeColor,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(12.dp)
-                )
-            }
+            CustomIconButton(
+                imageVector = if (sortDescending) {
+                    Icons.Rounded.KeyboardArrowDown
+                } else Icons.Rounded.KeyboardArrowUp,
+                foregroundColor = themeColor,
+                onTap = { onSortDirectionChanged(!sortDescending) }
+            )
 
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { onCloseTap() }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Close,
-                    tint = themeColor,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(12.dp)
-                )
-            }
+            CustomIconButton(
+                imageVector = Icons.Rounded.Close,
+                foregroundColor = themeColor,
+                onTap = { onCloseTap() }
+            )
         }
 
         Column(
@@ -273,50 +255,23 @@ fun SingleGameDefaultActionBar(
 ) {
     Row {
 
-        Box(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable { onOpenSearchTap() }
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Search,
-                tint = themeColor,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(12.dp)
-            )
-        }
+        CustomIconButton(
+            imageVector = Icons.Rounded.Search,
+            foregroundColor = themeColor,
+            onTap = { onOpenSearchTap() }
+        )
 
-        Box(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable { onSortTap() }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_sort),
-                tint = themeColor,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(12.dp)
-            )
-        }
+        CustomIconButton(
+            painter = painterResource(id = R.drawable.ic_sort),
+            foregroundColor = themeColor,
+            onTap = { onSortTap() }
+        )
 
-        Box(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable { onEditGameTap() }
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Edit,
-                tint = themeColor,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(12.dp)
-            )
-        }
+        CustomIconButton(
+            imageVector = Icons.Rounded.Edit,
+            foregroundColor = themeColor,
+            onTap = { onEditGameTap() }
+        )
     }
 }
 
@@ -345,6 +300,7 @@ fun SingleGameTopBar(
             .defaultMinSize(minHeight = 48.dp)
             .fillMaxWidth()
     ) {
+
         AnimatedVisibility(
             visible = topBarState == SingleGameTopBarState.Default,
             modifier = Modifier
@@ -364,6 +320,7 @@ fun SingleGameTopBar(
                 )
             }
         }
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)

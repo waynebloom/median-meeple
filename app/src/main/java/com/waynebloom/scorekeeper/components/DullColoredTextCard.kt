@@ -19,12 +19,13 @@ import com.waynebloom.scorekeeper.ui.theme.rust300
 fun DullColoredTextCard(
     modifier: Modifier = Modifier,
     text: String = "",
+    textAlign: TextAlign = TextAlign.Center,
     color: Color = MaterialTheme.colors.primary,
-    content: @Composable (Color, String) -> Unit = { mColor, mText ->
+    content: @Composable (Color, String, TextAlign) -> Unit = { mColor, mText, mTextAlign ->
         Text(
             text = mText,
             color = mColor,
-            textAlign = TextAlign.Center,
+            textAlign = mTextAlign,
             modifier = Modifier.padding(16.dp)
         )
     }
@@ -40,7 +41,7 @@ fun DullColoredTextCard(
             )
             .fillMaxWidth()
     ) {
-        content(lowEmphasisColor, text)
+        content(lowEmphasisColor, text, textAlign)
     }
 }
 
@@ -50,11 +51,11 @@ fun DullColoredTextCardPreview() {
     DullColoredTextCard(
         text = "No content was found.",
         color = rust300
-    ) { color, text ->
+    ) { color, text, align ->
         Text(
             text = text,
             color = color,
-            textAlign = TextAlign.Center,
+            textAlign = align,
             modifier = Modifier.padding(16.dp)
         )
     }

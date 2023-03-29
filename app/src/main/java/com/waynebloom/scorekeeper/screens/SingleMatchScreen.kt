@@ -22,19 +22,23 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.components.CustomIconButton
 import com.waynebloom.scorekeeper.components.DullColoredTextCard
 import com.waynebloom.scorekeeper.components.HeadedSection
-import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.game.GameObject
@@ -83,20 +87,27 @@ fun SingleMatchScreen(
         backgroundColor = themeColor.copy(0.3f)
     )
 
-    Column(modifier = modifier) {
+    Column(
+        modifier = modifier
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
+    ) {
 
-        ScreenHeader(
+        SingleMatchScreenTopBar(
             title = game.entity.name,
-            color = themeColor
+            themeColor = themeColor,
+            onDoneTap = { viewModel.onSaveTap(keyboardController, focusManager) },
+            onDeleteTap = { onDeleteMatchTap(match.entity.id) }
         )
 
         Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier
-                .padding(horizontal = 16.dp)
+                .padding(vertical = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            
-            Spacer(modifier = Modifier.padding(top = 40.dp))
+
+            SingleMatchScreenInfoBox(gameName = game.entity.name, themeColor = themeColor)
 
             PlayersSection(
                 players = match.players,
@@ -110,7 +121,10 @@ fun SingleMatchScreen(
                 onViewDetailedScoresTap = onViewDetailedScoresTap
             )
 
-            HeadedSection(title = R.string.header_other) {
+            HeadedSection(
+                title = R.string.header_other,
+                topPadding = 40
+            ) {
                 CompositionLocalProvider(
                     LocalTextSelectionColors.provides(textSelectionColors)
                 ) {
@@ -132,39 +146,98 @@ fun SingleMatchScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SingleMatchScreenTopBar(
+    title: String,
+    themeColor: Color,
+    onDoneTap: () -> Unit,
+    onDeleteTap: () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.h5,
+            color = themeColor
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
 
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(top = 16.dp)
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.background(
+                    MaterialTheme.colors.surface,
+                    MaterialTheme.shapes.small
+                )
             ) {
 
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = themeColor,
-                        contentColor = MaterialTheme.colors.onPrimary
-                    ),
-                    onClick = { viewModel.onSaveTap(keyboardController, focusManager) },
-                    modifier = Modifier
-                        .height(48.dp)
-                        .weight(1f),
-                    content = {
-                        Icon(imageVector = Icons.Rounded.Done, contentDescription = null)
-                    }
+                CustomIconButton(
+                    imageVector = Icons.Rounded.Done,
+                    foregroundColor = themeColor,
+                    onTap = onDoneTap,
                 )
 
-                Button(
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                    onClick = { onDeleteMatchTap(match.entity.id) },
-                    modifier = Modifier
-                        .height(48.dp)
-                        .weight(1f),
-                    content = {
-                        Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                    }
+                CustomIconButton(
+                    imageVector = Icons.Rounded.Delete,
+                    foregroundColor = MaterialTheme.colors.error,
+                    onTap = onDeleteTap,
                 )
             }
+        }
+    }
+}
 
-            Spacer(Modifier.height(16.dp))
+@Composable
+private fun SingleMatchScreenInfoBox(
+    gameName: String,
+    themeColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colors.onSurface,
+                shape = MaterialTheme.shapes.small
+            )
+            .fillMaxWidth()
+    ) {
+        val firstText = stringResource(id = R.string.info_single_match_screen_helper_1)
+        val secondText = stringResource(id = R.string.info_single_match_screen_helper_2)
+
+        Row(
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Info,
+                contentDescription = null,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+
+            Text(
+                text = buildAnnotatedString {
+                    append(firstText)
+                    withStyle(
+                        style = SpanStyle(
+                            color = themeColor,
+                            fontStyle = FontStyle.Italic
+                        ),
+                        block = { append(" $gameName ") }
+                    )
+                    append(secondText)
+                },
+            )
         }
     }
 }
@@ -180,7 +253,7 @@ private fun PlayersSectionHeader(
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Bottom,
+        verticalAlignment = Alignment.CenterVertically,
         modifier = modifier.fillMaxWidth()
     ) {
 

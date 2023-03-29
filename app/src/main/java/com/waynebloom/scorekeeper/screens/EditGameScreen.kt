@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.annotation.StringRes
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -30,10 +31,14 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -41,9 +46,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.PreviewGameObjects
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.components.CustomIconButton
 import com.waynebloom.scorekeeper.components.DullColoredTextCard
 import com.waynebloom.scorekeeper.components.HeadedSection
-import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.game.GameObject
@@ -62,7 +67,7 @@ import java.util.*
 fun EditGameScreen(
     game: GameObject,
     saveGame: (EntityStateBundle<GameEntity>,
-               List<EntityStateBundle<SubscoreTitleEntity>>) -> Unit,
+        List<EntityStateBundle<SubscoreTitleEntity>>) -> Unit,
     onDeleteTap: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -86,24 +91,34 @@ fun EditGameScreen(
         backgroundColor = themeColor.copy(0.3f)
     )
 
-    CompositionLocalProvider(
-        LocalTextSelectionColors.provides(textSelectionColors)
-    ) {
+    CompositionLocalProvider(LocalTextSelectionColors.provides(textSelectionColors)) {
 
-        Column(modifier = modifier) {
+        Column(
+            modifier = modifier
+                .padding(horizontal = 16.dp)
+                .padding(top = 16.dp)
+        ) {
 
-            ScreenHeader(
-                title = viewModel.nameTextFieldValue.text,
-                color = themeColor
+            EditGameScreenTopBar(
+                title = game.entity.name,
+                themeColor = themeColor,
+                submitButtonEnabled = viewModel.nameIsValid,
+                onDoneTap = { viewModel.onSaveTap(keyboardController) },
+                onDeleteTap = { onDeleteTap(viewModel.initialGameEntity.id) }
             )
 
             Column(
                 modifier = Modifier
-                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
 
-                HeadedSection(title = R.string.header_details) {
+                EditGameScreenInfoBox()
+
+                HeadedSection(
+                    title = R.string.header_details,
+                    topPadding = 32
+                ) {
 
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
 
@@ -128,7 +143,7 @@ fun EditGameScreen(
                     themeColor = themeColor,
                     textFieldColors = textFieldColors
                 )
-                
+
                 Spacer(modifier = Modifier.height(40.dp))
 
                 HeadedSection(
@@ -155,41 +170,78 @@ fun EditGameScreen(
                         }
                     }
                 }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(top = 16.dp)
-                ) {
-
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = themeColor,
-                            contentColor = MaterialTheme.colors.onPrimary
-                        ),
-                        onClick = { viewModel.onSaveTap(keyboardController) },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .weight(1f),
-                        enabled = viewModel.nameIsValid,
-                        content = {
-                            Icon(imageVector = Icons.Rounded.Done, contentDescription = null)
-                        }
-                    )
-
-                    Button(
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                        onClick = { onDeleteTap(viewModel.initialGameEntity.id) },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .weight(1f),
-                        content = {
-                            Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                        }
-                    )
-                }
-
-                Spacer(Modifier.height(16.dp))
             }
+        }
+    }
+}
+
+@Composable
+private fun EditGameScreenTopBar(
+    title: String,
+    themeColor: Color,
+    submitButtonEnabled: Boolean,
+    onDoneTap: () -> Unit,
+    onDeleteTap: () -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.h5,
+            color = themeColor
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+        ) {
+
+            CustomIconButton(
+                onTap = onDoneTap,
+                enabled = submitButtonEnabled,
+                foregroundColor = themeColor,
+                imageVector = Icons.Rounded.Done
+            )
+
+            CustomIconButton(
+                onTap = onDeleteTap,
+                foregroundColor = MaterialTheme.colors.error,
+                imageVector = Icons.Rounded.Delete
+            )
+        }
+    }
+}
+
+@Composable
+private fun EditGameScreenInfoBox(modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .padding(vertical = 16.dp)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colors.onSurface,
+                shape = MaterialTheme.shapes.small
+            )
+            .fillMaxWidth()
+    ) {
+
+        Row(
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Info,
+                contentDescription = null,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+
+            Text(text = stringResource(id = R.string.info_edit_game_screen_helper))
         }
     }
 }
@@ -210,20 +262,6 @@ private fun NameField(
         errorDescription = R.string.error_empty_name,
         selectAllOnFocus = true
     )
-    /*OutlinedTextField(
-        value = nameTextFieldValue,
-        label = { Text(text = stringResource(id = R.string.field_name)) },
-        onValueChange = { onNameChanged(it) },
-        colors = textFieldColors,
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Words,
-            imeAction = ImeAction.Done,
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { imeSubmitTapped() }
-        ),
-        modifier = Modifier.fillMaxWidth()
-    )*/
 }
 
 @Composable
@@ -244,6 +282,7 @@ private fun ScoringModeSelector(
         Surface(
             shape = MaterialTheme.shapes.small,
             modifier = Modifier
+                .clip(MaterialTheme.shapes.small)
                 .clickable { selectorExpanded = true }
                 .fillMaxWidth()
         ) {
@@ -252,7 +291,7 @@ private fun ScoringModeSelector(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .padding(vertical = 16.dp)
-                    .padding(start = 16.dp)
+                    .padding(start = 16.dp, end = 8.dp)
             ) {
                 Text(
                     text = stringResource(id = initialMode.label),
@@ -347,7 +386,6 @@ private fun SubscoreTitlesSection(
                 SubscoreTitleSectionListState.Horizontal -> {
                     SubscoreTitlesHorizontalList(
                         titles = viewModel.getSubscoreTitlesToDisplay(),
-                        themeColor = themeColor,
                         onDeleteTap = { index -> viewModel.deleteSubscoreTitle(index) },
                         onTitleTap = { index -> viewModel.showEditorForEditSubscoreTitle(index) }
                     )
@@ -476,20 +514,11 @@ private fun SubscoreTitlesDefaultHeader(
                 ) { state ->
                     when(state) {
                         SubscoreTitleSectionListState.Horizontal -> {
-                            Box(
-                                modifier = Modifier
-                                    .clip(MaterialTheme.shapes.small)
-                                    .clickable { onVerticalListTap() }
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.vertical_list),
-                                    tint = themeColor,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .padding(12.dp)
-                                )
-                            }
+                            CustomIconButton(
+                                onTap = onVerticalListTap,
+                                foregroundColor = themeColor,
+                                painter = painterResource(id = R.drawable.vertical_list)
+                            )
                         }
                         SubscoreTitleSectionListState.Vertical -> {
                             Box(
@@ -533,7 +562,6 @@ private fun SubscoreTitlesDefaultHeader(
 @Composable
 private fun SubscoreTitlesHorizontalList(
     titles: List<SubscoreTitleEntity>,
-    themeColor: Color,
     onDeleteTap: (Int) -> Unit,
     onTitleTap: (Int) -> Unit
 ) {
@@ -579,11 +607,35 @@ private fun SubscoreTitlesHorizontalList(
                 }
             }
         }
-    } else {
-        DullColoredTextCard(
-            text = stringResource(id = R.string.text_no_scoring_categories),
-            color = themeColor
-        )
+    } else ScoringCategoriesSectionEmptyInfoBox()
+}
+
+@Composable
+private fun ScoringCategoriesSectionEmptyInfoBox(modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colors.onSurface,
+                shape = MaterialTheme.shapes.small
+            )
+            .fillMaxWidth()
+    ) {
+
+        Row(
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Info,
+                contentDescription = null,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+
+            Text(text = stringResource(id = R.string.info_categories_section_helper))
+        }
     }
 }
 
@@ -655,12 +707,7 @@ private fun SubscoreTitlesVerticalList(
                 }
             }
         }
-    } else {
-        DullColoredTextCard(
-            text = stringResource(id = R.string.text_no_scoring_categories),
-            color = themeColor
-        )
-    }
+    } else ScoringCategoriesSectionEmptyInfoBox()
 }
 
 // endregion
@@ -707,11 +754,10 @@ fun ColorSelectorOpen(
                     }
                 }
             }
-            Image(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_left),
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_left),
                 contentDescription = null,
-                colorFilter = ColorFilter.tint(Color.White),
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(32.dp),
             )
         }
     }

@@ -85,7 +85,7 @@ fun GamesScreen(
                 exit = scaleOut(),
                 modifier = Modifier.padding(bottom = 8.dp)
             ) {
-                DullColoredTextCard { color, _ ->
+                DullColoredTextCard { color, _, _ ->
                     AnimatedContent(
                         targetState = listState,
                         transitionSpec = {
@@ -164,20 +164,11 @@ fun GamesDefaultActionBar(
     themeColor: Color,
     onOpenSearchTap: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-            .clickable { onOpenSearchTap() }
-    ) {
-        Icon(
-            imageVector = Icons.Rounded.Search,
-            tint = themeColor,
-            contentDescription = null,
-            modifier = Modifier
-                .size(48.dp)
-                .padding(12.dp)
-        )
-    }
+    CustomIconButton(
+        imageVector = Icons.Rounded.Search,
+        foregroundColor = themeColor,
+        onTap = { onOpenSearchTap() }
+    )
 }
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)

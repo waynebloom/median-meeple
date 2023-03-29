@@ -25,4 +25,9 @@ val ScorekeeperTypography = Typography(
         fontSize = 14.sp,
         letterSpacing = 1.25.sp
     ),
+    subtitle1 = TextStyle(
+        fontWeight = FontWeight.Normal,
+        fontSize = 18.sp,
+        letterSpacing = 0.15.sp
+    ),
 )

@@ -190,6 +190,8 @@ class EditPlayerScoreViewModel(
 
     fun isSubmitButtonEnabled() = subscoresAreValid && nameIsValid
 
+    fun shouldShowDetailedModeWarning() = showDetailedScoreState && subscoreTitles.isEmpty()
+
     private fun updateSubscoresAreValidState(latestInput: String) {
         subscoresAreValid = if (latestInput.toBigDecimalOrNull() != null) {
             subscoreStateBundles

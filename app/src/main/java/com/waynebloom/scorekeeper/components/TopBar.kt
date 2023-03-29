@@ -72,20 +72,11 @@ fun SearchActionBar(
             )
         }
 
-        Box(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable { onCloseTap() }
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Close,
-                tint = themeColor,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(12.dp)
-            )
-        }
+        CustomIconButton(
+            imageVector = Icons.Rounded.Close,
+            foregroundColor = themeColor,
+            onTap = { onCloseTap() }
+        )
     }
 }
 

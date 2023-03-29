@@ -52,6 +52,8 @@
     <string name="field_new_category">New Category</string>
     <string name="header_details">Game Details</string>
     <string name="header_theme">Custom Theme</string>
+    <string name="info_edit_game_screen_helper">Enter details about your game, and a custom theme color if you wish.</string>
+    <string name="info_categories_section_helper">These are used for advanced tracking in your matches. An example set would be Cities, Farms, and Roads.</string>
     <string name="scoring_option_ascending">Lowest Score Wins</string>
     <string name="scoring_option_descending">Highest Score Wins</string>
     <string name ="text_no_scoring_categories">No scoring categories added.</string>
@@ -59,11 +61,13 @@
     <!-- endregion -->
 
     <!-- region EditPlayerScoreScreen -->
-    <string name="field_detailed_view">Detailed Score</string>
+    <string name="field_detailed_view">Detailed Mode</string>
     <string name="field_total_score">Total Score</string>
     <string name="field_uncategorized">Uncategorized</string>
     <string name="header_player_info">Player Information</string>
     <string name="header_player_scores">Player Score</string>
+    <string name="info_player_score_screen_helper">Enter the player\'s information and score.</string>
+    <string name="info_player_score_screen_warning">Detailed mode is on, but no scoring categories have been added. To add some, edit your game.</string>
 
     <!-- endregion -->
 
@@ -100,6 +104,8 @@
     <string name="field_notes">Notes</string>
     <string name="header_other">Other</string>
     <string name="header_players">Players</string>
+    <string name="info_single_match_screen_helper_1">Good game! Add the players who participated in your</string>
+    <string name="info_single_match_screen_helper_2">match, as well as any miscellaneous notes.</string>
     <string name="search_placeholder_match">Search matches</string>
     <string name="text_empty_players">No players have been added.</string>
     <string name="text_no_detailed_scores">No players have detailed scores. Add some by tapping a player and switching on \"Detailed Score.\"</string>

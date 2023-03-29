@@ -2,6 +2,8 @@ package com.waynebloom.scorekeeper.screens
 
 import android.annotation.SuppressLint
 import androidx.annotation.StringRes
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
@@ -11,8 +13,7 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
@@ -25,15 +26,14 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.waynebloom.scorekeeper.components.ScreenHeader
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.components.CustomIconButton
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
@@ -54,7 +54,7 @@ fun EditPlayerScoreScreen(
     subscoreTitles: List<SubscoreTitleEntity>,
     themeColor: Color,
     onSaveTap: (EntityStateBundle<PlayerEntity>, List<SubscoreStateBundle>) -> Unit,
-    onDeleteTap: (Long) -> Unit
+    onDeleteTap: (Long) -> Unit,
 ) {
     val viewModel = viewModel<EditPlayerScoreViewModel>(
         key = ScorekeeperScreen.EditPlayerScore.name,
@@ -74,19 +74,29 @@ fun EditPlayerScoreScreen(
         disabledBorderColor = themeColor.copy(0.75f)
     )
 
-    Column {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp)
+    ) {
 
-        ScreenHeader(
-            title = viewModel.nameTextFieldValue.text,
-            color = themeColor
+        EditPlayerScoreScreenTopBar(
+            title = initialPlayer.entity.name,
+            themeColor = themeColor,
+            submitButtonEnabled = viewModel.isSubmitButtonEnabled(),
+            onDoneTap = { viewModel.onSaveTap(keyboardController) },
+            onDeleteTap = { onDeleteTap(initialPlayer.entity.id) },
         )
 
         Column(
             modifier = Modifier
-                .padding(horizontal = 16.dp)
                 .padding(bottom = 16.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+
+            EditPlayerScoreScreenInfoBox(
+                showDetailedModeWarning = viewModel.shouldShowDetailedModeWarning()
+            )
 
             CompositionLocalProvider(
                 LocalTextSelectionColors.provides(
@@ -96,7 +106,10 @@ fun EditPlayerScoreScreen(
                     )
                 )
             ) {
-                HeadedSection(title = R.string.header_player_info) {
+                HeadedSection(
+                    title = R.string.header_player_info,
+                    topPadding = 32
+                ) {
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         OutlinedTextFieldWithErrorDescription(
                             textFieldValue = viewModel.nameTextFieldValue,
@@ -113,15 +126,6 @@ fun EditPlayerScoreScreen(
                             errorDescription = R.string.error_empty_name,
                             selectAllOnFocus = true
                         )
-                        /*OutlinedTextField(
-                            value = viewModel.nameTextFieldValue,
-                            onValueChange = { viewModel.setName(it) },
-                            label = { Text(text = stringResource(id = R.string.field_name)) },
-                            keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
-                            colors = textFieldColors,
-                            maxLines = 1,
-                            modifier = Modifier.fillMaxWidth()
-                        )*/
                     }
                 }
 
@@ -153,65 +157,133 @@ fun EditPlayerScoreScreen(
                     }
                 }
             }
-
-            Row(modifier = Modifier.padding(top = 16.dp)) {
-                Button(
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = themeColor,
-                        contentColor = MaterialTheme.colors.onPrimary
-                    ),
-                    enabled = viewModel.isSubmitButtonEnabled(),
-                    onClick = { viewModel.onSaveTap(keyboardController) },
-                    modifier = Modifier
-                        .height(48.dp)
-                        .weight(1f),
-                    content = {
-                        Icon(imageVector = Icons.Rounded.Done, contentDescription = null)
-                    }
-                )
-
-                Button(
-                    colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                    onClick = { onDeleteTap(initialPlayer.entity.id) },
-                    modifier = Modifier
-                        .padding(start = 16.dp)
-                        .height(48.dp)
-                        .weight(1f),
-                    content = {
-                        Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                    }
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }
 
 @Composable
-fun TotalScoreField(
-    totalScoreBundle: SubscoreStateBundle,
-    textFieldColors: TextFieldColors,
-    onChange: (TextFieldValue) -> Unit,
-    onDoneTap: () -> Unit
+private fun EditPlayerScoreScreenTopBar(
+    title: String,
+    themeColor: Color,
+    submitButtonEnabled: Boolean,
+    onDoneTap: () -> Unit,
+    onDeleteTap: () -> Unit,
 ) {
-    OutlinedTextFieldWithErrorDescription(
-        textFieldValue = totalScoreBundle.textFieldValue,
-        onValueChange = { onChange(it) },
-        groupModifier = Modifier.padding(bottom = 8.dp),
-        label = { Text(text = stringResource(id = R.string.field_total_score)) },
-        isError = totalScoreBundle.validityState != ScoreStringValidityState.Valid,
-        colors = textFieldColors,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { onDoneTap() }
-        ),
-        errorDescription = totalScoreBundle.validityState.descriptionResource,
-        selectAllOnFocus = true
-    )
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.h5,
+            color = themeColor
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+        ) {
+
+            CustomIconButton(
+                onTap = onDoneTap,
+                enabled = submitButtonEnabled,
+                foregroundColor = themeColor,
+                imageVector = Icons.Rounded.Done
+            )
+
+            CustomIconButton(
+                onTap = onDeleteTap,
+                foregroundColor = MaterialTheme.colors.error,
+                imageVector = Icons.Rounded.Delete
+            )
+        }
+    }
+}
+
+@Composable
+private fun EditPlayerScoreScreenInfoBox(
+    showDetailedModeWarning: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .padding(vertical = 16.dp)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colors.onSurface,
+                shape = MaterialTheme.shapes.small
+            )
+            .fillMaxWidth()
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.Info,
+                    contentDescription = null,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+
+                Text(
+                    text = stringResource(id = R.string.info_player_score_screen_helper),
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+            }
+
+            if (showDetailedModeWarning) {
+                Row(
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Warning,
+                        tint = MaterialTheme.colors.error,
+                        contentDescription = null,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+
+                    Text(
+                        text = stringResource(id = R.string.info_player_score_screen_warning),
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DetailedScoreSwitchRow(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    themeColor: Color
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ) {
+        Text(text = stringResource(id = R.string.field_detailed_view))
+
+        Switch(
+            checked = checked,
+            onCheckedChange = { onCheckedChange(it) },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = themeColor,
+                checkedTrackColor = themeColor
+            )
+        )
+    }
 }
 
 @Composable
@@ -266,6 +338,32 @@ fun OutlinedTextFieldWithErrorDescription(
 }
 
 @Composable
+fun TotalScoreField(
+    totalScoreBundle: SubscoreStateBundle,
+    textFieldColors: TextFieldColors,
+    onChange: (TextFieldValue) -> Unit,
+    onDoneTap: () -> Unit
+) {
+    OutlinedTextFieldWithErrorDescription(
+        textFieldValue = totalScoreBundle.textFieldValue,
+        onValueChange = { onChange(it) },
+        groupModifier = Modifier.padding(bottom = 8.dp),
+        label = { Text(text = stringResource(id = R.string.field_total_score)) },
+        isError = totalScoreBundle.validityState != ScoreStringValidityState.Valid,
+        colors = textFieldColors,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        keyboardActions = KeyboardActions(
+            onDone = { onDoneTap() }
+        ),
+        errorDescription = totalScoreBundle.validityState.descriptionResource,
+        selectAllOnFocus = true
+    )
+}
+
+@Composable
 private fun SubscoreFields(
     subscoreStateBundles: List<SubscoreStateBundle>,
     subscoreTitles: List<SubscoreTitleEntity>,
@@ -317,32 +415,6 @@ private fun SubscoreFields(
         errorDescription = uncategorizedScoreBundle.validityState.descriptionResource,
         selectAllOnFocus = true
     )
-}
-
-@Composable
-private fun DetailedScoreSwitchRow(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    themeColor: Color
-) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp)
-    ) {
-        Text(text = stringResource(id = R.string.field_detailed_view))
-
-        Switch(
-            checked = checked,
-            onCheckedChange = { onCheckedChange(it) },
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = themeColor,
-                checkedTrackColor = themeColor
-            )
-        )
-    }
 }
 
 @Preview(backgroundColor = 0xFFF0EAE2, showBackground = true)
