@@ -94,7 +94,7 @@ fun SingleGameScreen(
                 .padding(horizontal = 16.dp)
         ) {
             val matchesToDisplay = filterAndSortMatches(
-                scoringMode = ScoringMode.getModeByOrdinal(game.entity.scoringMode),
+                scoringModeID = game.entity.scoringMode,
                 matches = game.matches,
                 searchString = searchString,
                 sortingMode = sortingMode,
@@ -380,7 +380,7 @@ fun SingleGameTopBar(
  *      5. Return
  */
 private fun filterAndSortMatches(
-    scoringMode: ScoringMode,
+    scoringModeID: Int,
     matches: List<MatchObject>,
     searchString: String,
     sortingMode: MatchSortingMode,
@@ -398,10 +398,10 @@ private fun filterAndSortMatches(
     var matchesInOrder: List<MatchObject> = when (sortingMode) {
         MatchSortingMode.ByMatchAge -> matchesToSort.reversed()
         MatchSortingMode.ByWinningPlayer -> matchesToSort.sortedBy { match ->
-            match.players.getWinningPlayer(scoringMode).entity.name
+            match.players.getWinningPlayer(scoringModeID).entity.name
         }
         MatchSortingMode.ByWinningScore -> matchesToSort.sortedBy { match ->
-            match.players.getWinningPlayer(scoringMode).entity.score
+            match.players.getWinningPlayer(scoringModeID).entity.score
         }
         MatchSortingMode.ByPlayerCount -> matchesToSort.sortedBy { it.players.size }
     }

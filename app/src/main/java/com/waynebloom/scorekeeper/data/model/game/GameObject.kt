@@ -1,10 +1,12 @@
 package com.waynebloom.scorekeeper.data.model.game
 
 import androidx.room.Embedded
+import androidx.room.Ignore
 import androidx.room.Relation
 import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.enums.ScoringMode
 
 data class GameObject(
     @Embedded
@@ -15,4 +17,7 @@ data class GameObject(
 
     @Relation(parentColumn = "id", entityColumn = "game_id", entity = SubscoreTitleEntity::class)
     var subscoreTitles: List<SubscoreTitleEntity> = listOf()
-)
+) {
+    @Ignore
+    fun getScoringMode() = ScoringMode.getModeByOrdinal(entity.scoringMode)
+}

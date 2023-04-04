@@ -13,6 +13,9 @@ import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Done
+import androidx.compose.runtime.*
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -32,10 +35,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.waynebloom.scorekeeper.PreviewMatchObjects
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.data.model.*
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
@@ -51,7 +56,9 @@ import com.waynebloom.scorekeeper.viewmodel.EditPlayerScoreViewModelFactory
 @Composable
 fun EditPlayerScoreScreen(
     initialPlayer: PlayerObject,
+    matchObject: MatchObject,
     subscoreTitles: List<SubscoreTitleEntity>,
+    isGameManualRanked: Boolean,
     themeColor: Color,
     onSaveTap: (EntityStateBundle<PlayerEntity>, List<SubscoreStateBundle>) -> Unit,
     onDeleteTap: (Long) -> Unit,
@@ -60,8 +67,10 @@ fun EditPlayerScoreScreen(
         key = ScorekeeperScreen.EditPlayerScore.name,
         factory = EditPlayerScoreViewModelFactory(
             playerObject = initialPlayer,
+            matchObject = matchObject,
             playerSubscores = initialPlayer.score,
             subscoreTitles = subscoreTitles,
+            isGameManualRanked = isGameManualRanked,
             saveCallback = onSaveTap
         )
     ).also { it.initialPlayerEntity.id = initialPlayer.entity.id }
@@ -95,7 +104,8 @@ fun EditPlayerScoreScreen(
         ) {
 
             EditPlayerScoreScreenInfoBox(
-                showDetailedModeWarning = viewModel.shouldShowDetailedModeWarning()
+                showDetailedModeWarning = viewModel.shouldShowDetailedModeWarning(),
+                showRankInfo = isGameManualRanked
             )
 
             CompositionLocalProvider(
@@ -128,6 +138,15 @@ fun EditPlayerScoreScreen(
                         )
                     }
                 }
+                
+                PlayerRankSection(
+                    playerRankTextFieldValue = viewModel.playerRankTextFieldValue,
+                    showPlayerRankError = !viewModel.playerRankIsValid,
+                    showManualRankingField = isGameManualRanked,
+                    textFieldColors = textFieldColors,
+                    focusManager = focusManager,
+                    onPlayerRankUpdate = { viewModel.onPlayerRankUpdate(it) },
+                )
 
                 HeadedSection(title = R.string.header_player_scores) {
                     DetailedScoreSwitchRow(
@@ -205,6 +224,7 @@ private fun EditPlayerScoreScreenTopBar(
 @Composable
 private fun EditPlayerScoreScreenInfoBox(
     showDetailedModeWarning: Boolean,
+    showRankInfo: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -226,6 +246,12 @@ private fun EditPlayerScoreScreenInfoBox(
                 verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
             ) {
+                var infoText = stringResource(id = R.string.info_player_score_screen_helper)
+                if (showRankInfo) {
+                    infoText += ' ' +
+                        stringResource(id = R.string.info_player_score_screen_rank_helper)
+                }
+
                 Icon(
                     imageVector = Icons.Rounded.Info,
                     contentDescription = null,
@@ -233,7 +259,7 @@ private fun EditPlayerScoreScreenInfoBox(
                 )
 
                 Text(
-                    text = stringResource(id = R.string.info_player_score_screen_helper),
+                    text = infoText,
                     modifier = Modifier.weight(1f, fill = false),
                 )
             }
@@ -287,6 +313,44 @@ private fun DetailedScoreSwitchRow(
 }
 
 @Composable
+fun PlayerRankSection(
+    playerRankTextFieldValue: TextFieldValue,
+    showPlayerRankError: Boolean,
+    showManualRankingField: Boolean,
+    textFieldColors: TextFieldColors,
+    focusManager: FocusManager,
+    onPlayerRankUpdate: (TextFieldValue) -> Unit,
+) {
+    if (showManualRankingField) {
+        HeadedSection(title = R.string.header_player_ranking) {
+
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+                OutlinedTextFieldWithErrorDescription(
+                    textFieldValue = playerRankTextFieldValue,
+                    onValueChange = { onPlayerRankUpdate(it) },
+                    groupModifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    label = { Text(text = stringResource(id = R.string.field_rank)) },
+                    isError = showPlayerRankError,
+                    colors = textFieldColors,
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Number,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = { focusManager.moveFocus(FocusDirection.Next) }
+                    ),
+                    errorDescription = R.string.error_invalid_rank,
+                    selectAllOnFocus = true
+                )
+            }
+        }
+    }
+}
+
+@Composable
 @SuppressLint("ModifierParameter")
 fun OutlinedTextFieldWithErrorDescription(
     textFieldValue: TextFieldValue,
@@ -323,7 +387,7 @@ fun OutlinedTextFieldWithErrorDescription(
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
             singleLine = singleLine,
-            modifier = textFieldModifier
+            modifier = textFieldModifier.fillMaxWidth()
         )
 
         if (isError) {
@@ -428,12 +492,14 @@ fun EditPlayerScoreScreenPreview() {
                     showDetailedScore = true
                 )
             ),
+            matchObject = PreviewMatchObjects[0],
             subscoreTitles = listOf(
                 SubscoreTitleEntity(title = "Eggs"),
                 SubscoreTitleEntity(title = "Tucked Cards"),
                 SubscoreTitleEntity(title = "Cached Food"),
                 SubscoreTitleEntity(title = "Birds")
             ),
+            isGameManualRanked = true,
             themeColor = deepOrange500,
             onSaveTap = { _, _ -> },
             onDeleteTap = {}

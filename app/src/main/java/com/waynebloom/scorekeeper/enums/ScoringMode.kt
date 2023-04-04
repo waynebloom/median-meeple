@@ -7,7 +7,8 @@ enum class ScoringMode(
     @StringRes val label: Int
 ) {
     Ascending(R.string.scoring_option_ascending),
-    Descending(R.string.scoring_option_descending);
+    Descending(R.string.scoring_option_descending),
+    Manual(R.string.scoring_option_manual);
 
     companion object {
         fun getModeByOrdinal(ordinal: Int) = values()[ordinal]

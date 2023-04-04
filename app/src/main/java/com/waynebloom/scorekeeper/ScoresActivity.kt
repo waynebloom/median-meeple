@@ -25,6 +25,7 @@ import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.viewmodel.GamesViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -349,7 +350,9 @@ fun ScoresNavHost(
             if (!viewModel.playerCache.needsUpdate) {
                 EditPlayerScoreScreen(
                     initialPlayer = viewModel.playerCache.dataObject,
+                    matchObject = viewModel.matchCache.dataObject,
                     subscoreTitles = viewModel.gameCache.dataObject.subscoreTitles,
+                    isGameManualRanked = viewModel.gameCache.dataObject.getScoringMode() == ScoringMode.Manual,
                     themeColor = LocalGameColors.current.getColorByKey(viewModel.gameCache.dataObject.entity.color),
                     onSaveTap = { playerBundle, subscoreBundles ->
                         with(viewModel) {
