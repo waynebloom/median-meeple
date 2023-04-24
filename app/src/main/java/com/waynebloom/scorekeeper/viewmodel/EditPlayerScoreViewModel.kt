@@ -6,9 +6,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.data.model.EntityStateBundle
+import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
@@ -21,8 +23,10 @@ import com.waynebloom.scorekeeper.ext.statefulUpdateElement
 
 class EditPlayerScoreViewModel(
     playerObject: PlayerObject,
+    matchObject: MatchObject,
     private val playerSubscores: MutableList<SubscoreEntity>,
     var subscoreTitles: List<SubscoreTitleEntity>,
+    private val isGameManualRanked: Boolean,
     private val saveCallback: (EntityStateBundle<PlayerEntity>,
         List<SubscoreStateBundle>) -> Unit
 ): ViewModel() {
@@ -31,9 +35,9 @@ class EditPlayerScoreViewModel(
     private var saveWasTapped = false
 
     var initialPlayerEntity = playerObject.entity
-    var nameTextFieldValue by mutableStateOf(
-        TextFieldValue(initialPlayerEntity.name)
-    )
+    var playerRankTextFieldValue by mutableStateOf(TextFieldValue())
+    var playerRankIsValid by mutableStateOf(true)
+    var nameTextFieldValue by mutableStateOf(TextFieldValue(initialPlayerEntity.name))
     var showDetailedScoreState by mutableStateOf(initialPlayerEntity.showDetailedScore)
     var subscoreStateBundles by mutableStateOf(listOf<SubscoreStateBundle>())
     var totalScoreBundle by mutableStateOf(
@@ -51,8 +55,19 @@ class EditPlayerScoreViewModel(
 
     init {
         subscoreTitles = subscoreTitles.sortedBy { it.position }
+        initializeRank(
+            playerCount = matchObject.players.size,
+            currentPlayerRankValue = playerObject.entity.position
+        )
         initializeSubscores()
         initializeUncategorizedSubscore(playerObject)
+    }
+
+    private fun initializeRank(playerCount: Int, currentPlayerRankValue: Int) {
+        playerRankTextFieldValue = if (isGameManualRanked && currentPlayerRankValue == 0) {
+            playerEntityNeedsUpdate = true
+            TextFieldValue(playerCount.toString())
+        } else TextFieldValue(currentPlayerRankValue.toString())
     }
 
     private fun initializeSubscores() {
@@ -94,8 +109,9 @@ class EditPlayerScoreViewModel(
         return EntityStateBundle(
             entity = initialPlayerEntity.copy(
                 name = nameTextFieldValue.text,
+                position = playerRankTextFieldValue.text.toInt(),
+                score = scoreTotalAsString,
                 showDetailedScore = showDetailedScoreState,
-                score = scoreTotalAsString
             ),
             databaseAction = if (playerEntityNeedsUpdate) {
                 DatabaseAction.UPDATE
@@ -107,6 +123,15 @@ class EditPlayerScoreViewModel(
         subscoreStateBundles.forEach { 
             it.entity.value = it.bigDecimal.toTrimmedScoreString()
         }
+    }
+
+    fun onPlayerRankUpdate(textFieldValue: TextFieldValue) {
+        playerRankTextFieldValue = textFieldValue
+        playerRankIsValid = textFieldValue.text.isNotEmpty()
+            && textFieldValue.text.isDigitsOnly()
+            && textFieldValue.text.toInt() <= 100
+            && textFieldValue.text.toInt() > 0
+        playerEntityNeedsUpdate = true
     }
 
     @OptIn(ExperimentalComposeUiApi::class)
@@ -188,7 +213,7 @@ class EditPlayerScoreViewModel(
         playerEntityNeedsUpdate = true
     }
 
-    fun isSubmitButtonEnabled() = subscoresAreValid && nameIsValid
+    fun isSubmitButtonEnabled() = subscoresAreValid && nameIsValid && playerRankIsValid
 
     fun shouldShowDetailedModeWarning() = showDetailedScoreState && subscoreTitles.isEmpty()
 
@@ -203,15 +228,19 @@ class EditPlayerScoreViewModel(
 
 class EditPlayerScoreViewModelFactory(
     private val playerObject: PlayerObject,
+    private val matchObject: MatchObject,
     private val playerSubscores: List<SubscoreEntity>,
     private val subscoreTitles: List<SubscoreTitleEntity>,
+    private val isGameManualRanked: Boolean,
     private val saveCallback: (EntityStateBundle<PlayerEntity>,
         List<SubscoreStateBundle>) -> Unit
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = EditPlayerScoreViewModel(
         playerObject = playerObject,
+        matchObject = matchObject,
         playerSubscores = playerSubscores.toMutableList(),
         subscoreTitles = subscoreTitles,
+        isGameManualRanked = isGameManualRanked,
         saveCallback = saveCallback
     ) as T
 }

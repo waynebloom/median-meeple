@@ -68,9 +68,7 @@ fun MatchCard(
             }
 
             if (match.players.isNotEmpty()) {
-                val winningPlayer = match
-                    .players
-                    .getWinningPlayer(ScoringMode.getModeByOrdinal(game.scoringMode))
+                val winningPlayer = match.players.getWinningPlayer(game.scoringMode)
 
                 VictorCard(
                     name = winningPlayer.entity.name,

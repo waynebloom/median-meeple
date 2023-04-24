@@ -47,6 +47,7 @@ import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.toShortScoreFormat
 import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
 import com.waynebloom.scorekeeper.ui.theme.orange100
@@ -110,7 +111,8 @@ fun SingleMatchScreen(
             SingleMatchScreenInfoBox(gameName = game.entity.name, themeColor = themeColor)
 
             PlayersSection(
-                players = match.players,
+                players = match.players.map { it.entity },
+                scoringMode = game.getScoringMode(),
                 showDetailedScoresButton = viewModel.shouldShowDetailedScoresButton(
                     players = match.players.map { it.entity },
                     subscoreTitles = game.subscoreTitles
@@ -306,7 +308,8 @@ private fun PlayersSectionHeader(
 
 @Composable
 fun PlayersSection(
-    players: List<PlayerObject>,
+    players: List<PlayerEntity>,
+    scoringMode: ScoringMode,
     showDetailedScoresButton: Boolean,
     themeColor: Color,
     onAddPlayerTap: () -> Unit,
@@ -324,11 +327,20 @@ fun PlayersSection(
         )
 
         if (players.isNotEmpty()) {
-            val playersInRankOrder = players.sortedBy { it.entity.score.toBigDecimal() }.reversed()
-            playersInRankOrder.forEachIndexed { index, score ->
+            val playersInRankOrder = when(scoringMode) {
+                ScoringMode.Ascending -> players.sortedBy { it.score.toBigDecimal() }
+                ScoringMode.Descending -> players.sortedBy { it.score.toBigDecimal() }.reversed()
+                ScoringMode.Manual -> players.sortedBy { it.position }
+            }
+
+            playersInRankOrder.forEachIndexed { index, player ->
+                val displayedRank = if (scoringMode == ScoringMode.Manual) {
+                    player.position
+                } else index + 1
+
                 PlayerCard(
-                    player = score.entity,
-                    rank = index + 1,
+                    player = player,
+                    rank = displayedRank,
                     themeColor = themeColor,
                     onPlayerTap = onPlayerTap
                 )
@@ -428,7 +440,8 @@ fun PlayerCard(
 fun ScoresSectionPreview() {
     ScoreKeeperTheme {
         PlayersSection(
-            players = PreviewPlayerEntities.map { PlayerObject(entity = it) },
+            players = PreviewPlayerEntities,
+            scoringMode = ScoringMode.Descending,
             showDetailedScoresButton = true,
             themeColor = orange100,
             onAddPlayerTap = {},

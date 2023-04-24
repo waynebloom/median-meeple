@@ -313,21 +313,15 @@ private fun ScoringModeSelector(
                 modifier = Modifier
                     .width(with(LocalDensity.current) { boxSize.width.toDp() })
             ) {
-                DropdownMenuItem(
-                    onClick = {
-                        onItemTap(ScoringMode.Ascending)
-                        selectorExpanded = false
+                ScoringMode.values().forEach { scoringMode ->
+                    DropdownMenuItem(
+                        onClick = {
+                            onItemTap(scoringMode)
+                            selectorExpanded = false
+                        }
+                    ) {
+                        Text(text = stringResource(id = scoringMode.label))
                     }
-                ) {
-                    Text(text = stringResource(id = ScoringMode.Ascending.label))
-                }
-                DropdownMenuItem(
-                    onClick = {
-                        onItemTap(ScoringMode.Descending)
-                        selectorExpanded = false
-                    }
-                ) {
-                    Text(text = stringResource(id = ScoringMode.Descending.label))
                 }
             }
         }
