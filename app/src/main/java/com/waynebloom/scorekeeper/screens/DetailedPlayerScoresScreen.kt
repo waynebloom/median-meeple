@@ -408,13 +408,13 @@ fun EditScoresPageActions(
 fun EditScoresScreenPreview() {
     MedianMeepleTheme {
         DetailedPlayerScoresScreen(
-            players = PreviewPlayerObjects.plus(
-                PreviewPlayerObjects[0].apply {
+            players = PlayerObjectsDefaultPreview.plus(
+                PlayerObjectsDefaultPreview[0].apply {
                     entity.showDetailedScore = true
-                    score = PreviewSubscoreEntities
+                    score = SubscoreEntitiesDefaultPreview
                 }
             ),
-            subscoreTitles = PreviewSubscoreTitleEntities,
+            subscoreTitles = SubscoreTitleEntitiesDefaultPreview,
             onExistingPlayerTap = {},
         )
     }

@@ -1,6 +1,6 @@
 package com.waynebloom.scorekeeper.enums
 
-enum class SingleGameTopBarState {
+enum class MatchesForSingleGameTopBarState {
     Default,
     SearchBarOpen,
     SortMenuOpen

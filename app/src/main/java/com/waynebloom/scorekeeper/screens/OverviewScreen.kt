@@ -126,7 +126,7 @@ fun MatchesHead(
                     stringResource(id = R.string.exc_no_game_with_id, match.entity.gameId)
                 )
             MatchCard(
-                game = parentGame,
+                gameEntity = parentGame,
                 match = match,
                 onSingleMatchTap = onSingleMatchTap
             )

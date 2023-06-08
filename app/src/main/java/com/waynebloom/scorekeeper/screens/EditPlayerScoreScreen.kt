@@ -35,7 +35,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.waynebloom.scorekeeper.PreviewMatchObjects
+import com.waynebloom.scorekeeper.MatchObjectsDefaultPreview
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
 import com.waynebloom.scorekeeper.components.HeadedSection
@@ -492,7 +492,7 @@ fun EditPlayerScoreScreenPreview() {
                     showDetailedScore = true
                 )
             ),
-            matchObject = PreviewMatchObjects[0],
+            matchObject = MatchObjectsDefaultPreview[0],
             subscoreTitles = listOf(
                 SubscoreTitleEntity(title = "Eggs"),
                 SubscoreTitleEntity(title = "Tucked Cards"),

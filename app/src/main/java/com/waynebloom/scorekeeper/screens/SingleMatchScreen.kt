@@ -372,7 +372,7 @@ fun PlayersSection(
                         player.position
                     } else index + 1
 
-                    PlayerCard(
+                    RankedListItem(
                         player = player,
                         rank = displayedRank,
                         themeColor = themeColor,
@@ -390,12 +390,12 @@ fun PlayersSection(
 }
 
 @Composable
-fun PlayerCard(
+fun RankedListItem(
     player: PlayerEntity,
     rank: Int,
     themeColor: Color,
     onPlayerTap: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
@@ -475,7 +475,7 @@ fun PlayerCard(
 fun ScoresSectionPreview() {
     MedianMeepleTheme {
         PlayersSection(
-            players = PreviewPlayerEntities,
+            players = PlayerEntitiesDefaultPreview,
             scoringMode = ScoringMode.Descending,
             showDetailedScoresButton = true,
             showMaximumPlayersErrorState = true,
@@ -496,10 +496,10 @@ fun ScoresSectionPreview() {
 fun SingleMatchScreenPreview() {
     MedianMeepleTheme {
         SingleMatchScreen(
-            game = PreviewGameObjects[0],
+            game = GameObjectsDefaultPreview[0],
             match = MatchObject(
-                entity = PreviewMatchEntities[0],
-                players = PreviewPlayerEntities.map { PlayerObject(entity = it) }
+                entity = MatchEntitiesDefaultPreview[0],
+                players = PlayerEntitiesDefaultPreview.map { PlayerObject(entity = it) }
             ),
             onAddPlayerTap = {},
             onDeleteMatchTap = {},

@@ -32,8 +32,8 @@ fun <T> List<T>.toAdSeparatedListlets(): List<List<T>> {
 }
 
 fun List<PlayerObject>.getWinningPlayer(
-    scoringModeID: Int
-) = when(ScoringMode.getModeByOrdinal(scoringModeID)) {
+    scoringMode: ScoringMode
+) = when(scoringMode) {
     ScoringMode.Ascending -> minBy { it.entity.score.toBigDecimal() }
     ScoringMode.Descending -> maxBy { it.entity.score.toBigDecimal() }
     ScoringMode.Manual -> minBy { it.entity.position }

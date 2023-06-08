@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.LocalGameColors
-import com.waynebloom.scorekeeper.PreviewGameObjects
+import com.waynebloom.scorekeeper.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
 import com.waynebloom.scorekeeper.components.HeadedSection
@@ -323,7 +323,6 @@ private fun ScoringModeSelector(
 
 // region Subscore Titles
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun SubscoreTitlesSection(
     viewModel: EditGameViewModel,
@@ -463,7 +462,6 @@ private fun SubscoreTitlesEditorHeader(
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun SubscoreTitlesDefaultHeader(
     listState: SubscoreTitleSectionListState,
@@ -504,7 +502,7 @@ private fun SubscoreTitlesDefaultHeader(
                             CustomIconButton(
                                 onTap = onVerticalListTap,
                                 foregroundColor = themeColor,
-                                painter = painterResource(id = R.drawable.vertical_list)
+                                painter = painterResource(id = R.drawable.ic_two_way_arrows_vertical)
                             )
                         }
                         SubscoreTitleSectionListState.Vertical -> {
@@ -514,7 +512,7 @@ private fun SubscoreTitlesDefaultHeader(
                                     .clickable { onHorizontalListTap() }
                             ) {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.horizontal_list),
+                                    painter = painterResource(id = R.drawable.ic_two_way_arrows_horizontal),
                                     tint = themeColor,
                                     contentDescription = null,
                                     modifier = Modifier
@@ -796,7 +794,7 @@ fun ColorSelectorClosed(
 fun EditGameScreenPreview() {
     MedianMeepleTheme {
         EditGameScreen(
-            game = PreviewGameObjects[0],
+            game = GameObjectsDefaultPreview[0],
             saveGame = { _, _ -> },
             onDeleteTap = {}
         )

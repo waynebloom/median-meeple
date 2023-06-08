@@ -23,12 +23,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.LocalGameColors
+import com.waynebloom.scorekeeper.PlayerEntitiesDefaultPreview
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.PreviewPlayerEntities
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.toShortScoreFormat
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
@@ -36,16 +37,16 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MatchCard(
-    game: GameEntity,
+    gameEntity: GameEntity,
     match: MatchObject,
     onSingleMatchTap: (Long) -> Unit,
     modifier: Modifier = Modifier,
     showGameIdentifier: Boolean = true
 ) {
-    val gameInitial = if (game.name.isNotEmpty()) {
-        game.name.first().uppercase()
+    val gameInitial = if (gameEntity.name.isNotEmpty()) {
+        gameEntity.name.first().uppercase()
     } else "?"
-    val gameColor = LocalGameColors.current.getColorByKey(game.color)
+    val gameColor = LocalGameColors.current.getColorByKey(gameEntity.color)
 
     Surface(
         shape = MaterialTheme.shapes.small,
@@ -67,7 +68,9 @@ fun MatchCard(
             }
 
             if (match.players.isNotEmpty()) {
-                val winningPlayer = match.players.getWinningPlayer(game.scoringMode)
+                val winningPlayer = match.players.getWinningPlayer(
+                    scoringMode = ScoringMode.getModeByOrdinal(gameEntity.scoringMode)
+                )
 
                 VictorCard(
                     name = winningPlayer.entity.name,
@@ -239,9 +242,9 @@ fun PlayerCountCard(
 fun ScoreCardPreview() {
     MedianMeepleTheme {
         MatchCard(
-            game = GameEntity(name = "WWWW"),
+            gameEntity = GameEntity(name = "WWWW"),
             match = MatchObject(
-                players = PreviewPlayerEntities.map { PlayerObject(entity = it) }
+                players = PlayerEntitiesDefaultPreview.map { PlayerObject(entity = it) }
             ),
             onSingleMatchTap = {}
         )
@@ -253,7 +256,7 @@ fun ScoreCardPreview() {
 fun EmptyScoreCardPreview() {
     MedianMeepleTheme {
         MatchCard(
-            game = GameEntity(name = "WWWW"),
+            gameEntity = GameEntity(name = "WWWW"),
             match = MatchObject(),
             onSingleMatchTap = {}
         )

@@ -4,7 +4,6 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +16,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -171,7 +169,7 @@ fun GamesDefaultActionBar(
     )
 }
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun GamesTopBar(
     title: String,
@@ -214,6 +212,9 @@ fun GamesTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
         ) {
+
+            var isSearchBarFocused by rememberSaveable { mutableStateOf(false) }
+
             AnimatedContent(targetState = topBarState) { state ->
                 when (state) {
                     GamesTopBarState.Default -> {
@@ -223,9 +224,11 @@ fun GamesTopBar(
                         )
                     }
                     GamesTopBarState.SearchBarOpen -> {
-                        SearchActionBar(
+                        SearchTopBar(
+                            isSearchBarFocused = isSearchBarFocused,
                             searchString = searchString,
                             themeColor = themeColor,
+                            onSearchBarFocusChanged = { isSearchBarFocused = it },
                             onSearchStringChanged = onSearchStringChanged,
                             onCloseTap = {
                                 topBarState = GamesTopBarState.Default

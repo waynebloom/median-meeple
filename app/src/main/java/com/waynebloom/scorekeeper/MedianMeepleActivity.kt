@@ -93,6 +93,7 @@ private fun NavHost(
         startDestination = TopLevelScreen.Overview.name,
         modifier = modifier
     ) {
+
         // region OverviewScreen
 
         composable(TopLevelScreen.Overview.name) {
@@ -193,7 +194,7 @@ private fun NavHost(
 
         composable(route = TopLevelScreen.SingleGame.name) {
             SingleGameScreen(
-                game = viewModel.gameCache.dataObject,
+                gameObject = viewModel.gameCache.dataObject,
                 currentAd = currentAd,
                 onEditGameTap = { navController.navigate(TopLevelScreen.EditGame.name) },
                 onNewMatchTap = {
@@ -210,7 +211,7 @@ private fun NavHost(
                         matches = viewModel.gameCache.dataObject.matches
                     )
                     navController.navigate(TopLevelScreen.SingleMatch.name)
-                }
+                },
             )
         }
 

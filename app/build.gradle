@@ -75,10 +75,10 @@ dependencies {
     implementation "androidx.navigation:navigation-compose:$nav_version"
 
     // Admob
-    implementation 'com.google.android.gms:play-services-ads:21.3.0'
+    implementation 'com.google.android.gms:play-services-ads:22.0.0'
 
     // KSP (support for Room)
-    implementation("com.google.devtools.ksp:symbol-processing-api:1.7.10-1.0.6")
+    implementation("com.google.devtools.ksp:symbol-processing-api:1.8.20-1.0.10")
 
     // Navigation
     implementation "androidx.navigation:navigation-compose:$nav_version"
@@ -93,15 +93,9 @@ dependencies {
     implementation "androidx.room:room-rxjava3:$room_version"
     ksp "androidx.room:room-compiler:$room_version"
 
-    // Tests
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
-    androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
-
     // UI Tooling
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
     implementation "androidx.compose.ui:ui-tooling-preview:$compose_version"
-    implementation 'androidx.compose.ui:ui-viewbinding:1.2.0-beta03'
+    implementation 'androidx.compose.ui:ui-viewbinding:1.5.0-alpha02'
 }

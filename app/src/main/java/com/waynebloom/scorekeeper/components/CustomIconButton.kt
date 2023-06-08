@@ -21,29 +21,35 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun CustomIconButton(
     modifier: Modifier = Modifier,
-    imageVector: ImageVector,
+    backgroundColor: Color = MaterialTheme.colors.surface,
     foregroundColor: Color,
+    imageVector: ImageVector,
     enabled: Boolean = true,
     onTap: () -> Unit,
 ) {
     var boxModifier = modifier
         .clip(MaterialTheme.shapes.small)
         .background(
-            color = MaterialTheme.colors.surface,
+            color = backgroundColor,
             shape = MaterialTheme.shapes.small
         )
+    var iconModifier = Modifier
+        .size(48.dp)
+        .padding(12.dp)
+
     boxModifier = if (enabled) {
         boxModifier.clickable { onTap() }
-    } else boxModifier.alpha(0.5f)
+    } else boxModifier
+    iconModifier = if (!enabled) {
+        iconModifier.alpha(0.5f)
+    } else iconModifier
 
     Box(modifier = boxModifier) {
         Icon(
             imageVector = imageVector,
             tint = foregroundColor,
             contentDescription = null,
-            modifier = Modifier
-                .size(48.dp)
-                .padding(12.dp)
+            modifier = iconModifier
         )
     }
 }
@@ -51,29 +57,35 @@ fun CustomIconButton(
 @Composable
 fun CustomIconButton(
     modifier: Modifier = Modifier,
-    painter: Painter,
+    backgroundColor: Color = MaterialTheme.colors.surface,
     foregroundColor: Color,
+    painter: Painter,
     enabled: Boolean = true,
     onTap: () -> Unit,
 ) {
     var boxModifier = modifier
         .clip(MaterialTheme.shapes.small)
         .background(
-            color = MaterialTheme.colors.surface,
+            color = backgroundColor,
             shape = MaterialTheme.shapes.small
         )
+    var iconModifier = Modifier
+        .size(48.dp)
+        .padding(12.dp)
+
     boxModifier = if (enabled) {
         boxModifier.clickable { onTap() }
-    } else boxModifier.alpha(0.5f)
+    } else boxModifier
+    iconModifier = if (!enabled) {
+        iconModifier.alpha(0.5f)
+    } else iconModifier
 
     Box(modifier = boxModifier) {
         Icon(
             painter = painter,
             tint = foregroundColor,
             contentDescription = null,
-            modifier = Modifier
-                .size(48.dp)
-                .padding(12.dp)
+            modifier = iconModifier
         )
     }
 }
