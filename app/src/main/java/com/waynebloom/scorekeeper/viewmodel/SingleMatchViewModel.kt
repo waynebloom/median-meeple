@@ -17,13 +17,19 @@ import java.util.*
 
 class SingleMatchViewModel(
     private val matchEntity: MatchEntity,
+    private val addPlayerCallback: () -> Unit,
     private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
 ): ViewModel() {
+
+    companion object {
+        const val maximumPlayers = 100
+    }
 
     private var matchEntityWasChanged = false
     private var saveWasTapped = false
 
     var notesState: String by mutableStateOf(matchEntity.matchNotes)
+    var showMaximumPlayersErrorState by mutableStateOf(false)
 
     private fun getMatchToCommit() = EntityStateBundle(
         entity = matchEntity.copy(
@@ -34,6 +40,14 @@ class SingleMatchViewModel(
             DatabaseAction.UPDATE
         } else DatabaseAction.NO_ACTION
     )
+
+    fun onAddPlayerTap(playerCount: Int) {
+        if (playerCount < maximumPlayers) {
+            addPlayerCallback()
+        } else {
+            showMaximumPlayersErrorState = !showMaximumPlayersErrorState
+        }
+    }
 
     @OptIn(ExperimentalComposeUiApi::class)
     fun onSaveTap(keyboardController: SoftwareKeyboardController?, focusManager: FocusManager) {
@@ -62,10 +76,12 @@ class SingleMatchViewModel(
 
 class SingleMatchViewModelFactory (
     private val matchEntity: MatchEntity,
+    private val addPlayerCallback: () -> Unit,
     private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = SingleMatchViewModel(
         matchEntity = matchEntity,
+        addPlayerCallback = addPlayerCallback,
         saveCallback = saveCallback
     ) as T
 }

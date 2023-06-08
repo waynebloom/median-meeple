@@ -71,6 +71,7 @@ fun SingleMatchScreen(
         key = ScorekeeperScreen.SingleMatch.name,
         factory = SingleMatchViewModelFactory(
             matchEntity = match.entity,
+            addPlayerCallback = onAddPlayerTap,
             saveCallback = saveMatch
         )
     )
@@ -117,8 +118,9 @@ fun SingleMatchScreen(
                     players = match.players.map { it.entity },
                     subscoreTitles = game.subscoreTitles
                 ),
+                showMaximumPlayersErrorState = viewModel.showMaximumPlayersErrorState,
                 themeColor = themeColor,
-                onAddPlayerTap = onAddPlayerTap,
+                onAddPlayerTap = { viewModel.onAddPlayerTap(match.players.size) },
                 onPlayerTap = onPlayerTap,
                 onViewDetailedScoresTap = onViewDetailedScoresTap
             )
@@ -247,6 +249,7 @@ private fun SingleMatchScreenInfoBox(
 @Composable
 private fun PlayersSectionHeader(
     showDetailedScoresButton: Boolean,
+    showMaximumPlayersErrorState: Boolean,
     themeColor: Color,
     onAddPlayerTap: () -> Unit,
     onViewDetailedScoresTap: () -> Unit,
@@ -272,36 +275,56 @@ private fun PlayersSectionHeader(
         ) {
 
             if (showDetailedScoresButton) {
-                Box(
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable { onViewDetailedScoresTap() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.List,
-                        tint = themeColor,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(48.dp)
-                            .padding(12.dp)
-                    )
-                }
-            }
-
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { onAddPlayerTap() }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Add,
-                    tint = themeColor,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(12.dp)
+                CustomIconButton(
+                    imageVector = Icons.Rounded.List,
+                    foregroundColor = themeColor,
+                    onTap = onViewDetailedScoresTap
                 )
             }
+
+            if (!showMaximumPlayersErrorState) {
+                CustomIconButton(
+                    imageVector = Icons.Rounded.Add,
+                    foregroundColor = themeColor,
+                    onTap = onAddPlayerTap
+                )
+            } else {
+                CustomIconButton(
+                    imageVector = Icons.Rounded.Warning,
+                    foregroundColor = MaterialTheme.colors.error,
+                    onTap = onAddPlayerTap
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MaximumPlayersReachedErrorBox(modifier: Modifier = Modifier) {
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colors.error,
+                shape = MaterialTheme.shapes.small
+            )
+            .fillMaxWidth()
+    ) {
+
+        Row(
+            verticalAlignment = Alignment.Top,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Warning,
+                tint = MaterialTheme.colors.error,
+                contentDescription = null,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+
+            Text(text = stringResource(id = R.string.error_maximum_players_reached))
         }
     }
 }
@@ -311,20 +334,29 @@ fun PlayersSection(
     players: List<PlayerEntity>,
     scoringMode: ScoringMode,
     showDetailedScoresButton: Boolean,
+    showMaximumPlayersErrorState: Boolean,
     themeColor: Color,
     onAddPlayerTap: () -> Unit,
     onPlayerTap: (Long) -> Unit,
     onViewDetailedScoresTap: () -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column {
 
         PlayersSectionHeader(
             showDetailedScoresButton = showDetailedScoresButton,
+            showMaximumPlayersErrorState = showMaximumPlayersErrorState,
             themeColor = themeColor,
             onAddPlayerTap = onAddPlayerTap,
             onViewDetailedScoresTap = onViewDetailedScoresTap,
-            modifier = Modifier.padding(bottom = 8.dp)
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if (showMaximumPlayersErrorState) {
+            MaximumPlayersReachedErrorBox()
+
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         if (players.isNotEmpty()) {
             val playersInRankOrder = when(scoringMode) {
@@ -333,17 +365,20 @@ fun PlayersSection(
                 ScoringMode.Manual -> players.sortedBy { it.position }
             }
 
-            playersInRankOrder.forEachIndexed { index, player ->
-                val displayedRank = if (scoringMode == ScoringMode.Manual) {
-                    player.position
-                } else index + 1
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
 
-                PlayerCard(
-                    player = player,
-                    rank = displayedRank,
-                    themeColor = themeColor,
-                    onPlayerTap = onPlayerTap
-                )
+                playersInRankOrder.forEachIndexed { index, player ->
+                    val displayedRank = if (scoringMode == ScoringMode.Manual) {
+                        player.position
+                    } else index + 1
+
+                    PlayerCard(
+                        player = player,
+                        rank = displayedRank,
+                        themeColor = themeColor,
+                        onPlayerTap = onPlayerTap
+                    )
+                }
             }
         } else {
             DullColoredTextCard(
@@ -443,6 +478,7 @@ fun ScoresSectionPreview() {
             players = PreviewPlayerEntities,
             scoringMode = ScoringMode.Descending,
             showDetailedScoresButton = true,
+            showMaximumPlayersErrorState = true,
             themeColor = orange100,
             onAddPlayerTap = {},
             onPlayerTap = {},

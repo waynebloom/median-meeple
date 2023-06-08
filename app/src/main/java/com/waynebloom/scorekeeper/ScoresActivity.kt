@@ -327,14 +327,6 @@ fun ScoresNavHost(
                             players = viewModel.matchCache.dataObject.players
                         )
                         navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
-                    },
-                    onAddPlayerTap = {
-                        with(viewModel) {
-                            executeDbOperation {
-                                insertNewEmptyPlayer()
-                            }
-                        }
-                        navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
                     }
                 )
             } else {

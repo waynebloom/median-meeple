@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.runtime.Composable
@@ -49,7 +48,6 @@ fun DetailedPlayerScoresScreen(
     subscoreTitles: List<SubscoreTitleEntity>,
     themeColor: Color = MaterialTheme.colors.primary,
     onExistingPlayerTap: (Long) -> Unit,
-    onAddPlayerTap: () -> Unit
 ) {
     val viewModel = viewModel<DetailedPlayerScoresViewModel>(
         key = ScorekeeperScreen.DetailedPlayerScores.name,
@@ -159,7 +157,6 @@ fun DetailedPlayerScoresScreen(
         activePageNumber = viewModel.activePage + 1,
         totalPages = subscoreIndicesForPageMatrix.size,
         themeColor = themeColor,
-        onAddPlayerTap = onAddPlayerTap,
         onPageUpTap = {
             if (subscoreIndicesForPageMatrix.size - 1 > viewModel.activePage) {
                 viewModel.activePage += 1
@@ -338,90 +335,67 @@ fun EditScoresPageActions(
     activePageNumber: Int,
     totalPages: Int,
     themeColor: Color,
-    onAddPlayerTap: () -> Unit,
     onPageUpTap: () -> Unit,
     onPageDownTap: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.BottomCenter,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 16.dp)
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-                    .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.small)
-                    .background(
-                        color = themeColor,
-                        shape = MaterialTheme.shapes.small
-                    )
-            ) {
-                Button(
-                    onClick = { onPageDownTap() },
-                    elevation = ButtonDefaults.elevation(
-                        defaultElevation = 0.dp,
-                        pressedElevation = 0.dp
-                    ),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = themeColor,
-                        contentColor = MaterialTheme.colors.onPrimary
-                    ),
-                    modifier = Modifier.fillMaxHeight(),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowLeft,
-                        contentDescription = null
-                    )
-                }
-
-                Text(
-                    text = "$activePageNumber/$totalPages",
-                    color = MaterialTheme.colors.onPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.body1,
+                .height(48.dp)
+                .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.small)
+                .background(
+                    color = themeColor,
+                    shape = MaterialTheme.shapes.small
                 )
-
-                Button(
-                    onClick = { onPageUpTap() },
-                    elevation = ButtonDefaults.elevation(
-                        defaultElevation = 0.dp,
-                        pressedElevation = 0.dp
-                    ),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = themeColor,
-                        contentColor = MaterialTheme.colors.onPrimary
-                    ),
-                    modifier = Modifier.fillMaxHeight(),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowRight,
-                        contentDescription = null
-                    )
-                }
-            }
-
+                .fillMaxWidth(0.5f)
+        ) {
             Button(
-                onClick = { onAddPlayerTap() },
+                onClick = { onPageDownTap() },
+                elevation = ButtonDefaults.elevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 0.dp
+                ),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = themeColor,
                     contentColor = MaterialTheme.colors.onPrimary
                 ),
-                elevation = ButtonDefaults.elevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 2.dp
-                ),
-                modifier = Modifier.height(48.dp)
+                modifier = Modifier.fillMaxHeight(),
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Add,
+                    imageVector = Icons.Rounded.KeyboardArrowLeft,
+                    contentDescription = null
+                )
+            }
+
+            Text(
+                text = "$activePageNumber/$totalPages",
+                color = MaterialTheme.colors.onPrimary,
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.body1,
+            )
+
+            Button(
+                onClick = { onPageUpTap() },
+                elevation = ButtonDefaults.elevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 0.dp
+                ),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = themeColor,
+                    contentColor = MaterialTheme.colors.onPrimary
+                ),
+                modifier = Modifier.fillMaxHeight(),
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowRight,
                     contentDescription = null
                 )
             }
@@ -442,7 +416,6 @@ fun EditScoresScreenPreview() {
             ),
             subscoreTitles = PreviewSubscoreTitleEntities,
             onExistingPlayerTap = {},
-            onAddPlayerTap = {}
         )
     }
 }
