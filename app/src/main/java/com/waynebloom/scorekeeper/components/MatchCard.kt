@@ -29,10 +29,9 @@ import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.toShortScoreFormat
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -238,7 +237,7 @@ fun PlayerCountCard(
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun ScoreCardPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         MatchCard(
             game = GameEntity(name = "WWWW"),
             match = MatchObject(
@@ -252,7 +251,7 @@ fun ScoreCardPreview() {
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 fun EmptyScoreCardPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         MatchCard(
             game = GameEntity(name = "WWWW"),
             match = MatchObject(),

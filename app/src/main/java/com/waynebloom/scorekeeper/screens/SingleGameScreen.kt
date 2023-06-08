@@ -5,7 +5,6 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,7 +16,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalFocusManager
@@ -39,12 +37,11 @@ import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.enums.MatchSortingMode
-import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameTopBarState
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.isEqualTo
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import java.math.BigDecimal
 
 @OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
@@ -441,7 +438,7 @@ private fun showMatch(
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun SingleGameScreenPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         SingleGameScreen(
             game = GameObject(
                 entity = GameEntity(

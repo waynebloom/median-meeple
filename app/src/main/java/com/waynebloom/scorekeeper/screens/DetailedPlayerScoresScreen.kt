@@ -33,8 +33,8 @@ import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
 import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
-import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModel
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModelFactory
 import java.util.*
@@ -50,7 +50,7 @@ fun DetailedPlayerScoresScreen(
     onExistingPlayerTap: (Long) -> Unit,
 ) {
     val viewModel = viewModel<DetailedPlayerScoresViewModel>(
-        key = ScorekeeperScreen.DetailedPlayerScores.name,
+        key = TopLevelScreen.DetailedPlayerScores.name,
         factory = DetailedPlayerScoresViewModelFactory(
             initialSubscoreTitles = subscoreTitles,
             players = players,
@@ -406,7 +406,7 @@ fun EditScoresPageActions(
 @Preview(backgroundColor = 0xFFF0EAE2, showBackground = true)
 @Composable
 fun EditScoresScreenPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         DetailedPlayerScoresScreen(
             players = PreviewPlayerObjects.plus(
                 PreviewPlayerObjects[0].apply {

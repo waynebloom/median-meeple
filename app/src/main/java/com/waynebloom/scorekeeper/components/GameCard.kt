@@ -16,7 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -62,7 +62,7 @@ fun GameCard(
 @Preview
 @Composable
 fun GameCardPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         GameCard(name = "Wingspan", color = MaterialTheme.colors.primary, onClick = {})
     }
 }

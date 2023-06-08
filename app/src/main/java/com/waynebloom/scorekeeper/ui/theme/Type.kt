@@ -9,7 +9,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import com.waynebloom.scorekeeper.R
 
-val ScorekeeperFont = FontFamily(
+val MedianMeepleFont = FontFamily(
     Font(resId = R.font.dmsans_regular),
     Font(resId = R.font.dmsans_bold, weight = FontWeight.Bold),
     Font(resId = R.font.dmsans_medium, weight = FontWeight.Bold),
@@ -18,8 +18,8 @@ val ScorekeeperFont = FontFamily(
     Font(resId = R.font.dmsans_medium_italic, weight = FontWeight.Bold, style = FontStyle.Italic),
 )
 
-val ScorekeeperTypography = Typography(
-    defaultFontFamily = ScorekeeperFont,
+val MedianMeepleTypography = Typography(
+    defaultFontFamily = MedianMeepleFont,
     button = TextStyle(
         fontWeight = FontWeight.SemiBold,
         fontSize = 14.sp,

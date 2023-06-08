@@ -33,7 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.PreviewMatchObjects
 import com.waynebloom.scorekeeper.R
@@ -46,7 +46,7 @@ import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
 import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
-import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.ext.onFocusSelectAll
 import com.waynebloom.scorekeeper.ui.theme.deepOrange500
 import com.waynebloom.scorekeeper.viewmodel.EditPlayerScoreViewModel
@@ -64,7 +64,7 @@ fun EditPlayerScoreScreen(
     onDeleteTap: (Long) -> Unit,
 ) {
     val viewModel = viewModel<EditPlayerScoreViewModel>(
-        key = ScorekeeperScreen.EditPlayerScore.name,
+        key = TopLevelScreen.EditPlayerScore.name,
         factory = EditPlayerScoreViewModelFactory(
             playerObject = initialPlayer,
             matchObject = matchObject,
@@ -484,7 +484,7 @@ private fun SubscoreFields(
 @Preview(backgroundColor = 0xFFF0EAE2, showBackground = true)
 @Composable
 fun EditPlayerScoreScreenPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         EditPlayerScoreScreen(
             initialPlayer = PlayerObject(
                 PlayerEntity(

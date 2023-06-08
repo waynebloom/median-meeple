@@ -32,10 +32,10 @@ private val DarkColorPalette = darkColors(
 )
 
 @Composable
-fun ScoreKeeperTheme(
+fun MedianMeepleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    shapes: Shapes = ScorekeeperShapes,
-    typography: Typography = ScorekeeperTypography,
+    shapes: Shapes = MedianMeepleShapes,
+    typography: Typography = MedianMeepleTypography,
     content: @Composable () -> Unit
 ) {
     MaterialTheme(

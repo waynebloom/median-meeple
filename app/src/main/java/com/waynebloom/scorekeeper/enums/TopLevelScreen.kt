@@ -1,6 +1,6 @@
 package com.waynebloom.scorekeeper.enums
 
-enum class ScorekeeperScreen {
+enum class TopLevelScreen {
     EditGame,
     EditPlayerScore,
     DetailedPlayerScores,

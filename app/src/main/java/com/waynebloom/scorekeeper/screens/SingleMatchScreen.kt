@@ -46,10 +46,10 @@ import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.toShortScoreFormat
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.ui.theme.orange100
 import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModel
 import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModelFactory
@@ -68,7 +68,7 @@ fun SingleMatchScreen(
     modifier: Modifier = Modifier
 ) {
     val viewModel = viewModel<SingleMatchViewModel>(
-        key = ScorekeeperScreen.SingleMatch.name,
+        key = TopLevelScreen.SingleMatch.name,
         factory = SingleMatchViewModelFactory(
             matchEntity = match.entity,
             addPlayerCallback = onAddPlayerTap,
@@ -473,7 +473,7 @@ fun PlayerCard(
 )
 @Composable
 fun ScoresSectionPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         PlayersSection(
             players = PreviewPlayerEntities,
             scoringMode = ScoringMode.Descending,
@@ -494,7 +494,7 @@ fun ScoresSectionPreview() {
 )
 @Composable
 fun SingleMatchScreenPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         SingleMatchScreen(
             game = PreviewGameObjects[0],
             match = MatchObject(

@@ -16,7 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.waynebloom.scorekeeper.screens.*
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.google.android.gms.ads.MobileAds
 import com.waynebloom.scorekeeper.data.color.DarkThemeGameColors
 import com.waynebloom.scorekeeper.data.color.GameColors
@@ -24,36 +24,36 @@ import com.waynebloom.scorekeeper.data.color.LightThemeGameColors
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.DatabaseAction
-import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.viewmodel.GamesViewModel
+import com.waynebloom.scorekeeper.viewmodel.MedianMeepleActivityViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 
 val LocalGameColors: ProvidableCompositionLocal<GameColors> = compositionLocalOf { DarkThemeGameColors() }
 
-class ScoresActivity : ComponentActivity() {
-    private lateinit var gamesViewModel: GamesViewModel
+class MedianMeepleActivity : ComponentActivity() {
+    private lateinit var viewModel: MedianMeepleActivityViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        gamesViewModel = ViewModelProvider(this)[GamesViewModel::class.java]
+        viewModel = ViewModelProvider(this)[MedianMeepleActivityViewModel::class.java]
         MobileAds.initialize(this)
         setContent {
-            ScorekeeperApp(viewModel = gamesViewModel)
+            App(viewModel = viewModel)
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        gamesViewModel.adService.destroyAd()
+        viewModel.adService.destroyAd()
     }
 }
 
 @Composable
-fun ScorekeeperApp(viewModel: GamesViewModel) {
-    ScoreKeeperTheme {
+private fun App(viewModel: MedianMeepleActivityViewModel) {
+    MedianMeepleTheme {
         val navController = rememberNavController()
 
         LaunchedEffect(true) {
@@ -69,7 +69,7 @@ fun ScorekeeperApp(viewModel: GamesViewModel) {
             LocalGameColors provides if (isSystemInDarkTheme()) DarkThemeGameColors() else LightThemeGameColors(),
         ) {
             Scaffold { innerPadding ->
-                ScoresNavHost(
+                NavHost(
                     navController = navController,
                     viewModel = viewModel,
                     modifier = Modifier.padding(innerPadding)
@@ -80,9 +80,9 @@ fun ScorekeeperApp(viewModel: GamesViewModel) {
 }
 
 @Composable
-fun ScoresNavHost(
+private fun NavHost(
     navController: NavHostController,
-    viewModel: GamesViewModel,
+    viewModel: MedianMeepleActivityViewModel,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -90,12 +90,12 @@ fun ScoresNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = ScorekeeperScreen.Overview.name,
+        startDestination = TopLevelScreen.Overview.name,
         modifier = modifier
     ) {
         // region OverviewScreen
 
-        composable(ScorekeeperScreen.Overview.name) {
+        composable(TopLevelScreen.Overview.name) {
             var allGames: List<GameObject> by remember { mutableStateOf(listOf()) }
             var allMatches: List<MatchObject> by remember { mutableStateOf(listOf()) }
             var isLoading: Boolean by remember { mutableStateOf(true) }
@@ -119,7 +119,7 @@ fun ScoresNavHost(
                         .sortedByDescending { it.entity.timeModified }
                         .take(6),
                     currentAd = currentAd,
-                    onSeeAllGamesTap = { navController.navigate(ScorekeeperScreen.Games.name) },
+                    onSeeAllGamesTap = { navController.navigate(TopLevelScreen.Games.name) },
                     onAddNewGameTap = {
                         with(viewModel) {
                             executeDbOperation(
@@ -127,12 +127,12 @@ fun ScoresNavHost(
                                     insertNewEmptyGame()
                                 }
                             )
-                            navController.navigate(ScorekeeperScreen.EditGame.name)
+                            navController.navigate(TopLevelScreen.EditGame.name)
                         }
                     },
                     onSingleGameTap = { gameId ->
                         viewModel.updateGameCacheById(id = gameId, games = allGames)
-                        navController.navigate(ScorekeeperScreen.SingleGame.name)
+                        navController.navigate(TopLevelScreen.SingleGame.name)
                     },
                     onSingleMatchTap = { matchId ->
                         with(viewModel) {
@@ -142,7 +142,7 @@ fun ScoresNavHost(
                                 games = allGames
                             )
                         }
-                        navController.navigate(ScorekeeperScreen.SingleMatch.name)
+                        navController.navigate(TopLevelScreen.SingleMatch.name)
                     }
                 )
             }
@@ -152,7 +152,7 @@ fun ScoresNavHost(
 
         // region GamesScreen
 
-        composable(ScorekeeperScreen.Games.name) {
+        composable(TopLevelScreen.Games.name) {
             var isLoading by remember { mutableStateOf(true) }
             var allGames: List<GameObject> by remember { mutableStateOf(listOf()) }
 
@@ -176,12 +176,12 @@ fun ScoresNavHost(
                                     insertNewEmptyGame()
                                 }
                             )
-                            navController.navigate(ScorekeeperScreen.EditGame.name)
+                            navController.navigate(TopLevelScreen.EditGame.name)
                         }
                     },
                     onSingleGameTap = { gameId ->
                         viewModel.updateGameCacheById(id = gameId, games = allGames)
-                        navController.navigate(ScorekeeperScreen.SingleGame.name)
+                        navController.navigate(TopLevelScreen.SingleGame.name)
                     }
                 )
             }
@@ -191,25 +191,25 @@ fun ScoresNavHost(
 
         // region SingleGameScreen
 
-        composable(route = ScorekeeperScreen.SingleGame.name) {
+        composable(route = TopLevelScreen.SingleGame.name) {
             SingleGameScreen(
                 game = viewModel.gameCache.dataObject,
                 currentAd = currentAd,
-                onEditGameTap = { navController.navigate(ScorekeeperScreen.EditGame.name) },
+                onEditGameTap = { navController.navigate(TopLevelScreen.EditGame.name) },
                 onNewMatchTap = {
                     with(viewModel) {
                         executeDbOperation {
                             insertNewEmptyMatch()
                         }
                     }
-                    navController.navigate(ScorekeeperScreen.SingleMatch.name)
+                    navController.navigate(TopLevelScreen.SingleMatch.name)
                 },
                 onSingleMatchTap = { matchId ->
                     viewModel.updateMatchCacheById(
                         id = matchId,
                         matches = viewModel.gameCache.dataObject.matches
                     )
-                    navController.navigate(ScorekeeperScreen.SingleMatch.name)
+                    navController.navigate(TopLevelScreen.SingleMatch.name)
                 }
             )
         }
@@ -218,7 +218,7 @@ fun ScoresNavHost(
 
         // region EditGameScreen
 
-        composable(route = ScorekeeperScreen.EditGame.name) {
+        composable(route = TopLevelScreen.EditGame.name) {
 
             if (!viewModel.gameCache.needsUpdate) {
                 EditGameScreen(
@@ -235,7 +235,7 @@ fun ScoresNavHost(
                     },
                     onDeleteTap = { gameId ->
                         navController.popBackStack(
-                            route = ScorekeeperScreen.Overview.name,
+                            route = TopLevelScreen.Overview.name,
                             inclusive = false
                         )
                         with(viewModel) {
@@ -243,7 +243,7 @@ fun ScoresNavHost(
                                 deleteGameById(gameId)
                             }
                         }
-                        navController.navigate(ScorekeeperScreen.Games.name)
+                        navController.navigate(TopLevelScreen.Games.name)
                         Toast.makeText(context, R.string.toast_game_deleted, Toast.LENGTH_SHORT).show()
                     }
                 )
@@ -256,7 +256,7 @@ fun ScoresNavHost(
 
         // region SingleMatchScreen
 
-        composable(route = ScorekeeperScreen.SingleMatch.name) {
+        composable(route = TopLevelScreen.SingleMatch.name) {
             if (!viewModel.matchCache.needsUpdate) {
                 SingleMatchScreen(
                     game = viewModel.gameCache.dataObject,
@@ -267,11 +267,11 @@ fun ScoresNavHost(
                                 insertNewEmptyPlayer()
                             }
                         }
-                        navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
+                        navController.navigate(TopLevelScreen.EditPlayerScore.name)
                     },
                     onDeleteMatchTap = { matchId ->
                         val popSuccess = navController.popBackStack(
-                            route = ScorekeeperScreen.SingleGame.name,
+                            route = TopLevelScreen.SingleGame.name,
                             inclusive = true
                         )
                         if (!popSuccess) navController.popBackStack()
@@ -281,7 +281,7 @@ fun ScoresNavHost(
                             }
                         }
 
-                        navController.navigate(ScorekeeperScreen.SingleGame.name)
+                        navController.navigate(TopLevelScreen.SingleGame.name)
                         Toast.makeText(context, R.string.toast_match_deleted, Toast.LENGTH_SHORT).show()
                     },
                     onPlayerTap = { playerId ->
@@ -289,10 +289,10 @@ fun ScoresNavHost(
                             id = playerId,
                             players = viewModel.matchCache.dataObject.players
                         )
-                        navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
+                        navController.navigate(TopLevelScreen.EditPlayerScore.name)
                     },
                     onViewDetailedScoresTap = {
-                        navController.navigate(ScorekeeperScreen.DetailedPlayerScores.name)
+                        navController.navigate(TopLevelScreen.DetailedPlayerScores.name)
                     },
                     saveMatch = { updatedMatch ->
                         if (updatedMatch.databaseAction == DatabaseAction.UPDATE) {
@@ -315,7 +315,7 @@ fun ScoresNavHost(
 
         // region DetailedPlayerScoresScreen
 
-        composable(route = ScorekeeperScreen.DetailedPlayerScores.name) {
+        composable(route = TopLevelScreen.DetailedPlayerScores.name) {
             if (viewModel.allCachesUpToDate()) {
                 DetailedPlayerScoresScreen(
                     players = viewModel.matchCache.dataObject.players,
@@ -326,8 +326,8 @@ fun ScoresNavHost(
                             id = playerId,
                             players = viewModel.matchCache.dataObject.players
                         )
-                        navController.navigate(ScorekeeperScreen.EditPlayerScore.name)
-                    }
+                        navController.navigate(TopLevelScreen.EditPlayerScore.name)
+                    },
                 )
             } else {
                 Loading()
@@ -338,7 +338,7 @@ fun ScoresNavHost(
 
         // region EditPlayerScoreScreen
 
-        composable(route = ScorekeeperScreen.EditPlayerScore.name) {
+        composable(route = TopLevelScreen.EditPlayerScore.name) {
             if (!viewModel.playerCache.needsUpdate) {
                 EditPlayerScoreScreen(
                     initialPlayer = viewModel.playerCache.dataObject,

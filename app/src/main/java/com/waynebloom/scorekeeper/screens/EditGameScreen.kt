@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.annotation.StringRes
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -23,7 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -31,14 +29,10 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
@@ -47,15 +41,14 @@ import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.PreviewGameObjects
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
-import com.waynebloom.scorekeeper.components.DullColoredTextCard
 import com.waynebloom.scorekeeper.components.HeadedSection
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
-import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.EditGameViewModel
 import com.waynebloom.scorekeeper.viewmodel.EditGameViewModelViewModelFactory
 import com.waynebloom.scorekeeper.viewmodel.SubscoreTitleSectionHeaderState
@@ -72,7 +65,7 @@ fun EditGameScreen(
     modifier: Modifier = Modifier
 ) {
     val viewModel = viewModel<EditGameViewModel>(
-        key = ScorekeeperScreen.EditGame.name,
+        key = TopLevelScreen.EditGame.name,
         factory = EditGameViewModelViewModelFactory(
             initialGame = game,
             saveCallback = saveGame
@@ -306,7 +299,7 @@ private fun ScoringModeSelector(
                 )
             }
         }
-        ScoreKeeperTheme(shapes = MaterialTheme.shapes.copy(medium = MaterialTheme.shapes.small)) {
+        MedianMeepleTheme(shapes = MaterialTheme.shapes.copy(medium = MaterialTheme.shapes.small)) {
             DropdownMenu(
                 expanded = selectorExpanded,
                 onDismissRequest = { selectorExpanded = false },
@@ -801,7 +794,7 @@ fun ColorSelectorClosed(
 )
 @Composable
 fun EditGameScreenPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         EditGameScreen(
             game = PreviewGameObjects[0],
             saveGame = { _, _ -> },
@@ -813,7 +806,7 @@ fun EditGameScreenPreview() {
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun ColorSelectorPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         ColorSelectorClosed(
             currentColorKey = "DEEP_ORANGE",
             onColorSelectorTap = {}
@@ -824,7 +817,7 @@ fun ColorSelectorPreview() {
 @Preview
 @Composable
 fun SubscoreTitleSectionPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         /*SubscoreTitlesSection(
             titles = PreviewSubscoreTitleEntities.map { it.title },
             themeColor = deepOrange100

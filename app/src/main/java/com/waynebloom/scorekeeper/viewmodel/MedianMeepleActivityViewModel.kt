@@ -22,7 +22,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 
-class GamesViewModel(appObj: Application) : AndroidViewModel(appObj) {
+class MedianMeepleActivityViewModel(appObj: Application) : AndroidViewModel(appObj) {
     // region Data Access
 
     private val appRepository: AppRepository = AppRepository(appObj)
