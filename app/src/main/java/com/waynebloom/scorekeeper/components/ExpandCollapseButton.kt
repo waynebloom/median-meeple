@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -21,10 +22,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions
+import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ExpandCollapseButton(
     text: String?,

@@ -29,13 +29,13 @@ import com.waynebloom.scorekeeper.enums.GamesTopBarState
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
-import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.fadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
+import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.viewmodel.GamesViewModel
 import com.waynebloom.scorekeeper.viewmodel.GamesViewModelFactory
 
-@OptIn(ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun GamesScreen(
     games: List<GameEntity>,
@@ -174,7 +174,7 @@ fun GamesDefaultActionBar(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun GamesTopBar(
     state: GamesTopBarState,

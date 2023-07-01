@@ -2,6 +2,7 @@ package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -46,16 +47,17 @@ import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
 import com.waynebloom.scorekeeper.components.SearchTopBar
 import com.waynebloom.scorekeeper.constants.Dimensions
+import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
 import com.waynebloom.scorekeeper.enums.MenuOption
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
+import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.fadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModelFactory
 
@@ -182,7 +184,7 @@ fun GameStatisticsTopBar(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun MatchesForSingleGameTopBar(
     isSearchBarFocused: Boolean,

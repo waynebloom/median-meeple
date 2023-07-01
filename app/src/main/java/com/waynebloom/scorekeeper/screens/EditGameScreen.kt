@@ -53,9 +53,9 @@ import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
+import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.viewmodel.EditGameViewModel
 import com.waynebloom.scorekeeper.viewmodel.EditGameViewModelFactory
 import com.waynebloom.scorekeeper.viewmodel.ScoringCategorySectionState
@@ -79,7 +79,7 @@ fun EditGameScreen(
     .onRecompose(
         gameId = game.entity.id,
         rowHeightInPx = LocalDensity.current
-            .run { Dimensions.Size.minTappableSize.toPx() })
+            .run { Size.minTappableSize.toPx() })
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val themeColor = LocalGameColors.current.getColorByKey(viewModel.themeColorString)
@@ -189,7 +189,7 @@ private fun EditGameScreenTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .padding(start = Spacing.screenEdge, end = 8.dp)
-                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
+                .defaultMinSize(minHeight = Size.topBarHeight)
                 .fillMaxWidth()
         ) {
 
@@ -309,6 +309,7 @@ fun ScoringModeSelector(
 
 // region Categories
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun ScoringCategorySection(
     categories: List<String>,
@@ -452,6 +453,7 @@ private fun ScoringCategoryInput(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun ScoringCategoryHeader(
     isInEditMode: Boolean,
@@ -564,7 +566,7 @@ private fun ScoringCategoryListEditMode(
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(Dimensions.Size.minTappableSize)
+                modifier = Modifier.height(Size.minTappableSize)
             ) {
 
                 Icon(

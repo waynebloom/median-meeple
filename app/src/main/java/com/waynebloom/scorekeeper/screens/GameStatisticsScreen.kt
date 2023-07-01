@@ -3,6 +3,7 @@ package com.waynebloom.scorekeeper.screens
 import android.content.res.Configuration
 import android.content.res.Resources
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -45,21 +46,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.waynebloom.scorekeeper.data.GameObjectStatisticsPreview
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.ExpandCollapseButton
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.data.GameObjectStatisticsPreview
 import com.waynebloom.scorekeeper.data.model.ScoringStatisticsForCategory
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
+import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.ui.theme.color.deepOrange100
 import com.waynebloom.scorekeeper.ui.theme.color.deepOrange500
-import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel.Companion.numberOfItemsToShowExpanded
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModelFactory
@@ -511,6 +512,7 @@ private fun ScoringStatisticsColumn(
 
 // endregion
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun TwoLineExpandableListItem(
     modifier: Modifier = Modifier,
@@ -611,6 +613,7 @@ fun TwoLineListItem(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun SingleLineExpandableListItem(
     modifier: Modifier = Modifier,

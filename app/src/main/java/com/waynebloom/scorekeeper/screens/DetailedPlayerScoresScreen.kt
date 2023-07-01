@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -42,7 +41,6 @@ import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModel
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModelFactory
-import java.util.*
 
 const val expandedPlayerNameScreenWeight = 0.4f
 const val collapsedPlayerNameScreenWeight = 0.15f

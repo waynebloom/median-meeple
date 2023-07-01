@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.screens
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
@@ -49,9 +50,9 @@ import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
 import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
+import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.color.deepOrange500
-import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.viewmodel.EditPlayerScoreViewModel
 import com.waynebloom.scorekeeper.viewmodel.EditPlayerScoreViewModelFactory
 
@@ -292,6 +293,7 @@ private fun RankingSection(
     }
 }
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun ScoreSection(
     categoryData: List<SubscoreStateBundle>,
