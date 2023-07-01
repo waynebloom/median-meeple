@@ -8,6 +8,17 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.Typography
+import androidx.compose.runtime.CompositionLocalProvider
+import com.waynebloom.scorekeeper.LocalGameColors
+import com.waynebloom.scorekeeper.ui.theme.color.DarkThemeGameColors
+import com.waynebloom.scorekeeper.ui.theme.color.LightThemeGameColors
+import com.waynebloom.scorekeeper.ui.theme.color.gray400
+import com.waynebloom.scorekeeper.ui.theme.color.gray700
+import com.waynebloom.scorekeeper.ui.theme.color.gray800
+import com.waynebloom.scorekeeper.ui.theme.color.rust300
+import com.waynebloom.scorekeeper.ui.theme.color.rust600
+import com.waynebloom.scorekeeper.ui.theme.color.taupe100
+import com.waynebloom.scorekeeper.ui.theme.color.taupe800
 
 private val LightColorPalette = lightColors(
     primary = rust600,
@@ -28,20 +39,24 @@ private val DarkColorPalette = darkColors(
     onPrimary = gray800,
     onSecondary = Color.White,
     onBackground = taupe100,
-    onSurface = gray400
+    onSurface = Color.White
 )
 
 @Composable
-fun ScoreKeeperTheme(
+fun MedianMeepleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    shapes: Shapes = ScorekeeperShapes,
-    typography: Typography = ScorekeeperTypography,
+    shapes: Shapes = MedianMeepleShapes,
+    typography: Typography = MedianMeepleTypography,
     content: @Composable () -> Unit
 ) {
-    MaterialTheme(
-        colors = if (darkTheme) DarkColorPalette else LightColorPalette,
-        shapes = shapes,
-        typography = typography,
-        content = content
-    )
+
+    val themeColors = if (isSystemInDarkTheme()) DarkThemeGameColors() else LightThemeGameColors()
+    CompositionLocalProvider(LocalGameColors provides themeColors) {
+        MaterialTheme(
+            colors = if (darkTheme) DarkColorPalette else LightColorPalette,
+            shapes = shapes,
+            typography = typography,
+            content = content
+        )
+    }
 }

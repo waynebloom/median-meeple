@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.ext
 
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
-import java.math.BigDecimal
 import java.math.RoundingMode
 
 fun String.getScoreValidityState(): ScoreStringValidityState {

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Scorekeeper" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.MedianMeeple" parent="Theme.MaterialComponents.NoActionBar">
         <item name="android:fontFamily">@font/dmsans_regular</item>
         <item name="fontFamily">@font/dmsans_regular</item>
-        <item name="android:textViewStyle">@style/Scorekeeper.TextView</item>
+        <item name="android:textViewStyle">@style/MedianMeeple.TextView</item>
     </style>
 
-    <style name="Scorekeeper"/>
-    <style name="Scorekeeper.TextView">
+    <style name="MedianMeeple"/>
+    <style name="MedianMeeple.TextView">
         <item name="android:fontFamily">@font/dmsans_regular</item>
         <item name="fontFamily">@font/dmsans_regular</item>
     </style>

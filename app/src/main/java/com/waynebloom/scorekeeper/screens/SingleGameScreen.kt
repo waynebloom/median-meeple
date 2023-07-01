@@ -1,189 +1,138 @@
 package com.waynebloom.scorekeeper.screens
 
-import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
+import android.content.res.Configuration
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RadioButton
+import androidx.compose.material.RadioButtonDefaults
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
-import com.waynebloom.scorekeeper.PreviewMatchObjects
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.*
-import com.waynebloom.scorekeeper.data.model.game.GameEntity
+import com.waynebloom.scorekeeper.components.CustomIconButton
+import com.waynebloom.scorekeeper.components.SearchTopBar
+import com.waynebloom.scorekeeper.constants.Dimensions
+import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.data.model.game.GameObject
-import com.waynebloom.scorekeeper.data.model.match.MatchObject
-import com.waynebloom.scorekeeper.enums.ListState
-import com.waynebloom.scorekeeper.enums.MatchSortingMode
-import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.enums.SingleGameTopBarState
-import com.waynebloom.scorekeeper.ext.getWinningPlayer
-import com.waynebloom.scorekeeper.ext.isEqualTo
-import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
-import java.math.BigDecimal
+import com.waynebloom.scorekeeper.enums.MatchSortMode
+import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
+import com.waynebloom.scorekeeper.enums.MenuOption
+import com.waynebloom.scorekeeper.enums.SingleGameScreen
+import com.waynebloom.scorekeeper.enums.SortDirection
+import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
+import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModelFactory
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
 @Composable
 fun SingleGameScreen(
-    game: GameObject,
+    gameObject: GameObject,
     currentAd: NativeAd?,
     onEditGameTap: () -> Unit,
     onNewMatchTap: () -> Unit,
     onSingleMatchTap: (Long) -> Unit,
-    modifier: Modifier = Modifier
 ) {
-    val gameColor = LocalGameColors.current.getColorByKey(game.entity.color)
-    var listState: ListState by rememberSaveable { mutableStateOf(ListState.Default) }
-    var searchString: String by rememberSaveable { mutableStateOf("") }
-    var sortDescending: Boolean by rememberSaveable { mutableStateOf(true) }
-    var sortingMode: MatchSortingMode by rememberSaveable { mutableStateOf(MatchSortingMode.ByMatchAge) }
+    val viewModel = viewModel<SingleGameViewModel>(
+        key = SingleGameScreen.GameStatistics.name,
+        factory = SingleGameViewModelFactory(
+            gameObject = gameObject,
+            resources = LocalContext.current.resources
+        )
+    ).onRecompose(
+        gameObject = gameObject
+    )
+
+    val themeColor = LocalGameColors.current.getColorByKey(gameObject.entity.color)
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
-            SingleGameTopBar(
-                searchString = searchString,
-                sortDescending = sortDescending,
-                sortingMode = sortingMode,
-                title = game.entity.name,
-                themeColor = gameColor,
-                onSearchStringChanged = { searchString = it },
-                onSortDirectionChanged = { sortDescending = it },
-                onSortingModeChanged = { sortingMode = it },
-                onEditGameTap = onEditGameTap,
-            )
+            if (viewModel.selectedTab == SingleGameScreen.MatchesForSingleGame) {
+                MatchesForSingleGameTopBar(
+                    isSearchBarFocused = viewModel.isSearchBarFocused,
+                    searchString = viewModel.searchString,
+                    selectedTab = viewModel.selectedTab,
+                    sortDirection = viewModel.sortDirection,
+                    sortingMode = viewModel.sortMode,
+                    state = viewModel.matchesTopBarState,
+                    title = viewModel.screenTitle,
+                    themeColor = themeColor,
+                    onClearFiltersTap = { viewModel.clearFilters() },
+                    onEditGameTap = onEditGameTap,
+                    onSearchBarFocusChanged = { viewModel.isSearchBarFocused = it },
+                    onSearchStringChanged = { viewModel.onSearchStringChanged(it, coroutineScope) },
+                    onSortDirectionChanged = { viewModel.onSortDirectionChanged(it, coroutineScope) },
+                    onSortModeChanged = { viewModel.onSortModeChanged(it, coroutineScope) },
+                    onStateChanged = { viewModel.matchesTopBarState = it },
+                    onTabSelected = { viewModel.selectedTab = it },
+                )
+            } else {
+                GameStatisticsTopBar(
+                    selectedTab = viewModel.selectedTab,
+                    title = viewModel.screenTitle,
+                    themeColor = themeColor,
+                    onEditGameTap = onEditGameTap,
+                    onTabSelected = { viewModel.selectedTab = it },
+                )
+            }
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = { onNewMatchTap() },
-                shape = MaterialTheme.shapes.small,
-                backgroundColor = gameColor,
-                contentColor = MaterialTheme.colors.onPrimary
-            ) {
-                Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
-            }
-        }
-    ) { contentPadding ->
-        Column(
-            modifier = modifier
-                .padding(contentPadding)
-                .padding(horizontal = 16.dp)
-        ) {
-            val matchesToDisplay = filterAndSortMatches(
-                scoringMode = ScoringMode.getModeByOrdinal(game.entity.scoringMode),
-                matches = game.matches,
-                searchString = searchString,
-                sortingMode = sortingMode,
-                sortDescending = sortDescending
-            )
-            listState = when {
-                game.matches.isEmpty() -> ListState.ListEmpty
-                matchesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
-                searchString.isNotBlank() -> ListState.SearchResultsNotEmpty
-                else -> ListState.Default
-            }
+    ) { innerPadding ->
 
-            AnimatedVisibility(
-                visible = listState != ListState.Default,
-                enter = scaleIn(),
-                exit = scaleOut(),
-                modifier = Modifier.padding(bottom = 8.dp)
-            ) {
-                DullColoredTextCard(color = gameColor) { color, _ ->
-                    AnimatedContent(
-                        targetState = listState,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(220, delayMillis = 90))
-                                .with(fadeOut(animationSpec = tween(90)))
-                        }
-                    ) { state ->
-                        when (state) {
-                            ListState.Default -> Unit
-                            ListState.ListEmpty -> {
-                                Text(
-                                    text = stringResource(R.string.text_empty_matches),
-                                    color = color,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            }
-                            ListState.SearchResultsEmpty -> {
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.text_empty_match_search_results,
-                                        searchString
-                                    ),
-                                    color = color,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            }
-                            ListState.SearchResultsNotEmpty -> {
-                                Text(
-                                    text = stringResource(
-                                        R.string.text_showing_search_results,
-                                        searchString
-                                    ),
-                                    color = color,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-            LazyColumn(
-                contentPadding = PaddingValues(bottom = 64.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                matchesToDisplay.toAdSeparatedListlets().forEachIndexed { index, listlet ->
-                    items(
-                        items = listlet,
-                        key = { it.entity.id }
-                    ) { match ->
-                        MatchCard(
-                            game = game.entity,
-                            match = match,
-                            onSingleMatchTap = onSingleMatchTap,
-                            showGameIdentifier = false,
-                            modifier = Modifier.animateItemPlacement()
-                        )
-                    }
-                    item {
-                        if (index == 0 || listlet.size >= 10) {
-                            AdCard(
-                                currentAd = currentAd,
-                                themeColor = gameColor.toArgb()
-                            )
-                        }
-                    }
-                }
-            }
+        if (viewModel.selectedTab == SingleGameScreen.MatchesForSingleGame) {
+            MatchesForSingleGameScreen(
+                currentAd = currentAd,
+                gameEntity = gameObject.entity,
+                lazyListState = viewModel.matchesLazyListState,
+                listState = viewModel.matchesListState,
+                matches = viewModel.matchesToDisplay,
+                searchString = viewModel.searchString,
+                themeColor = themeColor,
+                onNewMatchTap = onNewMatchTap,
+                onSingleMatchTap = onSingleMatchTap,
+                modifier = Modifier.padding(innerPadding),
+            )
+        } else {
+            GameStatisticsScreen(
+                gameObject = gameObject,
+                themeColor = themeColor,
+                modifier = Modifier.padding(innerPadding),
+            )
         }
     }
 }
@@ -191,15 +140,207 @@ fun SingleGameScreen(
 // region Top Bar
 
 @Composable
-fun SingleGameSortMenuActionBar(
+fun GameStatisticsTopBar(
+    selectedTab: SingleGameScreen,
+    onTabSelected: (SingleGameScreen) -> Unit,
+    title: String,
     themeColor: Color,
-    sortDescending: Boolean,
-    sortingMode: MatchSortingMode,
-    onSortDirectionChanged: (Boolean) -> Unit,
-    onSortingModeChanged: (MatchSortingMode) -> Unit,
+    onEditGameTap: () -> Unit
+) {
+
+    Column {
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 16.dp, end = 8.dp)
+                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
+                .fillMaxWidth()
+        ) {
+
+            Text(
+                text = title,
+                color = themeColor,
+                style = MaterialTheme.typography.h5,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+            )
+
+            CustomIconButton(
+                imageVector = Icons.Rounded.Edit,
+                backgroundColor = Color.Transparent,
+                foregroundColor = themeColor,
+                onTap = { onEditGameTap() }
+            )
+        }
+
+        SingleGameTabBar(
+            selectedTab = selectedTab,
+            onTabSelected = onTabSelected,
+            themeColor = themeColor,
+        )
+    }
+}
+
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
+@Composable
+fun MatchesForSingleGameTopBar(
+    isSearchBarFocused: Boolean,
+    searchString: String,
+    selectedTab: SingleGameScreen,
+    sortDirection: SortDirection,
+    sortingMode: MatchSortMode,
+    state: MatchesForSingleGameTopBarState,
+    themeColor: Color,
+    title: String,
+    onClearFiltersTap: () -> Unit,
+    onEditGameTap: () -> Unit,
+    onSearchBarFocusChanged: (Boolean) -> Unit,
+    onSearchStringChanged: (String) -> Unit,
+    onSortDirectionChanged: (SortDirection) -> Unit,
+    onSortModeChanged: (MatchSortMode) -> Unit,
+    onStateChanged: (MatchesForSingleGameTopBarState) -> Unit,
+    onTabSelected: (SingleGameScreen) -> Unit,
+) {
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    Column {
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 16.dp, end = 8.dp)
+                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
+                .fillMaxWidth()
+        ) {
+
+            AnimatedContent(
+                targetState = state,
+                transitionSpec = {
+                    when {
+                        MatchesForSingleGameTopBarState.Default isTransitioningTo
+                            MatchesForSingleGameTopBarState.SearchBarOpen -> fadeInWithFadeOut
+                        MatchesForSingleGameTopBarState.SearchBarOpen isTransitioningTo
+                            MatchesForSingleGameTopBarState.Default -> fadeInWithFadeOut
+                        else -> delayedFadeInWithFadeOut using sizeTransformWithDelay
+                    }
+                }
+            ) { state ->
+
+                when (state) {
+
+                    MatchesForSingleGameTopBarState.Default -> {
+                        MatchesForSingleGameDefaultActionBar(
+                            title = title,
+                            themeColor = themeColor,
+                            onEditGameTap = onEditGameTap,
+                            onSortTap = { onStateChanged(MatchesForSingleGameTopBarState.SortMenuOpen) },
+                            onOpenSearchTap = { onStateChanged(MatchesForSingleGameTopBarState.SearchBarOpen) }
+                        )
+                    }
+                    MatchesForSingleGameTopBarState.SearchBarOpen -> {
+                        SearchTopBar(
+                            isSearchBarFocused = isSearchBarFocused,
+                            searchString = searchString,
+                            themeColor = themeColor,
+                            onClearFiltersTap = onClearFiltersTap,
+                            onSearchBarFocusChanged = onSearchBarFocusChanged,
+                            onSearchStringChanged = onSearchStringChanged,
+                            onCloseTap = {
+                                onStateChanged(MatchesForSingleGameTopBarState.Default)
+                                focusManager.clearFocus()
+                                keyboardController?.hide()
+                            }
+                        )
+                    }
+                    MatchesForSingleGameTopBarState.SortMenuOpen -> {
+                        MatchesForSingleGameSortMenuActionBar(
+                            themeColor = themeColor,
+                            sortDirection = sortDirection,
+                            sortMode = sortingMode,
+                            onSortDirectionChanged = onSortDirectionChanged,
+                            onSortModeChanged = onSortModeChanged,
+                            onCloseTap = { onStateChanged(MatchesForSingleGameTopBarState.Default) }
+                        )
+                    }
+                }
+            }
+        }
+
+        SingleGameTabBar(
+            selectedTab = selectedTab,
+            onTabSelected = onTabSelected,
+            themeColor = themeColor,
+        )
+    }
+}
+
+@Composable
+fun MatchesForSingleGameDefaultActionBar(
+    themeColor: Color,
+    title: String,
+    onOpenSearchTap: () -> Unit,
+    onSortTap: () -> Unit,
+    onEditGameTap: () -> Unit,
+) {
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth().height(Dimensions.Size.topBarHeight)
+    ) {
+
+        Text(
+            text = title,
+            color = themeColor,
+            style = MaterialTheme.typography.h5,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1
+        )
+
+        Row {
+
+            CustomIconButton(
+                imageVector = Icons.Rounded.Search,
+                backgroundColor = Color.Transparent,
+                foregroundColor = themeColor,
+                onTap = { onOpenSearchTap() }
+            )
+
+            CustomIconButton(
+                painter = painterResource(id = R.drawable.ic_sort),
+                backgroundColor = Color.Transparent,
+                foregroundColor = themeColor,
+                onTap = { onSortTap() }
+            )
+
+            CustomIconButton(
+                imageVector = Icons.Rounded.Edit,
+                backgroundColor = Color.Transparent,
+                foregroundColor = themeColor,
+                onTap = { onEditGameTap() }
+            )
+        }
+    }
+}
+
+@Composable
+fun MatchesForSingleGameSortMenuActionBar(
+    themeColor: Color,
+    sortDirection: SortDirection,
+    sortMode: MatchSortMode,
+    onSortDirectionChanged: (SortDirection) -> Unit,
+    onSortModeChanged: (MatchSortMode) -> Unit,
     onCloseTap: () -> Unit
 ) {
-    Column(modifier = Modifier.padding(start = 16.dp, bottom = 16.dp)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.padding(vertical = 8.dp)
+    ) {
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -208,295 +349,122 @@ fun SingleGameSortMenuActionBar(
 
             Text(
                 text = stringResource(R.string.header_sort_menu),
-                color = themeColor,
-                style = MaterialTheme.typography.body1,
-                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.h6,
                 modifier = Modifier.weight(1f)
             )
 
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { onSortDirectionChanged(!sortDescending) }
-            ) {
-                Icon(
-                    imageVector = if (sortDescending) {
-                        Icons.Rounded.KeyboardArrowDown
-                    } else Icons.Rounded.KeyboardArrowUp,
-                    tint = themeColor,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(12.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { onCloseTap() }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Close,
-                    tint = themeColor,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(12.dp)
-                )
-            }
+            CustomIconButton(
+                imageVector = Icons.Rounded.Close,
+                backgroundColor = Color.Transparent,
+                foregroundColor = themeColor,
+                onTap = { onCloseTap() }
+            )
         }
+
+        Text(text = "Sort by...")
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(end = 16.dp)
         ) {
-            MatchSortingMode.values().forEach { option ->
-                SortingMenuOption(
+            MatchSortMode.values().forEach { option ->
+                RadioButtonOption(
                     menuOption = option,
                     themeColor = themeColor,
-                    isSelected = sortingMode == option,
-                    onSelected = { onSortingModeChanged(it) }
+                    isSelected = sortMode == option,
+                    onSelected = { onSortModeChanged(it as MatchSortMode) }
                 )
             }
         }
-    }
-}
 
-@Composable
-fun SingleGameDefaultActionBar(
-    themeColor: Color,
-    onOpenSearchTap: () -> Unit,
-    onSortTap: () -> Unit,
-    onEditGameTap: () -> Unit,
-) {
-    Row {
+        Text(text = "Sort direction")
 
-        Box(
+        Column(
             modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable { onOpenSearchTap() }
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Search,
-                tint = themeColor,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(12.dp)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable { onSortTap() }
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_sort),
-                tint = themeColor,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(12.dp)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .clip(MaterialTheme.shapes.small)
-                .clickable { onEditGameTap() }
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Edit,
-                tint = themeColor,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(12.dp)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalAnimationApi::class, ExperimentalComposeUiApi::class)
-@Composable
-fun SingleGameTopBar(
-    title: String,
-    themeColor: Color,
-    searchString: String,
-    sortDescending: Boolean,
-    sortingMode: MatchSortingMode,
-    onSearchStringChanged: (String) -> Unit,
-    onSortDirectionChanged: (Boolean) -> Unit,
-    onSortingModeChanged: (MatchSortingMode) -> Unit,
-    onEditGameTap: () -> Unit
-) {
-    var topBarState: SingleGameTopBarState by rememberSaveable { mutableStateOf(SingleGameTopBarState.Default) }
-
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .padding(16.dp)
-            .defaultMinSize(minHeight = 48.dp)
-            .fillMaxWidth()
-    ) {
-        AnimatedVisibility(
-            visible = topBarState == SingleGameTopBarState.Default,
-            modifier = Modifier
-                .weight(1f)
+                .fillMaxWidth()
                 .padding(end = 16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(48.dp)
-            ) {
-                Text(
-                    text = title,
-                    color = themeColor,
-                    style = MaterialTheme.typography.h5,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
+            SortDirection.values().forEach { option ->
+                RadioButtonOption(
+                    menuOption = option,
+                    themeColor = themeColor,
+                    isSelected = sortDirection == option,
+                    onSelected = { onSortDirectionChanged(it as SortDirection) }
                 )
             }
         }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
-        ) {
-            AnimatedContent(targetState = topBarState) { state ->
-                when (state) {
-                    SingleGameTopBarState.Default -> {
-                        SingleGameDefaultActionBar(
-                            themeColor = themeColor,
-                            onEditGameTap = onEditGameTap,
-                            onSortTap = { topBarState = SingleGameTopBarState.SortMenuOpen },
-                            onOpenSearchTap = { topBarState = SingleGameTopBarState.SearchBarOpen }
-                        )
-                    }
-                    SingleGameTopBarState.SearchBarOpen -> {
-                        SearchActionBar(
-                            searchString = searchString,
-                            themeColor = themeColor,
-                            onSearchStringChanged = onSearchStringChanged,
-                            onCloseTap = {
-                                topBarState = SingleGameTopBarState.Default
-                                focusManager.clearFocus()
-                                keyboardController?.hide()
-                            }
-                        )
-                    }
-                    SingleGameTopBarState.SortMenuOpen -> {
-                        SingleGameSortMenuActionBar(
-                            themeColor = themeColor,
-                            sortDescending = sortDescending,
-                            sortingMode = sortingMode,
-                            onSortDirectionChanged = onSortDirectionChanged,
-                            onSortingModeChanged = onSortingModeChanged,
-                            onCloseTap = { topBarState = SingleGameTopBarState.Default }
-                        )
-                    }
-                }
-            }
-        }
+    }
+}
+
+@Composable
+fun RadioButtonOption(
+    menuOption: MenuOption,
+    themeColor: Color,
+    isSelected: Boolean,
+    onSelected: (MenuOption) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clip(MaterialTheme.shapes.small)
+            .clickable { onSelected(menuOption) }
+            .fillMaxWidth()
+    ) {
+        RadioButton(
+            selected = isSelected,
+            onClick = { onSelected(menuOption) },
+            colors = RadioButtonDefaults.colors(
+                selectedColor = themeColor,
+                unselectedColor = MaterialTheme.colors.onSurface
+            )
+        )
+        Text(text = stringResource(menuOption.label))
     }
 }
 
 // endregion
 
-/**
- * This will filter and sort the passed matches based on
- * the current string being searched and the current sort
- * mode.
- *
- * Order of operations:
- *      1. Iterate through the list, adding items that match the search string
- *         to a sublist.
- *          a. If a match has no scores, add it to a separate sublist.
- *      2. Sort the filtered items sublist as designated by the sorting mode.
- *      3. Reverse the order of the list if the user selects descending sort.
- *      4. Add the empty matches sublist to the end of the sorted list.
- *      5. Return
- */
-private fun filterAndSortMatches(
-    scoringMode: ScoringMode,
-    matches: List<MatchObject>,
-    searchString: String,
-    sortingMode: MatchSortingMode,
-    sortDescending: Boolean
-): List<MatchObject> {
-    val matchesToSort: MutableList<MatchObject> = mutableListOf()
-    val emptyMatches: MutableList<MatchObject> = mutableListOf()
-    matches.forEach {
-        if (showMatch(it, searchString)) {
-            if (it.players.isEmpty()) {
-                emptyMatches.add(it)
-            } else matchesToSort.add(it)
-        }
-    }
-    var matchesInOrder: List<MatchObject> = when (sortingMode) {
-        MatchSortingMode.ByMatchAge -> matchesToSort.reversed()
-        MatchSortingMode.ByWinningPlayer -> matchesToSort.sortedBy { match ->
-            match.players.getWinningPlayer(scoringMode).entity.name
-        }
-        MatchSortingMode.ByWinningScore -> matchesToSort.sortedBy { match ->
-            match.players.getWinningPlayer(scoringMode).entity.score
-        }
-        MatchSortingMode.ByPlayerCount -> matchesToSort.sortedBy { it.players.size }
-    }
-    if (sortDescending) matchesInOrder = matchesInOrder.reversed()
-    return matchesInOrder.plus(emptyMatches)
-}
-
-private fun matchContainsPlayerWithString(
-    match: MatchObject,
-    substring: String
-): Boolean {
-    return match.players.any {
-        it.entity.name.lowercase().contains(substring.lowercase())
-    }
-}
-
-private fun matchContainsExactScoreMatch(
-    match: MatchObject,
-    bigDecimalToSearch: BigDecimal?
-): Boolean {
-    return if (bigDecimalToSearch != null) {
-        match.players.any {
-            it.entity.score.toBigDecimal().isEqualTo(bigDecimalToSearch)
-        }
-    } else false
-}
-
-private fun showMatch(
-    match: MatchObject,
-    searchString: String
-): Boolean {
-    if (searchString.isEmpty()) return true
-    return matchContainsPlayerWithString(match, searchString) ||
-            matchContainsExactScoreMatch(match, searchString.toBigDecimalOrNull())
-}
-
-@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
-fun SingleGameScreenPreview() {
-    ScoreKeeperTheme {
+fun SingleGameTabBar(
+    selectedTab: SingleGameScreen,
+    onTabSelected: (SingleGameScreen) -> Unit,
+    themeColor: Color,
+) {
+
+    TabRow(
+        selectedTabIndex = selectedTab.ordinal,
+        backgroundColor = MaterialTheme.colors.background,
+    ) {
+        SingleGameScreen.values().forEachIndexed { index, screen ->
+            Tab(
+                selected = index == selectedTab.ordinal,
+                onClick = { onTabSelected(screen) },
+                text = { Text(text = stringResource(id = screen.titleResource)) },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = screen.iconResource),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
+                selectedContentColor = themeColor,
+            )
+        }
+    }
+}
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Composable
+fun SingleGameScreenStatsPreview() {
+    MedianMeepleTheme {
         SingleGameScreen(
-            game = GameObject(
-                entity = GameEntity(
-                    name = "Wingspan",
-                    color = "ORANGE"
-                ),
-                matches = PreviewMatchObjects
-            ),
+            gameObject = GameObjectsDefaultPreview[0],
             currentAd = null,
             onEditGameTap = {},
             onNewMatchTap = {},
-            onSingleMatchTap = {}
+            onSingleMatchTap = {},
         )
     }
 }

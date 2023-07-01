@@ -4,16 +4,16 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_scorekeeper"
+        android:icon="@mipmap/ic_median_meeple"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_scorekeeper_circle"
+        android:roundIcon="@mipmap/ic_median_meeple_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Scorekeeper"
+        android:theme="@style/Theme.MedianMeeple"
         tools:targetApi="31">
         <activity
-            android:name=".ScoresActivity"
+            android:name=".MedianMeepleActivity"
             android:exported="true"
-            android:theme="@style/Theme.Scorekeeper"
+            android:theme="@style/Theme.MedianMeeple"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

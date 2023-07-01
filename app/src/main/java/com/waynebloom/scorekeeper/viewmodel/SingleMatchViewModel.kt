@@ -9,32 +9,50 @@ import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.data.model.*
-import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import java.util.*
 
 class SingleMatchViewModel(
     private val matchEntity: MatchEntity,
+    private val addPlayerCallback: () -> Unit,
     private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
 ): ViewModel() {
+
+    companion object {
+        const val maximumPlayers = 100
+    }
 
     private var matchEntityWasChanged = false
     private var saveWasTapped = false
 
-    var notesState: String by mutableStateOf(matchEntity.matchNotes)
+    var notes: String by mutableStateOf(matchEntity.matchNotes)
+    var showMaximumPlayersError by mutableStateOf(false)
 
     private fun getMatchToCommit() = EntityStateBundle(
         entity = matchEntity.copy(
-            matchNotes = notesState,
+            matchNotes = notes,
             timeModified = Date().time
         ),
         databaseAction = if (matchEntityWasChanged) {
             DatabaseAction.UPDATE
         } else DatabaseAction.NO_ACTION
     )
+
+    fun onAddPlayerTap(playerCount: Int) {
+        if (playerCount < maximumPlayers) {
+            addPlayerCallback()
+        } else {
+            showMaximumPlayersError = !showMaximumPlayersError
+        }
+    }
+
+    fun onNotesChanged(value: String) {
+        matchEntityWasChanged = true
+        notes = value
+    }
 
     @OptIn(ExperimentalComposeUiApi::class)
     fun onSaveTap(keyboardController: SoftwareKeyboardController?, focusManager: FocusManager) {
@@ -48,25 +66,22 @@ class SingleMatchViewModel(
 
     fun shouldShowDetailedScoresButton(
         players: List<PlayerEntity>,
-        subscoreTitles: List<SubscoreTitleEntity>
+        subscoreTitles: List<CategoryTitleEntity>
     ): Boolean {
         val categoriesExist = subscoreTitles.isNotEmpty()
         val detailedScoresExist = players.any { it.showDetailedScore }
         return categoriesExist && detailedScoresExist
     }
-
-    fun updateNotes(value: String) {
-        matchEntityWasChanged = true
-        notesState = value
-    }
 }
 
 class SingleMatchViewModelFactory (
     private val matchEntity: MatchEntity,
+    private val addPlayerCallback: () -> Unit,
     private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = SingleMatchViewModel(
         matchEntity = matchEntity,
+        addPlayerCallback = addPlayerCallback,
         saveCallback = saveCallback
     ) as T
 }

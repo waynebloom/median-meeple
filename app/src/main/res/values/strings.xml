@@ -10,10 +10,17 @@
     <!-- region Common -->
 
     <string name="error_empty_name">Please enter a name.</string>
+    <string name="field_error_empty">This field cannot be empty.</string>
     <string name="header_games">Your Games</string>
-    <string name="text_empty_games">No games to display</string>
-    <string name="text_empty_matches">No matches to display</string>
-    <string name="text_showing_search_results">Searching for \"%s\"</string>
+    <string name="header_sort_menu">Sorting Options</string>
+    <string name="sort_direction_ascending">Ascending</string>
+    <string name="sort_direction_descending">Descending</string>
+    <string name="text_empty_games">No games to display.</string>
+    <string name="text_empty_matches">No matches to display.</string>
+    <string name="text_matches">Matches</string>
+    <string name="text_showing_search_results">Searching for \"%s\".</string>
+    <string name="text_statistics">Stats</string>
+    <string name="text_tied">Tied</string>
 
     <!-- endregion -->
 
@@ -50,20 +57,27 @@
     <string name="field_categories">Scoring Categories</string>
     <string name="field_edit_category">Edit Category</string>
     <string name="field_new_category">New Category</string>
-    <string name="header_details">Game Details</string>
-    <string name="header_theme">Custom Theme</string>
+    <string name="header_game_details">Game Details</string>
+    <string name="header_custom_theme">Custom Theme</string>
+    <string name="info_categories_section_helper">If your game has multiple scoring sources, add them here. An example set would be City, Farm, Road, and Monastery.</string>
     <string name="scoring_option_ascending">Lowest Score Wins</string>
     <string name="scoring_option_descending">Highest Score Wins</string>
-    <string name ="text_no_scoring_categories">No scoring categories added.</string>
+    <string name="scoring_option_manual">Decide Your Own Ranks</string>
 
     <!-- endregion -->
 
     <!-- region EditPlayerScoreScreen -->
-    <string name="field_detailed_view">Detailed Score</string>
+
+    <string name="error_invalid_rank">This is not a valid rank. Please enter a positive integer less than 101.</string>
+    <string name="field_detailed_view">Detailed Mode</string>
+    <string name="field_rank">Rank</string>
     <string name="field_total_score">Total Score</string>
     <string name="field_uncategorized">Uncategorized</string>
     <string name="header_player_info">Player Information</string>
+    <string name="header_player_ranking">Player Ranking</string>
     <string name="header_player_scores">Player Score</string>
+    <string name="helper_player_score_screen_rank">Manual ranking is enabled for this game. Enter the player\'s rank here.</string>
+    <string name="helper_player_score_screen_detailed_mode">Detailed mode is on, but no scoring categories have been added. To add some, edit your game.</string>
 
     <!-- endregion -->
 
@@ -74,34 +88,62 @@
 
     <!-- endregion -->
 
-    <!-- region Overview -->
+    <!-- region GameStatistics -->
 
-    <string name="button_add_new_game">Add New Game</string>
-    <string name="button_games">See All Games</string>
-    <string name="header_recent_matches">Recent Matches</string>
+    <string name="header_scoring">Scoring</string>
+    <string name="header_plays">Plays</string>
+    <string name="header_wins">Wins</string>
+    <string name="headline_best_winner">Best Winner</string>
+    <string name="headline_high">High</string>
+    <string name="headline_high_score">High Score</string>
+    <string name="headline_low">Low</string>
+    <string name="headline_matches">Matches</string>
+    <string name="headline_mean">Mean</string>
+    <string name="headline_players">Players</string>
+    <string name="headline_range">Range</string>
+    <string name="headline_top_scores">Top Scores</string>
+    <string name="headline_unique_winners">Unique Winners</string>
+    <string name="helper_empty_data">No data has been added.</string>
+    <string name="description_best_winner">The player(s) with the most wins</string>
+    <string name="description_high_score">Highest overall score</string>
+    <string name="description_matches">Total matches recorded</string>
+    <string name="description_players">Total unique players</string>
+    <string name="description_unique_winners">Number of unique players with a win</string>
+    <plurals name="number_with_wins">
+        <item quantity="one">%d win</item>
+        <item quantity="other">%d wins</item>
+    </plurals>
+    <string name="number_list_overflow">…and %1$d more</string>
 
     <!-- endregion -->
 
-    <!-- region SingleGameScreen -->
+    <!-- region MatchesForSingleGameScreen -->
 
-    <string name="header_sort_menu">Sort by…</string>
     <string name="sort_option_age">Date of Match</string>
     <string name="sort_option_name">Winning Player</string>
     <string name="sort_option_score">Winning Score</string>
     <string name="sort_option_players">Player Count</string>
     <string name="text_empty_match_players">No Players Added</string>
-    <string name="text_empty_match_search_results">No matches found containing \"%s\"</string>
+    <string name="text_empty_match_search_results">No matches found containing \"%s\".</string>
+
+    <!-- endregion -->
+
+    <!-- region Overview -->
+
+    <string name="header_recent_matches">Recent Matches</string>
+    <string name="top_bar_header_overview">Overview</string>
 
     <!-- endregion -->
 
     <!-- region SingleMatchScreen -->
 
+    <string name="error_maximum_players_reached">You may only record up to 100 players for a single match.</string>
     <string name="field_name">Name</string>
     <string name="field_notes">Notes</string>
     <string name="header_other">Other</string>
     <string name="header_players">Players</string>
+    <string name="info_empty_players">No players have been added.</string>
     <string name="search_placeholder_match">Search matches</string>
-    <string name="text_empty_players">No players have been added.</string>
     <string name="text_no_detailed_scores">No players have detailed scores. Add some by tapping a player and switching on \"Detailed Score.\"</string>
 
     <!-- endregion -->

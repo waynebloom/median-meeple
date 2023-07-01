@@ -6,8 +6,8 @@ import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import kotlinx.coroutines.flow.Flow
 
 class AppRepository(application: Application) {
@@ -73,24 +73,24 @@ class AppRepository(application: Application) {
 
     // region Subscore
 
-    suspend fun insert(subscoreEntity: SubscoreEntity) = appDao.insertSubscore(subscoreEntity)
+    suspend fun insert(categoryScoreEntity: CategoryScoreEntity) = appDao.insertCategoryScore(categoryScoreEntity)
 
-    suspend fun updateSubscore(subscoreEntity: SubscoreEntity) {
-        appDao.updateSubscore(subscoreEntity)
+    suspend fun updateCategoryScore(categoryScoreEntity: CategoryScoreEntity) {
+        appDao.updateCategoryScore(categoryScoreEntity)
     }
 
     // endregion
 
     // region SubscoreTitle
 
-    suspend fun deleteSubscoreTitleById(id: Long) {
-        appDao.deleteSubscoreTitleById(id)
+    suspend fun deleteCategoryTitleById(id: Long) {
+        appDao.deleteCategoryTitleById(id)
     }
 
-    suspend fun insert(subscoreTitleEntity: SubscoreTitleEntity) = appDao.insert(subscoreTitleEntity)
+    suspend fun insert(categoryTitleEntity: CategoryTitleEntity) = appDao.insert(categoryTitleEntity)
 
-    suspend fun updateSubscoreTitle(subscoreTitleEntity: SubscoreTitleEntity) {
-        appDao.updateSubscoreTitle(subscoreTitleEntity)
+    suspend fun updateCategoryTitle(categoryTitleEntity: CategoryTitleEntity) {
+        appDao.updateCategoryTitle(categoryTitleEntity)
     }
 
     // endregion

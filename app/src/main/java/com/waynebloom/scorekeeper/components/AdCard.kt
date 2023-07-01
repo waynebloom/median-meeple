@@ -1,7 +1,7 @@
 package com.waynebloom.scorekeeper.components
 
 import android.view.View
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.databinding.AdCardBinding
 import com.waynebloom.scorekeeper.ext.sentenceCase
@@ -22,7 +21,7 @@ fun AdCard(
     onThemeColor: Int = MaterialTheme.colors.onPrimary.toArgb(),
     onSurface: Int = MaterialTheme.colors.onSurface.toArgb()
 ) {
-    Surface(shape = MaterialTheme.shapes.small) {
+    Surface(shape = MaterialTheme.shapes.large) {
         AndroidViewBinding(
             factory = AdCardBinding::inflate,
             modifier = Modifier.padding(16.dp)

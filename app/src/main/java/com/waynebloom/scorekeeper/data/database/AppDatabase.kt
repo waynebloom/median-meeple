@@ -6,8 +6,8 @@ import androidx.room.migration.AutoMigrationSpec
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 
 @Database(
     version = 11,
@@ -15,8 +15,8 @@ import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
         GameEntity::class,
         MatchEntity::class,
         PlayerEntity::class,
-        SubscoreTitleEntity::class,
-        SubscoreEntity::class
+        CategoryTitleEntity::class,
+        CategoryScoreEntity::class
     ],
     exportSchema = true,
     autoMigrations = [
@@ -45,7 +45,12 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database")
                     .createFromAsset("database/scores_app.db")
-                    .addMigrations(MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
+                    .addMigrations(
+                        MIGRATION_7_8,
+                        MIGRATION_8_9,
+                        MIGRATION_9_10,
+                        MIGRATION_10_11
+                    )
                     .build()
                 INSTANCE = instance
                 instance

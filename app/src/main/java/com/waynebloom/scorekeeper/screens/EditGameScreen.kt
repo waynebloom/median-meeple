@@ -1,12 +1,15 @@
 package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.annotation.StringRes
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -15,46 +18,47 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.LocalGameColors
-import com.waynebloom.scorekeeper.PreviewGameObjects
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.DullColoredTextCard
-import com.waynebloom.scorekeeper.components.HeadedSection
-import com.waynebloom.scorekeeper.components.ScreenHeader
+import com.waynebloom.scorekeeper.components.CustomIconButton
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescription
+import com.waynebloom.scorekeeper.constants.Alpha
+import com.waynebloom.scorekeeper.constants.Dimensions
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.game.GameObject
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
-import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
+import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.EditGameViewModel
-import com.waynebloom.scorekeeper.viewmodel.EditGameViewModelViewModelFactory
-import com.waynebloom.scorekeeper.viewmodel.SubscoreTitleSectionHeaderState
-import com.waynebloom.scorekeeper.viewmodel.SubscoreTitleSectionListState
+import com.waynebloom.scorekeeper.viewmodel.EditGameViewModelFactory
+import com.waynebloom.scorekeeper.viewmodel.ScoringCategorySectionState
 import java.util.*
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -62,135 +66,201 @@ import java.util.*
 fun EditGameScreen(
     game: GameObject,
     saveGame: (EntityStateBundle<GameEntity>,
-               List<EntityStateBundle<SubscoreTitleEntity>>) -> Unit,
+        List<EntityStateBundle<CategoryTitleEntity>>) -> Unit,
     onDeleteTap: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val viewModel = viewModel<EditGameViewModel>(
-        key = ScorekeeperScreen.EditGame.name,
-        factory = EditGameViewModelViewModelFactory(
+        key = TopLevelScreen.EditGame.name,
+        factory = EditGameViewModelFactory(
             initialGame = game,
             saveCallback = saveGame
-        )
-    ).also { it.initialGameEntity.id = game.entity.id }
+        ))
+    .onRecompose(
+        gameId = game.entity.id,
+        rowHeightInPx = LocalDensity.current
+            .run { Size.minTappableSize.toPx() })
+
     val keyboardController = LocalSoftwareKeyboardController.current
     val themeColor = LocalGameColors.current.getColorByKey(viewModel.themeColorString)
     val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         focusedBorderColor = themeColor,
         focusedLabelColor = themeColor,
         cursorColor = themeColor,
-        disabledBorderColor = themeColor.copy(0.75f)
     )
     val textSelectionColors = TextSelectionColors(
         handleColor = themeColor,
-        backgroundColor = themeColor.copy(0.3f)
+        backgroundColor = themeColor.copy(Alpha.textSelectionBackground),
     )
 
-    CompositionLocalProvider(
-        LocalTextSelectionColors.provides(textSelectionColors)
+    Scaffold(
+        topBar = {
+            EditGameScreenTopBar(
+                title = game.entity.name,
+                themeColor = themeColor,
+                submitButtonEnabled = viewModel.isNameValid,
+                onDoneTap = { viewModel.onSaveTap(keyboardController) },
+                onDeleteTap = { onDeleteTap(viewModel.initialGameEntity.id) }
+            )
+        }
     ) {
 
-        Column(modifier = modifier) {
+        CompositionLocalProvider(LocalTextSelectionColors.provides(textSelectionColors)) {
+            val coroutineScope = rememberCoroutineScope()
 
-            ScreenHeader(
-                title = viewModel.nameTextFieldValue.text,
-                color = themeColor
-            )
-
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState())
+            LazyColumn(
+                state = viewModel.lazyListState,
+                verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+                contentPadding = PaddingValues(vertical = Spacing.betweenSections),
+                modifier = modifier.padding(it)
             ) {
 
-                HeadedSection(title = R.string.header_details) {
+                item {
 
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-
-                        NameField(
-                            nameTextFieldValue = viewModel.nameTextFieldValue,
-                            textFieldColors = textFieldColors,
-                            isError = !viewModel.nameIsValid,
-                            onNameChanged = { viewModel.setName(it) }
-                        )
-
-                        ScoringModeSelector(
-                            initialMode = ScoringMode.getModeByOrdinal(viewModel.scoringMode),
-                            onItemTap = { viewModel.selectMode(it.ordinal) }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(40.dp))
-
-                SubscoreTitlesSection(
-                    viewModel = viewModel,
-                    themeColor = themeColor,
-                    textFieldColors = textFieldColors
-                )
-                
-                Spacer(modifier = Modifier.height(40.dp))
-
-                HeadedSection(
-                    title = R.string.header_theme,
-                    topPadding = 0
-                ) {
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-
-                        if (viewModel.colorMenuVisible) {
-                            ColorSelectorOpen(
-                                currentColorKey = viewModel.themeColorString,
-                                colorOptions = LocalGameColors.current.getColorsAsKeyList(),
-                                onColorTap = { colorString -> viewModel.selectColor(colorString) }
-                            )
-                        } else {
-                            ColorSelectorClosed(
-                                currentColorKey = viewModel.themeColorString,
-                                onColorSelectorTap = { viewModel.colorMenuVisible = true }
-                            )
-                        }
-                    }
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(top = 16.dp)
-                ) {
-
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = themeColor,
-                            contentColor = MaterialTheme.colors.onPrimary
-                        ),
-                        onClick = { viewModel.onSaveTap(keyboardController) },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .weight(1f),
-                        enabled = viewModel.nameIsValid,
-                        content = {
-                            Icon(imageVector = Icons.Rounded.Done, contentDescription = null)
-                        }
-                    )
-
-                    Button(
-                        colors = ButtonDefaults.buttonColors(MaterialTheme.colors.error),
-                        onClick = { onDeleteTap(viewModel.initialGameEntity.id) },
-                        modifier = Modifier
-                            .height(48.dp)
-                            .weight(1f),
-                        content = {
-                            Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                        }
+                    GameDetailsSection(
+                        selectedMode = viewModel.scoringMode,
+                        nameTextFieldValue = viewModel.name,
+                        textFieldColors = textFieldColors,
+                        isNameValid = viewModel.isNameValid,
+                        themeColor = themeColor,
+                        onNameChanged = { viewModel.onNameChanged(it) },
+                        onScoringModeTap = { viewModel.onScoringModeChanged(it) },
+                        modifier = Modifier.padding(horizontal = Spacing.screenEdge),
                     )
                 }
 
-                Spacer(Modifier.height(16.dp))
+                item {
+
+                    ScoringCategorySection(
+                        categories = viewModel.getCategoriesToDisplay(),
+                        state = viewModel.getCategoryListState(),
+                        showInput = viewModel.showCategoryInput,
+                        inputFieldTitleResource = viewModel.getInputFieldTitle(),
+                        currentInput = viewModel.categoryInput,
+                        showInputError = !viewModel.isCategoryInputValid && !viewModel.isFreshInput,
+                        textFieldColors = textFieldColors,
+                        themeColor = themeColor,
+                        toggleEditMode = { viewModel.toggleEditMode(it, coroutineScope) },
+                        onNewTitleTap = { viewModel.showInputForNewCategory(coroutineScope) },
+                        onTitleTap = { viewModel.showInputForExistingCategory(
+                            index = it,
+                            isTransitioningToEditMode = false,
+                            coroutineScope = coroutineScope,
+                        ) },
+                        onDeleteTap = { viewModel.deleteCategory(it) },
+                        onDrag = { viewModel.onDrag(it) },
+                        onDragEnd = { viewModel.onDragEnd() },
+                        onDragStart = { viewModel.onDragStart(it) },
+                        onInputCancel = { viewModel.clearAndHideCategoryInput() },
+                        onInputChange = { viewModel.onCategoryInputChanged(it) },
+                        onInputSubmit = { viewModel.submitCategoryInput() },
+                        modifier = Modifier.padding(horizontal = Spacing.screenEdge),
+                    )
+                }
+
+                item {
+
+                    CustomThemeSection(
+                        selectedColor = viewModel.themeColorString,
+                        colorOptions = LocalGameColors.current.getColorsAsKeyList(),
+                        onColorTap = { colorString -> viewModel.selectColor(colorString) }
+                    )
+
+                    Spacer(modifier = Modifier.height(Spacing.screenEdge))
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun EditGameScreenTopBar(
+    title: String,
+    themeColor: Color,
+    submitButtonEnabled: Boolean,
+    onDoneTap: () -> Unit,
+    onDeleteTap: () -> Unit,
+) {
+
+    Column {
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = Spacing.screenEdge, end = 8.dp)
+                .defaultMinSize(minHeight = Size.topBarHeight)
+                .fillMaxWidth()
+        ) {
+
+            Text(
+                text = title,
+                color = themeColor,
+                style = MaterialTheme.typography.h5,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+            )
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+
+                CustomIconButton(
+                    onTap = onDoneTap,
+                    backgroundColor = Color.Transparent,
+                    foregroundColor = themeColor,
+                    enabled = submitButtonEnabled,
+                    imageVector = Icons.Rounded.Done
+                )
+
+                CustomIconButton(
+                    onTap = onDeleteTap,
+                    backgroundColor = Color.Transparent,
+                    foregroundColor = MaterialTheme.colors.error,
+                    imageVector = Icons.Rounded.Delete
+                )
+            }
+        }
+
+        Divider()
+    }
+}
+
+// region Game Details
+
+@Composable
+private fun GameDetailsSection(
+    selectedMode: ScoringMode,
+    nameTextFieldValue: TextFieldValue,
+    isNameValid: Boolean,
+    textFieldColors: TextFieldColors,
+    themeColor: Color,
+    onNameChanged: (TextFieldValue) -> Unit,
+    onScoringModeTap: (ScoringMode) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+        modifier = modifier,
+    ) {
+
+        Text(
+            text = stringResource(id = R.string.header_game_details),
+            style = MaterialTheme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        NameField(
+            nameTextFieldValue = nameTextFieldValue,
+            textFieldColors = textFieldColors,
+            isError = !isNameValid,
+            onNameChanged = onNameChanged
+        )
+
+        ScoringModeSelector(
+            selectedMode = selectedMode,
+            themeColor = themeColor,
+            onItemTap = { onScoringModeTap(it) }
+        )
     }
 }
 
@@ -201,6 +271,7 @@ private fun NameField(
     isError: Boolean,
     onNameChanged: (TextFieldValue) -> Unit
 ) {
+
     OutlinedTextFieldWithErrorDescription(
         textFieldValue = nameTextFieldValue,
         onValueChange = onNameChanged,
@@ -210,584 +281,421 @@ private fun NameField(
         errorDescription = R.string.error_empty_name,
         selectAllOnFocus = true
     )
-    /*OutlinedTextField(
-        value = nameTextFieldValue,
-        label = { Text(text = stringResource(id = R.string.field_name)) },
-        onValueChange = { onNameChanged(it) },
-        colors = textFieldColors,
-        keyboardOptions = KeyboardOptions(
-            capitalization = KeyboardCapitalization.Words,
-            imeAction = ImeAction.Done,
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { imeSubmitTapped() }
-        ),
-        modifier = Modifier.fillMaxWidth()
-    )*/
 }
 
 @Composable
-private fun ScoringModeSelector(
-    initialMode: ScoringMode,
-    onItemTap: (ScoringMode) -> Unit
+fun ScoringModeSelector(
+    selectedMode: ScoringMode,
+    themeColor: Color,
+    onItemTap: (ScoringMode) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    var selectorExpanded by rememberSaveable { mutableStateOf(false) }
-    var boxSize by remember { mutableStateOf(Size.Zero) }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { layoutCoordinates ->
-                boxSize = layoutCoordinates.size.toSize()
-            }
-    ) {
-        Surface(
-            shape = MaterialTheme.shapes.small,
-            modifier = Modifier
-                .clickable { selectorExpanded = true }
-                .fillMaxWidth()
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .padding(start = 16.dp)
-            ) {
-                Text(
-                    text = stringResource(id = initialMode.label),
-                    style = MaterialTheme.typography.body1
-                )
-                Icon(
-                    imageVector = if (selectorExpanded) {
-                        ImageVector.vectorResource(id = R.drawable.ic_arrow_left)
-                    } else Icons.Rounded.ArrowDropDown,
-                    contentDescription = null,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
-        ScoreKeeperTheme(shapes = MaterialTheme.shapes.copy(medium = MaterialTheme.shapes.small)) {
-            DropdownMenu(
-                expanded = selectorExpanded,
-                onDismissRequest = { selectorExpanded = false },
-                modifier = Modifier
-                    .width(with(LocalDensity.current) { boxSize.width.toDp() })
-            ) {
-                DropdownMenuItem(
-                    onClick = {
-                        onItemTap(ScoringMode.Ascending)
-                        selectorExpanded = false
-                    }
-                ) {
-                    Text(text = stringResource(id = ScoringMode.Ascending.label))
-                }
-                DropdownMenuItem(
-                    onClick = {
-                        onItemTap(ScoringMode.Descending)
-                        selectorExpanded = false
-                    }
-                ) {
-                    Text(text = stringResource(id = ScoringMode.Descending.label))
-                }
-            }
+    Column(modifier = modifier.fillMaxWidth()) {
+
+        ScoringMode.values().forEach { option ->
+
+            RadioButtonOption(
+                menuOption = option,
+                themeColor = themeColor,
+                isSelected = selectedMode == option,
+                onSelected = { onItemTap(it as ScoringMode) }
+            )
         }
     }
 }
 
-// region Subscore Titles
+// endregion
+
+// region Categories
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-private fun SubscoreTitlesSection(
-    viewModel: EditGameViewModel,
+private fun ScoringCategorySection(
+    categories: List<String>,
+    state: ScoringCategorySectionState,
+    showInput: Boolean,
+    @StringRes inputFieldTitleResource: Int,
+    currentInput: TextFieldValue,
+    showInputError: Boolean,
+    textFieldColors: TextFieldColors,
     themeColor: Color,
-    textFieldColors: TextFieldColors
+    toggleEditMode: (Int?) -> Unit,
+    onNewTitleTap: () -> Unit,
+    onTitleTap: (Int) -> Unit,
+    onDeleteTap: (Int) -> Unit,
+    onDrag: (Offset) -> Unit,
+    onDragEnd: () -> Unit,
+    onDragStart: (Int) -> Unit,
+    onInputCancel: () -> Unit,
+    onInputChange: (TextFieldValue) -> Unit,
+    onInputSubmit: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        AnimatedContent(targetState = viewModel.subscoreTitleSectionHeaderState) { state ->
-            when(state) {
-                SubscoreTitleSectionHeaderState.TitleAndActionBar -> {
-                    SubscoreTitlesDefaultHeader(
-                        listState = viewModel.subscoreTitleSectionListState,
-                        showListStateButton = viewModel.getSubscoreTitlesToDisplay().isNotEmpty(),
-                        themeColor = themeColor,
-                        onNewTitleTap = { viewModel.showEditorForNewSubscoreTitle() },
-                        onHorizontalListTap = { viewModel.showHorizontalList() },
-                        onVerticalListTap = { viewModel.showVerticalList() }
+
+    Column(modifier = modifier) {
+
+        ScoringCategoryHeader(
+            isInEditMode = state == ScoringCategorySectionState.EditMode,
+            showEditModeButton = categories.isNotEmpty(),
+            themeColor = themeColor,
+            onNewTitleTap = onNewTitleTap,
+            toggleEditMode = { toggleEditMode(null) },
+        )
+
+        Spacer(modifier = Modifier.height(Spacing.sectionContent))
+
+        AnimatedContent(
+            targetState = state,
+            transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+        ) {
+
+            when(it) {
+                ScoringCategorySectionState.Default -> {
+                    ScoringCategoryList(
+                        categories = categories,
+                        onCategoryTap = toggleEditMode,
                     )
                 }
-                SubscoreTitleSectionHeaderState.NewItem -> {
-                    SubscoreTitlesEditorHeader(
-                        editorFieldTitle = viewModel.getEditorFieldTitle(),
-                        titleInput = viewModel.subscoreTitleInput,
-                        themeColor = themeColor,
-                        textFieldColors = textFieldColors,
-                        onTitleChanged = { value -> viewModel.subscoreTitleInput = value},
-                        cancelAction = { viewModel.clearEditor() },
-                        submitAction = { viewModel.addSubscoreTitle() }
+                ScoringCategorySectionState.EditMode -> {
+                    ScoringCategoryListEditMode(
+                        categories = categories,
+                        onDeleteTap = onDeleteTap,
+                        onTitleTap = onTitleTap,
+                        onDrag = onDrag,
+                        onDragEnd = onDragEnd,
+                        onDragStart = onDragStart,
                     )
                 }
-                SubscoreTitleSectionHeaderState.EditItem -> {
-                    SubscoreTitlesEditorHeader(
-                        editorFieldTitle = viewModel.getEditorFieldTitle(),
-                        titleInput = viewModel.subscoreTitleInput,
-                        themeColor = themeColor,
-                        textFieldColors = textFieldColors,
-                        onTitleChanged = { value -> viewModel.subscoreTitleInput = value},
-                        cancelAction = { viewModel.clearEditor() },
-                        submitAction = { viewModel.updateCurrentSubscoreTitle() }
+                ScoringCategorySectionState.Empty -> {
+                    HelperBox(
+                        message = stringResource(id = R.string.info_categories_section_helper),
+                        type = HelperBoxType.Info
                     )
                 }
             }
         }
 
-        AnimatedContent(targetState = viewModel.subscoreTitleSectionListState) { state ->
-            when(state) {
-                SubscoreTitleSectionListState.Horizontal -> {
-                    SubscoreTitlesHorizontalList(
-                        titles = viewModel.getSubscoreTitlesToDisplay(),
-                        themeColor = themeColor,
-                        onDeleteTap = { index -> viewModel.deleteSubscoreTitle(index) },
-                        onTitleTap = { index -> viewModel.showEditorForEditSubscoreTitle(index) }
-                    )
-                }
-                SubscoreTitleSectionListState.Vertical -> {
-                    SubscoreTitlesVerticalList(
-                        titles = viewModel.getSubscoreTitlesToDisplay(),
-                        themeColor = themeColor,
-                        onDeleteTap = { index -> viewModel.deleteSubscoreTitle(index) },
-                        onTitleTap = { index -> viewModel.showEditorForEditSubscoreTitle(index) },
-                        onUpTap = { index -> viewModel.changePosition(index, index - 1) },
-                        onDownTap = { index -> viewModel.changePosition(index, index + 1) }
-                    )
-                }
+        AnimatedContent(
+            targetState = showInput,
+            transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+        ) {
+            if (it) {
+
+                ScoringCategoryInput(
+                    fieldTitleResource = inputFieldTitleResource,
+                    currentInput = currentInput,
+                    showInputError = showInputError,
+                    textFieldColors = textFieldColors,
+                    themeColor = themeColor,
+                    onCancel = onInputCancel,
+                    onInputChange = onInputChange,
+                    onSubmit = onInputSubmit
+                )
             }
         }
     }
 }
 
 @Composable
-private fun SubscoreTitlesEditorHeader(
-    editorFieldTitle: Int,
-    titleInput: String,
-    themeColor: Color,
+private fun ScoringCategoryInput(
+    @StringRes fieldTitleResource: Int,
+    currentInput: TextFieldValue,
+    showInputError: Boolean,
     textFieldColors: TextFieldColors,
-    onTitleChanged: (String) -> Unit,
-    submitAction: () -> Unit,
-    cancelAction: () -> Unit
+    themeColor: Color,
+    onCancel: () -> Unit,
+    onInputChange: (TextFieldValue) -> Unit,
+    onSubmit: () -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
 
-        OutlinedTextField(
-            value = titleInput,
-            onValueChange = { onTitleChanged(it) },
-            label = { Text(stringResource(editorFieldTitle)) },
-            maxLines = 3,
+    Column {
+
+        Spacer(modifier = Modifier.height(Spacing.sectionContent))
+
+        OutlinedTextFieldWithErrorDescription(
+            textFieldValue = currentInput,
+            onValueChange = { onInputChange(it) },
+            label = { Text(stringResource(fieldTitleResource)) },
+            isError = showInputError,
             colors = textFieldColors,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Done,
             ),
             keyboardActions = KeyboardActions(
-                onDone = { submitAction() }
+                onDone = { onSubmit() }
             ),
-            modifier = Modifier.weight(1f)
+            errorDescription = R.string.field_error_empty,
+            selectAllOnFocus = true
         )
+
+        Spacer(modifier = Modifier.height(Spacing.sectionContent))
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(top = 12.dp)
-                .background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+                .clip(MaterialTheme.shapes.medium)
+                .background(MaterialTheme.colors.surface)
         ) {
 
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { submitAction() }
-            ) {
+            CustomIconButton(
+                imageVector = Icons.Rounded.Check,
+                foregroundColor = themeColor,
+                onTap = onSubmit
+            )
 
-                Icon(
-                    imageVector = Icons.Rounded.Done,
-                    tint = themeColor,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(12.dp)
-                )
-            }
-
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { cancelAction() }
-            ) {
-                Icon(
-                    imageVector = Icons.Rounded.Close,
-                    tint = MaterialTheme.colors.error,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .padding(12.dp)
-                )
-            }
+            CustomIconButton(
+                imageVector = Icons.Rounded.Close,
+                foregroundColor = themeColor,
+                onTap = onCancel
+            )
         }
     }
 }
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-private fun SubscoreTitlesDefaultHeader(
-    listState: SubscoreTitleSectionListState,
-    showListStateButton: Boolean,
+private fun ScoringCategoryHeader(
+    isInEditMode: Boolean,
+    showEditModeButton: Boolean,
     themeColor: Color,
     onNewTitleTap: () -> Unit,
-    onHorizontalListTap: () -> Unit,
-    onVerticalListTap: () -> Unit
+    toggleEditMode: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
 
         Text(
-            text = stringResource(id = R.string.field_categories)
-                .uppercase(Locale.getDefault()),
-            style = MaterialTheme.typography.subtitle1,
-            fontWeight = FontWeight.SemiBold
+            text = stringResource(id = R.string.field_categories),
+            style = MaterialTheme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
         )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.medium)
         ) {
 
-            if (showListStateButton) {
-                AnimatedContent(
-                    targetState = listState,
-                    transitionSpec = {
-                        fadeIn() with fadeOut()
-                    }
-                ) { state ->
-                    when(state) {
-                        SubscoreTitleSectionListState.Horizontal -> {
-                            Box(
-                                modifier = Modifier
-                                    .clip(MaterialTheme.shapes.small)
-                                    .clickable { onVerticalListTap() }
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.vertical_list),
-                                    tint = themeColor,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .padding(12.dp)
-                                )
-                            }
-                        }
-                        SubscoreTitleSectionListState.Vertical -> {
-                            Box(
-                                modifier = Modifier
-                                    .clip(MaterialTheme.shapes.small)
-                                    .clickable { onHorizontalListTap() }
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.horizontal_list),
-                                    tint = themeColor,
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .padding(12.dp)
-                                )
-                            }
+            AnimatedContent(
+                targetState = showEditModeButton,
+                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay }
+            ) { showEditModeButton ->
+
+                if (showEditModeButton) {
+
+                    AnimatedContent(
+                        targetState = isInEditMode,
+                        transitionSpec = { fadeIn() with fadeOut() }
+                    ) { isInEditMode ->
+
+                        if (isInEditMode) {
+                            CustomIconButton(
+                                painter = painterResource(id = R.drawable.ic_edit_off),
+                                foregroundColor = themeColor,
+                                onTap = toggleEditMode
+                            )
+                        } else {
+                            CustomIconButton(
+                                painter = painterResource(id = R.drawable.ic_edit),
+                                foregroundColor = themeColor,
+                                onTap = toggleEditMode
+                            )
                         }
                     }
                 }
             }
 
-            Box(
-                modifier = Modifier
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable { onNewTitleTap() }
+            CustomIconButton(
+                imageVector = Icons.Rounded.Add,
+                foregroundColor = themeColor,
+                onTap = onNewTitleTap
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
+@Composable
+private fun ScoringCategoryList(
+    categories: List<String>,
+    modifier: Modifier = Modifier,
+    onCategoryTap: (Int) -> Unit,
+) {
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
+        modifier = modifier.fillMaxWidth()
+    ) {
+
+        categories.forEachIndexed { index, category ->
+
+            Chip(
+                onClick = { onCategoryTap(index) },
+                shape = MaterialTheme.shapes.small,
+                content = { Text(text = category) },
+                border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(alpha = 0.5f)),
+                colors = ChipDefaults.chipColors(
+                    backgroundColor = Color.Transparent,
+                    contentColor = MaterialTheme.colors.onBackground,
+                ),
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScoringCategoryListEditMode(
+    categories: List<String>,
+    onDeleteTap: (Int) -> Unit,
+    onTitleTap: (Int) -> Unit,
+    onDrag: (Offset) -> Unit,
+    onDragEnd: () -> Unit,
+    onDragStart: (Int) -> Unit,
+) {
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+        modifier = Modifier.defaultMinSize(minHeight = Size.minTappableSize)
+    ) {
+
+        categories.forEachIndexed { index, category ->
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.height(Size.minTappableSize)
             ) {
+
                 Icon(
-                    imageVector = Icons.Rounded.Add,
-                    tint = themeColor,
+                    painter = painterResource(id = R.drawable.ic_drag_handle),
                     contentDescription = null,
                     modifier = Modifier
-                        .size(48.dp)
+                        .size(Size.minTappableSize)
                         .padding(12.dp)
+                        .pointerInput(Unit) {
+                            detectDragGestures(
+                                onDragStart = { onDragStart(index) },
+                                onDragEnd = onDragEnd,
+                                onDrag = { _, dragAmount -> onDrag(dragAmount) }
+                            )
+                        },
+                )
+
+                Box(
+                    contentAlignment = Alignment.CenterStart,
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .clip(MaterialTheme.shapes.medium)
+                        .clickable { onTitleTap(index) }
+                        .padding(horizontal = Spacing.sectionContent),
+                    content = {
+                        Text(
+                            text = category,
+                            style = MaterialTheme.typography.body1,
+                        )
+                    }
+                )
+
+                CustomIconButton(
+                    imageVector = Icons.Rounded.Delete,
+                    backgroundColor = Color.Transparent,
+                    foregroundColor = MaterialTheme.colors.error,
+                    onTap = { onDeleteTap(index) },
                 )
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun SubscoreTitlesHorizontalList(
-    titles: List<SubscoreTitleEntity>,
-    themeColor: Color,
-    onDeleteTap: (Int) -> Unit,
-    onTitleTap: (Int) -> Unit
-) {
-    if (titles.isNotEmpty()) {
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-
-            itemsIndexed(titles) { index, subscoreTitle ->
-
-                Chip(
-                    onClick = { onTitleTap(index) },
-                    shape = MaterialTheme.shapes.small,
-                    colors = ChipDefaults.chipColors(
-                        backgroundColor = MaterialTheme.colors.surface
-                    ),
-                    modifier = Modifier.height(48.dp)
-                ) {
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.widthIn(max = 256.dp)
-                    ) {
-
-                        Text(
-                            text = subscoreTitle.title,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.body1
-                        )
-
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            tint = MaterialTheme.colors.error,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable { onDeleteTap(index) }
-                        )
-                    }
-                }
-            }
-        }
-    } else {
-        DullColoredTextCard(
-            text = stringResource(id = R.string.text_no_scoring_categories),
-            color = themeColor
-        )
-    }
-}
-
-@Composable
-private fun SubscoreTitlesVerticalList(
-    titles: List<SubscoreTitleEntity>,
-    themeColor: Color,
-    onDeleteTap: (Int) -> Unit,
-    onTitleTap: (Int) -> Unit,
-    onUpTap: (Int) -> Unit,
-    onDownTap: (Int) -> Unit
-) {
-    if (titles.isNotEmpty()) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-
-            titles.forEachIndexed { index, subscoreTitle ->
-
-                Surface(
-                    shape = MaterialTheme.shapes.small,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(MaterialTheme.shapes.small)
-                        .clickable { onTitleTap(index) }
-                ) {
-
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-
-                        Text(
-                            text = subscoreTitle.title,
-                            style = MaterialTheme.typography.body1,
-                            modifier = Modifier.weight(1f)
-                        )
-
-                        if (index > 0) {
-                            Icon(
-                                imageVector = Icons.Rounded.KeyboardArrowUp,
-                                tint = themeColor,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable { onUpTap(index) }
-                            )
-                        } else Box(modifier = Modifier.size(24.dp))
-
-                        if (index < titles.size - 1) {
-                            Icon(
-                                imageVector = Icons.Rounded.KeyboardArrowDown,
-                                tint = themeColor,
-                                contentDescription = null,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clickable { onDownTap(index) }
-                            )
-                        } else Box(modifier = Modifier.size(24.dp))
-
-                        Icon(
-                            imageVector = Icons.Rounded.Close,
-                            tint = MaterialTheme.colors.error,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable { onDeleteTap(index) }
-                        )
-                    }
-                }
-            }
-        }
-    } else {
-        DullColoredTextCard(
-            text = stringResource(id = R.string.text_no_scoring_categories),
-            color = themeColor
-        )
     }
 }
 
 // endregion
 
 @Composable
-fun ColorSelectorOpen(
-    currentColorKey: String,
+fun CustomThemeSection(
     colorOptions: List<String>,
+    selectedColor: String,
+    onColorTap: (String) -> Unit,
+) {
+
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+        Text(
+            text = stringResource(id = R.string.header_custom_theme),
+            style = MaterialTheme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+        )
+
+        ColorSelector(
+            colorOptions = colorOptions,
+            selectedColor = selectedColor,
+            onColorTap = onColorTap
+        )
+    }
+}
+
+@Composable
+fun ColorSelector(
+    colorOptions: List<String>,
+    selectedColor: String,
     onColorTap: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        modifier = modifier
+    val lazyListState = rememberLazyListState(colorOptions.indexOf(selectedColor))
+
+    LazyRow(
+        state = lazyListState,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+        contentPadding = PaddingValues(horizontal = Spacing.screenEdge),
+        modifier = modifier,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp),
-                reverseLayout = true,
+
+        items(items = colorOptions) { key ->
+
+            val color = LocalGameColors.current.getColorByKey(key)
+            
+            Box(
+                contentAlignment = Alignment.Center,
                 modifier = Modifier
-                    .padding(vertical = 16.dp)
-                    .height(64.dp)
-                    .weight(1f, fill = false)
+                    .size(64.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(color)
+                    .clickable { onColorTap(key) }
             ) {
-                items(colorOptions) { colorKey ->
-                    val color = LocalGameColors.current.getColorByKey(colorKey)
-                    if (colorKey == currentColorKey) {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = color),
-                            shape = MaterialTheme.shapes.small,
-                            onClick = { onColorTap(colorKey) },
-                            modifier = Modifier
-                                .padding(12.dp)
-                                .size(40.dp)
-                        ) {}
-                    } else {
-                        Button(
-                            colors = ButtonDefaults.buttonColors(backgroundColor = color),
-                            shape = MaterialTheme.shapes.small,
-                            onClick = { onColorTap(colorKey) },
-                            modifier = Modifier.size(64.dp)
-                        ) {}
-                    }
+
+                AnimatedVisibility(
+                    visible = key == selectedColor,
+                    enter = fadeIn(),
+                    exit = fadeOut(),
+                ) {
+
+                    Icon(
+                        imageVector = Icons.Rounded.Check,
+                        contentDescription = null,
+                        tint = MaterialTheme.colors.background,
+                        modifier = Modifier.size(32.dp)
+                    )
                 }
             }
-            Image(
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_arrow_left),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(Color.White),
-                modifier = Modifier.size(32.dp)
-            )
         }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-fun ColorSelectorClosed(
-    currentColorKey: String,
-    onColorSelectorTap: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        shape = MaterialTheme.shapes.small,
-        onClick = { onColorSelectorTap() },
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.End,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(vertical = 16.dp)
-                .padding(start = 16.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .padding(12.dp)
-                    .height(40.dp)
-                    .fillMaxWidth()
-                    .weight(1f, fill = false)
-                    .clip(MaterialTheme.shapes.small)
-                    .background(LocalGameColors.current.getColorByKey(currentColorKey))
-            )
-            Icon(
-                imageVector = Icons.Rounded.ArrowDropDown,
-                contentDescription = null,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-    }
-}
-
-@Preview(
-    uiMode = UI_MODE_NIGHT_YES,
-    backgroundColor = 0xFF333333,
-    showBackground = true
-)
-@Composable
-fun EditGameScreenPreview() {
-    ScoreKeeperTheme {
-        EditGameScreen(
-            game = PreviewGameObjects[0],
-            saveGame = { _, _ -> },
-            onDeleteTap = {}
-        )
     }
 }
 
 @Preview(uiMode = UI_MODE_NIGHT_YES)
-@Composable
-fun ColorSelectorPreview() {
-    ScoreKeeperTheme {
-        ColorSelectorClosed(
-            currentColorKey = "DEEP_ORANGE",
-            onColorSelectorTap = {}
-        )
-    }
-}
-
 @Preview
 @Composable
-fun SubscoreTitleSectionPreview() {
-    ScoreKeeperTheme {
-        /*SubscoreTitlesSection(
-            titles = PreviewSubscoreTitleEntities.map { it.title },
-            themeColor = deepOrange100
-        )*/
+fun EditGameScreenPreview() {
+    MedianMeepleTheme {
+        Scaffold {
+            it
+            EditGameScreen(
+                game = GameObjectsDefaultPreview[0],
+                saveGame = { _, _ -> },
+                onDeleteTap = {}
+            )
+        }
     }
 }

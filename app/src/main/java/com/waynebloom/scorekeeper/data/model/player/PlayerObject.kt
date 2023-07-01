@@ -3,15 +3,15 @@ package com.waynebloom.scorekeeper.data.model.player
 import androidx.room.Embedded
 import androidx.room.Ignore
 import androidx.room.Relation
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
 import java.math.BigDecimal
 
 class PlayerObject(
     @Embedded
     var entity: PlayerEntity = PlayerEntity(),
 
-    @Relation(parentColumn = "id", entityColumn = "player_id", entity = SubscoreEntity::class)
-    var score: List<SubscoreEntity> = listOf()
+    @Relation(parentColumn = "id", entityColumn = "player_id", entity = CategoryScoreEntity::class)
+    var score: List<CategoryScoreEntity> = listOf()
 ) {
 
     @Ignore

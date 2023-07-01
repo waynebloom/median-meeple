@@ -5,11 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
 import androidx.compose.runtime.Composable
@@ -27,18 +25,22 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.DullColoredTextCard
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.constants.Dimensions
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.data.PlayerObjectsDefaultPreview
+import com.waynebloom.scorekeeper.data.SubscoreEntitiesDefaultPreview
+import com.waynebloom.scorekeeper.data.SubscoreTitleEntitiesDefaultPreview
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
-import com.waynebloom.scorekeeper.enums.ScorekeeperScreen
-import com.waynebloom.scorekeeper.ui.theme.ScoreKeeperTheme
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModel
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModelFactory
-import java.util.*
 
 const val expandedPlayerNameScreenWeight = 0.4f
 const val collapsedPlayerNameScreenWeight = 0.15f
@@ -46,13 +48,12 @@ const val collapsedPlayerNameScreenWeight = 0.15f
 @Composable
 fun DetailedPlayerScoresScreen(
     players: List<PlayerObject>,
-    subscoreTitles: List<SubscoreTitleEntity>,
+    subscoreTitles: List<CategoryTitleEntity>,
     themeColor: Color = MaterialTheme.colors.primary,
     onExistingPlayerTap: (Long) -> Unit,
-    onAddPlayerTap: () -> Unit
 ) {
     val viewModel = viewModel<DetailedPlayerScoresViewModel>(
-        key = ScorekeeperScreen.DetailedPlayerScores.name,
+        key = TopLevelScreen.DetailedPlayerScores.name,
         factory = DetailedPlayerScoresViewModelFactory(
             initialSubscoreTitles = subscoreTitles,
             players = players,
@@ -88,70 +89,83 @@ fun DetailedPlayerScoresScreen(
             themeColor = themeColor
         )
 
-        if (players.isNotEmpty()) {
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    start = 16.dp,
-                    top = 16.dp,
-                    end = 16.dp,
-                    bottom = 80.dp
-                ),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                val detailedPlayers = players.filter { it.entity.showDetailedScore }
-                val simplePlayers = players.filter { !it.entity.showDetailedScore }
+        LazyColumn(
+            contentPadding = PaddingValues(
+                start = Spacing.screenEdge,
+                top = Spacing.screenEdge,
+                end = Spacing.screenEdge,
+                bottom = Spacing.paddingForFab
+            ),
+            verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            val detailedPlayers = players.filter { it.entity.showDetailedScore }
+            val simplePlayers = players.filter { !it.entity.showDetailedScore }
 
-                if (detailedPlayers.isNotEmpty()) {
-                    items(detailedPlayers) { player ->
-                        DetailedPlayerCard(
-                            playerName = player.entity.name,
-                            subscores = viewModel
-                                .getSubscoresInOrder(player)
-                                .slice(subscoreIndicesToDisplay),
-                            isFirstSubscoreDisplayed = isFirstSubscoreDisplayed,
-                            playerIdentifierScreenPortion = playerIdentifierWeight,
-                            scoresScreenPortion = subscoresSectionWeight,
-                            onPlayerTap = { onExistingPlayerTap(player.entity.id) },
-                            getScoreString = { viewModel.getScoreToDisplay(it) }
-                        )
-                    }
-                } else {
-                    item {
-                        DullColoredTextCard(
-                            text = stringResource(id = R.string.text_no_detailed_scores),
-                            color = themeColor
-                        )
-                    }
-                }
+            if (players.isEmpty()) {
 
-                if (simplePlayers.isNotEmpty()) {
-                    item {
-                        Text(
-                            text = stringResource(id = R.string.header_simple_scores)
-                                .uppercase(Locale.getDefault()),
-                            style = MaterialTheme.typography.subtitle1,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.paddingFromBaseline(top = 32.dp, bottom = 8.dp)
-                        )
-                    }
-                }
+                item {
 
-                items(simplePlayers) { player ->
-                    SimplePlayerCard(
-                        playerEntity = player.entity,
-                        playerTotalScoreString = viewModel.getScoreToDisplay(player.entity.score),
-                        themeColor = themeColor,
-                        onPlayerTap = { onExistingPlayerTap(player.entity.id) }
+                    HelperBox(
+                        message = stringResource(R.string.info_empty_players),
+                        type = HelperBoxType.Missing
                     )
                 }
             }
-        } else {
-            DullColoredTextCard(
-                text = stringResource(id = R.string.text_empty_players),
-                color = themeColor,
-                modifier = Modifier.padding(16.dp)
-            )
+
+            item {
+
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+                    if (detailedPlayers.isNotEmpty()) {
+
+                        detailedPlayers.forEach { player ->
+
+                            DetailedPlayerCard(
+                                playerName = player.entity.name,
+                                categoryData = viewModel
+                                    .getSubscoresInOrder(player)
+                                    .slice(subscoreIndicesToDisplay),
+                                isFirstSubscoreDisplayed = isFirstSubscoreDisplayed,
+                                playerIdentifierScreenPortion = playerIdentifierWeight,
+                                scoresScreenPortion = subscoresSectionWeight,
+                                onPlayerTap = { onExistingPlayerTap(player.entity.id) },
+                                getScoreString = { viewModel.getScoreToDisplay(it) }
+                            )
+                        }
+                    } else {
+                        HelperBox(
+                            message = stringResource(R.string.text_no_detailed_scores),
+                            type = HelperBoxType.Missing
+                        )
+                    }
+                }
+            }
+
+            item {
+
+                if (simplePlayers.isNotEmpty()) {
+
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+                        Text(
+                            text = stringResource(id = R.string.header_simple_scores),
+                            style = MaterialTheme.typography.h6,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+
+                        simplePlayers.forEach { player ->
+
+                            SimplePlayerCard(
+                                playerEntity = player.entity,
+                                playerTotalScoreString = viewModel.getScoreToDisplay(player.entity.score),
+                                themeColor = themeColor,
+                                onPlayerTap = { onExistingPlayerTap(player.entity.id) }
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -159,7 +173,6 @@ fun DetailedPlayerScoresScreen(
         activePageNumber = viewModel.activePage + 1,
         totalPages = subscoreIndicesForPageMatrix.size,
         themeColor = themeColor,
-        onAddPlayerTap = onAddPlayerTap,
         onPageUpTap = {
             if (subscoreIndicesForPageMatrix.size - 1 > viewModel.activePage) {
                 viewModel.activePage += 1
@@ -172,7 +185,7 @@ fun DetailedPlayerScoresScreen(
 @Composable
 fun DetailedPlayerCard(
     playerName: String,
-    subscores: List<SubscoreEntity>,
+    categoryData: List<CategoryScoreEntity>,
     isFirstSubscoreDisplayed: Boolean,
     playerIdentifierScreenPortion: Float,
     scoresScreenPortion: Float,
@@ -184,7 +197,7 @@ fun DetailedPlayerCard(
         shape = MaterialTheme.shapes.small,
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = 48.dp)
+            .heightIn(min = Dimensions.Size.minTappableSize)
             .clickable { onPlayerTap() }
     ) {
         Row(
@@ -192,6 +205,7 @@ fun DetailedPlayerCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(vertical = 8.dp, horizontal = 8.dp)
         ) {
+
             Text(
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
@@ -204,11 +218,14 @@ fun DetailedPlayerCard(
                     .weight(playerIdentifierScreenPortion)
                     .padding(horizontal = 8.dp)
             )
+            
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.weight(scoresScreenPortion)
             ) {
-                subscores.forEach { subscore ->
+
+                categoryData.forEach { subscore ->
+
                     Text(
                         text = getScoreString(subscore.value),
                         textAlign = TextAlign.Center,
@@ -294,7 +311,7 @@ fun EditScoresTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(64.dp)
+                .height(Dimensions.Size.topBarHeight)
                 .padding(vertical = 8.dp, horizontal = 24.dp)
         ) {
             Box(
@@ -338,90 +355,67 @@ fun EditScoresPageActions(
     activePageNumber: Int,
     totalPages: Int,
     themeColor: Color,
-    onAddPlayerTap: () -> Unit,
     onPageUpTap: () -> Unit,
     onPageDownTap: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.BottomCenter,
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 16.dp)
     ) {
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp)
-                    .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.small)
-                    .background(
-                        color = themeColor,
-                        shape = MaterialTheme.shapes.small
-                    )
-            ) {
-                Button(
-                    onClick = { onPageDownTap() },
-                    elevation = ButtonDefaults.elevation(
-                        defaultElevation = 0.dp,
-                        pressedElevation = 0.dp
-                    ),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = themeColor,
-                        contentColor = MaterialTheme.colors.onPrimary
-                    ),
-                    modifier = Modifier.fillMaxHeight(),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowLeft,
-                        contentDescription = null
-                    )
-                }
-
-                Text(
-                    text = "$activePageNumber/$totalPages",
-                    color = MaterialTheme.colors.onPrimary,
-                    fontWeight = FontWeight.SemiBold,
-                    style = MaterialTheme.typography.body1,
+                .height(Dimensions.Size.minTappableSize)
+                .shadow(elevation = 2.dp, shape = MaterialTheme.shapes.small)
+                .background(
+                    color = themeColor,
+                    shape = MaterialTheme.shapes.small
                 )
-
-                Button(
-                    onClick = { onPageUpTap() },
-                    elevation = ButtonDefaults.elevation(
-                        defaultElevation = 0.dp,
-                        pressedElevation = 0.dp
-                    ),
-                    colors = ButtonDefaults.buttonColors(
-                        backgroundColor = themeColor,
-                        contentColor = MaterialTheme.colors.onPrimary
-                    ),
-                    modifier = Modifier.fillMaxHeight(),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.KeyboardArrowRight,
-                        contentDescription = null
-                    )
-                }
-            }
-
+                .fillMaxWidth(0.5f)
+        ) {
             Button(
-                onClick = { onAddPlayerTap() },
+                onClick = { onPageDownTap() },
+                elevation = ButtonDefaults.elevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 0.dp
+                ),
                 colors = ButtonDefaults.buttonColors(
                     backgroundColor = themeColor,
                     contentColor = MaterialTheme.colors.onPrimary
                 ),
-                elevation = ButtonDefaults.elevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 2.dp
-                ),
-                modifier = Modifier.height(48.dp)
+                modifier = Modifier.fillMaxHeight(),
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.Add,
+                    imageVector = Icons.Rounded.KeyboardArrowLeft,
+                    contentDescription = null
+                )
+            }
+
+            Text(
+                text = "$activePageNumber/$totalPages",
+                color = MaterialTheme.colors.onPrimary,
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.body1,
+            )
+
+            Button(
+                onClick = { onPageUpTap() },
+                elevation = ButtonDefaults.elevation(
+                    defaultElevation = 0.dp,
+                    pressedElevation = 0.dp
+                ),
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = themeColor,
+                    contentColor = MaterialTheme.colors.onPrimary
+                ),
+                modifier = Modifier.fillMaxHeight(),
+            ) {
+                Icon(
+                    imageVector = Icons.Rounded.KeyboardArrowRight,
                     contentDescription = null
                 )
             }
@@ -432,17 +426,16 @@ fun EditScoresPageActions(
 @Preview(backgroundColor = 0xFFF0EAE2, showBackground = true)
 @Composable
 fun EditScoresScreenPreview() {
-    ScoreKeeperTheme {
+    MedianMeepleTheme {
         DetailedPlayerScoresScreen(
-            players = PreviewPlayerObjects.plus(
-                PreviewPlayerObjects[0].apply {
+            players = PlayerObjectsDefaultPreview.plus(
+                PlayerObjectsDefaultPreview[0].apply {
                     entity.showDetailedScore = true
-                    score = PreviewSubscoreEntities
+                    score = SubscoreEntitiesDefaultPreview
                 }
             ),
-            subscoreTitles = PreviewSubscoreTitleEntities,
+            subscoreTitles = SubscoreTitleEntitiesDefaultPreview,
             onExistingPlayerTap = {},
-            onAddPlayerTap = {}
         )
     }
 }
