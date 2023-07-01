@@ -13,9 +13,9 @@ import com.waynebloom.scorekeeper.data.model.EntityStateBundle
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
@@ -24,8 +24,8 @@ import com.waynebloom.scorekeeper.ext.statefulUpdateElement
 class EditPlayerScoreViewModel(
     playerObject: PlayerObject,
     matchObject: MatchObject,
-    private val playerSubscores: MutableList<SubscoreEntity>,
-    var subscoreTitles: List<SubscoreTitleEntity>,
+    private val categoryScores: MutableList<CategoryScoreEntity>,
+    var categoryTitles: List<CategoryTitleEntity>,
     private val isGameManualRanked: Boolean,
     private val saveCallback: (EntityStateBundle<PlayerEntity>,
         List<SubscoreStateBundle>) -> Unit
@@ -35,26 +35,26 @@ class EditPlayerScoreViewModel(
     private var saveWasTapped = false
 
     var initialPlayerEntity = playerObject.entity
-    var playerRankTextFieldValue by mutableStateOf(TextFieldValue())
+    var playerRank by mutableStateOf(TextFieldValue())
     var playerRankIsValid by mutableStateOf(true)
-    var nameTextFieldValue by mutableStateOf(TextFieldValue(initialPlayerEntity.name))
-    var showDetailedScoreState by mutableStateOf(initialPlayerEntity.showDetailedScore)
-    var subscoreStateBundles by mutableStateOf(listOf<SubscoreStateBundle>())
-    var totalScoreBundle by mutableStateOf(
+    var name by mutableStateOf(TextFieldValue(initialPlayerEntity.name))
+    var isDetailedMode by mutableStateOf(initialPlayerEntity.showDetailedScore)
+    var categoryData by mutableStateOf(listOf<SubscoreStateBundle>())
+    var totalScoreData by mutableStateOf(
         SubscoreStateBundle(
-            entity = SubscoreEntity(
+            entity = CategoryScoreEntity(
                 value = initialPlayerEntity.score
             )
         )
     )
-    var subscoresAreValid by mutableStateOf(true)
-    var nameIsValid by mutableStateOf(nameTextFieldValue.text.isNotBlank())
-    var uncategorizedScoreBundle by mutableStateOf(SubscoreStateBundle(entity = SubscoreEntity()))
+    private var isScoreDataValid by mutableStateOf(true)
+    var isNameValid by mutableStateOf(name.text.isNotBlank())
+    var uncategorizedScoreData by mutableStateOf(SubscoreStateBundle(entity = CategoryScoreEntity()))
 
     // region Initialization
 
     init {
-        subscoreTitles = subscoreTitles.sortedBy { it.position }
+        categoryTitles = categoryTitles.sortedBy { it.position }
         initializeRank(
             playerCount = matchObject.players.size,
             currentPlayerRankValue = playerObject.entity.position
@@ -64,24 +64,24 @@ class EditPlayerScoreViewModel(
     }
 
     private fun initializeRank(playerCount: Int, currentPlayerRankValue: Int) {
-        playerRankTextFieldValue = if (isGameManualRanked && currentPlayerRankValue == 0) {
+        playerRank = if (isGameManualRanked && currentPlayerRankValue == 0) {
             playerEntityNeedsUpdate = true
             TextFieldValue(playerCount.toString())
         } else TextFieldValue(currentPlayerRankValue.toString())
     }
 
     private fun initializeSubscores() {
-        subscoreStateBundles = subscoreTitles
+        categoryData = categoryTitles
             .map { subscoreTitle ->
-                val correspondingSubscore = playerSubscores
-                    .find { it.subscoreTitleId == subscoreTitle.id }
+                val correspondingSubscore = categoryScores
+                    .find { it.categoryTitleId == subscoreTitle.id }
 
                 if (correspondingSubscore != null) {
                     SubscoreStateBundle(entity = correspondingSubscore)
                 } else {
                     SubscoreStateBundle(
-                        entity = SubscoreEntity(
-                            subscoreTitleId = subscoreTitle.id,
+                        entity = CategoryScoreEntity(
+                            categoryTitleId = subscoreTitle.id,
                             playerId = initialPlayerEntity.id
                         ),
                         databaseAction = DatabaseAction.INSERT
@@ -91,7 +91,7 @@ class EditPlayerScoreViewModel(
     }
 
     private fun initializeUncategorizedSubscore(playerObject: PlayerObject) {
-        uncategorizedScoreBundle.apply {
+        uncategorizedScoreData.apply {
             bigDecimal = playerObject.getUncategorizedScore()
             textFieldValue = TextFieldValue(
                 text = playerObject.getUncategorizedScore().toTrimmedScoreString()
@@ -101,36 +101,44 @@ class EditPlayerScoreViewModel(
 
     // endregion
 
-    private fun getPlayerToCommit(): EntityStateBundle<PlayerEntity> {
-        val subscoreSum = subscoreStateBundles.sumOf { it.bigDecimal }
-        val uncategorizedScore = uncategorizedScoreBundle.bigDecimal
-        val scoreTotalAsString = (subscoreSum + uncategorizedScore).toTrimmedScoreString()
+    fun isSubmitButtonEnabled() = isScoreDataValid && isNameValid && playerRankIsValid
 
-        return EntityStateBundle(
-            entity = initialPlayerEntity.copy(
-                name = nameTextFieldValue.text,
-                position = playerRankTextFieldValue.text.toInt(),
-                score = scoreTotalAsString,
-                showDetailedScore = showDetailedScoreState,
-            ),
-            databaseAction = if (playerEntityNeedsUpdate) {
-                DatabaseAction.UPDATE
-            } else DatabaseAction.NO_ACTION
+    fun onCategoryFieldChanged(id: Long, value: TextFieldValue) {
+        categoryData.statefulUpdateElement(
+            predicate = { it.entity.categoryTitleId == id },
+            update = {
+                val textWasChanged = it.textFieldValue.text != value.text
+                if (textWasChanged) {
+                    it.updateDatabaseAction(DatabaseAction.UPDATE)
+                    it.setScoreFromTextValue(value)
+                    playerEntityNeedsUpdate = true
+                } else {
+                    it.textFieldValue = value
+                }
+            }
         )
-    }
-    
-    private fun prepareSubscoreEntitiesForCommit() {
-        subscoreStateBundles.forEach { 
-            it.entity.value = it.bigDecimal.toTrimmedScoreString()
-        }
+
+        updateScoreDataValidity(latestInput = value.text)
+        recalculateTotalScore()
     }
 
-    fun onPlayerRankUpdate(textFieldValue: TextFieldValue) {
-        playerRankTextFieldValue = textFieldValue
-        playerRankIsValid = textFieldValue.text.isNotEmpty()
-            && textFieldValue.text.isDigitsOnly()
-            && textFieldValue.text.toInt() <= 100
-            && textFieldValue.text.toInt() > 0
+    fun onDetailedModeChanged(value: Boolean) {
+        isDetailedMode = value
+        playerEntityNeedsUpdate = true
+    }
+
+    fun onNameChanged(value: TextFieldValue) {
+        name = value
+        isNameValid = value.text.isNotBlank()
+        playerEntityNeedsUpdate = true
+    }
+
+    fun onPlayerRankChanged(value: TextFieldValue) {
+        playerRank = value
+        playerRankIsValid = value.text.isNotEmpty()
+            && value.text.isDigitsOnly()
+            && value.text.toInt() <= 100
+            && value.text.toInt() > 0
         playerEntityNeedsUpdate = true
     }
 
@@ -141,86 +149,76 @@ class EditPlayerScoreViewModel(
         if (!saveWasTapped) {
             saveWasTapped = true
             keyboardController?.hide()
-            saveCallback(getPlayerToCommit(), subscoreStateBundles)
+            saveCallback(getPlayerToCommit(), categoryData)
         }
     }
 
-    fun onSubscoreFieldUpdate(subscoreTitleId: Long, textFieldValue: TextFieldValue) {
-        subscoreStateBundles.statefulUpdateElement(
-            predicate = { it.entity.subscoreTitleId == subscoreTitleId },
-            update = {
-                val textWasChanged = it.textFieldValue.text != textFieldValue.text
-                if (textWasChanged) {
-                    it.updateDatabaseAction(DatabaseAction.UPDATE)
-                    it.setScoreFromTextValue(textFieldValue)
-                    playerEntityNeedsUpdate = true
-                } else {
-                    it.textFieldValue = textFieldValue
-                }
-            }
-        )
-
-        updateSubscoresAreValidState(latestInput = textFieldValue.text)
-        recalculateTotalScore()
-    }
-
-    fun onTotalScoreFieldUpdate(textFieldValue: TextFieldValue) {
-        val scoreBigDecimal = textFieldValue.text.toBigDecimalOrNull()
-        val textWasChanged = totalScoreBundle.textFieldValue.text != textFieldValue.text
+    fun onTotalFieldChanged(value: TextFieldValue) {
+        val scoreBigDecimal = value.text.toBigDecimalOrNull()
+        val textWasChanged = totalScoreData.textFieldValue.text != value.text
 
         if (textWasChanged && scoreBigDecimal != null) {
             val adjustedUncategorizedScore =
-                uncategorizedScoreBundle.bigDecimal + scoreBigDecimal - totalScoreBundle.bigDecimal
-            uncategorizedScoreBundle.setScoreFromBigDecimal(adjustedUncategorizedScore)
+                uncategorizedScoreData.bigDecimal + scoreBigDecimal - totalScoreData.bigDecimal
+            uncategorizedScoreData.setScoreFromBigDecimal(adjustedUncategorizedScore)
             playerEntityNeedsUpdate = true
         }
 
-        totalScoreBundle.setScoreFromTextValue(textFieldValue)
-        updateSubscoresAreValidState(latestInput = textFieldValue.text)
+        totalScoreData.setScoreFromTextValue(value)
+        updateScoreDataValidity(latestInput = value.text)
     }
 
-    fun onUncategorizedFieldUpdate(textFieldValue: TextFieldValue) {
+    fun onUncategorizedFieldChanged(textFieldValue: TextFieldValue) {
         val scoreBigDecimal = textFieldValue.text.toBigDecimalOrNull()
-        val textWasChanged = uncategorizedScoreBundle.textFieldValue.text != textFieldValue.text
+        val textWasChanged = uncategorizedScoreData.textFieldValue.text != textFieldValue.text
 
         if (textWasChanged && scoreBigDecimal != null) {
             val adjustedTotalScore =
-                totalScoreBundle.bigDecimal + scoreBigDecimal - uncategorizedScoreBundle.bigDecimal
-            totalScoreBundle.setScoreFromBigDecimal(adjustedTotalScore)
+                totalScoreData.bigDecimal + scoreBigDecimal - uncategorizedScoreData.bigDecimal
+            totalScoreData.setScoreFromBigDecimal(adjustedTotalScore)
             playerEntityNeedsUpdate = true
         }
 
-        uncategorizedScoreBundle.setScoreFromTextValue(textFieldValue)
-        updateSubscoresAreValidState(latestInput = textFieldValue.text)
+        uncategorizedScoreData.setScoreFromTextValue(textFieldValue)
+        updateScoreDataValidity(latestInput = textFieldValue.text)
     }
 
-    private fun recalculateTotalScore() {
-        if (subscoresAreValid) {
-            val sumOfSubscores = subscoreStateBundles.sumOf { it.bigDecimal } +
-                uncategorizedScoreBundle.bigDecimal
-            totalScoreBundle.setScoreFromBigDecimal(sumOfSubscores)
+    private fun getPlayerToCommit(): EntityStateBundle<PlayerEntity> {
+        val categorySum = categoryData.sumOf { it.bigDecimal }
+        val uncategorizedScore = uncategorizedScoreData.bigDecimal
+        val scoreTotalAsString = (categorySum + uncategorizedScore).toTrimmedScoreString()
+
+        return EntityStateBundle(
+            entity = initialPlayerEntity.copy(
+                name = name.text,
+                position = playerRank.text.toInt(),
+                score = scoreTotalAsString,
+                showDetailedScore = isDetailedMode,
+            ),
+            databaseAction = if (playerEntityNeedsUpdate) {
+                DatabaseAction.UPDATE
+            } else DatabaseAction.NO_ACTION
+        )
+    }
+
+    private fun prepareSubscoreEntitiesForCommit() {
+        categoryData.forEach {
+            it.entity.value = it.bigDecimal.toTrimmedScoreString()
         }
     }
 
-    fun setName(name: TextFieldValue) {
-        nameIsValid = name.text.isNotBlank()
-        nameTextFieldValue = name
-        playerEntityNeedsUpdate = true
+    private fun recalculateTotalScore() {
+        if (isScoreDataValid) {
+            val sumOfSubscores = categoryData.sumOf { it.bigDecimal } +
+                uncategorizedScoreData.bigDecimal
+            totalScoreData.setScoreFromBigDecimal(sumOfSubscores)
+        }
     }
 
-    fun setShowDetailedScore(showDetailedScore: Boolean) {
-        showDetailedScoreState = showDetailedScore
-        playerEntityNeedsUpdate = true
-    }
-
-    fun isSubmitButtonEnabled() = subscoresAreValid && nameIsValid && playerRankIsValid
-
-    fun shouldShowDetailedModeWarning() = showDetailedScoreState && subscoreTitles.isEmpty()
-
-    private fun updateSubscoresAreValidState(latestInput: String) {
-        subscoresAreValid = if (latestInput.toBigDecimalOrNull() != null) {
-            subscoreStateBundles
-                .plus(listOf(totalScoreBundle, uncategorizedScoreBundle))
+    private fun updateScoreDataValidity(latestInput: String) {
+        isScoreDataValid = if (latestInput.toBigDecimalOrNull() != null) {
+            categoryData
+                .plus(listOf(totalScoreData, uncategorizedScoreData))
                 .all { it.validityState == ScoreStringValidityState.Valid }
         } else false
     }
@@ -229,8 +227,8 @@ class EditPlayerScoreViewModel(
 class EditPlayerScoreViewModelFactory(
     private val playerObject: PlayerObject,
     private val matchObject: MatchObject,
-    private val playerSubscores: List<SubscoreEntity>,
-    private val subscoreTitles: List<SubscoreTitleEntity>,
+    private val playerSubscores: List<CategoryScoreEntity>,
+    private val subscoreTitles: List<CategoryTitleEntity>,
     private val isGameManualRanked: Boolean,
     private val saveCallback: (EntityStateBundle<PlayerEntity>,
         List<SubscoreStateBundle>) -> Unit
@@ -238,8 +236,8 @@ class EditPlayerScoreViewModelFactory(
     override fun <T : ViewModel> create(modelClass: Class<T>): T = EditPlayerScoreViewModel(
         playerObject = playerObject,
         matchObject = matchObject,
-        playerSubscores = playerSubscores.toMutableList(),
-        subscoreTitles = subscoreTitles,
+        categoryScores = playerSubscores.toMutableList(),
+        categoryTitles = subscoreTitles,
         isGameManualRanked = isGameManualRanked,
         saveCallback = saveCallback
     ) as T

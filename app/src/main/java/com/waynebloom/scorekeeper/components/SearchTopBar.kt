@@ -24,15 +24,18 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.constants.Dimensions
 
 @Composable
 fun SearchTopBar(
     isSearchBarFocused: Boolean,
     searchString: String,
     themeColor: Color,
+    onClearFiltersTap: () -> Unit,
     onSearchBarFocusChanged: (Boolean) -> Unit,
     onSearchStringChanged: (String) -> Unit,
     onCloseTap: () -> Unit
@@ -53,7 +56,7 @@ fun SearchTopBar(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp),
+            .height(Dimensions.Size.topBarHeight),
     ) {
 
         Icon(
@@ -88,10 +91,17 @@ fun SearchTopBar(
         }
 
         CustomIconButton(
+            painter = painterResource(id = R.drawable.ic_search_off),
+            backgroundColor = Color.Transparent,
+            foregroundColor = themeColor,
+            onTap = onClearFiltersTap
+        )
+
+        CustomIconButton(
             imageVector = Icons.Rounded.Close,
             backgroundColor = Color.Transparent,
             foregroundColor = themeColor,
-            onTap = { onCloseTap() }
+            onTap = onCloseTap
         )
     }
 }

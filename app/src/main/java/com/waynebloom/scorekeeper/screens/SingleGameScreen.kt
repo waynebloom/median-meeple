@@ -2,12 +2,6 @@ package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.animation.SizeTransform
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.with
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +24,7 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -45,11 +40,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.GameObjectsDefaultPreview
+import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
 import com.waynebloom.scorekeeper.components.SearchTopBar
+import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
@@ -57,6 +53,9 @@ import com.waynebloom.scorekeeper.enums.MenuOption
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.fadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModelFactory
 
@@ -79,6 +78,7 @@ fun SingleGameScreen(
     )
 
     val themeColor = LocalGameColors.current.getColorByKey(gameObject.entity.color)
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -88,15 +88,16 @@ fun SingleGameScreen(
                     searchString = viewModel.searchString,
                     selectedTab = viewModel.selectedTab,
                     sortDirection = viewModel.sortDirection,
-                    sortingMode = viewModel.sortingMode,
+                    sortingMode = viewModel.sortMode,
                     state = viewModel.matchesTopBarState,
                     title = viewModel.screenTitle,
                     themeColor = themeColor,
+                    onClearFiltersTap = { viewModel.clearFilters() },
                     onEditGameTap = onEditGameTap,
                     onSearchBarFocusChanged = { viewModel.isSearchBarFocused = it },
-                    onSearchStringChanged = { viewModel.searchString = it },
-                    onSortDirectionChanged = { viewModel.sortDirection = it },
-                    onSortModeChanged = { viewModel.sortingMode = it },
+                    onSearchStringChanged = { viewModel.onSearchStringChanged(it, coroutineScope) },
+                    onSortDirectionChanged = { viewModel.onSortDirectionChanged(it, coroutineScope) },
+                    onSortModeChanged = { viewModel.onSortModeChanged(it, coroutineScope) },
                     onStateChanged = { viewModel.matchesTopBarState = it },
                     onTabSelected = { viewModel.selectedTab = it },
                 )
@@ -116,23 +117,20 @@ fun SingleGameScreen(
             MatchesForSingleGameScreen(
                 currentAd = currentAd,
                 gameEntity = gameObject.entity,
-                listState = viewModel.listState,
-                matches = viewModel.matches,
+                lazyListState = viewModel.matchesLazyListState,
+                listState = viewModel.matchesListState,
+                matches = viewModel.matchesToDisplay,
                 searchString = viewModel.searchString,
                 themeColor = themeColor,
                 onNewMatchTap = onNewMatchTap,
                 onSingleMatchTap = onSingleMatchTap,
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(vertical = 16.dp),
+                modifier = Modifier.padding(innerPadding),
             )
         } else {
             GameStatisticsScreen(
                 gameObject = gameObject,
                 themeColor = themeColor,
-                modifier = Modifier
-                    .padding(innerPadding)
-                    .padding(vertical = 16.dp),
+                modifier = Modifier.padding(innerPadding),
             )
         }
     }
@@ -156,7 +154,7 @@ fun GameStatisticsTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .padding(start = 16.dp, end = 8.dp)
-                .defaultMinSize(minHeight = 64.dp)
+                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
                 .fillMaxWidth()
         ) {
 
@@ -184,7 +182,7 @@ fun GameStatisticsTopBar(
     }
 }
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MatchesForSingleGameTopBar(
     isSearchBarFocused: Boolean,
@@ -195,6 +193,7 @@ fun MatchesForSingleGameTopBar(
     state: MatchesForSingleGameTopBarState,
     themeColor: Color,
     title: String,
+    onClearFiltersTap: () -> Unit,
     onEditGameTap: () -> Unit,
     onSearchBarFocusChanged: (Boolean) -> Unit,
     onSearchStringChanged: (String) -> Unit,
@@ -214,23 +213,20 @@ fun MatchesForSingleGameTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .padding(start = 16.dp, end = 8.dp)
-                .defaultMinSize(minHeight = 64.dp)
+                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
                 .fillMaxWidth()
         ) {
 
             AnimatedContent(
                 targetState = state,
                 transitionSpec = {
-                    val enterTransformWithDelay = fadeIn(animationSpec = tween(durationMillis = 300, delayMillis = 200))
-                    val enterTransform = fadeIn(animationSpec = tween(durationMillis = 300))
-                    val exitTransformWithDelay = fadeOut(animationSpec = tween(durationMillis = 300, delayMillis = 200))
-                    val exitTransform = fadeOut(animationSpec = tween(durationMillis = 300))
-                    if (
-                        targetState == MatchesForSingleGameTopBarState.SortMenuOpen
-                        || initialState == MatchesForSingleGameTopBarState.SortMenuOpen
-                    ) {
-                        (enterTransformWithDelay with exitTransformWithDelay).using(SizeTransform())
-                    } else enterTransform with exitTransform
+                    when {
+                        MatchesForSingleGameTopBarState.Default isTransitioningTo
+                            MatchesForSingleGameTopBarState.SearchBarOpen -> fadeInWithFadeOut
+                        MatchesForSingleGameTopBarState.SearchBarOpen isTransitioningTo
+                            MatchesForSingleGameTopBarState.Default -> fadeInWithFadeOut
+                        else -> delayedFadeInWithFadeOut using sizeTransformWithDelay
+                    }
                 }
             ) { state ->
 
@@ -250,6 +246,7 @@ fun MatchesForSingleGameTopBar(
                             isSearchBarFocused = isSearchBarFocused,
                             searchString = searchString,
                             themeColor = themeColor,
+                            onClearFiltersTap = onClearFiltersTap,
                             onSearchBarFocusChanged = onSearchBarFocusChanged,
                             onSearchStringChanged = onSearchStringChanged,
                             onCloseTap = {
@@ -289,12 +286,11 @@ fun MatchesForSingleGameDefaultActionBar(
     onSortTap: () -> Unit,
     onEditGameTap: () -> Unit,
 ) {
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
+        modifier = Modifier.fillMaxWidth().height(Dimensions.Size.topBarHeight)
     ) {
 
         Text(
@@ -422,7 +418,7 @@ fun RadioButtonOption(
                 unselectedColor = MaterialTheme.colors.onSurface
             )
         )
-        Text(text = stringResource(menuOption.label),)
+        Text(text = stringResource(menuOption.label))
     }
 }
 

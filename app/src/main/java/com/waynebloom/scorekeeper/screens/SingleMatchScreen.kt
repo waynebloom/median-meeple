@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.animation.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -22,23 +23,21 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
-import com.waynebloom.scorekeeper.components.DullColoredTextCard
-import com.waynebloom.scorekeeper.components.HeadedSection
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.game.GameObject
@@ -50,7 +49,7 @@ import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.toShortScoreFormat
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.ui.theme.orange100
+import com.waynebloom.scorekeeper.ui.theme.color.orange100
 import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModel
 import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModelFactory
 import java.util.*
@@ -89,64 +88,53 @@ fun SingleMatchScreen(
         backgroundColor = themeColor.copy(0.3f)
     )
 
-    Column(
-        modifier = modifier
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp)
-    ) {
+    Scaffold(
+        topBar = {
+            SingleMatchScreenTopBar(
+                title = game.entity.name,
+                themeColor = themeColor,
+                onDoneTap = { viewModel.onSaveTap(keyboardController, focusManager) },
+                onDeleteTap = { onDeleteMatchTap(match.entity.id) },
+            )
+        },
+        modifier = modifier,
+    ) { innerPadding ->
 
-        SingleMatchScreenTopBar(
-            title = game.entity.name,
-            themeColor = themeColor,
-            onDoneTap = { viewModel.onSaveTap(keyboardController, focusManager) },
-            onDeleteTap = { onDeleteMatchTap(match.entity.id) }
-        )
-
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier
-                .padding(vertical = 16.dp)
-                .verticalScroll(rememberScrollState())
+        LazyColumn(
+            contentPadding = PaddingValues(
+                horizontal = Spacing.screenEdge,
+                vertical = Spacing.sectionContent),
+            verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+            modifier = Modifier.padding(innerPadding),
         ) {
 
-            SingleMatchScreenInfoBox(gameName = game.entity.name, themeColor = themeColor)
+            item {
 
-            PlayersSection(
-                players = match.players.map { it.entity },
-                scoringMode = game.getScoringMode(),
-                showDetailedScoresButton = viewModel.shouldShowDetailedScoresButton(
+                PlayersSection(
                     players = match.players.map { it.entity },
-                    subscoreTitles = game.subscoreTitles
-                ),
-                showMaximumPlayersErrorState = viewModel.showMaximumPlayersErrorState,
-                themeColor = themeColor,
-                onAddPlayerTap = { viewModel.onAddPlayerTap(match.players.size) },
-                onPlayerTap = onPlayerTap,
-                onViewDetailedScoresTap = onViewDetailedScoresTap
-            )
+                    scoringMode = game.getScoringMode(),
+                    showDetailedScoresButton = viewModel.shouldShowDetailedScoresButton(
+                        players = match.players.map { it.entity },
+                        subscoreTitles = game.subscoreTitles
+                    ),
+                    showMaximumPlayersErrorState = viewModel.showMaximumPlayersError,
+                    themeColor = themeColor,
+                    onAddPlayerTap = { viewModel.onAddPlayerTap(match.players.size) },
+                    onPlayerTap = onPlayerTap,
+                    onViewDetailedScoresTap = onViewDetailedScoresTap
+                )
+            }
 
-            HeadedSection(
-                title = R.string.header_other,
-                topPadding = 40
-            ) {
-                CompositionLocalProvider(
-                    LocalTextSelectionColors.provides(textSelectionColors)
-                ) {
-                    OutlinedTextField(
-                        value = viewModel.notesState,
-                        label = { Text(text = stringResource(id = R.string.field_notes)) },
-                        colors = textFieldColors,
-                        onValueChange = { viewModel.updateNotes(it) },
-                        keyboardOptions = KeyboardOptions(
-                            autoCorrect = true,
-                            capitalization = KeyboardCapitalization.Sentences,
-                            imeAction = ImeAction.Done,
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = { viewModel.onSaveTap(keyboardController, focusManager) }
-                        ),
-                        maxLines = 8,
-                        modifier = Modifier.fillMaxWidth()
+
+            item {
+
+                CompositionLocalProvider(LocalTextSelectionColors.provides(textSelectionColors)) {
+
+                    OtherSection(
+                        notes = viewModel.notes,
+                        textFieldColors = textFieldColors,
+                        onNotesChanged = { viewModel.onNotesChanged(it) },
+                        onSaveTap = { viewModel.onSaveTap(keyboardController, focusManager) }
                     )
                 }
             }
@@ -161,88 +149,45 @@ private fun SingleMatchScreenTopBar(
     onDoneTap: () -> Unit,
     onDeleteTap: () -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.h5,
-            color = themeColor
-        )
+    Column {
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 16.dp, end = 8.dp)
+                .defaultMinSize(minHeight = Size.topBarHeight)
+                .fillMaxWidth()
+        ) {
 
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.background(
-                    MaterialTheme.colors.surface,
-                    MaterialTheme.shapes.small
-                )
-            ) {
+            Text(
+                text = title,
+                color = themeColor,
+                style = MaterialTheme.typography.h5,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
+            )
+
+            Row {
 
                 CustomIconButton(
                     imageVector = Icons.Rounded.Done,
+                    backgroundColor = Color.Transparent,
                     foregroundColor = themeColor,
                     onTap = onDoneTap,
                 )
 
                 CustomIconButton(
                     imageVector = Icons.Rounded.Delete,
+                    backgroundColor = Color.Transparent,
                     foregroundColor = MaterialTheme.colors.error,
                     onTap = onDeleteTap,
                 )
             }
         }
-    }
-}
 
-@Composable
-private fun SingleMatchScreenInfoBox(
-    gameName: String,
-    themeColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colors.onSurface,
-                shape = MaterialTheme.shapes.small
-            )
-            .fillMaxWidth()
-    ) {
-        val firstText = stringResource(id = R.string.info_single_match_screen_helper_1)
-        val secondText = stringResource(id = R.string.info_single_match_screen_helper_2)
-
-        Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Info,
-                contentDescription = null,
-                modifier = Modifier.padding(top = 2.dp),
-            )
-
-            Text(
-                text = buildAnnotatedString {
-                    append(firstText)
-                    withStyle(
-                        style = SpanStyle(
-                            color = themeColor,
-                            fontStyle = FontStyle.Italic
-                        ),
-                        block = { append(" $gameName ") }
-                    )
-                    append(secondText)
-                },
-            )
-        }
+        Divider()
     }
 }
 
@@ -263,15 +208,14 @@ private fun PlayersSectionHeader(
     ) {
 
         Text(
-            text = stringResource(id = R.string.header_players)
-                .uppercase(Locale.getDefault()),
-            style = MaterialTheme.typography.subtitle1,
+            text = stringResource(id = R.string.header_players),
+            style = MaterialTheme.typography.h6,
             fontWeight = FontWeight.SemiBold
         )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.medium)
         ) {
 
             if (showDetailedScoresButton) {
@@ -300,36 +244,6 @@ private fun PlayersSectionHeader(
 }
 
 @Composable
-private fun MaximumPlayersReachedErrorBox(modifier: Modifier = Modifier) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colors.error,
-                shape = MaterialTheme.shapes.small
-            )
-            .fillMaxWidth()
-    ) {
-
-        Row(
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Icon(
-                imageVector = Icons.Rounded.Warning,
-                tint = MaterialTheme.colors.error,
-                contentDescription = null,
-                modifier = Modifier.padding(top = 2.dp),
-            )
-
-            Text(text = stringResource(id = R.string.error_maximum_players_reached))
-        }
-    }
-}
-
-@Composable
 fun PlayersSection(
     players: List<PlayerEntity>,
     scoringMode: ScoringMode,
@@ -340,7 +254,7 @@ fun PlayersSection(
     onPlayerTap: (Long) -> Unit,
     onViewDetailedScoresTap: () -> Unit
 ) {
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
         PlayersSectionHeader(
             showDetailedScoresButton = showDetailedScoresButton,
@@ -350,13 +264,10 @@ fun PlayersSection(
             onViewDetailedScoresTap = onViewDetailedScoresTap,
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (showMaximumPlayersErrorState) {
-            MaximumPlayersReachedErrorBox()
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
+        if (showMaximumPlayersErrorState) HelperBox(
+            message = stringResource(id = R.string.error_maximum_players_reached),
+            type = HelperBoxType.Error,
+        )
 
         if (players.isNotEmpty()) {
             val playersInRankOrder = when(scoringMode) {
@@ -365,7 +276,7 @@ fun PlayersSection(
                 ScoringMode.Manual -> players.sortedBy { it.position }
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
                 playersInRankOrder.forEachIndexed { index, player ->
                     val displayedRank = if (scoringMode == ScoringMode.Manual) {
@@ -381,11 +292,47 @@ fun PlayersSection(
                 }
             }
         } else {
-            DullColoredTextCard(
-                text = stringResource(id = R.string.text_empty_players),
-                color = themeColor
+
+            HelperBox(
+                message = stringResource(id = R.string.info_empty_players),
+                type = HelperBoxType.Missing
             )
         }
+    }
+}
+
+@Composable
+private fun OtherSection(
+    notes: String,
+    textFieldColors: TextFieldColors,
+    onNotesChanged: (String) -> Unit,
+    onSaveTap: () -> Unit,
+) {
+
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+        Text(
+            text = stringResource(id = R.string.header_other),
+            style = MaterialTheme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        OutlinedTextField(
+            value = notes,
+            label = { Text(text = stringResource(id = R.string.field_notes)) },
+            colors = textFieldColors,
+            onValueChange = { onNotesChanged(it) },
+            keyboardOptions = KeyboardOptions(
+                autoCorrect = true,
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done,
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { onSaveTap() }
+            ),
+            maxLines = 8,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
 

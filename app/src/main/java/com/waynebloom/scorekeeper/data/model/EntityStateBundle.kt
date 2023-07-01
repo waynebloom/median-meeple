@@ -6,9 +6,12 @@ class EntityStateBundle<T>(
     var entity: T,
     databaseAction: DatabaseAction = DatabaseAction.NO_ACTION
 ) {
+
     var databaseAction = databaseAction
         set(value) {
-            if (field == DatabaseAction.NO_ACTION) field = value
+            if (databaseAction == DatabaseAction.NO_ACTION || value == DatabaseAction.DELETE) {
+                field = value
+            }
         }
 
     fun copy(

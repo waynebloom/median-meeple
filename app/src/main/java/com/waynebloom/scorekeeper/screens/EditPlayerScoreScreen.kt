@@ -1,16 +1,12 @@
 package com.waynebloom.scorekeeper.screens
 
-import android.annotation.SuppressLint
-import androidx.annotation.StringRes
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Delete
@@ -28,27 +24,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.waynebloom.scorekeeper.MatchObjectsDefaultPreview
+import com.waynebloom.scorekeeper.data.MatchObjectsDefaultPreview
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
-import com.waynebloom.scorekeeper.components.HeadedSection
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescription
+import com.waynebloom.scorekeeper.constants.Dimensions.Size
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
-import com.waynebloom.scorekeeper.ext.onFocusSelectAll
-import com.waynebloom.scorekeeper.ui.theme.deepOrange500
+import com.waynebloom.scorekeeper.ui.theme.color.deepOrange500
+import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.viewmodel.EditPlayerScoreViewModel
 import com.waynebloom.scorekeeper.viewmodel.EditPlayerScoreViewModelFactory
 
@@ -57,7 +60,7 @@ import com.waynebloom.scorekeeper.viewmodel.EditPlayerScoreViewModelFactory
 fun EditPlayerScoreScreen(
     initialPlayer: PlayerObject,
     matchObject: MatchObject,
-    subscoreTitles: List<SubscoreTitleEntity>,
+    subscoreTitles: List<CategoryTitleEntity>,
     isGameManualRanked: Boolean,
     themeColor: Color,
     onSaveTap: (EntityStateBundle<PlayerEntity>, List<SubscoreStateBundle>) -> Unit,
@@ -80,100 +83,79 @@ fun EditPlayerScoreScreen(
         focusedBorderColor = themeColor,
         focusedLabelColor = themeColor,
         cursorColor = themeColor,
-        disabledBorderColor = themeColor.copy(0.75f)
     )
 
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 16.dp)
-            .padding(top = 16.dp)
-    ) {
+    Scaffold(
+        topBar = {
+            EditPlayerScoreScreenTopBar(
+                title = initialPlayer.entity.name,
+                themeColor = themeColor,
+                submitButtonEnabled = viewModel.isSubmitButtonEnabled(),
+                onDoneTap = { viewModel.onSaveTap(keyboardController) },
+                onDeleteTap = { onDeleteTap(initialPlayer.entity.id) }
+            )
+        }
+    ) { contentPadding ->
 
-        EditPlayerScoreScreenTopBar(
-            title = initialPlayer.entity.name,
-            themeColor = themeColor,
-            submitButtonEnabled = viewModel.isSubmitButtonEnabled(),
-            onDoneTap = { viewModel.onSaveTap(keyboardController) },
-            onDeleteTap = { onDeleteTap(initialPlayer.entity.id) },
-        )
-
-        Column(
-            modifier = Modifier
-                .padding(bottom = 16.dp)
-                .verticalScroll(rememberScrollState())
+        CompositionLocalProvider(
+            LocalTextSelectionColors.provides(
+                TextSelectionColors(
+                    handleColor = themeColor,
+                    backgroundColor = themeColor.copy(0.3f)
+                )
+            )
         ) {
 
-            EditPlayerScoreScreenInfoBox(
-                showDetailedModeWarning = viewModel.shouldShowDetailedModeWarning(),
-                showRankInfo = isGameManualRanked
-            )
-
-            CompositionLocalProvider(
-                LocalTextSelectionColors.provides(
-                    TextSelectionColors(
-                        handleColor = themeColor,
-                        backgroundColor = themeColor.copy(0.3f)
-                    )
-                )
+            LazyColumn(
+                contentPadding = PaddingValues(
+                    horizontal = Spacing.screenEdge,
+                    vertical = Spacing.betweenSections
+                ),
+                verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+                modifier = Modifier.padding(contentPadding),
             ) {
-                HeadedSection(
-                    title = R.string.header_player_info,
-                    topPadding = 32
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        OutlinedTextFieldWithErrorDescription(
-                            textFieldValue = viewModel.nameTextFieldValue,
-                            onValueChange = { viewModel.setName(it) },
-                            label = { Text(text = stringResource(id = R.string.field_name)) },
-                            isError = !viewModel.nameIsValid,
-                            colors = textFieldColors,
-                            keyboardOptions = KeyboardOptions(
-                                imeAction = ImeAction.Next
-                            ),
-                            keyboardActions = KeyboardActions(
-                                onNext = { focusManager.moveFocus(FocusDirection.Next) }
-                            ),
-                            errorDescription = R.string.error_empty_name,
-                            selectAllOnFocus = true
+
+                item {
+
+                    InformationSection(
+                        name = viewModel.name,
+                        isError = !viewModel.isNameValid,
+                        focusManager = focusManager,
+                        textFieldColors = textFieldColors,
+                        onNameChanged = { viewModel.onNameChanged(it) },
+                    )
+                }
+
+                if (isGameManualRanked) {
+                    item {
+
+                        RankingSection(
+                            playerRankTextFieldValue = viewModel.playerRank,
+                            showPlayerRankError = !viewModel.playerRankIsValid,
+                            textFieldColors = textFieldColors,
+                            focusManager = focusManager,
+                            onPlayerRankUpdate = { viewModel.onPlayerRankChanged(it) },
                         )
                     }
                 }
-                
-                PlayerRankSection(
-                    playerRankTextFieldValue = viewModel.playerRankTextFieldValue,
-                    showPlayerRankError = !viewModel.playerRankIsValid,
-                    showManualRankingField = isGameManualRanked,
-                    textFieldColors = textFieldColors,
-                    focusManager = focusManager,
-                    onPlayerRankUpdate = { viewModel.onPlayerRankUpdate(it) },
-                )
 
-                HeadedSection(title = R.string.header_player_scores) {
-                    DetailedScoreSwitchRow(
-                        checked = viewModel.showDetailedScoreState,
-                        onCheckedChange = { viewModel.setShowDetailedScore(it) },
-                        themeColor = themeColor
+                item {
+
+                    ScoreSection(
+                        categoryData = viewModel.categoryData,
+                        categoryTitles = viewModel.categoryTitles,
+                        totalScoreData = viewModel.totalScoreData,
+                        uncategorizedScoreData = viewModel.uncategorizedScoreData,
+                        isDetailedMode = viewModel.isDetailedMode,
+                        themeColor = themeColor,
+                        textFieldColors = textFieldColors,
+                        onDetailedModeChanged = { viewModel.onDetailedModeChanged(it) },
+                        onDoneTap = { viewModel.onSaveTap(keyboardController) },
+                        onFieldChanged = { id, value -> viewModel.onCategoryFieldChanged(id, value) },
+                        onNextTap = { focusManager.moveFocus(FocusDirection.Next) },
+                        onTotalFieldChanged = { viewModel.onTotalFieldChanged(it) },
+                        onUncategorizedFieldChanged = { viewModel.onUncategorizedFieldChanged(it) }
                     )
-
-                    if (viewModel.showDetailedScoreState) {
-                        SubscoreFields(
-                            subscoreStateBundles = viewModel.subscoreStateBundles,
-                            subscoreTitles = viewModel.subscoreTitles,
-                            textFieldColors = textFieldColors,
-                            uncategorizedScoreBundle = viewModel.uncategorizedScoreBundle,
-                            focusManager = focusManager,
-                            onDoneTap = { viewModel.onSaveTap(keyboardController) },
-                            onSubscoreTextFieldValueChange = { id, textFieldValue -> viewModel.onSubscoreFieldUpdate(id, textFieldValue) },
-                            onUncategorizedTextFieldValueChange = { viewModel.onUncategorizedFieldUpdate(it) }
-                        )
-                    } else {
-                        TotalScoreField(
-                            totalScoreBundle = viewModel.totalScoreBundle,
-                            textFieldColors = textFieldColors,
-                            onChange = { viewModel.onTotalScoreFieldUpdate(it) },
-                            onDoneTap = { viewModel.onSaveTap(keyboardController) }
-                        )
-                    }
                 }
             }
         }
@@ -188,99 +170,192 @@ private fun EditPlayerScoreScreenTopBar(
     onDoneTap: () -> Unit,
     onDeleteTap: () -> Unit,
 ) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.h5,
-            color = themeColor
-        )
+    Column {
 
         Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+            modifier = Modifier
+                .padding(start = 16.dp, end = 8.dp)
+                .defaultMinSize(minHeight = Size.topBarHeight)
+                .fillMaxWidth(),
         ) {
 
-            CustomIconButton(
-                onTap = onDoneTap,
-                enabled = submitButtonEnabled,
-                foregroundColor = themeColor,
-                imageVector = Icons.Rounded.Done
+            Text(
+                text = title,
+                color = themeColor,
+                style = MaterialTheme.typography.h5,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1,
             )
 
-            CustomIconButton(
-                onTap = onDeleteTap,
-                foregroundColor = MaterialTheme.colors.error,
-                imageVector = Icons.Rounded.Delete
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+
+                CustomIconButton(
+                    imageVector = Icons.Rounded.Done,
+                    backgroundColor = Color.Transparent,
+                    foregroundColor = themeColor,
+                    enabled = submitButtonEnabled,
+                    onTap = onDoneTap
+                )
+
+                CustomIconButton(
+                    imageVector = Icons.Rounded.Delete,
+                    backgroundColor = Color.Transparent,
+                    foregroundColor = MaterialTheme.colors.error,
+                    onTap = onDeleteTap
+                )
+            }
         }
+
+        Divider()
     }
 }
 
 @Composable
-private fun EditPlayerScoreScreenInfoBox(
-    showDetailedModeWarning: Boolean,
-    showRankInfo: Boolean,
-    modifier: Modifier = Modifier,
+private fun InformationSection(
+    name: TextFieldValue,
+    isError: Boolean,
+    focusManager: FocusManager,
+    textFieldColors: TextFieldColors,
+    onNameChanged: (TextFieldValue) -> Unit,
 ) {
-    Box(
-        contentAlignment = Alignment.Center,
-        modifier = modifier
-            .padding(vertical = 16.dp)
-            .border(
-                width = 1.dp,
-                color = MaterialTheme.colors.onSurface,
-                shape = MaterialTheme.shapes.small
-            )
-            .fillMaxWidth()
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.padding(16.dp)
+
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+        Text(
+            text = stringResource(id = R.string.header_player_info),
+            style = MaterialTheme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        OutlinedTextFieldWithErrorDescription(
+            textFieldValue = name,
+            onValueChange = { onNameChanged(it) },
+            label = { Text(text = stringResource(id = R.string.field_name)) },
+            isError = isError,
+            colors = textFieldColors,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onNext = { focusManager.moveFocus(FocusDirection.Next) }
+            ),
+            errorDescription = R.string.error_empty_name,
+            selectAllOnFocus = true
+        )
+    }
+}
+
+@Composable
+private fun RankingSection(
+    playerRankTextFieldValue: TextFieldValue,
+    showPlayerRankError: Boolean,
+    textFieldColors: TextFieldColors,
+    focusManager: FocusManager,
+    onPlayerRankUpdate: (TextFieldValue) -> Unit,
+) {
+
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+        Text(
+            text = stringResource(id = R.string.header_player_ranking),
+            style = MaterialTheme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        HelperBox(
+            message = stringResource(R.string.helper_player_score_screen_rank),
+            type = HelperBoxType.Info,
+        )
+
+        OutlinedTextFieldWithErrorDescription(
+            textFieldValue = playerRankTextFieldValue,
+            onValueChange = { onPlayerRankUpdate(it) },
+            groupModifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 8.dp),
+            label = { Text(text = stringResource(id = R.string.field_rank)) },
+            isError = showPlayerRankError,
+            colors = textFieldColors,
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { focusManager.moveFocus(FocusDirection.Next) }
+            ),
+            errorDescription = R.string.error_invalid_rank,
+            selectAllOnFocus = true
+        )
+    }
+}
+
+@Composable
+private fun ScoreSection(
+    categoryData: List<SubscoreStateBundle>,
+    categoryTitles: List<CategoryTitleEntity>,
+    totalScoreData: SubscoreStateBundle,
+    uncategorizedScoreData: SubscoreStateBundle,
+    isDetailedMode: Boolean,
+    themeColor: Color,
+    textFieldColors: TextFieldColors,
+    onDetailedModeChanged: (Boolean) -> Unit,
+    onDoneTap: () -> Unit,
+    onFieldChanged: (Long, TextFieldValue) -> Unit,
+    onNextTap: () -> Unit,
+    onTotalFieldChanged: (TextFieldValue) -> Unit,
+    onUncategorizedFieldChanged: (TextFieldValue) -> Unit,
+) {
+
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+        Text(
+            text = stringResource(id = R.string.header_player_scores),
+            style = MaterialTheme.typography.h6,
+            fontWeight = FontWeight.SemiBold,
+        )
+
+        DetailedScoreSwitchRow(
+            checked = isDetailedMode,
+            onCheckedChange = { onDetailedModeChanged(it) },
+            themeColor = themeColor,
+        )
+
+        AnimatedContent(
+            targetState = isDetailedMode,
+            transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay }
         ) {
-            Row(
-                verticalAlignment = Alignment.Top,
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-            ) {
-                var infoText = stringResource(id = R.string.info_player_score_screen_helper)
-                if (showRankInfo) {
-                    infoText += ' ' +
-                        stringResource(id = R.string.info_player_score_screen_rank_helper)
-                }
 
-                Icon(
-                    imageVector = Icons.Rounded.Info,
-                    contentDescription = null,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
+            if (it) {
 
-                Text(
-                    text = infoText,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-            }
+                if (categoryTitles.isNotEmpty()) {
 
-            if (showDetailedModeWarning) {
-                Row(
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Warning,
-                        tint = MaterialTheme.colors.error,
-                        contentDescription = null,
-                        modifier = Modifier.padding(top = 2.dp),
+                    CategoryFields(
+                        categoryData = categoryData,
+                        categoryTitles = categoryTitles,
+                        textFieldColors = textFieldColors,
+                        uncategorizedScoreData = uncategorizedScoreData,
+                        onDoneTap = onDoneTap,
+                        onNextTap = onNextTap,
+                        onFieldChanged = onFieldChanged,
+                        onUncategorizedFieldChanged = onUncategorizedFieldChanged,
                     )
+                } else {
 
-                    Text(
-                        text = stringResource(id = R.string.info_player_score_screen_warning),
-                        modifier = Modifier.weight(1f, fill = false),
+                    HelperBox(
+                        message = stringResource(R.string.helper_player_score_screen_detailed_mode),
+                        type = HelperBoxType.Error,
                     )
                 }
+            } else {
+                TotalScoreField(
+                    totalScoreData = totalScoreData,
+                    textFieldColors = textFieldColors,
+                    onChanged = onTotalFieldChanged,
+                    onDoneTap = onDoneTap,
+                )
             }
         }
     }
@@ -289,16 +364,15 @@ private fun EditPlayerScoreScreenInfoBox(
 @Composable
 private fun DetailedScoreSwitchRow(
     checked: Boolean,
+    themeColor: Color,
     onCheckedChange: (Boolean) -> Unit,
-    themeColor: Color
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp)
+        modifier = Modifier.fillMaxWidth()
     ) {
+
         Text(text = stringResource(id = R.string.field_detailed_view))
 
         Switch(
@@ -313,107 +387,18 @@ private fun DetailedScoreSwitchRow(
 }
 
 @Composable
-fun PlayerRankSection(
-    playerRankTextFieldValue: TextFieldValue,
-    showPlayerRankError: Boolean,
-    showManualRankingField: Boolean,
+private fun TotalScoreField(
+    totalScoreData: SubscoreStateBundle,
     textFieldColors: TextFieldColors,
-    focusManager: FocusManager,
-    onPlayerRankUpdate: (TextFieldValue) -> Unit,
-) {
-    if (showManualRankingField) {
-        HeadedSection(title = R.string.header_player_ranking) {
-
-            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-
-                OutlinedTextFieldWithErrorDescription(
-                    textFieldValue = playerRankTextFieldValue,
-                    onValueChange = { onPlayerRankUpdate(it) },
-                    groupModifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp),
-                    label = { Text(text = stringResource(id = R.string.field_rank)) },
-                    isError = showPlayerRankError,
-                    colors = textFieldColors,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Number,
-                        imeAction = ImeAction.Next
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = { focusManager.moveFocus(FocusDirection.Next) }
-                    ),
-                    errorDescription = R.string.error_invalid_rank,
-                    selectAllOnFocus = true
-                )
-            }
-        }
-    }
-}
-
-@Composable
-@SuppressLint("ModifierParameter")
-fun OutlinedTextFieldWithErrorDescription(
-    textFieldValue: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
-    groupModifier: Modifier = Modifier,
-    label: @Composable (() -> Unit)?,
-    isError: Boolean,
-    colors: TextFieldColors,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    singleLine: Boolean = true,
-    @StringRes errorDescription: Int,
-    selectAllOnFocus: Boolean
-) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = groupModifier.fillMaxWidth()
-    ) {
-        val textFieldModifier = if (selectAllOnFocus) {
-            Modifier
-                .onFocusSelectAll(
-                    textFieldValueState = textFieldValue,
-                    onTextFieldValueChanged = { onValueChange(it) }
-                )
-                .fillMaxWidth()
-        } else Modifier
-
-        OutlinedTextField(
-            value = textFieldValue,
-            onValueChange = onValueChange,
-            colors = colors,
-            label = label,
-            isError = isError,
-            keyboardOptions = keyboardOptions,
-            keyboardActions = keyboardActions,
-            singleLine = singleLine,
-            modifier = textFieldModifier.fillMaxWidth()
-        )
-
-        if (isError) {
-            Text(
-                text = stringResource(id = errorDescription),
-                color = MaterialTheme.colors.error,
-                style = MaterialTheme.typography.body2,
-                modifier = Modifier.padding(start = 16.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun TotalScoreField(
-    totalScoreBundle: SubscoreStateBundle,
-    textFieldColors: TextFieldColors,
-    onChange: (TextFieldValue) -> Unit,
+    onChanged: (TextFieldValue) -> Unit,
     onDoneTap: () -> Unit
 ) {
     OutlinedTextFieldWithErrorDescription(
-        textFieldValue = totalScoreBundle.textFieldValue,
-        onValueChange = { onChange(it) },
+        textFieldValue = totalScoreData.textFieldValue,
+        onValueChange = { onChanged(it) },
         groupModifier = Modifier.padding(bottom = 8.dp),
         label = { Text(text = stringResource(id = R.string.field_total_score)) },
-        isError = totalScoreBundle.validityState != ScoreStringValidityState.Valid,
+        isError = totalScoreData.validityState != ScoreStringValidityState.Valid,
         colors = textFieldColors,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
@@ -422,63 +407,64 @@ fun TotalScoreField(
         keyboardActions = KeyboardActions(
             onDone = { onDoneTap() }
         ),
-        errorDescription = totalScoreBundle.validityState.descriptionResource,
+        errorDescription = totalScoreData.validityState.descriptionResource,
         selectAllOnFocus = true
     )
 }
 
 @Composable
-private fun SubscoreFields(
-    subscoreStateBundles: List<SubscoreStateBundle>,
-    subscoreTitles: List<SubscoreTitleEntity>,
+private fun CategoryFields(
+    categoryData: List<SubscoreStateBundle>,
+    categoryTitles: List<CategoryTitleEntity>,
+    uncategorizedScoreData: SubscoreStateBundle,
     textFieldColors: TextFieldColors,
-    uncategorizedScoreBundle: SubscoreStateBundle,
-    focusManager: FocusManager,
     onDoneTap: () -> Unit,
-    onSubscoreTextFieldValueChange: (Long, TextFieldValue) -> Unit,
-    onUncategorizedTextFieldValueChange: (TextFieldValue) -> Unit
+    onFieldChanged: (Long, TextFieldValue) -> Unit,
+    onNextTap: () -> Unit,
+    onUncategorizedFieldChanged: (TextFieldValue) -> Unit,
 ) {
-    subscoreStateBundles.forEachIndexed { index, subscore ->
+
+    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+        categoryData.forEachIndexed { index, data ->
+
+            OutlinedTextFieldWithErrorDescription(
+                textFieldValue = data.textFieldValue,
+                onValueChange = { onFieldChanged(data.entity.categoryTitleId, it) },
+                groupModifier = Modifier.fillMaxWidth(),
+                label = { Text(text = categoryTitles[index].title) },
+                isError = data.validityState != ScoreStringValidityState.Valid,
+                colors = textFieldColors,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { onNextTap() }
+                ),
+                errorDescription = data.validityState.descriptionResource,
+                selectAllOnFocus = true
+            )
+        }
+
         OutlinedTextFieldWithErrorDescription(
-            textFieldValue = subscore.textFieldValue,
-            onValueChange = { onSubscoreTextFieldValueChange(subscore.entity.subscoreTitleId, it) },
-            groupModifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp),
-            label = { Text(text = subscoreTitles[index].title) },
-            isError = subscore.validityState != ScoreStringValidityState.Valid,
+            textFieldValue = uncategorizedScoreData.textFieldValue,
+            groupModifier = Modifier.fillMaxWidth(),
+            onValueChange = { onUncategorizedFieldChanged(it) },
+            label = { Text(text = stringResource(id = R.string.field_uncategorized)) },
+            isError = uncategorizedScoreData.validityState != ScoreStringValidityState.Valid,
             colors = textFieldColors,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Next
+                imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
-                onNext = { focusManager.moveFocus(FocusDirection.Next) }
+                onDone = { onDoneTap() }
             ),
-            errorDescription = subscore.validityState.descriptionResource,
+            errorDescription = uncategorizedScoreData.validityState.descriptionResource,
             selectAllOnFocus = true
         )
     }
-
-    OutlinedTextFieldWithErrorDescription(
-        textFieldValue = uncategorizedScoreBundle.textFieldValue,
-        groupModifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp),
-        onValueChange = { onUncategorizedTextFieldValueChange(it) },
-        label = { Text(text = stringResource(id = R.string.field_uncategorized)) },
-        isError = uncategorizedScoreBundle.validityState != ScoreStringValidityState.Valid,
-        colors = textFieldColors,
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Number,
-            imeAction = ImeAction.Done
-        ),
-        keyboardActions = KeyboardActions(
-            onDone = { onDoneTap() }
-        ),
-        errorDescription = uncategorizedScoreBundle.validityState.descriptionResource,
-        selectAllOnFocus = true
-    )
 }
 
 @Preview(backgroundColor = 0xFFF0EAE2, showBackground = true)
@@ -494,10 +480,10 @@ fun EditPlayerScoreScreenPreview() {
             ),
             matchObject = MatchObjectsDefaultPreview[0],
             subscoreTitles = listOf(
-                SubscoreTitleEntity(title = "Eggs"),
-                SubscoreTitleEntity(title = "Tucked Cards"),
-                SubscoreTitleEntity(title = "Cached Food"),
-                SubscoreTitleEntity(title = "Birds")
+                CategoryTitleEntity(title = "Eggs"),
+                CategoryTitleEntity(title = "Tucked Cards"),
+                CategoryTitleEntity(title = "Cached Food"),
+                CategoryTitleEntity(title = "Birds")
             ),
             isGameManualRanked = true,
             themeColor = deepOrange500,

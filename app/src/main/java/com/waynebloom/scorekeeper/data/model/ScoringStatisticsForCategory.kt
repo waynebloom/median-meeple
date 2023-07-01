@@ -5,7 +5,6 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class ScoringStatisticsForCategory(
-    val categoryID: Long,
     var categoryTitle: String,
     data: List<Pair<String, BigDecimal>>
 ) {
@@ -15,7 +14,7 @@ class ScoringStatisticsForCategory(
     }
 
     private var sortedData: List<Pair<String, BigDecimal>>
-    var needsUpdate: Boolean
+    private var needsUpdate: Boolean
     private lateinit var topSelection: List<Pair<String, String>>
     private lateinit var low: String
     private lateinit var mean: String
@@ -62,11 +61,6 @@ class ScoringStatisticsForCategory(
     fun getRange(): String {
         calculate()
         return range
-    }
-
-    fun updateData(data: List<Pair<String, BigDecimal>>) {
-        sortedData = data.sortedByDescending { it.second }
-        needsUpdate = true
     }
 
     private fun calculateMean() = sortedData

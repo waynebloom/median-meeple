@@ -1,18 +1,14 @@
 package com.waynebloom.scorekeeper.screens
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -20,138 +16,127 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.*
+import com.waynebloom.scorekeeper.constants.Dimensions.Size
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.enums.GamesTopBarState
 import com.waynebloom.scorekeeper.enums.ListState
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
+import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.fadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
+import com.waynebloom.scorekeeper.viewmodel.GamesViewModel
+import com.waynebloom.scorekeeper.viewmodel.GamesViewModelFactory
 
-@OptIn(ExperimentalAnimationApi::class, ExperimentalFoundationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun GamesScreen(
     games: List<GameEntity>,
     currentAd: NativeAd?,
     onAddNewGameTap: () -> Unit,
     onSingleGameTap: (Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    var listState: ListState by rememberSaveable { mutableStateOf(ListState.Default) }
-    var searchString: String by rememberSaveable { mutableStateOf("") }
+    val viewModel = viewModel<GamesViewModel>(
+        key = TopLevelScreen.EditGame.name,
+        factory = GamesViewModelFactory())
+    viewModel.updateListState(games)
+    val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
             GamesTopBar(
+                state = viewModel.topBarState,
                 title = stringResource(id = R.string.header_games),
+                isSearchBarFocused = viewModel.isSearchBarFocused,
+                searchString = viewModel.searchString,
                 themeColor = MaterialTheme.colors.primary,
-                searchString = searchString,
-                onSearchStringChanged = { searchString = it }
+                onClearFiltersTap = { viewModel.onClearFiltersTap() },
+                onSearchBarFocusedChanged = { viewModel.onSearchBarFocusedChanged(it) },
+                onSearchStringChanged = { viewModel.onSearchStringChanged(it, coroutineScope) },
+                onStateChanged = { viewModel.onTopBarStateChanged(it) }
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(
-                shape = MaterialTheme.shapes.small,
-                backgroundColor = MaterialTheme.colors.primary,
-                onClick = { onAddNewGameTap() }
-            ) {
-                Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
-            }
-        }
+        floatingActionButton = { MedianMeepleFab(onTap = onAddNewGameTap) },
+        modifier = modifier,
     ) { contentPadding ->
-        Column(
-            modifier = modifier
-                .padding(contentPadding)
-                .padding(horizontal = 16.dp)
-        ) {
-            val gamesToDisplay = games
-                .filter { it.name.lowercase().contains(searchString.lowercase()) }
-            listState = when {
-                games.isEmpty() -> ListState.ListEmpty
-                gamesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
-                searchString.isNotBlank() -> ListState.SearchResultsNotEmpty
-                else -> ListState.Default
-            }
 
-            AnimatedVisibility(
-                visible = listState != ListState.Default,
-                enter = scaleIn(),
-                exit = scaleOut(),
-                modifier = Modifier.padding(bottom = 8.dp)
+        Column(modifier = Modifier
+            .padding(contentPadding)
+            .padding(horizontal = Spacing.screenEdge)
+        ) {
+
+            AnimatedContent(
+                targetState = viewModel.listState,
+                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
             ) {
-                DullColoredTextCard { color, _, _ ->
-                    AnimatedContent(
-                        targetState = listState,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(220, delayMillis = 90))
-                                .with(fadeOut(animationSpec = tween(90)))
-                        }
-                    ) { state ->
-                        when (state) {
-                            ListState.Default -> Unit
-                            ListState.ListEmpty -> {
-                                Text(
-                                    text = stringResource(R.string.text_empty_games),
-                                    color = color,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            }
-                            ListState.SearchResultsEmpty -> {
-                                Text(
-                                    text = stringResource(
-                                        id = R.string.text_empty_game_search_results,
-                                        searchString
-                                    ),
-                                    color = color,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            }
-                            ListState.SearchResultsNotEmpty -> {
-                                Text(
-                                    text = stringResource(
-                                        R.string.text_showing_search_results,
-                                        searchString
-                                    ),
-                                    color = color,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(16.dp)
-                                )
-                            }
-                        }
+
+                if (it != ListState.Default) {
+
+                    val type = if (it == ListState.SearchResultsNotEmpty) {
+                        HelperBoxType.Info
+                    } else HelperBoxType.Missing
+
+                    val text = when (it) {
+                        ListState.ListEmpty -> stringResource(R.string.text_empty_games)
+                        ListState.SearchResultsEmpty -> stringResource(
+                            id = R.string.text_empty_game_search_results,
+                            viewModel.searchString
+                        )
+                        ListState.SearchResultsNotEmpty -> stringResource(
+                            R.string.text_showing_search_results,
+                            viewModel.searchString
+                        )
+                        else -> ""
+                    }
+
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                        modifier = Modifier.padding(top = Spacing.sectionContent)
+                    ) {
+
+                        HelperBox(message = text, type = type, maxLines = 2)
+
+                        Divider()
                     }
                 }
             }
 
             LazyColumn(
-                contentPadding = PaddingValues(bottom = 88.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                state = viewModel.lazyListState,
+                contentPadding = PaddingValues(
+                    top = Spacing.sectionContent, bottom = Spacing.paddingForFab),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
             ) {
-                gamesToDisplay.toAdSeparatedListlets().forEachIndexed { index, listlet ->
-                    items(
-                        items = listlet,
-                        key = { it.id }
-                    ) { game ->
-                        GameCard(
-                            name = game.name,
-                            color = LocalGameColors.current.getColorByKey(game.color),
-                            onClick = { onSingleGameTap(game.id) },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .animateItemPlacement()
-                        )
-                    }
-                    item {
-                        if (index == 0 || listlet.size >= 10) {
-                            AdCard(currentAd)
+
+                viewModel
+                    .getGamesToDisplay(games)
+                    .toAdSeparatedListlets()
+                    .forEachIndexed { index, listlet ->
+
+                        items(items = listlet, key = { it.id }) { game ->
+
+                            GameListItem(
+                                name = game.name,
+                                color = LocalGameColors.current.getColorByKey(game.color),
+                                onClick = { onSingleGameTap(game.id) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .animateItemPlacement()
+                            )
+                        }
+
+                        item {
+                            if (index == 0 || listlet.size >= 10) AdCard(currentAd)
                         }
                     }
-                }
             }
         }
     }
@@ -159,68 +144,75 @@ fun GamesScreen(
 
 @Composable
 fun GamesDefaultActionBar(
+    title: String,
     themeColor: Color,
     onOpenSearchTap: () -> Unit
 ) {
-    CustomIconButton(
-        imageVector = Icons.Rounded.Search,
-        foregroundColor = themeColor,
-        onTap = { onOpenSearchTap() }
-    )
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Size.topBarHeight)
+    ) {
+
+        Text(
+            text = title,
+            color = themeColor,
+            style = MaterialTheme.typography.h5,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1
+        )
+
+        CustomIconButton(
+            imageVector = Icons.Rounded.Search,
+            backgroundColor = Color.Transparent,
+            foregroundColor = themeColor,
+            onTap = { onOpenSearchTap() }
+        )
+    }
 }
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun GamesTopBar(
+    state: GamesTopBarState,
     title: String,
-    themeColor: Color,
+    isSearchBarFocused: Boolean,
     searchString: String,
-    onSearchStringChanged: (String) -> Unit
+    themeColor: Color,
+    onClearFiltersTap: () -> Unit,
+    onSearchBarFocusedChanged: (Boolean) -> Unit,
+    onSearchStringChanged: (String) -> Unit,
+    onStateChanged: (GamesTopBarState) -> Unit,
 ) {
-    var topBarState: GamesTopBarState by rememberSaveable { mutableStateOf(GamesTopBarState.Default) }
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier
-            .padding(16.dp)
-            .defaultMinSize(minHeight = 48.dp)
-            .fillMaxWidth()
-    ) {
-        AnimatedVisibility(
-            visible = topBarState == GamesTopBarState.Default,
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 16.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(48.dp)
-            ) {
-                Text(
-                    text = title,
-                    color = themeColor,
-                    style = MaterialTheme.typography.h5,
-                    overflow = TextOverflow.Ellipsis,
-                    maxLines = 1
-                )
-            }
-        }
+    Column {
+
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.small)
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .padding(start = Spacing.screenEdge, end = Spacing.screenEdge / 2)
+                .defaultMinSize(minHeight = Size.topBarHeight)
+                .fillMaxWidth()
         ) {
 
-            var isSearchBarFocused by rememberSaveable { mutableStateOf(false) }
+            AnimatedContent(
+                targetState = state,
+                transitionSpec = { fadeInWithFadeOut },
+            ) {
 
-            AnimatedContent(targetState = topBarState) { state ->
-                when (state) {
+                when (it) {
+
                     GamesTopBarState.Default -> {
                         GamesDefaultActionBar(
+                            title = title,
                             themeColor = themeColor,
-                            onOpenSearchTap = { topBarState = GamesTopBarState.SearchBarOpen }
+                            onOpenSearchTap = { onStateChanged(GamesTopBarState.SearchBarOpen) },
                         )
                     }
                     GamesTopBarState.SearchBarOpen -> {
@@ -228,10 +220,11 @@ fun GamesTopBar(
                             isSearchBarFocused = isSearchBarFocused,
                             searchString = searchString,
                             themeColor = themeColor,
-                            onSearchBarFocusChanged = { isSearchBarFocused = it },
+                            onClearFiltersTap = onClearFiltersTap,
+                            onSearchBarFocusChanged = onSearchBarFocusedChanged,
                             onSearchStringChanged = onSearchStringChanged,
                             onCloseTap = {
-                                topBarState = GamesTopBarState.Default
+                                onStateChanged(GamesTopBarState.Default)
                                 focusManager.clearFocus()
                                 keyboardController?.hide()
                             }
@@ -240,5 +233,7 @@ fun GamesTopBar(
                 }
             }
         }
+
+        Divider()
     }
 }

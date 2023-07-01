@@ -20,26 +20,29 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun GameCard(
+fun GameListItem(
     name: String,
     color: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Surface(
-        shape = MaterialTheme.shapes.small,
+        shape = MaterialTheme.shapes.large,
         onClick = onClick,
         modifier = modifier.height(64.dp)
     ) {
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
+
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(64.dp)
                     .background(color.copy(alpha = 0.3f))
             ) {
+
                 Text(
                     text = name.firstOrNull()?.uppercase() ?: "?",
                     color = color,
@@ -47,10 +50,10 @@ fun GameCard(
                     fontWeight = FontWeight.SemiBold
                 )
             }
+
             Text(
                 text = name.ifEmpty { stringResource(id = R.string.text_no_game_name) },
                 style = MaterialTheme.typography.body1,
-                fontWeight = FontWeight.SemiBold,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(horizontal = 12.dp)
@@ -63,6 +66,6 @@ fun GameCard(
 @Composable
 fun GameCardPreview() {
     MedianMeepleTheme {
-        GameCard(name = "Wingspan", color = MaterialTheme.colors.primary, onClick = {})
+        GameListItem(name = "Wingspan", color = MaterialTheme.colors.primary, onClick = {})
     }
 }

@@ -1,6 +1,4 @@
-package com.waynebloom.scorekeeper.data.color
-
-import com.waynebloom.scorekeeper.ui.theme.*
+package com.waynebloom.scorekeeper.ui.theme.color
 
 class LightThemeGameColors: GameColors() {
     override val deepOrange = deepOrange500

@@ -9,8 +9,8 @@ import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -78,23 +78,23 @@ interface AppDao {
     // region Subscore
 
     @Insert
-    suspend fun insertSubscore(subscoreEntity: SubscoreEntity): Long
+    suspend fun insertCategoryScore(categoryScoreEntity: CategoryScoreEntity): Long
 
     @Update
-    suspend fun updateSubscore(subscoreEntity: SubscoreEntity)
+    suspend fun updateCategoryScore(categoryScoreEntity: CategoryScoreEntity)
 
     // endregion
 
     // region SubscoreTitle
 
     @Query("DELETE FROM subscoretitle WHERE id = :id")
-    suspend fun deleteSubscoreTitleById(id: Long)
+    suspend fun deleteCategoryTitleById(id: Long)
 
     @Insert
-    suspend fun insert(subscoreTitleEntity: SubscoreTitleEntity): Long
+    suspend fun insert(categoryTitleEntity: CategoryTitleEntity): Long
 
     @Update
-    suspend fun updateSubscoreTitle(subscoreTitleEntity: SubscoreTitleEntity)
+    suspend fun updateCategoryTitle(categoryTitleEntity: CategoryTitleEntity)
 
     // endregion
 }

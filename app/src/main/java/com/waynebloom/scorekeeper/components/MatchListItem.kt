@@ -23,8 +23,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.LocalGameColors
-import com.waynebloom.scorekeeper.PlayerEntitiesDefaultPreview
+import com.waynebloom.scorekeeper.data.PlayerEntitiesDefaultPreview
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.data.*
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
@@ -36,7 +37,7 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun MatchCard(
+fun MatchListItem(
     gameEntity: GameEntity,
     match: MatchObject,
     onSingleMatchTap: (Long) -> Unit,
@@ -49,7 +50,7 @@ fun MatchCard(
     val gameColor = LocalGameColors.current.getColorByKey(gameEntity.color)
 
     Surface(
-        shape = MaterialTheme.shapes.small,
+        shape = MaterialTheme.shapes.large,
         onClick = { onSingleMatchTap(match.entity.id) },
         modifier = modifier
     ) {
@@ -121,24 +122,24 @@ fun EmptyPlayersCard() {
             .fillMaxHeight()
     ) {
         Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(all = 8.dp)
+            modifier = Modifier.padding(all = Spacing.sectionContent)
         ) {
+
             Image(
                 imageVector = Icons.Rounded.Warning,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(MaterialTheme.colors.error),
-                modifier = Modifier
-                    .padding(end = 8.dp)
-                    .size(20.dp)
+                modifier = Modifier.size(20.dp)
             )
+
             Text(
                 text = stringResource(id = R.string.text_empty_match_players),
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.body1,
-                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f, fill = false)
             )
         }
@@ -159,43 +160,41 @@ fun VictorCard(
             .sizeIn(minHeight = 44.dp, minWidth = 44.dp)
             .fillMaxHeight()
     ) {
+
         Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(all = 8.dp)
+                .padding(horizontal = Spacing.sectionContent, vertical = Spacing.sectionContent / 2)
         ) {
+
             Image(
                 painterResource(id = R.mipmap.ic_crown),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(color),
-                modifier = Modifier
-                    .padding(horizontal = 2.dp)
-                    .padding(end = 4.dp)
-                    .size(20.dp)
+                modifier = Modifier.size(20.dp)
             )
+
             Text(
                 text = name,
                 textAlign = TextAlign.Start,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.body1,
-                fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.weight(1f, fill = false)
             )
-            Spacer(modifier = Modifier.width(16.dp))
+
             Image(
                 painterResource(id = R.drawable.ic_star),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(color),
-                modifier = Modifier
-                    .padding(end = 4.dp)
-                    .size(24.dp)
+                modifier = Modifier.size(24.dp)
             )
+
             Text(
                 text = score,
                 textAlign = TextAlign.Start,
                 style = MaterialTheme.typography.body1,
-                fontWeight = FontWeight.SemiBold
             )
         }
     }
@@ -215,23 +214,23 @@ fun PlayerCountCard(
             .fillMaxHeight()
     ) {
         Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
-                .padding(all = 8.dp)
+                .padding(horizontal = Spacing.sectionContent, vertical = Spacing.sectionContent / 2)
         ) {
+
             Image(
                 painterResource(id = if (count == 1) R.drawable.ic_person else R.drawable.ic_group),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(color),
-                modifier = Modifier
-                    .padding(end = 4.dp)
-                    .size(24.dp)
+                modifier = Modifier.size(24.dp)
             )
+
             Text(
                 text = count.toString(),
                 textAlign = TextAlign.Start,
                 style = MaterialTheme.typography.body1,
-                fontWeight = FontWeight.SemiBold
             )
         }
     }
@@ -241,7 +240,7 @@ fun PlayerCountCard(
 @Composable
 fun ScoreCardPreview() {
     MedianMeepleTheme {
-        MatchCard(
+        MatchListItem(
             gameEntity = GameEntity(name = "WWWW"),
             match = MatchObject(
                 players = PlayerEntitiesDefaultPreview.map { PlayerObject(entity = it) }
@@ -255,7 +254,7 @@ fun ScoreCardPreview() {
 @Composable
 fun EmptyScoreCardPreview() {
     MedianMeepleTheme {
-        MatchCard(
+        MatchListItem(
             gameEntity = GameEntity(name = "WWWW"),
             match = MatchObject(),
             onSingleMatchTap = {}

@@ -14,9 +14,9 @@ import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
 import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
@@ -178,21 +178,21 @@ class MedianMeepleActivityViewModel(appObj: Application) : AndroidViewModel(appO
         }
     }
 
-    private fun insertSubscore(subscoreEntity: SubscoreEntity) {
+    private fun insertSubscore(categoryScoreEntity: CategoryScoreEntity) {
         gameCache.needsUpdate = true
         matchCache.needsUpdate = true
         playerCache.needsUpdate = true
         addJobToDbChannel {
-            appRepository.insert(subscoreEntity)
+            appRepository.insert(categoryScoreEntity)
         }
     }
 
-    private fun updateSubscore(subscoreEntity: SubscoreEntity) {
+    private fun updateSubscore(categoryScoreEntity: CategoryScoreEntity) {
         gameCache.needsUpdate = true
         matchCache.needsUpdate = true
         playerCache.needsUpdate = true
         addJobToDbChannel {
-            appRepository.updateSubscore(subscoreEntity)
+            appRepository.updateCategoryScore(categoryScoreEntity)
         }
     }
 
@@ -200,7 +200,7 @@ class MedianMeepleActivityViewModel(appObj: Application) : AndroidViewModel(appO
 
     // region SubscoreTitle
 
-    fun commitSubscoreTitleBundles(bundles: List<EntityStateBundle<SubscoreTitleEntity>>) {
+    fun commitSubscoreTitleBundles(bundles: List<EntityStateBundle<CategoryTitleEntity>>) {
         bundles.forEach {
             when(it.databaseAction) {
                 DatabaseAction.DELETE -> { deleteSubscoreTitleById(it.entity.id) }
@@ -214,21 +214,21 @@ class MedianMeepleActivityViewModel(appObj: Application) : AndroidViewModel(appO
     private fun deleteSubscoreTitleById(id: Long) {
         gameCache.needsUpdate = true
         addJobToDbChannel {
-            appRepository.deleteSubscoreTitleById(id)
+            appRepository.deleteCategoryTitleById(id)
         }
     }
 
-    private fun insertSubscoreTitle(subscoreTitleEntity: SubscoreTitleEntity) {
+    private fun insertSubscoreTitle(categoryTitleEntity: CategoryTitleEntity) {
         gameCache.needsUpdate = true
         addJobToDbChannel {
-            appRepository.insert(subscoreTitleEntity)
+            appRepository.insert(categoryTitleEntity)
         }
     }
 
-    private fun updateSubscoreTitle(subscoreTitleEntity: SubscoreTitleEntity) {
+    private fun updateSubscoreTitle(categoryTitleEntity: CategoryTitleEntity) {
         gameCache.needsUpdate = true
         addJobToDbChannel {
-            appRepository.updateSubscoreTitle(subscoreTitleEntity)
+            appRepository.updateCategoryTitle(categoryTitleEntity)
         }
     }
 

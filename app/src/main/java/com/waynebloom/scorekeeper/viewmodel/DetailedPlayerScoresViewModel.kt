@@ -8,8 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.ext.isEqualTo
 import com.waynebloom.scorekeeper.ext.toShortScoreFormat
 import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
@@ -18,10 +18,10 @@ import java.math.BigDecimal
 class DetailedPlayerScoresViewModel(
     players: List<PlayerObject>,
     resources: Resources,
-    private var subscoreTitles: List<SubscoreTitleEntity>
+    private var subscoreTitles: List<CategoryTitleEntity>
 ): ViewModel() {
     var activePage: Int by mutableStateOf(0)
-    var includeUncategorizedScoreColumn = false
+    private var includeUncategorizedScoreColumn = false
     val subscoreTitleStrings: List<String>
 
     init {
@@ -38,13 +38,13 @@ class DetailedPlayerScoresViewModel(
         } else "-"
     }
 
-    fun getSubscoresInOrder(player: PlayerObject): List<SubscoreEntity> {
+    fun getSubscoresInOrder(player: PlayerObject): List<CategoryScoreEntity> {
         val categorizedSubscores = subscoreTitles.map { subscoreTitle ->
-            player.score.find { it.subscoreTitleId == subscoreTitle.id } ?: SubscoreEntity()
+            player.score.find { it.categoryTitleId == subscoreTitle.id } ?: CategoryScoreEntity()
         }
         return if (includeUncategorizedScoreColumn) {
             categorizedSubscores.plus(
-                SubscoreEntity(value = player.getUncategorizedScore().toTrimmedScoreString())
+                CategoryScoreEntity(value = player.getUncategorizedScore().toTrimmedScoreString())
             )
         } else categorizedSubscores
     }
@@ -58,7 +58,7 @@ class DetailedPlayerScoresViewModel(
 }
 
 class DetailedPlayerScoresViewModelFactory(
-    private val initialSubscoreTitles: List<SubscoreTitleEntity>,
+    private val initialSubscoreTitles: List<CategoryTitleEntity>,
     private val players: List<PlayerObject>,
     private val resources: Resources,
 ) : ViewModelProvider.NewInstanceFactory() {

@@ -4,10 +4,16 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.ProvidableCompositionLocal
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider
@@ -15,20 +21,28 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.waynebloom.scorekeeper.screens.*
-import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.google.android.gms.ads.MobileAds
-import com.waynebloom.scorekeeper.data.color.DarkThemeGameColors
-import com.waynebloom.scorekeeper.data.color.GameColors
-import com.waynebloom.scorekeeper.data.color.LightThemeGameColors
+import com.waynebloom.scorekeeper.ui.theme.color.DarkThemeGameColors
+import com.waynebloom.scorekeeper.ui.theme.color.GameColors
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.DatabaseAction
-import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.enums.TopLevelScreen
+import com.waynebloom.scorekeeper.screens.DetailedPlayerScoresScreen
+import com.waynebloom.scorekeeper.screens.EditGameScreen
+import com.waynebloom.scorekeeper.screens.EditPlayerScoreScreen
+import com.waynebloom.scorekeeper.screens.GamesScreen
+import com.waynebloom.scorekeeper.components.Loading
+import com.waynebloom.scorekeeper.screens.OverviewScreen
+import com.waynebloom.scorekeeper.screens.SingleGameScreen
+import com.waynebloom.scorekeeper.screens.SingleMatchScreen
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.MedianMeepleActivityViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onStart
 
 val LocalGameColors: ProvidableCompositionLocal<GameColors> = compositionLocalOf { DarkThemeGameColors() }
 
@@ -65,16 +79,12 @@ private fun App(viewModel: MedianMeepleActivityViewModel) {
             }
         }
 
-        CompositionLocalProvider(
-            LocalGameColors provides if (isSystemInDarkTheme()) DarkThemeGameColors() else LightThemeGameColors(),
-        ) {
-            Scaffold { innerPadding ->
-                NavHost(
-                    navController = navController,
-                    viewModel = viewModel,
-                    modifier = Modifier.padding(innerPadding)
-                )
-            }
+        Scaffold { innerPadding ->
+            NavHost(
+                navController = navController,
+                viewModel = viewModel,
+                modifier = Modifier.padding(innerPadding)
+            )
         }
     }
 }
@@ -122,14 +132,10 @@ private fun NavHost(
                     currentAd = currentAd,
                     onSeeAllGamesTap = { navController.navigate(TopLevelScreen.Games.name) },
                     onAddNewGameTap = {
-                        with(viewModel) {
-                            executeDbOperation(
-                                operation = {
-                                    insertNewEmptyGame()
-                                }
-                            )
-                            navController.navigate(TopLevelScreen.EditGame.name)
+                        viewModel.executeDbOperation {
+                            viewModel.insertNewEmptyGame()
                         }
+                        navController.navigate(TopLevelScreen.EditGame.name)
                     },
                     onSingleGameTap = { gameId ->
                         viewModel.updateGameCacheById(id = gameId, games = allGames)
@@ -169,16 +175,13 @@ private fun NavHost(
             } else {
                 GamesScreen(
                     games = allGames.map { it.entity },
+//                    games = listOf(),
                     currentAd = currentAd,
                     onAddNewGameTap = {
-                        with(viewModel) {
-                            executeDbOperation(
-                                operation = {
-                                    insertNewEmptyGame()
-                                }
-                            )
-                            navController.navigate(TopLevelScreen.EditGame.name)
+                        viewModel.executeDbOperation {
+                            viewModel.insertNewEmptyGame()
                         }
+                        navController.navigate(TopLevelScreen.EditGame.name)
                     },
                     onSingleGameTap = { gameId ->
                         viewModel.updateGameCacheById(id = gameId, games = allGames)

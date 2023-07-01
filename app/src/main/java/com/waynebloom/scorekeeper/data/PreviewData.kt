@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper
+package com.waynebloom.scorekeeper.data
 
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.game.GameObject
@@ -6,48 +6,48 @@ import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 
-val SubscoreEntitiesDefaultPreview: List<SubscoreEntity> = listOf(
-    SubscoreEntity(
+val SubscoreEntitiesDefaultPreview: List<CategoryScoreEntity> = listOf(
+    CategoryScoreEntity(
         id = 0,
-        subscoreTitleId = 1,
+        categoryTitleId = 1,
         value = "1"
     ),
-    SubscoreEntity(
+    CategoryScoreEntity(
         id = 1,
-        subscoreTitleId = 2,
+        categoryTitleId = 2,
         value = "1"
     ),
-    SubscoreEntity(
+    CategoryScoreEntity(
         id = 2,
-        subscoreTitleId = 3,
+        categoryTitleId = 3,
         value = "2"
     ),
-    SubscoreEntity(
+    CategoryScoreEntity(
         id = 3,
-        subscoreTitleId = 4,
+        categoryTitleId = 4,
         value = "4"
     ),
-    SubscoreEntity(
+    CategoryScoreEntity(
         id = 4,
-        subscoreTitleId = 5,
+        categoryTitleId = 5,
         value = "2"
     ),
-    SubscoreEntity(
+    CategoryScoreEntity(
         id = 5,
-        subscoreTitleId = 6,
+        categoryTitleId = 6,
         value = "1"
     ),
-    SubscoreEntity(
+    CategoryScoreEntity(
         id = 6,
-        subscoreTitleId = 7,
+        categoryTitleId = 7,
         value = "5"
     ),
-    SubscoreEntity(
+    CategoryScoreEntity(
         id = 7,
-        subscoreTitleId = 8,
+        categoryTitleId = 8,
         value = "3"
     )
 )
@@ -104,36 +104,36 @@ val MatchObjectsDefaultPreview = MatchEntitiesDefaultPreview.map {
     )
 }
 
-val SubscoreTitleEntitiesDefaultPreview: List<SubscoreTitleEntity> = listOf(
-    SubscoreTitleEntity(
+val SubscoreTitleEntitiesDefaultPreview: List<CategoryTitleEntity> = listOf(
+    CategoryTitleEntity(
         id = 1,
         title = "Goals"
     ),
-    SubscoreTitleEntity(
+    CategoryTitleEntity(
         id = 2,
         title = "Personal Goals"
     ),
-    SubscoreTitleEntity(
+    CategoryTitleEntity(
         id = 3,
         title = "Nectar"
     ),
-    SubscoreTitleEntity(
+    CategoryTitleEntity(
         id = 4,
         title = "Eggs"
     ),
-    SubscoreTitleEntity(
+    CategoryTitleEntity(
         id = 5,
         title = "Tucked Cards"
     ),
-    SubscoreTitleEntity(
+    CategoryTitleEntity(
         id = 6,
         title = "Cached Food"
     ),
-    SubscoreTitleEntity(
+    CategoryTitleEntity(
         id = 7,
         title = "Birds"
     ),
-    SubscoreTitleEntity(
+    CategoryTitleEntity(
         id = 8,
         title = "Duet Map"
     )
@@ -143,7 +143,7 @@ val GameEntitiesDefaultPreview: List<GameEntity> = listOf(
     GameEntity(
         id = 0,
         name = "Carcassonne",
-        color = "RED",
+        color = "TEAL",
         scoringMode = 0
     ),
     GameEntity(
@@ -172,8 +172,8 @@ val GameEntitiesDefaultPreview: List<GameEntity> = listOf(
     ),
     GameEntity(
         id = 5,
-        name = "PINK",
-        color = "RED",
+        name = "Agricola",
+        color = "TEAL",
         scoringMode = 0
     ),
     GameEntity(
@@ -206,14 +206,14 @@ val GameObjectStatisticsPreview: GameObject = GameObject(
         scoringMode = 1
     ),
     subscoreTitles = listOf(
-        SubscoreTitleEntity(id = 0, title = "Round Goals"),
-        SubscoreTitleEntity(id = 1, title = "Duet Map"),
-        SubscoreTitleEntity(id = 2, title = "Nectar"),
-        SubscoreTitleEntity(id = 3, title = "Personal Goals"),
-        SubscoreTitleEntity(id = 4, title = "Eggs"),
-        SubscoreTitleEntity(id = 5, title = "Cached Food"),
-        SubscoreTitleEntity(id = 6, title = "Tucked Cards"),
-        SubscoreTitleEntity(id = 7, title = "Birds"),
+        CategoryTitleEntity(id = 0, title = "Round Goals"),
+        CategoryTitleEntity(id = 1, title = "Duet Map"),
+        CategoryTitleEntity(id = 2, title = "Nectar"),
+        CategoryTitleEntity(id = 3, title = "Personal Goals"),
+        CategoryTitleEntity(id = 4, title = "Eggs"),
+        CategoryTitleEntity(id = 5, title = "Cached Food"),
+        CategoryTitleEntity(id = 6, title = "Tucked Cards"),
+        CategoryTitleEntity(id = 7, title = "Birds"),
     ),
     matches = listOf(
         MatchObject(
@@ -229,44 +229,44 @@ val GameObjectStatisticsPreview: GameObject = GameObject(
                         score = "32"
                     ),
                     score = listOf(
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 0,
-                            subscoreTitleId = 0,
+                            categoryTitleId = 0,
                             value = "5"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 1,
-                            subscoreTitleId = 1,
+                            categoryTitleId = 1,
                             value = "6"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 2,
-                            subscoreTitleId = 2,
+                            categoryTitleId = 2,
                             value = "7"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 3,
-                            subscoreTitleId = 3,
+                            categoryTitleId = 3,
                             value = "8"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 4,
-                            subscoreTitleId = 4,
+                            categoryTitleId = 4,
                             value = "9"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 5,
-                            subscoreTitleId = 5,
+                            categoryTitleId = 5,
                             value = "10"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 6,
-                            subscoreTitleId = 6,
+                            categoryTitleId = 6,
                             value = "11"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 7,
-                            subscoreTitleId = 7,
+                            categoryTitleId = 7,
                             value = "12"
                         )
                     )
@@ -278,44 +278,44 @@ val GameObjectStatisticsPreview: GameObject = GameObject(
                         score = "72"
                     ),
                     score = listOf(
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 0,
-                            subscoreTitleId = 0,
+                            categoryTitleId = 0,
                             value = "10"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 1,
-                            subscoreTitleId = 1,
+                            categoryTitleId = 1,
                             value = "11"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 2,
-                            subscoreTitleId = 2,
+                            categoryTitleId = 2,
                             value = "12"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 3,
-                            subscoreTitleId = 3,
+                            categoryTitleId = 3,
                             value = "13"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 4,
-                            subscoreTitleId = 4,
+                            categoryTitleId = 4,
                             value = "14"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 5,
-                            subscoreTitleId = 5,
+                            categoryTitleId = 5,
                             value = "15"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 6,
-                            subscoreTitleId = 6,
+                            categoryTitleId = 6,
                             value = "16"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 7,
-                            subscoreTitleId = 7,
+                            categoryTitleId = 7,
                             value = "17"
                         )
                     )
@@ -335,44 +335,44 @@ val GameObjectStatisticsPreview: GameObject = GameObject(
                         score = "88"
                     ),
                     score = listOf(
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 0,
-                            subscoreTitleId = 0,
+                            categoryTitleId = 0,
                             value = "14"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 1,
-                            subscoreTitleId = 1,
+                            categoryTitleId = 1,
                             value = "13"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 2,
-                            subscoreTitleId = 2,
+                            categoryTitleId = 2,
                             value = "12"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 3,
-                            subscoreTitleId = 3,
+                            categoryTitleId = 3,
                             value = "11"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 4,
-                            subscoreTitleId = 4,
+                            categoryTitleId = 4,
                             value = "10"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 5,
-                            subscoreTitleId = 5,
+                            categoryTitleId = 5,
                             value = "9"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 6,
-                            subscoreTitleId = 6,
+                            categoryTitleId = 6,
                             value = "8"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 7,
-                            subscoreTitleId = 7,
+                            categoryTitleId = 7,
                             value = "7"
                         )
                     )
@@ -384,44 +384,44 @@ val GameObjectStatisticsPreview: GameObject = GameObject(
                         score = "89"
                     ),
                     score = listOf(
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 0,
-                            subscoreTitleId = 0,
+                            categoryTitleId = 0,
                             value = "5"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 1,
-                            subscoreTitleId = 1,
+                            categoryTitleId = 1,
                             value = "6"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 2,
-                            subscoreTitleId = 2,
+                            categoryTitleId = 2,
                             value = "7"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 3,
-                            subscoreTitleId = 3,
+                            categoryTitleId = 3,
                             value = "8"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 4,
-                            subscoreTitleId = 4,
+                            categoryTitleId = 4,
                             value = "9"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 5,
-                            subscoreTitleId = 5,
+                            categoryTitleId = 5,
                             value = "10"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 6,
-                            subscoreTitleId = 6,
+                            categoryTitleId = 6,
                             value = "11"
                         ),
-                        SubscoreEntity(
+                        CategoryScoreEntity(
                             id = 7,
-                            subscoreTitleId = 7,
+                            categoryTitleId = 7,
                             value = "12"
                         )
                     )

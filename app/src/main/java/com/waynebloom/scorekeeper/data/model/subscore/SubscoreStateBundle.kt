@@ -11,7 +11,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class SubscoreStateBundle(
-    var entity: SubscoreEntity,
+    var entity: CategoryScoreEntity,
     databaseAction: DatabaseAction = DatabaseAction.NO_ACTION
 ) {
     var databaseAction by mutableStateOf(databaseAction)

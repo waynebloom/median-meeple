@@ -14,7 +14,7 @@ import com.waynebloom.scorekeeper.data.model.game.GameEntity
     )],
     indices = [Index(value = ["game_id"])]
 )
-data class SubscoreTitleEntity(
+data class CategoryTitleEntity(
 
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,

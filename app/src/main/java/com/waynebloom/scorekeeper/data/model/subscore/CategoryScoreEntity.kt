@@ -2,13 +2,13 @@ package com.waynebloom.scorekeeper.data.model.subscore
 
 import androidx.room.*
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 
 @Entity(
     tableName = "Subscore",
     foreignKeys = [
         ForeignKey(
-            entity = SubscoreTitleEntity::class,
+            entity = CategoryTitleEntity::class,
             parentColumns = arrayOf("id"),
             childColumns = arrayOf("subscore_title_id"),
             onDelete = ForeignKey.CASCADE,
@@ -27,13 +27,13 @@ import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
         Index(value = ["subscore_title_id"])
     ]
 )
-data class SubscoreEntity(
+data class CategoryScoreEntity(
 
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
     @ColumnInfo(name = "subscore_title_id")
-    var subscoreTitleId: Long = 0,
+    var categoryTitleId: Long = 0,
 
     @ColumnInfo(name = "player_id")
     var playerId: Long = 0,

@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.viewmodel
 
 import android.content.res.Resources
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,7 +11,7 @@ import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.data.model.ScoringStatisticsForCategory
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.ScoringMode
@@ -19,6 +20,10 @@ import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.isEqualTo
+import com.waynebloom.scorekeeper.ui.theme.DurationMillis
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 class SingleGameViewModel(
@@ -50,10 +55,14 @@ class SingleGameViewModel(
     var isSearchBarFocused by mutableStateOf(false)
     var matchesTopBarState by mutableStateOf(MatchesForSingleGameTopBarState.Default)
     var matchesToDisplay by mutableStateOf(listOf<MatchObject>())
-    var listState by mutableStateOf(ListState.Default)
+    var matchesLazyListState by mutableStateOf(LazyListState())
+    var matchesListState by mutableStateOf(ListState.Default)
     var searchString by mutableStateOf("")
+        private set
     var sortDirection by mutableStateOf(SortDirection.Descending)
-    var sortingMode by mutableStateOf(MatchSortMode.ByMatchAge)
+        private set
+    var sortMode by mutableStateOf(MatchSortMode.ByMatchAge)
+        private set
 
     // Other
 
@@ -70,9 +79,15 @@ class SingleGameViewModel(
         scoringMode = gameObject.getScoringMode()
         updateDisplayedMatchesAndListState()
 
-        playerCount = matches.sumOf { it.players.size }.toString()
-        statisticsObjects = generateStatisticsObjects(categoryTitles = gameObject.subscoreTitles)
-        winners = mapAndOrderWinnersByWins()
+        if (matches.isNotEmpty()) {
+            playerCount = calculateUniquePlayers(matches).toString()
+            statisticsObjects = generateStatisticsObjects(categoryTitles = gameObject.subscoreTitles)
+            winners = mapAndOrderWinnersByWins()
+        } else {
+            playerCount = "0"
+            statisticsObjects = listOf()
+            winners = mapOf()
+        }
     }
 
     fun onRecompose(gameObject: GameObject) = this.apply {
@@ -83,21 +98,25 @@ class SingleGameViewModel(
         scoringMode = gameObject.getScoringMode()
         updateDisplayedMatchesAndListState()
 
-        playerCount = matches.sumOf { it.players.size }.toString()
-        statisticsObjects = generateStatisticsObjects(categoryTitles = gameObject.subscoreTitles)
-        winners = mapAndOrderWinnersByWins()
+        if (matches.isNotEmpty()) {
+            playerCount = calculateUniquePlayers(matches).toString()
+            statisticsObjects = generateStatisticsObjects(categoryTitles = gameObject.subscoreTitles)
+            winners = mapAndOrderWinnersByWins()
+        } else {
+            playerCount = "0"
+            statisticsObjects = listOf()
+            winners = mapOf()
+        }
     }
 
-    private fun generateStatisticsObjects(categoryTitles: List<SubscoreTitleEntity>) =
+    private fun generateStatisticsObjects(categoryTitles: List<CategoryTitleEntity>) =
         listOf(
             ScoringStatisticsForCategory(
-                categoryID = -1,
                 categoryTitle = totalScoreString,
                 data = getTotalScoreData()
             )
         ) + categoryTitles.map {
             ScoringStatisticsForCategory(
-                categoryID = it.id,
                 categoryTitle = it.title,
                 data = getScoreDataByCategoryId(it.id)
             )
@@ -122,7 +141,7 @@ class SingleGameViewModel(
                 .filter { it.entity.showDetailedScore }
                 .map { player ->
                     val scoreInCategoryOrZero = player.score.find {
-                        it.subscoreTitleId == categoryID
+                        it.categoryTitleId == categoryID
                     }?.value?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
                     Pair(
@@ -132,10 +151,17 @@ class SingleGameViewModel(
                 }
         }
 
+    private fun calculateUniquePlayers(matchData: List<MatchObject>) = matchData
+        .flatMap { it.players }
+        .map { it.entity.name }
+        .distinct()
+        .size
+
     private fun mapAndOrderWinnersByWins(): Map<String, Int> {
         val winners = mutableMapOf<String, Int>()
 
         matches.forEach {
+            if (it.players.isEmpty()) return@forEach
             val winnerName = it.players.getWinningPlayer(scoringMode).entity.name
 
             if (winners.containsKey(winnerName)) {
@@ -182,7 +208,7 @@ class SingleGameViewModel(
     }
 
     private fun updateListState(allMatches: List<MatchObject>) {
-        listState = when {
+        matchesListState = when {
             allMatches.isEmpty() -> ListState.ListEmpty
             matchesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
             searchString.isNotBlank() -> ListState.SearchResultsNotEmpty
@@ -215,7 +241,7 @@ class SingleGameViewModel(
                 } else matchesToSort.add(it)
             }
         }
-        var matchesInOrder: List<MatchObject> = when (sortingMode) {
+        var matchesInOrder: List<MatchObject> = when (sortMode) {
             MatchSortMode.ByMatchAge -> matchesToSort.reversed()
             MatchSortMode.ByWinningPlayer -> matchesToSort.sortedBy { match ->
                 match.players.getWinningPlayer(scoringMode).entity.name
@@ -235,12 +261,42 @@ class SingleGameViewModel(
 
     // endregion
 
+    fun clearFilters() {
+        searchString = ""
+    }
+
     fun getMostWinsTieDegree(): Int {
         val highestWinCount = winners.values.maxOrNull() ?: 0
         return winners.values.count { it == highestWinCount }
     }
 
     fun getTotalScoreStatistics() = statisticsObjects.first()
+
+    fun onSearchStringChanged(value: String, coroutineScope: CoroutineScope) =
+        coroutineScope.launch {
+            searchString = value
+            delay(DurationMillis.long.toLong())
+            if (matchesLazyListState.firstVisibleItemIndex > 0)
+                scrollToTop()
+        }
+
+    fun onSortModeChanged(value: MatchSortMode, coroutineScope: CoroutineScope) =
+        coroutineScope.launch {
+            sortMode = value
+            delay(DurationMillis.long.toLong())
+            if (matchesLazyListState.firstVisibleItemIndex > 0)
+                scrollToTop()
+        }
+
+    fun onSortDirectionChanged(value: SortDirection, coroutineScope: CoroutineScope) =
+        coroutineScope.launch {
+            sortDirection = value
+            delay(DurationMillis.long.toLong())
+            if (matchesLazyListState.firstVisibleItemIndex > 0)
+                scrollToTop()
+        }
+
+    private suspend fun scrollToTop() = matchesLazyListState.animateScrollToItem(0)
 }
 
 class SingleGameViewModelFactory(

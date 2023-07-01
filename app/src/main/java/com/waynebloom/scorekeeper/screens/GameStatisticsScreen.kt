@@ -2,9 +2,9 @@ package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration
 import android.content.res.Resources
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,16 +16,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.FilterChip
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
@@ -41,20 +39,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.waynebloom.scorekeeper.Constants
-import com.waynebloom.scorekeeper.GameObjectStatisticsPreview
+import com.waynebloom.scorekeeper.data.GameObjectStatisticsPreview
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.components.ExpandCollapseButton
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.data.model.ScoringStatisticsForCategory
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.ui.theme.deepOrange100
-import com.waynebloom.scorekeeper.ui.theme.deepOrange500
+import com.waynebloom.scorekeeper.ui.theme.color.deepOrange100
+import com.waynebloom.scorekeeper.ui.theme.color.deepOrange500
+import com.waynebloom.scorekeeper.ui.theme.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel.Companion.numberOfItemsToShowExpanded
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModelFactory
@@ -73,44 +78,69 @@ fun GameStatisticsScreen(
         )
     ).onRecompose(gameObject = gameObject)
 
-    Column(
-        modifier = modifier.verticalScroll(state = rememberScrollState())
+    LazyColumn(
+        contentPadding = PaddingValues(bottom = Spacing.betweenSections),
+        verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+        modifier = modifier,
     ) {
 
-        PlaysSection(
-            matchCount = viewModel.matches.size.toString(),
-            playerCount = viewModel.playerCount,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+        if (viewModel.matches.isNotEmpty()) {
+            item {
 
-        Divider()
+                PlaysSection(
+                    matchCount = viewModel.matches.size.toString(),
+                    playerCount = viewModel.playerCount,
+                    modifier = Modifier
+                        .padding(horizontal = Spacing.screenEdge)
+                        .padding(top = Spacing.betweenSections)
+                )
 
-        Spacer(modifier = Modifier.height(24.dp))
+                Divider()
+            }
 
-        WinsSection(
-            playersWithHighScore = viewModel.getTotalScoreStatistics().getHighScorers(),
-            winningPlayers = viewModel.winners,
-            tieDegreeMostWins = viewModel.getMostWinsTieDegree(),
-            themeColor = themeColor,
-            bestWinnerIsExpanded = viewModel.bestWinnerIsExpanded,
-            highScoreIsExpanded = viewModel.highScoreIsExpanded,
-            uniqueWinnersIsExpanded = viewModel.uniqueWinnersIsExpanded,
-            onBestWinnerTap = { viewModel.bestWinnerIsExpanded = !viewModel.bestWinnerIsExpanded },
-            onHighScoreTap = { viewModel.highScoreIsExpanded = !viewModel.highScoreIsExpanded },
-            onUniqueWinnersTap = { viewModel.uniqueWinnersIsExpanded = !viewModel.uniqueWinnersIsExpanded },
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+            item {
 
-        Divider()
+                WinsSection(
+                    playersWithHighScore = viewModel.getTotalScoreStatistics().getHighScorers(),
+                    winningPlayers = viewModel.winners,
+                    tieDegreeMostWins = viewModel.getMostWinsTieDegree(),
+                    themeColor = themeColor,
+                    bestWinnerIsExpanded = viewModel.bestWinnerIsExpanded,
+                    highScoreIsExpanded = viewModel.highScoreIsExpanded,
+                    uniqueWinnersIsExpanded = viewModel.uniqueWinnersIsExpanded,
+                    onBestWinnerTap = {
+                        viewModel.bestWinnerIsExpanded = !viewModel.bestWinnerIsExpanded
+                    },
+                    onHighScoreTap = { viewModel.highScoreIsExpanded = !viewModel.highScoreIsExpanded },
+                    onUniqueWinnersTap = {
+                        viewModel.uniqueWinnersIsExpanded = !viewModel.uniqueWinnersIsExpanded
+                    },
+                    modifier = Modifier.padding(horizontal = Spacing.screenEdge))
 
-        Spacer(modifier = Modifier.height(24.dp))
+                Divider()
+            }
 
-        ScoringSection(
-            statisticsObjects = viewModel.statisticsObjects,
-            currentCategoryIndex = viewModel.currentCategoryIndex,
-            themeColor = themeColor,
-            onCategoryTap = { index -> viewModel.currentCategoryIndex = index },
-        )
+            item {
+
+                ScoringSection(
+                    statisticsObjects = viewModel.statisticsObjects,
+                    currentCategoryIndex = viewModel.currentCategoryIndex,
+                    themeColor = themeColor,
+                    onCategoryTap = { index -> viewModel.currentCategoryIndex = index }
+                )
+            }
+        } else {
+            item {
+
+                HelperBox(
+                    message = stringResource(R.string.helper_empty_data),
+                    type = HelperBoxType.Missing,
+                    modifier = Modifier
+                        .padding(horizontal = Spacing.screenEdge)
+                        .padding(top = Spacing.sectionContent)
+                )
+            }
+        }
     }
 }
 
@@ -121,8 +151,8 @@ private fun PlaysSection(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem),
-        modifier = modifier.padding(bottom = Constants.Spacing.smallListItem),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+        modifier = modifier.padding(bottom = Spacing.sectionContent),
     ) {
 
         Text(
@@ -180,8 +210,8 @@ private fun WinsSection(
     }
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem),
-        modifier = modifier.padding(bottom = Constants.Spacing.smallListItem),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+        modifier = modifier.padding(bottom = Spacing.sectionContent),
     ) {
 
         Text(
@@ -194,20 +224,24 @@ private fun WinsSection(
         TwoLineExpandableListItem(
             startHeadline = stringResource(R.string.headline_best_winner),
             startSupportingText = stringResource(R.string.description_best_winner),
-            endText = bestWinnerEndText,
+            buttonText = bestWinnerEndText,
             expanded = bestWinnerIsExpanded,
             onItemTap = onBestWinnerTap,
             themeColor = themeColor,
         ) {
             val playersWithMostWins = winningPlayers.toList().take(tieDegreeMostWins)
 
-            Column(verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
                 playersWithMostWins.take(numberOfItemsToShowExpanded).forEach { (name, wins) ->
                     SingleLineListItem(
                         startText = name,
                         startIcon = personIcon,
-                        endText = stringResource(id = R.string.number_with_wins, wins),
+                        endText = pluralStringResource(
+                            id = R.plurals.number_with_wins,
+                            count = wins,
+                            wins
+                        ),
                         showEndBackground = false,
                     )
                 }
@@ -231,13 +265,13 @@ private fun WinsSection(
         TwoLineExpandableListItem(
             startHeadline = stringResource(R.string.headline_high_score),
             startSupportingText = stringResource(R.string.description_high_score),
-            endText = highScoreEndText,
+            buttonText = highScoreEndText,
             themeColor = themeColor,
             onItemTap = onHighScoreTap,
             expanded = highScoreIsExpanded
         ) {
 
-            Column(verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
                 playersWithHighScore.take(numberOfItemsToShowExpanded).forEach {
                     SingleLineListItem(
@@ -267,19 +301,23 @@ private fun WinsSection(
         TwoLineExpandableListItem(
             startHeadline = stringResource(R.string.headline_unique_winners),
             startSupportingText = stringResource(R.string.description_unique_winners),
-            endText = winningPlayers.size.toString(),
+            buttonText = winningPlayers.size.toString(),
             themeColor = themeColor,
             onItemTap = onUniqueWinnersTap,
             expanded = uniqueWinnersIsExpanded
         ) {
 
-            Column(verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
                 winningPlayers.toList().take(numberOfItemsToShowExpanded).forEach {
                     SingleLineListItem(
                         startText = it.first,
                         startIcon = personIcon,
-                        endText = stringResource(id = R.string.number_with_wins, it.second),
+                        endText = pluralStringResource(
+                            id = R.plurals.number_with_wins,
+                            count = it.second,
+                            it.second
+                        ),
                         showEndBackground = false
                     )
                 }
@@ -311,7 +349,7 @@ private fun ScoringSection(
 ) {
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
         modifier = modifier.fillMaxWidth()
     ) {
 
@@ -321,7 +359,7 @@ private fun ScoringSection(
             text = stringResource(id = R.string.header_scoring),
             style = MaterialTheme.typography.h6,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = Spacing.screenEdge)
         )
 
         CategoryChipsMenu(
@@ -338,7 +376,7 @@ private fun ScoringSection(
             range = currentSummary.getRange(),
             topScorers = currentSummary.getTopSelection(),
             themeColor = themeColor,
-            modifier = Modifier.padding(horizontal = 16.dp)
+            modifier = Modifier.padding(horizontal = Spacing.screenEdge)
         )
     }
 }
@@ -409,23 +447,23 @@ private fun ScoringStatisticsColumn(
 ) {
     var highSectionExpanded by rememberSaveable { mutableStateOf(false) }
     val highStartText = if (highSectionExpanded)
-        stringResource(R.string.headline_top_scorers)
+        stringResource(R.string.headline_top_scores)
     else stringResource(R.string.headline_high)
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem),
-        modifier = modifier.padding(bottom = Constants.Spacing.smallListItem),
+        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+        modifier = modifier.padding(bottom = Spacing.sectionContent),
     ) {
 
         SingleLineExpandableListItem(
             startText = highStartText,
-            endText = high,
+            buttonText = high,
             themeColor = themeColor,
             onItemTap = { highSectionExpanded = !highSectionExpanded },
             expanded = highSectionExpanded,
         ) {
 
-            Column(verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
                 topScorers.forEach { (name, score) ->
 
@@ -478,82 +516,57 @@ fun TwoLineExpandableListItem(
     modifier: Modifier = Modifier,
     startHeadline: String,
     startSupportingText: String? = null,
-    endText: String? = null,
+    buttonText: String? = null,
     themeColor: Color,
     onItemTap: () -> Unit,
     expanded: Boolean,
     expandedContent: @Composable () -> Unit,
 ) {
 
-    Column(verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem)) {
+        Column {
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier.fillMaxWidth()
-        ) {
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 16.dp)
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = modifier.fillMaxWidth()
             ) {
 
-                Text(text = startHeadline)
-
-                if (startSupportingText != null) {
-                    Text(
-                        text = startSupportingText,
-                        style = MaterialTheme.typography.body2,
-                    )
-                }
-            }
-
-            if (!expanded) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .defaultMinSize(minWidth = 64.dp, minHeight = 48.dp)
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colors.surface)
-                        .clickable { onItemTap() }
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                Column(modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 16.dp)
                 ) {
 
-                    if (endText != null)
+                    Text(text = startHeadline)
+
+                    if (startSupportingText != null) {
                         Text(
-                            text = endText,
-                            modifier = Modifier.padding(end = 4.dp),
+                            text = startSupportingText,
+                            style = MaterialTheme.typography.body2,
                         )
-
-                    Icon(
-                        painterResource(id = R.drawable.ic_chevron_down),
-                        contentDescription = null,
-                        tint = themeColor,
-                        modifier = Modifier.size(24.dp),
-                    )
+                    }
                 }
-            } else {
-                IconButton(
-                    onClick = onItemTap,
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colors.surface)
-                ) {
-                    Icon(
-                        painterResource(id = R.drawable.ic_chevron_up),
-                        tint = themeColor,
-                        contentDescription = null,
-                    )
+
+                ExpandCollapseButton(
+                    text = buttonText,
+                    expanded = expanded,
+                    themeColor = themeColor,
+                    onTap = onItemTap
+                )
+            }
+
+            AnimatedContent(
+                targetState = expanded,
+                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+            ) {
+                if (it) {
+
+                    Column {
+                        Spacer(modifier = Modifier.height(Spacing.sectionContent))
+                        expandedContent()
+                    }
                 }
             }
         }
-
-        if (expanded) {
-            expandedContent()
-        }
-    }
 }
 
 @Composable
@@ -586,7 +599,7 @@ fun TwoLineListItem(
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier
-                .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                .defaultMinSize(minWidth = Size.minTappableSize, minHeight = Size.minTappableSize)
                 .clip(MaterialTheme.shapes.medium)
                 .background(MaterialTheme.colors.surface)
                 .padding(horizontal = 12.dp, vertical = 4.dp)
@@ -602,14 +615,14 @@ fun TwoLineListItem(
 fun SingleLineExpandableListItem(
     modifier: Modifier = Modifier,
     startText: String,
-    endText: String? = null,
+    buttonText: String? = null,
     themeColor: Color,
     expanded: Boolean,
     onItemTap: () -> Unit,
     expandedContent: @Composable () -> Unit,
 ) {
 
-    Column(verticalArrangement = Arrangement.spacedBy(Constants.Spacing.smallListItem)) {
+    Column {
 
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -617,55 +630,28 @@ fun SingleLineExpandableListItem(
             modifier = modifier.fillMaxWidth()
         ) {
 
-            Text(
-                text = startText, modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 16.dp)
-            )
+            Text(text = startText, modifier = Modifier
+                .weight(1f)
+                .padding(end = 16.dp))
 
-            if (!expanded) {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .defaultMinSize(minWidth = 64.dp, minHeight = 48.dp)
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colors.surface)
-                        .clickable { onItemTap() }
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                ) {
-
-                    if (endText != null)
-                        Text(
-                            text = endText,
-                            modifier = Modifier.padding(end = 4.dp),
-                        )
-
-                    Icon(
-                        painterResource(id = R.drawable.ic_chevron_down),
-                        contentDescription = null,
-                        tint = themeColor,
-                        modifier = Modifier.size(24.dp),
-                    )
-                }
-            } else {
-                IconButton(
-                    onClick = onItemTap,
-                    modifier = Modifier
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colors.surface)
-                ) {
-                    Icon(
-                        painterResource(id = R.drawable.ic_chevron_up),
-                        tint = themeColor,
-                        contentDescription = null,
-                    )
-                }
-            }
+            ExpandCollapseButton(
+                text = buttonText,
+                expanded = expanded,
+                themeColor = themeColor,
+                onTap = onItemTap)
         }
 
-        if (expanded) {
-            expandedContent()
+        AnimatedContent(
+            targetState = expanded,
+            transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+        ) {
+            if (it) {
+
+                Column {
+                    Spacer(modifier = Modifier.height(Spacing.sectionContent))
+                    expandedContent()
+                }
+            }
         }
     }
 }
@@ -695,7 +681,7 @@ fun SingleLineListItem(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
+                        .defaultMinSize(minWidth = Size.minTappableSize, minHeight = Size.minTappableSize)
                         .clip(MaterialTheme.shapes.medium)
                         .background(MaterialTheme.colors.surface)
                         .padding(horizontal = 12.dp, vertical = 4.dp),
@@ -720,7 +706,7 @@ fun SingleLineExpandableListItemPreview() {
 
             SingleLineExpandableListItem(
                 startText = "Item title",
-                endText = "Value",
+                buttonText = "Value",
                 themeColor = deepOrange100,
                 expanded = expanded,
                 onItemTap = { expanded = !expanded},
@@ -731,8 +717,8 @@ fun SingleLineExpandableListItemPreview() {
                     ).forEach {
                         SingleLineListItem(
                             startText = it.key,
-                            endText = stringResource(
-                                id = R.string.number_with_wins,
+                            endText = pluralStringResource(
+                                id = R.plurals.number_with_wins,
                                 it.value
                             ),
                         )
@@ -757,7 +743,7 @@ fun TwoLineExpandableListItemPreview() {
             TwoLineExpandableListItem(
                 startHeadline = "Item title",
                 startSupportingText = "Supporting text",
-                endText = "Value",
+                buttonText = "Value",
                 themeColor = deepOrange100,
                 expanded = expanded,
                 onItemTap = { expanded = !expanded},
@@ -768,8 +754,8 @@ fun TwoLineExpandableListItemPreview() {
                     ).forEach {
                         SingleLineListItem(
                             startText = it.key,
-                            endText = stringResource(
-                                id = R.string.number_with_wins,
+                            endText = pluralStringResource(
+                                id = R.plurals.number_with_wins,
                                 it.value
                             ),
                         )

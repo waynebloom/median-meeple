@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.SubscoreTitleEntity
+import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import java.util.*
 
@@ -28,12 +28,12 @@ class SingleMatchViewModel(
     private var matchEntityWasChanged = false
     private var saveWasTapped = false
 
-    var notesState: String by mutableStateOf(matchEntity.matchNotes)
-    var showMaximumPlayersErrorState by mutableStateOf(false)
+    var notes: String by mutableStateOf(matchEntity.matchNotes)
+    var showMaximumPlayersError by mutableStateOf(false)
 
     private fun getMatchToCommit() = EntityStateBundle(
         entity = matchEntity.copy(
-            matchNotes = notesState,
+            matchNotes = notes,
             timeModified = Date().time
         ),
         databaseAction = if (matchEntityWasChanged) {
@@ -45,8 +45,13 @@ class SingleMatchViewModel(
         if (playerCount < maximumPlayers) {
             addPlayerCallback()
         } else {
-            showMaximumPlayersErrorState = !showMaximumPlayersErrorState
+            showMaximumPlayersError = !showMaximumPlayersError
         }
+    }
+
+    fun onNotesChanged(value: String) {
+        matchEntityWasChanged = true
+        notes = value
     }
 
     @OptIn(ExperimentalComposeUiApi::class)
@@ -61,16 +66,11 @@ class SingleMatchViewModel(
 
     fun shouldShowDetailedScoresButton(
         players: List<PlayerEntity>,
-        subscoreTitles: List<SubscoreTitleEntity>
+        subscoreTitles: List<CategoryTitleEntity>
     ): Boolean {
         val categoriesExist = subscoreTitles.isNotEmpty()
         val detailedScoresExist = players.any { it.showDetailedScore }
         return categoriesExist && detailedScoresExist
-    }
-
-    fun updateNotes(value: String) {
-        matchEntityWasChanged = true
-        notesState = value
     }
 }
 

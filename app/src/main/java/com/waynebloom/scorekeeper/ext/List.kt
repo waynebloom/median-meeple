@@ -31,10 +31,9 @@ fun <T> List<T>.toAdSeparatedListlets(): List<List<T>> {
     return result
 }
 
-fun List<PlayerObject>.getWinningPlayer(
-    scoringMode: ScoringMode
-) = when(scoringMode) {
-    ScoringMode.Ascending -> minBy { it.entity.score.toBigDecimal() }
-    ScoringMode.Descending -> maxBy { it.entity.score.toBigDecimal() }
-    ScoringMode.Manual -> minBy { it.entity.position }
-}
+fun List<PlayerObject>.getWinningPlayer(scoringMode: ScoringMode) =
+    when(scoringMode) {
+        ScoringMode.Ascending -> minBy { it.entity.score.toBigDecimal() }
+        ScoringMode.Descending -> maxBy { it.entity.score.toBigDecimal() }
+        ScoringMode.Manual -> minBy { it.entity.position }
+    }
