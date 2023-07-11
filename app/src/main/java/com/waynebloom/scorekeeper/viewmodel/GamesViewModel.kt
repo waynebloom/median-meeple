@@ -6,10 +6,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.enums.GamesTopBarState
 import com.waynebloom.scorekeeper.enums.ListState
-import com.waynebloom.scorekeeper.ui.theme.DurationMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -41,7 +41,7 @@ class GamesViewModel: ViewModel() {
     fun onSearchStringChanged(value: String, coroutineScope: CoroutineScope) {
         coroutineScope.launch {
             searchString = value
-            delay(DurationMillis.long.toLong())
+            delay(DurationMs.Long.toLong())
             if (lazyListState.firstVisibleItemIndex > 0)
                 scrollToTop()
         }

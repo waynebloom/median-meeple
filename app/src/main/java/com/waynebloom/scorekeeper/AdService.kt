@@ -13,8 +13,8 @@ class AdService(context: Context) {
     var currentAd: MutableState<NativeAd?> = mutableStateOf(null)
 
     companion object {
-        const val NEW_AD_REQUEST_DELAY_MS = 60000L
-        const val BETWEEN_ADS_DELAY_MS = 500L
+        const val NewAdRequestDelayMs = 60000L
+        const val BetweenAdsDelayMs = 500L
     }
 
     init {

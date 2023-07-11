@@ -18,8 +18,8 @@ import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
 import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
-import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
 import com.waynebloom.scorekeeper.ext.statefulUpdateElement
+import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
 
 class EditPlayerScoreViewModel(
     playerObject: PlayerObject,

@@ -36,7 +36,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.CustomIconButton
@@ -44,9 +43,9 @@ import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
 import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescription
 import com.waynebloom.scorekeeper.constants.Alpha
-import com.waynebloom.scorekeeper.constants.Dimensions
-import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.game.GameObject
@@ -90,7 +89,7 @@ fun EditGameScreen(
     )
     val textSelectionColors = TextSelectionColors(
         handleColor = themeColor,
-        backgroundColor = themeColor.copy(Alpha.textSelectionBackground),
+        backgroundColor = themeColor.copy(Alpha.TextSelectionBackground),
     )
 
     Scaffold(

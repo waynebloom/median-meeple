@@ -3,12 +3,12 @@ package com.waynebloom.scorekeeper.ui.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Shapes
+import androidx.compose.material.Typography
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.material.Typography
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.color.DarkThemeGameColors
 import com.waynebloom.scorekeeper.ui.theme.color.LightThemeGameColors

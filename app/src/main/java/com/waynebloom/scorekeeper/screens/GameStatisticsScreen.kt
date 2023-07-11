@@ -62,7 +62,7 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.ui.theme.color.deepOrange100
 import com.waynebloom.scorekeeper.ui.theme.color.deepOrange500
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
-import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel.Companion.numberOfItemsToShowExpanded
+import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel.Companion.NumberOfItemsToShowExpanded
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModelFactory
 
 @Composable
@@ -234,7 +234,7 @@ private fun WinsSection(
 
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
-                playersWithMostWins.take(numberOfItemsToShowExpanded).forEach { (name, wins) ->
+                playersWithMostWins.take(NumberOfItemsToShowExpanded).forEach { (name, wins) ->
                     SingleLineListItem(
                         startText = name,
                         startIcon = personIcon,
@@ -247,11 +247,11 @@ private fun WinsSection(
                     )
                 }
 
-                if (playersWithMostWins.size > numberOfItemsToShowExpanded) {
+                if (playersWithMostWins.size > NumberOfItemsToShowExpanded) {
                     Text(
                         text = stringResource(
                             id = R.string.number_list_overflow,
-                            playersWithMostWins.size - numberOfItemsToShowExpanded
+                            playersWithMostWins.size - NumberOfItemsToShowExpanded
                         ),
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -274,7 +274,7 @@ private fun WinsSection(
 
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
-                playersWithHighScore.take(numberOfItemsToShowExpanded).forEach {
+                playersWithHighScore.take(NumberOfItemsToShowExpanded).forEach {
                     SingleLineListItem(
                         startText = it.first,
                         startIcon = personIcon,
@@ -283,11 +283,11 @@ private fun WinsSection(
                     )
                 }
 
-                if (playersWithHighScore.size > numberOfItemsToShowExpanded) {
+                if (playersWithHighScore.size > NumberOfItemsToShowExpanded) {
                     Text(
                         text = stringResource(
                             id = R.string.number_list_overflow,
-                            playersWithHighScore.size - numberOfItemsToShowExpanded
+                            playersWithHighScore.size - NumberOfItemsToShowExpanded
                         ),
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -310,7 +310,7 @@ private fun WinsSection(
 
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
-                winningPlayers.toList().take(numberOfItemsToShowExpanded).forEach {
+                winningPlayers.toList().take(NumberOfItemsToShowExpanded).forEach {
                     SingleLineListItem(
                         startText = it.first,
                         startIcon = personIcon,
@@ -323,11 +323,11 @@ private fun WinsSection(
                     )
                 }
 
-                if (winningPlayers.size > numberOfItemsToShowExpanded) {
+                if (winningPlayers.size > NumberOfItemsToShowExpanded) {
                     Text(
                         text = stringResource(
                             id = R.string.number_list_overflow,
-                            winningPlayers.size - numberOfItemsToShowExpanded
+                            winningPlayers.size - NumberOfItemsToShowExpanded
                         ),
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.align(Alignment.CenterHorizontally),

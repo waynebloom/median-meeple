@@ -6,7 +6,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.R
@@ -73,7 +72,7 @@ class EditGameViewModel(
     // endregion
 
     companion object {
-        const val scoringCategorySectionIndex = 2
+        const val ScoringCategorySectionIndex = 2
     }
 
     fun onRecompose(gameId: Long, rowHeightInPx: Float) = this.apply {
@@ -143,7 +142,7 @@ class EditGameViewModel(
     ) {
         coroutineScope.launch {
             if (isTransitioningToEditMode) delay(400) else delay(50)
-            lazyListState.animateScrollToItem(scoringCategorySectionIndex)
+            lazyListState.animateScrollToItem(ScoringCategorySectionIndex)
         }
     }
 

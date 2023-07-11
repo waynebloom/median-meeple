@@ -1,17 +1,22 @@
 package com.waynebloom.scorekeeper.screens
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Ease
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.*
-import androidx.compose.runtime.*
+import androidx.compose.material.Divider
+import androidx.compose.material.Scaffold
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
@@ -20,17 +25,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.LocalGameColors
-import com.waynebloom.scorekeeper.data.MatchObjectsDefaultPreview
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.*
+import com.waynebloom.scorekeeper.components.AdCard
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.MatchListItem
+import com.waynebloom.scorekeeper.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.constants.DurationMs
+import com.waynebloom.scorekeeper.data.MatchObjectsDefaultPreview
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
-import com.waynebloom.scorekeeper.ui.theme.DurationMillis
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
@@ -118,7 +127,7 @@ fun MatchesForSingleGameScreen(
                             showGameIdentifier = false,
                             modifier = Modifier.animateItemPlacement(
                                 animationSpec = tween(
-                                    durationMillis = DurationMillis.medium,
+                                    durationMillis = DurationMs.Medium,
                                     easing = Ease)),
                         )
                     }

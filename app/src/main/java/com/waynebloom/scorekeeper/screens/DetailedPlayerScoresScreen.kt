@@ -3,10 +3,26 @@ package com.waynebloom.scorekeeper.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Icon
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.KeyboardArrowRight
@@ -42,8 +58,8 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModel
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModelFactory
 
-const val expandedPlayerNameScreenWeight = 0.4f
-const val collapsedPlayerNameScreenWeight = 0.15f
+const val ExpandedPlayerNameScreenWeight = 0.4f
+const val CollapsedPlayerNameScreenWeight = 0.15f
 
 @Composable
 fun DetailedPlayerScoresScreen(
@@ -76,11 +92,11 @@ fun DetailedPlayerScoresScreen(
         val subscoreIndicesToDisplay = (fromIndex..toIndex)
         val isFirstSubscoreDisplayed = subscoreIndicesToDisplay.contains(0)
         val playerIdentifierWeight = if (isFirstSubscoreDisplayed) {
-            expandedPlayerNameScreenWeight
-        } else collapsedPlayerNameScreenWeight
+            ExpandedPlayerNameScreenWeight
+        } else CollapsedPlayerNameScreenWeight
         val subscoresSectionWeight = if (isFirstSubscoreDisplayed) {
-            1 - expandedPlayerNameScreenWeight
-        } else 1 - collapsedPlayerNameScreenWeight
+            1 - ExpandedPlayerNameScreenWeight
+        } else 1 - CollapsedPlayerNameScreenWeight
 
         EditScoresTopBar(
             subscoreTitles = viewModel.subscoreTitleStrings.slice(subscoreIndicesToDisplay),

@@ -22,8 +22,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.MobileAds
-import com.waynebloom.scorekeeper.ui.theme.color.DarkThemeGameColors
-import com.waynebloom.scorekeeper.ui.theme.color.GameColors
+import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.DatabaseAction
@@ -33,11 +32,12 @@ import com.waynebloom.scorekeeper.screens.DetailedPlayerScoresScreen
 import com.waynebloom.scorekeeper.screens.EditGameScreen
 import com.waynebloom.scorekeeper.screens.EditPlayerScoreScreen
 import com.waynebloom.scorekeeper.screens.GamesScreen
-import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.screens.OverviewScreen
 import com.waynebloom.scorekeeper.screens.SingleGameScreen
 import com.waynebloom.scorekeeper.screens.SingleMatchScreen
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.ui.theme.color.DarkThemeGameColors
+import com.waynebloom.scorekeeper.ui.theme.color.GameColors
 import com.waynebloom.scorekeeper.viewmodel.MedianMeepleActivityViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -73,9 +73,9 @@ private fun App(viewModel: MedianMeepleActivityViewModel) {
         LaunchedEffect(true) {
             while (true) {
                 viewModel.adService.loadNewAd()
-                delay(AdService.NEW_AD_REQUEST_DELAY_MS)
+                delay(AdService.NewAdRequestDelayMs)
                 viewModel.adService.currentAd.value = null
-                delay(AdService.BETWEEN_ADS_DELAY_MS)
+                delay(AdService.BetweenAdsDelayMs)
             }
         }
 

@@ -25,12 +25,6 @@ import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
-enum class HelperBoxType {
-    Info,
-    Error,
-    Missing;
-}
-
 @Composable
 fun HelperBox(
     message: String,
@@ -86,6 +80,12 @@ fun HelperBox(
                 modifier = Modifier.align(Alignment.CenterVertically))
         }
     }
+}
+
+enum class HelperBoxType {
+    Info,
+    Error,
+    Missing;
 }
 
 @Preview(uiMode = UI_MODE_NIGHT_YES, name = "Short")

@@ -8,19 +8,19 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.data.model.ScoringStatisticsForCategory
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.enums.MatchSortMode
+import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
-import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.isEqualTo
-import com.waynebloom.scorekeeper.ui.theme.DurationMillis
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,7 +32,7 @@ class SingleGameViewModel(
 ): ViewModel() {
 
     companion object {
-        const val numberOfItemsToShowExpanded = 15
+        const val NumberOfItemsToShowExpanded = 15
     }
 
     // Recomposition-aware properties
@@ -275,7 +275,7 @@ class SingleGameViewModel(
     fun onSearchStringChanged(value: String, coroutineScope: CoroutineScope) =
         coroutineScope.launch {
             searchString = value
-            delay(DurationMillis.long.toLong())
+            delay(DurationMs.Long.toLong())
             if (matchesLazyListState.firstVisibleItemIndex > 0)
                 scrollToTop()
         }
@@ -283,7 +283,7 @@ class SingleGameViewModel(
     fun onSortModeChanged(value: MatchSortMode, coroutineScope: CoroutineScope) =
         coroutineScope.launch {
             sortMode = value
-            delay(DurationMillis.long.toLong())
+            delay(DurationMs.Long.toLong())
             if (matchesLazyListState.firstVisibleItemIndex > 0)
                 scrollToTop()
         }
@@ -291,7 +291,7 @@ class SingleGameViewModel(
     fun onSortDirectionChanged(value: SortDirection, coroutineScope: CoroutineScope) =
         coroutineScope.launch {
             sortDirection = value
-            delay(DurationMillis.long.toLong())
+            delay(DurationMs.Long.toLong())
             if (matchesLazyListState.firstVisibleItemIndex > 0)
                 scrollToTop()
         }

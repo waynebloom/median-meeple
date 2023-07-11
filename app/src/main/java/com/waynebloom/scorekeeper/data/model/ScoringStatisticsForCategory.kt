@@ -10,7 +10,7 @@ class ScoringStatisticsForCategory(
 ) {
 
     companion object {
-        const val topScoreSelectionSize = 5
+        const val TopScoreSelectionSize = 5
     }
 
     private var sortedData: List<Pair<String, BigDecimal>>
@@ -28,7 +28,7 @@ class ScoringStatisticsForCategory(
     private fun calculate() {
         if (!needsUpdate) return
         topSelection = sortedData
-            .take(topScoreSelectionSize)
+            .take(TopScoreSelectionSize)
             .map { Pair(it.first, it.second.toTrimmedScoreString()) }
         low = sortedData.last().second.toTrimmedScoreString()
         mean = calculateMean().toTrimmedScoreString()

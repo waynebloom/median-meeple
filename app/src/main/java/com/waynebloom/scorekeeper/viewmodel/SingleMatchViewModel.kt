@@ -22,7 +22,7 @@ class SingleMatchViewModel(
 ): ViewModel() {
 
     companion object {
-        const val maximumPlayers = 100
+        const val MaximumPlayers = 100
     }
 
     private var matchEntityWasChanged = false
@@ -42,7 +42,7 @@ class SingleMatchViewModel(
     )
 
     fun onAddPlayerTap(playerCount: Int) {
-        if (playerCount < maximumPlayers) {
+        if (playerCount < MaximumPlayers) {
             addPlayerCallback()
         } else {
             showMaximumPlayersError = !showMaximumPlayersError

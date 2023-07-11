@@ -1,8 +1,12 @@
 package com.waynebloom.scorekeeper.data.model.match
 
-import androidx.room.*
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
-import java.util.*
+import java.util.Date
 
 @Entity(
     tableName = "Match",
