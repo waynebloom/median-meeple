@@ -12,14 +12,13 @@ import androidx.compose.ui.graphics.Color
 fun MedianMeepleFab(
     backgroundColor: Color = MaterialTheme.colors.primary,
     contentColor: Color = MaterialTheme.colors.onPrimary,
-    onTap: () -> Unit
+    onClick: () -> Unit
 ) {
 
     FloatingActionButton(
-        shape = MaterialTheme.shapes.large,
         backgroundColor = backgroundColor,
         contentColor = contentColor,
-        onClick = { onTap() },
+        onClick = { onClick() },
         content = { Icon(imageVector = Icons.Rounded.Add, contentDescription = null) }
     )
 }

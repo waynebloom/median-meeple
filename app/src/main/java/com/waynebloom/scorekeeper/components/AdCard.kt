@@ -10,69 +10,60 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.databinding.AdCardBinding
 import com.waynebloom.scorekeeper.ext.sentenceCase
 
 @Composable
 fun AdCard(
-    currentAd: NativeAd? = null,
-    themeColor: Int = MaterialTheme.colors.primary.toArgb(),
-    onThemeColor: Int = MaterialTheme.colors.onPrimary.toArgb(),
+    ad: NativeAd? = null,
+    primaryColor: Int = MaterialTheme.colors.primary.toArgb(),
+    onPrimaryColor: Int = MaterialTheme.colors.onPrimary.toArgb(),
     onSurface: Int = MaterialTheme.colors.onSurface.toArgb()
 ) {
     Surface(shape = MaterialTheme.shapes.large) {
         AndroidViewBinding(
             factory = AdCardBinding::inflate,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 12.dp)
         ) {
-            if (currentAd != null) {
+            if (ad != null) {
                 adLoadingTag.visibility = View.INVISIBLE
                 adProgressBar.visibility = View.INVISIBLE
-                adTag.background.setTint(themeColor)
-                adTag.setTextColor(onThemeColor)
+                adTag.background.setTint(primaryColor)
+                adTag.setTextColor(onPrimaryColor)
 
                 adView.apply {
-                    setNativeAd(currentAd)
+                    setNativeAd(ad)
                     visibility = View.VISIBLE
 
-                    advertiserView = adAdvertiserName.apply {
-                        text = if (currentAd.advertiser.isNullOrBlank()) {
-                            context.getString(R.string.ad_no_advertiser)
-                        } else currentAd.advertiser
-                        setTextColor(onSurface)
-                    }
                     bodyView = adBody.apply {
-                        text = currentAd.body
+                        text = ad.body
                         setTextColor(onSurface)
                     }
                     callToActionView = adCtaButton.apply {
-                        text = currentAd.callToAction?.sentenceCase() ?: "Learn More"
-                        setBackgroundColor(themeColor)
-                        setTextColor(onThemeColor)
+                        text = ad.callToAction?.sentenceCase() ?: "Learn More"
+                        setBackgroundColor(primaryColor)
+                        setTextColor(onPrimaryColor)
                     }
                     headlineView = adHeadline.apply {
-                        text = currentAd.headline
+                        text = ad.headline
                         setTextColor(onSurface)
                     }
-                    iconView = adAppIcon.apply { setImageDrawable(currentAd.icon?.drawable) }
+                    iconView = adAppIcon.apply {
+                        setImageDrawable(ad.icon?.drawable)
+                    }
                     priceView = adPrice.apply {
-                        text = currentAd.price
+                        text = ad.price
                         setTextColor(onSurface)
                     }
                     starRatingView = adStars.apply {
-                        rating = currentAd.starRating?.toFloat() ?: 0f
-                        progressDrawable.setTint(themeColor)
-                    }
-                    storeView = adSourceStore.apply {
-                        text = currentAd.store
-                        setTextColor(onSurface)
+                        rating = ad.starRating?.toFloat() ?: 0f
+                        progressDrawable.setTint(primaryColor)
                     }
                 }
             } else {
-                adLoadingTag.setTextColor(themeColor)
+                adLoadingTag.setTextColor(primaryColor)
                 adLoadingTag.visibility = View.VISIBLE
-                adProgressBar.indeterminateDrawable.setTint(themeColor)
+                adProgressBar.indeterminateDrawable.setTint(primaryColor)
                 adProgressBar.visibility = View.VISIBLE
                 adView.visibility = View.INVISIBLE
             }
