@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.ui.screens
 
 import android.content.res.Configuration
 import android.content.res.Resources
@@ -47,9 +47,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.ExpandCollapseButton
-import com.waynebloom.scorekeeper.components.HelperBox
-import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.ui.components.ExpandCollapseButton
+import com.waynebloom.scorekeeper.ui.components.HelperBox
+import com.waynebloom.scorekeeper.ui.components.HelperBoxType
+import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.data.GameObjectStatisticsPreview
@@ -411,7 +412,7 @@ private fun CategoryChipsMenu(
             val chipBorderStroke = if (!isSelected) {
                 BorderStroke(
                     width = 1.dp,
-                    color = MaterialTheme.colors.onBackground.copy(0.5f)
+                    color = MaterialTheme.colors.onBackground.copy(Alpha.disabled)
                 )
             } else null
 
@@ -697,6 +698,7 @@ fun SingleLineListItem(
     }
 }
 
+@Suppress("MagicNumber")
 @Preview(
     name = "SingleLineExpandableListItem, interactive",
     uiMode = Configuration.UI_MODE_NIGHT_YES,
@@ -733,6 +735,7 @@ fun SingleLineExpandableListItemPreview() {
     }
 }
 
+@Suppress("MagicNumber")
 @Preview(
     name = "TwoLineExpandableListItem, interactive",
     uiMode = Configuration.UI_MODE_NIGHT_YES,

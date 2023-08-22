@@ -1,3 +1,4 @@
+@file:SuppressWarnings("MaxLineLength")
 package com.waynebloom.scorekeeper.data.database
 
 import androidx.room.migration.Migration

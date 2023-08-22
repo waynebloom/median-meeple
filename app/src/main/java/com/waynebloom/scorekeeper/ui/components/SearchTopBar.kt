@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.components
+package com.waynebloom.scorekeeper.ui.components
 
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 
 @Composable
@@ -42,7 +43,7 @@ fun SearchTopBar(
 ) {
     val textSelectionColors = TextSelectionColors(
         handleColor = themeColor,
-        backgroundColor = themeColor.copy(0.3f)
+        backgroundColor = themeColor.copy(Alpha.textSelectionBackground)
     )
     val focusRequester = remember { FocusRequester() }
 

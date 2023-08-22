@@ -8,6 +8,7 @@ import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.waynebloom.scorekeeper.constants.Constants
 import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.match.MatchEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
@@ -20,10 +21,6 @@ class SingleMatchViewModel(
     private val addPlayerCallback: () -> Unit,
     private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
 ): ViewModel() {
-
-    companion object {
-        const val MaximumPlayers = 100
-    }
 
     private var matchEntityWasChanged = false
     private var saveWasTapped = false
@@ -42,11 +39,9 @@ class SingleMatchViewModel(
     )
 
     fun onAddPlayerTap(playerCount: Int) {
-        if (playerCount < MaximumPlayers) {
+        if (playerCount < Constants.maximumPlayersInMatch)
             addPlayerCallback()
-        } else {
-            showMaximumPlayersError = !showMaximumPlayersError
-        }
+        else showMaximumPlayersError = !showMaximumPlayersError
     }
 
     fun onNotesChanged(value: String) {

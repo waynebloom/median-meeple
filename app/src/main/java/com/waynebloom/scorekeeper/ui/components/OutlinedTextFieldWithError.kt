@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.components
+package com.waynebloom.scorekeeper.ui.components
 
 import android.annotation.SuppressLint
 import androidx.annotation.StringRes

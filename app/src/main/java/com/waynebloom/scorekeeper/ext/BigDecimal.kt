@@ -1,9 +1,11 @@
 package com.waynebloom.scorekeeper.ext
 
+import com.waynebloom.scorekeeper.constants.Constants
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-fun BigDecimal.toTrimmedScoreString(): String = setScale(3, RoundingMode.HALF_UP)
+fun BigDecimal.toTrimmedScoreString(): String =
+    setScale(Constants.maximumDecimalPlaces, RoundingMode.HALF_UP)
     .stripTrailingZeros()
     .toPlainString()
 

@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -19,21 +19,25 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.*
+import com.waynebloom.scorekeeper.ui.components.*
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.data.MatchObjectsDefaultPreview
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
+import com.waynebloom.scorekeeper.ui.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+
+private const val NumberOfGamesToDisplay = 6
+private const val NumberOfMatchesToDisplay = 10
+private const val IndexOfItemBeforeAd = 1
 
 @Composable
 fun OverviewScreen(
     games: List<GameObject>,
-    matches: List<MatchObject>,
+    allMatches: List<MatchObject>,
     currentAd: NativeAd?,
     onSeeAllGamesTap: () -> Unit,
     onAddNewGameTap: () -> Unit,
@@ -58,8 +62,10 @@ fun OverviewScreen(
 
             item {
 
+                val gamesToDisplay = games.take(NumberOfGamesToDisplay)
+
                 GamesSection(
-                    games = games,
+                    games = gamesToDisplay,
                     onAddNewGameTap = onAddNewGameTap,
                     onSeeAllGamesTap = onSeeAllGamesTap,
                     onSingleGameTap = onSingleGameTap,
@@ -68,8 +74,12 @@ fun OverviewScreen(
 
             item {
 
+                val matchesToDisplay = allMatches
+                    .sortedByDescending { it.entity.timeModified }
+                    .take(NumberOfMatchesToDisplay)
+
                 MatchesSection(
-                    matches = matches,
+                    matches = matchesToDisplay,
                     games = games,
                     currentAd = currentAd,
                     onSingleMatchTap = onSingleMatchTap
@@ -93,13 +103,18 @@ private fun GamesSection(
         GamesHeader(
             games = games,
             onAddNewGameTap = onAddNewGameTap,
-            onSeeAllGamesTap = onSeeAllGamesTap)
+            onSeeAllGamesTap = onSeeAllGamesTap
+        )
 
         if (games.isEmpty()) {
             HelperBox(
                 message = stringResource(R.string.text_empty_games),
-                type = HelperBoxType.Missing)
-        } else TopGames(games = games.take(6), onSingleGameTap = onSingleGameTap)
+                type = HelperBoxType.Missing
+            )
+        } else TopGames(
+            games = games.take(NumberOfGamesToDisplay),
+            onSingleGameTap = onSingleGameTap
+        )
     }
 }
 
@@ -157,7 +172,7 @@ private fun MatchesSection(
         )
 
         if (matches.isNotEmpty()) {
-            MatchesHead(
+            RecentMatches(
                 matches = matches,
                 games = games,
                 currentAd = currentAd,
@@ -239,7 +254,7 @@ fun GamesHeadRow(
 }
 
 @Composable
-fun MatchesHead(
+fun RecentMatches(
     matches: List<MatchObject>,
     games: List<GameObject>,
     currentAd: NativeAd?,
@@ -259,11 +274,10 @@ fun MatchesHead(
                 onSingleMatchTap = onSingleMatchTap
             )
 
-            if (index == 2) { AdCard(currentAd) }
+            val showAd = (matches.size > IndexOfItemBeforeAd && index == IndexOfItemBeforeAd) ||
+                (matches.size <= IndexOfItemBeforeAd && index == matches.lastIndex)
+            if (showAd) AdCard(currentAd)
         }
-
-        if (matches.size < 3)
-            AdCard(currentAd)
     }
 }
 
@@ -275,7 +289,7 @@ fun OverviewScreenPreview() {
         Scaffold {
             OverviewScreen(
                 games = GameObjectsDefaultPreview,
-                matches = MatchObjectsDefaultPreview,
+                allMatches = MatchObjectsDefaultPreview,
                 currentAd = null,
                 onSeeAllGamesTap = {},
                 onAddNewGameTap = {},
@@ -285,4 +299,3 @@ fun OverviewScreenPreview() {
         }
     }
 }
-

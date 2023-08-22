@@ -1,17 +1,21 @@
 package com.waynebloom.scorekeeper.data.model
 
+import com.waynebloom.scorekeeper.constants.Constants
 import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 class ScoringStatisticsForCategory(
-    var categoryTitle: String,
+    categoryTitle: String,
     data: List<Pair<String, BigDecimal>>
 ) {
 
     companion object {
-        const val TopScoreSelectionSize = 5
+        private const val TopScoreSelectionSize = 5
     }
+
+    var categoryTitle = categoryTitle
+        private set
 
     private var sortedData: List<Pair<String, BigDecimal>>
     private var needsUpdate: Boolean
@@ -65,5 +69,5 @@ class ScoringStatisticsForCategory(
 
     private fun calculateMean() = sortedData
         .sumOf { it.second }
-        .divide(sortedData.size.toBigDecimal(), 3, RoundingMode.HALF_UP)
+        .divide(sortedData.size.toBigDecimal(), Constants.maximumDecimalPlaces, RoundingMode.HALF_UP)
 }

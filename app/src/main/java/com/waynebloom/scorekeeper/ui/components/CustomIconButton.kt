@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.components
+package com.waynebloom.scorekeeper.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 
 @Composable
@@ -43,7 +44,7 @@ fun CustomIconButton(
         boxModifier.clickable { onTap() }
     } else boxModifier
     iconModifier = if (!enabled) {
-        iconModifier.alpha(0.5f)
+        iconModifier.alpha(Alpha.disabled)
     } else iconModifier
 
     Box(
@@ -84,7 +85,7 @@ fun CustomIconButton(
         boxModifier.clickable { onTap() }
     } else boxModifier
     iconModifier = if (!enabled) {
-        iconModifier.alpha(0.5f)
+        iconModifier.alpha(Alpha.disabled)
     } else iconModifier
 
     Box(

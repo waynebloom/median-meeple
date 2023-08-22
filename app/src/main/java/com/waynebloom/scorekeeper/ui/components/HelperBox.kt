@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.components
+package com.waynebloom.scorekeeper.ui.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.background
@@ -105,7 +105,10 @@ fun HelperBoxLongPreview() {
     MedianMeepleTheme {
 
         Surface(color = MaterialTheme.colors.background) {
-            HelperBox(message = "This is a long test message. It should span more than one line.", type = HelperBoxType.Info)
+            HelperBox(
+                message = "This is a long test message. It should span more than one line.",
+                type = HelperBoxType.Info
+            )
         }
     }
 }

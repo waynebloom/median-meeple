@@ -44,4 +44,3 @@ data class CategoryScoreEntity(
 
     var value: String = "0"
 )
-

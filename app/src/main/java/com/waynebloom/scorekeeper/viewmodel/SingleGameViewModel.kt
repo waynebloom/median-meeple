@@ -275,7 +275,7 @@ class SingleGameViewModel(
     fun onSearchStringChanged(value: String, coroutineScope: CoroutineScope) =
         coroutineScope.launch {
             searchString = value
-            delay(DurationMs.Long.toLong())
+            delay(DurationMs.long.toLong())
             if (matchesLazyListState.firstVisibleItemIndex > 0)
                 scrollToTop()
         }
@@ -283,7 +283,7 @@ class SingleGameViewModel(
     fun onSortModeChanged(value: MatchSortMode, coroutineScope: CoroutineScope) =
         coroutineScope.launch {
             sortMode = value
-            delay(DurationMs.Long.toLong())
+            delay(DurationMs.long.toLong())
             if (matchesLazyListState.firstVisibleItemIndex > 0)
                 scrollToTop()
         }
@@ -291,7 +291,7 @@ class SingleGameViewModel(
     fun onSortDirectionChanged(value: SortDirection, coroutineScope: CoroutineScope) =
         coroutineScope.launch {
             sortDirection = value
-            delay(DurationMs.Long.toLong())
+            delay(DurationMs.long.toLong())
             if (matchesLazyListState.firstVisibleItemIndex > 0)
                 scrollToTop()
         }

@@ -15,7 +15,7 @@ import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntityState
 import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import kotlinx.coroutines.*
@@ -168,7 +168,7 @@ class MedianMeepleActivityViewModel(appObj: Application) : AndroidViewModel(appO
 
     // region Subscore
 
-    fun commitSubscoreBundles(bundles: List<SubscoreStateBundle>) {
+    fun commitSubscoreBundles(bundles: List<CategoryScoreEntityState>) {
         bundles.forEach {
             when(it.databaseAction) {
                 DatabaseAction.INSERT -> { insertSubscore(it.entity) }

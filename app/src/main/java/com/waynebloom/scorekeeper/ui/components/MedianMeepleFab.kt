@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.components
+package com.waynebloom.scorekeeper.ui.components
 
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon

@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.ui.screens
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.AnimatedContent
@@ -24,20 +24,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.AdCard
-import com.waynebloom.scorekeeper.components.HelperBox
-import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.components.MatchListItem
-import com.waynebloom.scorekeeper.components.MedianMeepleFab
+import com.waynebloom.scorekeeper.ui.components.AdCard
+import com.waynebloom.scorekeeper.ui.components.HelperBox
+import com.waynebloom.scorekeeper.ui.components.HelperBoxType
+import com.waynebloom.scorekeeper.ui.components.MatchListItem
+import com.waynebloom.scorekeeper.ui.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.data.MatchObjectsDefaultPreview
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.ListState
-import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
+import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
+import com.waynebloom.scorekeeper.ui.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
@@ -113,10 +113,12 @@ fun MatchesForSingleGameScreen(
                 verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
             ) {
 
-                matches.toAdSeparatedListlets().forEachIndexed { index, listlet ->
+                val adSeparatedSubLists = matches.toAdSeparatedSubLists()
+
+                adSeparatedSubLists.forEachIndexed { index, subList ->
 
                     items(
-                        items = listlet,
+                        items = subList,
                         key = { item -> item.entity.id }
                     ) { match ->
 
@@ -127,13 +129,13 @@ fun MatchesForSingleGameScreen(
                             showGameIdentifier = false,
                             modifier = Modifier.animateItemPlacement(
                                 animationSpec = tween(
-                                    durationMillis = DurationMs.Medium,
+                                    durationMillis = DurationMs.medium,
                                     easing = Ease)),
                         )
                     }
 
                     item {
-                        if (index == 0 || listlet.size >= 10) {
+                        if (index == adSeparatedSubLists.lastIndex) {
                             AdCard(
                                 currentAd = currentAd,
                                 themeColor = themeColor.toArgb()

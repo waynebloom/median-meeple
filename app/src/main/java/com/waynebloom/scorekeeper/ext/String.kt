@@ -1,5 +1,6 @@
 package com.waynebloom.scorekeeper.ext
 
+import com.waynebloom.scorekeeper.constants.Constants
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import java.math.RoundingMode
 
@@ -8,7 +9,7 @@ fun String.getScoreValidityState(): ScoreStringValidityState {
 
     return if (scoreBigDecimal == null) {
         ScoreStringValidityState.InvalidNumber
-    } else if (scoreBigDecimal.scale() > 3) {
+    } else if (scoreBigDecimal.scale() > Constants.maximumDecimalPlaces) {
         ScoreStringValidityState.ExcessiveDecimals
     } else ScoreStringValidityState.Valid
 }
@@ -24,22 +25,30 @@ fun String.sentenceCase(): String {
 }
 
 fun String.toShortScoreFormat(): String {
-    if (count { it != '.' } <= 6) return this
+    val maximumRawNumberLength = 6
+    val billionScale = -9
+    val billionMark = "B"
+    val millionScale = -6
+    val millionMark = "M"
+    val tenThousandScale = -3
+    val thousandMark = "K"
+
+    if (count { it != '.' } <= maximumRawNumberLength) return this
     val bigDecimal = toBigDecimal()
     return if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Trillion)) {
         "1000B+"
     } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Billion)) {
         bigDecimal
-            .scaleByPowerOfTen(-9)
-            .toTrimmedScoreString() + "B"
+            .scaleByPowerOfTen(billionScale)
+            .toTrimmedScoreString() + billionMark
     } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Million)) {
         bigDecimal
-            .scaleByPowerOfTen(-6)
-            .toTrimmedScoreString() + "M"
+            .scaleByPowerOfTen(millionScale)
+            .toTrimmedScoreString() + millionMark
     } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.TenThousand)) {
         bigDecimal
-            .scaleByPowerOfTen(-3)
-            .toTrimmedScoreString() + "K"
+            .scaleByPowerOfTen(tenThousandScale)
+            .toTrimmedScoreString() + thousandMark
     } else {
         bigDecimal
             .setScale(0, RoundingMode.HALF_UP)

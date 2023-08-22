@@ -9,7 +9,7 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import com.waynebloom.scorekeeper.LocalGameColors
+import com.waynebloom.scorekeeper.ui.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.color.DarkThemeGameColors
 import com.waynebloom.scorekeeper.ui.theme.color.LightThemeGameColors
 import com.waynebloom.scorekeeper.ui.theme.color.gray400

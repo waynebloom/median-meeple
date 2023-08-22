@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
@@ -41,10 +41,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.CustomIconButton
-import com.waynebloom.scorekeeper.components.SearchTopBar
+import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.SearchTopBar
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.data.model.game.GameObject
@@ -53,6 +52,7 @@ import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
 import com.waynebloom.scorekeeper.enums.MenuOption
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
+import com.waynebloom.scorekeeper.ui.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay

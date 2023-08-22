@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.ui.screens
 
 import android.content.res.Configuration
 import androidx.compose.animation.*
@@ -33,9 +33,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.CustomIconButton
-import com.waynebloom.scorekeeper.components.HelperBox
-import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.HelperBox
+import com.waynebloom.scorekeeper.ui.components.HelperBoxType
+import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.data.*
@@ -48,6 +49,7 @@ import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.ext.toShortScoreFormat
+import com.waynebloom.scorekeeper.ui.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.ui.theme.color.orange100
 import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModel
@@ -85,7 +87,7 @@ fun SingleMatchScreen(
     )
     val textSelectionColors = TextSelectionColors(
         handleColor = themeColor,
-        backgroundColor = themeColor.copy(0.3f)
+        backgroundColor = themeColor.copy(Alpha.textSelectionBackground)
     )
 
     Scaffold(

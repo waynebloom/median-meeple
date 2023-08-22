@@ -8,8 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.ProvidableCompositionLocal
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,29 +20,26 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.MobileAds
-import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
-import com.waynebloom.scorekeeper.screens.DetailedPlayerScoresScreen
-import com.waynebloom.scorekeeper.screens.EditGameScreen
-import com.waynebloom.scorekeeper.screens.EditPlayerScoreScreen
-import com.waynebloom.scorekeeper.screens.GamesScreen
-import com.waynebloom.scorekeeper.screens.OverviewScreen
-import com.waynebloom.scorekeeper.screens.SingleGameScreen
-import com.waynebloom.scorekeeper.screens.SingleMatchScreen
+import com.waynebloom.scorekeeper.ui.LocalGameColors
+import com.waynebloom.scorekeeper.ui.components.Loading
+import com.waynebloom.scorekeeper.ui.screens.DetailedPlayerScoresScreen
+import com.waynebloom.scorekeeper.ui.screens.EditGameScreen
+import com.waynebloom.scorekeeper.ui.screens.EditPlayerScoreScreen
+import com.waynebloom.scorekeeper.ui.screens.GamesScreen
+import com.waynebloom.scorekeeper.ui.screens.OverviewScreen
+import com.waynebloom.scorekeeper.ui.screens.SingleGameScreen
+import com.waynebloom.scorekeeper.ui.screens.SingleMatchScreen
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.ui.theme.color.DarkThemeGameColors
-import com.waynebloom.scorekeeper.ui.theme.color.GameColors
 import com.waynebloom.scorekeeper.viewmodel.MedianMeepleActivityViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.onStart
-
-val LocalGameColors: ProvidableCompositionLocal<GameColors> = compositionLocalOf { DarkThemeGameColors() }
 
 class MedianMeepleActivity : ComponentActivity() {
     private lateinit var viewModel: MedianMeepleActivityViewModel
@@ -89,6 +84,7 @@ private fun App(viewModel: MedianMeepleActivityViewModel) {
     }
 }
 
+@SuppressWarnings("CyclomaticComplexMethod")
 @Composable
 private fun NavHost(
     navController: NavHostController,
@@ -126,17 +122,15 @@ private fun NavHost(
             } else {
                 OverviewScreen(
                     games = allGames,
-                    matches = allMatches
-                        .sortedByDescending { it.entity.timeModified }
-                        .take(6),
+                    allMatches = allMatches,
                     currentAd = currentAd,
-                    onSeeAllGamesTap = { navController.navigate(TopLevelScreen.Games.name) },
                     onAddNewGameTap = {
                         viewModel.executeDbOperation {
                             viewModel.insertNewEmptyGame()
                         }
                         navController.navigate(TopLevelScreen.EditGame.name)
                     },
+                    onSeeAllGamesTap = { navController.navigate(TopLevelScreen.Games.name) },
                     onSingleGameTap = { gameId ->
                         viewModel.updateGameCacheById(id = gameId, games = allGames)
                         navController.navigate(TopLevelScreen.SingleGame.name)
@@ -175,7 +169,6 @@ private fun NavHost(
             } else {
                 GamesScreen(
                     games = allGames.map { it.entity },
-//                    games = listOf(),
                     currentAd = currentAd,
                     onAddNewGameTap = {
                         viewModel.executeDbOperation {

@@ -41,7 +41,7 @@ class GamesViewModel: ViewModel() {
     fun onSearchStringChanged(value: String, coroutineScope: CoroutineScope) {
         coroutineScope.launch {
             searchString = value
-            delay(DurationMs.Long.toLong())
+            delay(DurationMs.long.toLong())
             if (lazyListState.firstVisibleItemIndex > 0)
                 scrollToTop()
         }

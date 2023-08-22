@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -42,8 +42,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.HelperBox
-import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.ui.components.HelperBox
+import com.waynebloom.scorekeeper.ui.components.HelperBoxType
+import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.data.PlayerObjectsDefaultPreview
@@ -58,8 +59,10 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModel
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModelFactory
 
-const val ExpandedPlayerNameScreenWeight = 0.4f
-const val CollapsedPlayerNameScreenWeight = 0.15f
+private const val ExpandedPlayerNameScreenWeight = 0.4f
+private const val CollapsedPlayerNameScreenWeight = 0.15f
+private const val NumberOfItemsOnFirstPage = 2
+private const val NumberOfItemsPerPage = 3
 
 @Composable
 fun DetailedPlayerScoresScreen(
@@ -79,11 +82,11 @@ fun DetailedPlayerScoresScreen(
 
     // creates a 3 by (subscoreTitles.size - 2 / 3) + 1 matrix where the first column contains only
     // the first 2 indices
-    val firstPage = viewModel.subscoreTitleStrings.indices.take(2)
+    val firstPage = viewModel.subscoreTitleStrings.indices.take(NumberOfItemsOnFirstPage)
     val subscoreIndicesForPageMatrix = listOf(firstPage).plus(
         viewModel.subscoreTitleStrings.indices
-            .drop(2)
-            .chunked(3)
+            .drop(NumberOfItemsOnFirstPage)
+            .chunked(NumberOfItemsPerPage)
     )
 
     Column {
@@ -391,7 +394,7 @@ fun EditScoresPageActions(
                     color = themeColor,
                     shape = MaterialTheme.shapes.small
                 )
-                .fillMaxWidth(0.5f)
+                .fillMaxWidth(Alpha.disabled)
         ) {
             Button(
                 onClick = { onPageDownTap() },

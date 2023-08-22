@@ -2,6 +2,13 @@ package com.waynebloom.scorekeeper.ext
 
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.ext.AdSpacing.firstAdMaximumIndex
+import com.waynebloom.scorekeeper.ext.AdSpacing.itemsBetweenAds
+
+private object AdSpacing {
+    const val firstAdMaximumIndex = 5
+    const val itemsBetweenAds = 10
+}
 
 fun <T> List<T>.statefulUpdateElement(predicate: (T) -> Boolean, update: (T) -> Unit): List<T> {
     return map {
@@ -12,19 +19,19 @@ fun <T> List<T>.statefulUpdateElement(predicate: (T) -> Boolean, update: (T) -> 
     }
 }
 
-fun <T> List<T>.toAdSeparatedListlets(): List<List<T>> {
+fun <T> List<T>.toAdSeparatedSubLists(): List<List<T>> {
     val result = mutableListOf<List<T>>()
 
-    if (size <= 5) {
+    if (size <= firstAdMaximumIndex) {
         return listOf(this)
     }
 
-    result.add(subList(0, 5))
-    for (i in 5..size step 10) {
-        if (i + 10 > lastIndex) {
+    result.add(subList(0, firstAdMaximumIndex))
+    for (i in firstAdMaximumIndex..size step itemsBetweenAds) {
+        if (i + itemsBetweenAds > lastIndex) {
             result.add(subList(i, size))
         } else {
-            result.add(subList(i, i + 10))
+            result.add(subList(i, i + itemsBetweenAds))
         }
     }
 

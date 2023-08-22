@@ -4,13 +4,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
+import com.waynebloom.scorekeeper.constants.Constants
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.ext.getScoreValidityState
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class SubscoreStateBundle(
+class CategoryScoreEntityState(
     var entity: CategoryScoreEntity,
     databaseAction: DatabaseAction = DatabaseAction.NO_ACTION
 ) {
@@ -40,6 +41,6 @@ class SubscoreStateBundle(
     }
 
     private fun beautifyBigDecimal(original: BigDecimal) = original
-        .setScale(3, RoundingMode.HALF_UP)
+        .setScale(Constants.maximumDecimalPlaces, RoundingMode.HALF_UP)
         .stripTrailingZeros()
 }

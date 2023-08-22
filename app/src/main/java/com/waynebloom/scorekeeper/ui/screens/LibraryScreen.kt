@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.ui.screens
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -29,27 +29,30 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.LocalGameColors
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.AdCard
-import com.waynebloom.scorekeeper.components.CustomIconButton
-import com.waynebloom.scorekeeper.components.GameListItem
-import com.waynebloom.scorekeeper.components.HelperBox
-import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.components.MedianMeepleFab
-import com.waynebloom.scorekeeper.components.SearchTopBar
+import com.waynebloom.scorekeeper.ui.components.AdCard
+import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.GameListItem
+import com.waynebloom.scorekeeper.ui.components.HelperBox
+import com.waynebloom.scorekeeper.ui.components.HelperBoxType
+import com.waynebloom.scorekeeper.ui.components.MedianMeepleFab
+import com.waynebloom.scorekeeper.ui.components.SearchTopBar
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.data.GameEntitiesDefaultPreview
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.enums.GamesTopBarState
 import com.waynebloom.scorekeeper.enums.ListState
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
-import com.waynebloom.scorekeeper.ext.toAdSeparatedListlets
+import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
+import com.waynebloom.scorekeeper.ui.LocalGameColors
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
+import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.GamesViewModel
 import com.waynebloom.scorekeeper.viewmodel.GamesViewModelFactory
 
@@ -134,27 +137,28 @@ fun GamesScreen(
                 verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
             ) {
 
-                viewModel
+                val adSeparatedSubLists = viewModel
                     .getGamesToDisplay(games)
-                    .toAdSeparatedListlets()
-                    .forEachIndexed { index, listlet ->
+                    .toAdSeparatedSubLists()
 
-                        items(items = listlet, key = { it.id }) { game ->
+                adSeparatedSubLists.forEachIndexed { index, subList ->
 
-                            GameListItem(
-                                name = game.name,
-                                color = LocalGameColors.current.getColorByKey(game.color),
-                                onClick = { onSingleGameTap(game.id) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .animateItemPlacement()
-                            )
-                        }
+                    items(items = subList, key = { it.id }) { game ->
 
-                        item {
-                            if (index == 0 || listlet.size >= 10) AdCard(currentAd)
-                        }
+                        GameListItem(
+                            name = game.name,
+                            color = LocalGameColors.current.getColorByKey(game.color),
+                            onClick = { onSingleGameTap(game.id) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItemPlacement()
+                        )
                     }
+
+                    if (index != adSeparatedSubLists.lastIndex) {
+                        item { AdCard(currentAd) }
+                    }
+                }
             }
         }
     }
@@ -253,5 +257,19 @@ fun GamesTopBar(
         }
 
         Divider()
+    }
+}
+
+@Preview
+@Composable
+fun GamesScreenPreview() {
+    MedianMeepleTheme {
+
+        GamesScreen(
+            games = GameEntitiesDefaultPreview,
+            currentAd = null,
+            onAddNewGameTap = {},
+            onSingleGameTap = {}
+        )
     }
 }

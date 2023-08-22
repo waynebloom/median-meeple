@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.screens
+package com.waynebloom.scorekeeper.ui.screens
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
@@ -30,10 +30,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.CustomIconButton
-import com.waynebloom.scorekeeper.components.HelperBox
-import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescription
+import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.HelperBox
+import com.waynebloom.scorekeeper.ui.components.HelperBoxType
+import com.waynebloom.scorekeeper.ui.components.OutlinedTextFieldWithErrorDescription
+import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.data.MatchObjectsDefaultPreview
@@ -41,7 +42,7 @@ import com.waynebloom.scorekeeper.data.model.*
 import com.waynebloom.scorekeeper.data.model.match.MatchObject
 import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
 import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.SubscoreStateBundle
+import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntityState
 import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
@@ -60,7 +61,7 @@ fun EditPlayerScoreScreen(
     subscoreTitles: List<CategoryTitleEntity>,
     isGameManualRanked: Boolean,
     themeColor: Color,
-    onSaveTap: (EntityStateBundle<PlayerEntity>, List<SubscoreStateBundle>) -> Unit,
+    onSaveTap: (EntityStateBundle<PlayerEntity>, List<CategoryScoreEntityState>) -> Unit,
     onDeleteTap: (Long) -> Unit,
 ) {
     val viewModel = viewModel<EditPlayerScoreViewModel>(
@@ -98,7 +99,7 @@ fun EditPlayerScoreScreen(
             LocalTextSelectionColors.provides(
                 TextSelectionColors(
                     handleColor = themeColor,
-                    backgroundColor = themeColor.copy(0.3f)
+                    backgroundColor = themeColor.copy(Alpha.textSelectionBackground)
                 )
             )
         ) {
@@ -292,10 +293,10 @@ private fun RankingSection(
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun ScoreSection(
-    categoryData: List<SubscoreStateBundle>,
+    categoryData: List<CategoryScoreEntityState>,
     categoryTitles: List<CategoryTitleEntity>,
-    totalScoreData: SubscoreStateBundle,
-    uncategorizedScoreData: SubscoreStateBundle,
+    totalScoreData: CategoryScoreEntityState,
+    uncategorizedScoreData: CategoryScoreEntityState,
     isDetailedMode: Boolean,
     themeColor: Color,
     textFieldColors: TextFieldColors,
@@ -386,7 +387,7 @@ private fun DetailedScoreSwitchRow(
 
 @Composable
 private fun TotalScoreField(
-    totalScoreData: SubscoreStateBundle,
+    totalScoreData: CategoryScoreEntityState,
     textFieldColors: TextFieldColors,
     onChanged: (TextFieldValue) -> Unit,
     onDoneTap: () -> Unit
@@ -412,9 +413,9 @@ private fun TotalScoreField(
 
 @Composable
 private fun CategoryFields(
-    categoryData: List<SubscoreStateBundle>,
+    categoryData: List<CategoryScoreEntityState>,
     categoryTitles: List<CategoryTitleEntity>,
-    uncategorizedScoreData: SubscoreStateBundle,
+    uncategorizedScoreData: CategoryScoreEntityState,
     textFieldColors: TextFieldColors,
     onDoneTap: () -> Unit,
     onFieldChanged: (Long, TextFieldValue) -> Unit,

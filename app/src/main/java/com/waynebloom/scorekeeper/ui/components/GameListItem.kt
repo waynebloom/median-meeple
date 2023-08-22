@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.components
+package com.waynebloom.scorekeeper.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -16,6 +16,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -40,7 +41,7 @@ fun GameListItem(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
                     .size(64.dp)
-                    .background(color.copy(alpha = 0.3f))
+                    .background(color.copy(alpha = Alpha.textSelectionBackground))
             ) {
 
                 Text(

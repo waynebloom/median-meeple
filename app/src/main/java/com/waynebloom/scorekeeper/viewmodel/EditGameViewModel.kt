@@ -9,6 +9,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.data.model.EntityStateBundle
 import com.waynebloom.scorekeeper.data.model.game.GameEntity
 import com.waynebloom.scorekeeper.data.model.game.GameObject
@@ -141,7 +142,9 @@ class EditGameViewModel(
         coroutineScope: CoroutineScope,
     ) {
         coroutineScope.launch {
-            if (isTransitioningToEditMode) delay(400) else delay(50)
+            if (isTransitioningToEditMode)
+                delay(DurationMs.long.toLong())
+            else delay(DurationMs.veryShort.toLong())
             lazyListState.animateScrollToItem(ScoringCategorySectionIndex)
         }
     }

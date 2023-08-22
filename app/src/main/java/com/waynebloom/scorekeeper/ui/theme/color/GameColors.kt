@@ -57,6 +57,7 @@ abstract class GameColors {
         )
     }
 
+    @SuppressWarnings("CyclomaticComplexMethod")
     fun getColorByKey(key: String): Color {
         return when(key) {
             DeepOrange -> deepOrange
