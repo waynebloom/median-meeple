@@ -37,15 +37,15 @@ import com.waynebloom.scorekeeper.ui.components.OutlinedTextFieldWithErrorDescri
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.data.MatchObjectsDefaultPreview
-import com.waynebloom.scorekeeper.data.model.*
-import com.waynebloom.scorekeeper.data.model.match.MatchObject
-import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntityState
-import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
+import com.waynebloom.scorekeeper.MatchObjectsDefaultPreview
+import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreEntityState
+import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
+import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
@@ -56,12 +56,12 @@ import com.waynebloom.scorekeeper.viewmodel.EditPlayerScoreViewModelFactory
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EditPlayerScoreScreen(
-    initialPlayer: PlayerObject,
-    matchObject: MatchObject,
-    subscoreTitles: List<CategoryTitleEntity>,
+    initialPlayer: PlayerDataRelationModel,
+    matchObject: MatchDataRelationModel,
+    categories: List<CategoryDataModel>,
     isGameManualRanked: Boolean,
     themeColor: Color,
-    onSaveTap: (EntityStateBundle<PlayerEntity>, List<CategoryScoreEntityState>) -> Unit,
+    onSaveTap: (EntityStateBundle<PlayerDataModel>, List<CategoryScoreEntityState>) -> Unit,
     onDeleteTap: (Long) -> Unit,
 ) {
     val viewModel = viewModel<EditPlayerScoreViewModel>(
@@ -70,7 +70,7 @@ fun EditPlayerScoreScreen(
             playerObject = initialPlayer,
             matchObject = matchObject,
             playerSubscores = initialPlayer.score,
-            subscoreTitles = subscoreTitles,
+            subscoreTitles = categories,
             isGameManualRanked = isGameManualRanked,
             saveCallback = onSaveTap
         )
@@ -233,7 +233,6 @@ private fun InformationSection(
             onValueChange = { onNameChanged(it) },
             label = { Text(text = stringResource(id = R.string.field_name)) },
             isError = isError,
-            colors = textFieldColors,
             keyboardOptions = KeyboardOptions(
                 imeAction = ImeAction.Next
             ),
@@ -271,12 +270,11 @@ private fun RankingSection(
         OutlinedTextFieldWithErrorDescription(
             textFieldValue = playerRankTextFieldValue,
             onValueChange = { onPlayerRankUpdate(it) },
-            groupModifier = Modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 8.dp),
             label = { Text(text = stringResource(id = R.string.field_rank)) },
             isError = showPlayerRankError,
-            colors = textFieldColors,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Next
@@ -294,7 +292,7 @@ private fun RankingSection(
 @Composable
 private fun ScoreSection(
     categoryData: List<CategoryScoreEntityState>,
-    categoryTitles: List<CategoryTitleEntity>,
+    categoryTitles: List<CategoryDataModel>,
     totalScoreData: CategoryScoreEntityState,
     uncategorizedScoreData: CategoryScoreEntityState,
     isDetailedMode: Boolean,
@@ -395,10 +393,9 @@ private fun TotalScoreField(
     OutlinedTextFieldWithErrorDescription(
         textFieldValue = totalScoreData.textFieldValue,
         onValueChange = { onChanged(it) },
-        groupModifier = Modifier.padding(bottom = 8.dp),
+        modifier = Modifier.padding(bottom = 8.dp),
         label = { Text(text = stringResource(id = R.string.field_total_score)) },
         isError = totalScoreData.validityState != ScoreStringValidityState.Valid,
-        colors = textFieldColors,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
             imeAction = ImeAction.Done
@@ -414,7 +411,7 @@ private fun TotalScoreField(
 @Composable
 private fun CategoryFields(
     categoryData: List<CategoryScoreEntityState>,
-    categoryTitles: List<CategoryTitleEntity>,
+    categoryTitles: List<CategoryDataModel>,
     uncategorizedScoreData: CategoryScoreEntityState,
     textFieldColors: TextFieldColors,
     onDoneTap: () -> Unit,
@@ -430,10 +427,9 @@ private fun CategoryFields(
             OutlinedTextFieldWithErrorDescription(
                 textFieldValue = data.textFieldValue,
                 onValueChange = { onFieldChanged(data.entity.categoryTitleId, it) },
-                groupModifier = Modifier.fillMaxWidth(),
-                label = { Text(text = categoryTitles[index].title) },
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text(text = categoryTitles[index].name) },
                 isError = data.validityState != ScoreStringValidityState.Valid,
-                colors = textFieldColors,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
@@ -448,11 +444,10 @@ private fun CategoryFields(
 
         OutlinedTextFieldWithErrorDescription(
             textFieldValue = uncategorizedScoreData.textFieldValue,
-            groupModifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             onValueChange = { onUncategorizedFieldChanged(it) },
             label = { Text(text = stringResource(id = R.string.field_uncategorized)) },
             isError = uncategorizedScoreData.validityState != ScoreStringValidityState.Valid,
-            colors = textFieldColors,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
@@ -471,18 +466,18 @@ private fun CategoryFields(
 fun EditPlayerScoreScreenPreview() {
     MedianMeepleTheme {
         EditPlayerScoreScreen(
-            initialPlayer = PlayerObject(
-                PlayerEntity(
+            initialPlayer = PlayerDataRelationModel(
+                PlayerDataModel(
                     name = "Wayne",
                     showDetailedScore = true
                 )
             ),
             matchObject = MatchObjectsDefaultPreview[0],
-            subscoreTitles = listOf(
-                CategoryTitleEntity(title = "Eggs"),
-                CategoryTitleEntity(title = "Tucked Cards"),
-                CategoryTitleEntity(title = "Cached Food"),
-                CategoryTitleEntity(title = "Birds")
+            categories = listOf(
+                CategoryDataModel(name = "Eggs"),
+                CategoryDataModel(name = "Tucked Cards"),
+                CategoryDataModel(name = "Cached Food"),
+                CategoryDataModel(name = "Birds")
             ),
             isGameManualRanked = true,
             themeColor = deepOrange500,

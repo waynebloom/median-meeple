@@ -10,10 +10,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.DurationMs
-import com.waynebloom.scorekeeper.data.model.EntityStateBundle
-import com.waynebloom.scorekeeper.data.model.game.GameEntity
-import com.waynebloom.scorekeeper.data.model.game.GameObject
-import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
+import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
+import com.waynebloom.scorekeeper.room.data.model.GameDataModel
+import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import kotlinx.coroutines.CoroutineScope
@@ -21,16 +21,17 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.properties.Delegates
 
-enum class ScoringCategorySectionState {
+enum class CategorySectionState {
     Default,
     Empty,
     EditMode,
 }
 
 class EditGameViewModel(
-    initialGame: GameObject,
-    private val saveCallback: (EntityStateBundle<GameEntity>,
-        List<EntityStateBundle<CategoryTitleEntity>>) -> Unit
+    initialGame: GameDataRelationModel,
+    private val saveCallback: (
+        EntityStateBundle<GameDataModel>,
+        List<EntityStateBundle<CategoryDataModel>>) -> Unit
 ): ViewModel() {
 
     var lazyListState by mutableStateOf(LazyListState())
@@ -42,15 +43,15 @@ class EditGameViewModel(
     var themeColorString by mutableStateOf(initialGame.entity.color)
     private var colorMenuVisible: Boolean by mutableStateOf(false)
 
-    val initialGameEntity: GameEntity = initialGame.entity
+    val initialGameEntity: GameDataModel = initialGame.entity
     private var gameEntityWasEdited = false
     private var saveWasTapped = false
 
     // region Scoring Category
 
-    private var categoryStateList: List<EntityStateBundle<CategoryTitleEntity>>
+    private var categoryStateList: List<EntityStateBundle<CategoryDataModel>>
         by mutableStateOf(initialGame
-        .subscoreTitles
+        .categories
         .sortedBy { it.position }
         .map { EntityStateBundle(entity = it) })
     private var isScoringCategoryEditModeOn by mutableStateOf(false)
@@ -67,7 +68,7 @@ class EditGameViewModel(
     var isFreshInput by mutableStateOf(true)
         private set
 
-    private var deletedCategories: MutableList<EntityStateBundle<CategoryTitleEntity>> = mutableListOf()
+    private var deletedCategories: MutableList<EntityStateBundle<CategoryDataModel>> = mutableListOf()
     private var indexOfCategoryReceivingEdit = 0
 
     // endregion
@@ -121,7 +122,7 @@ class EditGameViewModel(
         isTransitioningToEditMode: Boolean,
         coroutineScope: CoroutineScope,
     ) {
-        val categoryTitle = categoryStateList[index].entity.title
+        val categoryTitle = categoryStateList[index].entity.name
         onCategoryInputChanged(TextFieldValue(categoryTitle))
         indexOfCategoryReceivingEdit = index
         showCategoryInput = true
@@ -164,7 +165,7 @@ class EditGameViewModel(
 
     private fun submitForExistingCategory(categoryTitle: TextFieldValue, index: Int) {
         categoryStateList[index].apply {
-            entity.title = categoryTitle.text
+            entity.name = categoryTitle.text
             databaseAction = DatabaseAction.UPDATE
         }
     }
@@ -172,9 +173,9 @@ class EditGameViewModel(
     private fun submitForNewCategory(categoryTitle: TextFieldValue) {
         categoryStateList = categoryStateList.plus(
             EntityStateBundle(
-                entity = CategoryTitleEntity(
+                entity = CategoryDataModel(
                     gameId = initialGameEntity.id,
-                    title = categoryTitle.text,
+                    name = categoryTitle.text,
                 ),
                 databaseAction = DatabaseAction.INSERT
             )
@@ -200,7 +201,7 @@ class EditGameViewModel(
      * adjust the ordering of the list to reflect its current position.
      */
     fun getCategoriesToDisplay(): List<String> {
-        val categoryEntities = categoryStateList.map { it.entity.title }
+        val categoryEntities = categoryStateList.map { it.entity.name }
         return if (dragStartIndex > -1 && dragCurrentIndex > -1) {
             categoryEntities.toMutableList().apply {
                 val itemBeingDragged = removeAt(dragStartIndex)
@@ -211,9 +212,9 @@ class EditGameViewModel(
     }
 
     fun getCategoryListState() = when {
-        categoryStateList.isEmpty() -> ScoringCategorySectionState.Empty
-        isScoringCategoryEditModeOn -> ScoringCategorySectionState.EditMode
-        else -> ScoringCategorySectionState.Default
+        categoryStateList.isEmpty() -> CategorySectionState.Empty
+        isScoringCategoryEditModeOn -> CategorySectionState.EditMode
+        else -> CategorySectionState.Default
     }
 
     fun getInputFieldTitle(): Int  =
@@ -250,12 +251,12 @@ class EditGameViewModel(
 
     // endregion
 
-    private fun getCategoryBundlesForCommit(): List<EntityStateBundle<CategoryTitleEntity>> {
+    private fun getCategoryBundlesForCommit(): List<EntityStateBundle<CategoryDataModel>> {
         categoryStateList.forEachIndexed { index, bundle -> bundle.entity.position = index }
         return categoryStateList + deletedCategories
     }
 
-    private fun getGameToCommit(): EntityStateBundle<GameEntity> {
+    private fun getGameToCommit(): EntityStateBundle<GameDataModel> {
         return EntityStateBundle(
             entity = initialGameEntity.apply {
                 color = themeColorString
@@ -297,8 +298,8 @@ class EditGameViewModel(
 }
 
 class EditGameViewModelFactory (
-    private val initialGame: GameObject,
-    private val saveCallback: (EntityStateBundle<GameEntity>, List<EntityStateBundle<CategoryTitleEntity>>) -> Unit,
+    private val initialGame: GameDataRelationModel,
+    private val saveCallback: (EntityStateBundle<GameDataModel>, List<EntityStateBundle<CategoryDataModel>>) -> Unit,
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = EditGameViewModel(
         initialGame = initialGame,

@@ -9,28 +9,28 @@ import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.constants.Constants
-import com.waynebloom.scorekeeper.data.model.*
-import com.waynebloom.scorekeeper.data.model.match.MatchEntity
-import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
+import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
+import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.enums.DatabaseAction
+import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
 import java.util.*
 
 class SingleMatchViewModel(
-    private val matchEntity: MatchEntity,
+    private val matchEntity: MatchDataModel,
     private val addPlayerCallback: () -> Unit,
-    private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
+    private val saveCallback: (EntityStateBundle<MatchDataModel>) -> Unit
 ): ViewModel() {
 
     private var matchEntityWasChanged = false
     private var saveWasTapped = false
 
-    var notes: String by mutableStateOf(matchEntity.matchNotes)
+    var notes: String by mutableStateOf(matchEntity.notes)
     var showMaximumPlayersError by mutableStateOf(false)
 
     private fun getMatchToCommit() = EntityStateBundle(
         entity = matchEntity.copy(
-            matchNotes = notes,
+            notes = notes,
             timeModified = Date().time
         ),
         databaseAction = if (matchEntityWasChanged) {
@@ -60,8 +60,8 @@ class SingleMatchViewModel(
     }
 
     fun shouldShowDetailedScoresButton(
-        players: List<PlayerEntity>,
-        subscoreTitles: List<CategoryTitleEntity>
+        players: List<PlayerDataModel>,
+        subscoreTitles: List<CategoryDataModel>
     ): Boolean {
         val categoriesExist = subscoreTitles.isNotEmpty()
         val detailedScoresExist = players.any { it.showDetailedScore }
@@ -70,9 +70,9 @@ class SingleMatchViewModel(
 }
 
 class SingleMatchViewModelFactory (
-    private val matchEntity: MatchEntity,
+    private val matchEntity: MatchDataModel,
     private val addPlayerCallback: () -> Unit,
-    private val saveCallback: (EntityStateBundle<MatchEntity>) -> Unit
+    private val saveCallback: (EntityStateBundle<MatchDataModel>) -> Unit
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = SingleMatchViewModel(
         matchEntity = matchEntity,

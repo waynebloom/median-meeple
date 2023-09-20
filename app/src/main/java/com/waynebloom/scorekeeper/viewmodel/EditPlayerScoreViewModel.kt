@@ -10,25 +10,26 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.constants.Constants
-import com.waynebloom.scorekeeper.data.model.EntityStateBundle
-import com.waynebloom.scorekeeper.data.model.match.MatchObject
-import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
-import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntityState
-import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
+import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
+import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreEntityState
+import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.ext.statefulUpdateElement
 import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
 
 class EditPlayerScoreViewModel(
-    playerObject: PlayerObject,
-    matchObject: MatchObject,
-    private val categoryScores: MutableList<CategoryScoreEntity>,
-    var categoryTitles: List<CategoryTitleEntity>,
+    playerObject: PlayerDataRelationModel,
+    matchObject: MatchDataRelationModel,
+    private val categoryScores: MutableList<CategoryScoreDataModel>,
+    var categoryTitles: List<CategoryDataModel>,
     private val isGameManualRanked: Boolean,
-    private val saveCallback: (EntityStateBundle<PlayerEntity>,
+    private val saveCallback: (
+        EntityStateBundle<PlayerDataModel>,
         List<CategoryScoreEntityState>) -> Unit
 ): ViewModel() {
 
@@ -43,14 +44,14 @@ class EditPlayerScoreViewModel(
     var categoryData by mutableStateOf(listOf<CategoryScoreEntityState>())
     var totalScoreData by mutableStateOf(
         CategoryScoreEntityState(
-            entity = CategoryScoreEntity(
-                value = initialPlayerEntity.score
+            entity = CategoryScoreDataModel(
+                value = initialPlayerEntity.totalScore
             )
         )
     )
     private var isScoreDataValid by mutableStateOf(true)
     var isNameValid by mutableStateOf(name.text.isNotBlank())
-    var uncategorizedScoreData by mutableStateOf(CategoryScoreEntityState(entity = CategoryScoreEntity()))
+    var uncategorizedScoreData by mutableStateOf(CategoryScoreEntityState(entity = CategoryScoreDataModel()))
 
     // region Initialization
 
@@ -81,7 +82,7 @@ class EditPlayerScoreViewModel(
                     CategoryScoreEntityState(entity = correspondingSubscore)
                 } else {
                     CategoryScoreEntityState(
-                        entity = CategoryScoreEntity(
+                        entity = CategoryScoreDataModel(
                             categoryTitleId = subscoreTitle.id,
                             playerId = initialPlayerEntity.id
                         ),
@@ -91,7 +92,7 @@ class EditPlayerScoreViewModel(
             }
     }
 
-    private fun initializeUncategorizedSubscore(playerObject: PlayerObject) {
+    private fun initializeUncategorizedSubscore(playerObject: PlayerDataRelationModel) {
         uncategorizedScoreData.apply {
             bigDecimal = playerObject.getUncategorizedScore()
             textFieldValue = TextFieldValue(
@@ -184,7 +185,7 @@ class EditPlayerScoreViewModel(
         updateScoreDataValidity(latestInput = textFieldValue.text)
     }
 
-    private fun getPlayerToCommit(): EntityStateBundle<PlayerEntity> {
+    private fun getPlayerToCommit(): EntityStateBundle<PlayerDataModel> {
         val categorySum = categoryData.sumOf { it.bigDecimal }
         val uncategorizedScore = uncategorizedScoreData.bigDecimal
         val scoreTotalAsString = (categorySum + uncategorizedScore).toTrimmedScoreString()
@@ -193,7 +194,7 @@ class EditPlayerScoreViewModel(
             entity = initialPlayerEntity.copy(
                 name = name.text,
                 position = playerRank.text.toInt(),
-                score = scoreTotalAsString,
+                totalScore = scoreTotalAsString,
                 showDetailedScore = isDetailedMode,
             ),
             databaseAction = if (playerEntityNeedsUpdate) {
@@ -226,12 +227,13 @@ class EditPlayerScoreViewModel(
 }
 
 class EditPlayerScoreViewModelFactory(
-    private val playerObject: PlayerObject,
-    private val matchObject: MatchObject,
-    private val playerSubscores: List<CategoryScoreEntity>,
-    private val subscoreTitles: List<CategoryTitleEntity>,
+    private val playerObject: PlayerDataRelationModel,
+    private val matchObject: MatchDataRelationModel,
+    private val playerSubscores: List<CategoryScoreDataModel>,
+    private val subscoreTitles: List<CategoryDataModel>,
     private val isGameManualRanked: Boolean,
-    private val saveCallback: (EntityStateBundle<PlayerEntity>,
+    private val saveCallback: (
+        EntityStateBundle<PlayerDataModel>,
         List<CategoryScoreEntityState>) -> Unit
 ) : ViewModelProvider.NewInstanceFactory() {
     override fun <T : ViewModel> create(modelClass: Class<T>): T = EditPlayerScoreViewModel(

@@ -1,6 +1,6 @@
 package com.waynebloom.scorekeeper.ext
 
-import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.AdSpacing.firstAdMaximumIndex
 import com.waynebloom.scorekeeper.ext.AdSpacing.itemsBetweenAds
@@ -8,6 +8,16 @@ import com.waynebloom.scorekeeper.ext.AdSpacing.itemsBetweenAds
 private object AdSpacing {
     const val firstAdMaximumIndex = 5
     const val itemsBetweenAds = 10
+}
+
+/**
+ * Perform a transformation on the element at the specified index.
+ *
+ * @param index the index of the element being transformed
+ * @param transformation the transformation to perform
+ */
+fun <T> MutableList<T>.transformElement(index: Int, transformation: (T) -> T) {
+    this[index] = transformation(this[index])
 }
 
 fun <T> List<T>.statefulUpdateElement(predicate: (T) -> Boolean, update: (T) -> Unit): List<T> {
@@ -38,9 +48,9 @@ fun <T> List<T>.toAdSeparatedSubLists(): List<List<T>> {
     return result
 }
 
-fun List<PlayerObject>.getWinningPlayer(scoringMode: ScoringMode) =
+fun List<PlayerDataRelationModel>.getWinningPlayer(scoringMode: ScoringMode) =
     when(scoringMode) {
-        ScoringMode.Ascending -> minBy { it.entity.score.toBigDecimal() }
-        ScoringMode.Descending -> maxBy { it.entity.score.toBigDecimal() }
+        ScoringMode.Ascending -> minBy { it.entity.totalScore.toBigDecimal() }
+        ScoringMode.Descending -> maxBy { it.entity.totalScore.toBigDecimal() }
         ScoringMode.Manual -> minBy { it.entity.position }
     }

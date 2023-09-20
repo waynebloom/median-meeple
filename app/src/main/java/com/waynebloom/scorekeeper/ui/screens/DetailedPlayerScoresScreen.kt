@@ -47,13 +47,13 @@ import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.data.PlayerObjectsDefaultPreview
-import com.waynebloom.scorekeeper.data.SubscoreEntitiesDefaultPreview
-import com.waynebloom.scorekeeper.data.SubscoreTitleEntitiesDefaultPreview
-import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.player.PlayerObject
-import com.waynebloom.scorekeeper.data.model.subscore.CategoryScoreEntity
-import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
+import com.waynebloom.scorekeeper.PlayerObjectsDefaultPreview
+import com.waynebloom.scorekeeper.CategoryScoreEntitiesDefaultPreview
+import com.waynebloom.scorekeeper.CategoryEntitiesDefaultPreview
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
+import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModel
@@ -66,8 +66,8 @@ private const val NumberOfItemsPerPage = 3
 
 @Composable
 fun DetailedPlayerScoresScreen(
-    players: List<PlayerObject>,
-    subscoreTitles: List<CategoryTitleEntity>,
+    players: List<PlayerDataRelationModel>,
+    subscoreTitles: List<CategoryDataModel>,
     themeColor: Color = MaterialTheme.colors.primary,
     onExistingPlayerTap: (Long) -> Unit,
 ) {
@@ -177,7 +177,7 @@ fun DetailedPlayerScoresScreen(
 
                             SimplePlayerCard(
                                 playerEntity = player.entity,
-                                playerTotalScoreString = viewModel.getScoreToDisplay(player.entity.score),
+                                playerTotalScoreString = viewModel.getScoreToDisplay(player.entity.totalScore),
                                 themeColor = themeColor,
                                 onPlayerTap = { onExistingPlayerTap(player.entity.id) }
                             )
@@ -204,7 +204,7 @@ fun DetailedPlayerScoresScreen(
 @Composable
 fun DetailedPlayerCard(
     playerName: String,
-    categoryData: List<CategoryScoreEntity>,
+    categoryData: List<CategoryScoreDataModel>,
     isFirstSubscoreDisplayed: Boolean,
     playerIdentifierScreenPortion: Float,
     scoresScreenPortion: Float,
@@ -262,7 +262,7 @@ fun DetailedPlayerCard(
 
 @Composable
 fun SimplePlayerCard(
-    playerEntity: PlayerEntity,
+    playerEntity: PlayerDataModel,
     playerTotalScoreString: String,
     themeColor: Color,
     onPlayerTap: (Long) -> Unit
@@ -450,10 +450,10 @@ fun EditScoresScreenPreview() {
             players = PlayerObjectsDefaultPreview.plus(
                 PlayerObjectsDefaultPreview[0].apply {
                     entity.showDetailedScore = true
-                    score = SubscoreEntitiesDefaultPreview
+                    score = CategoryScoreEntitiesDefaultPreview
                 }
             ),
-            subscoreTitles = SubscoreTitleEntitiesDefaultPreview,
+            subscoreTitles = CategoryEntitiesDefaultPreview,
             onExistingPlayerTap = {},
         )
     }

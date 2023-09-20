@@ -5,15 +5,16 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.DurationMs
-import com.waynebloom.scorekeeper.data.model.ScoringStatisticsForCategory
-import com.waynebloom.scorekeeper.data.model.game.GameObject
-import com.waynebloom.scorekeeper.data.model.match.MatchObject
-import com.waynebloom.scorekeeper.data.model.subscoretitle.CategoryTitleEntity
-import com.waynebloom.scorekeeper.enums.ListState
+import com.waynebloom.scorekeeper.room.domain.model.ScoringStatisticsForCategory
+import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
+import com.waynebloom.scorekeeper.enums.ListDisplayState
 import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
 import com.waynebloom.scorekeeper.enums.ScoringMode
@@ -21,14 +22,19 @@ import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.isEqualTo
+import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
+import javax.inject.Inject
 
-class SingleGameViewModel(
-    gameObject: GameObject,
+@HiltViewModel
+class SingleGameViewModel @Inject constructor(
+    getGame: GetGame,
     resources: Resources,
+    savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
     companion object {
@@ -37,12 +43,14 @@ class SingleGameViewModel(
 
     // Recomposition-aware properties
 
-    var matches: List<MatchObject>
+    var matches: List<MatchDataRelationModel> = listOf()
     var playerCount: String
-    private var scoringMode: ScoringMode
-    var screenTitle: String
-    var statisticsObjects: List<ScoringStatisticsForCategory>
+    private var scoringMode: ScoringMode = ScoringMode.Descending
+    var screenTitle: String = ""
+    var statisticsObjects: List<ScoringStatisticsForCategory> = listOf()
     var winners: Map<String, Int>
+    var color: String = "DEEP_ORANGE"
+    var game = GameDataRelationModel()
 
     // State properties
 
@@ -54,9 +62,9 @@ class SingleGameViewModel(
 
     var isSearchBarFocused by mutableStateOf(false)
     var matchesTopBarState by mutableStateOf(MatchesForSingleGameTopBarState.Default)
-    var matchesToDisplay by mutableStateOf(listOf<MatchObject>())
+    var matchesToDisplay by mutableStateOf(listOf<MatchDataRelationModel>())
     var matchesLazyListState by mutableStateOf(LazyListState())
-    var matchesListState by mutableStateOf(ListState.Default)
+    var matchesListDisplayState by mutableStateOf(ListDisplayState.ShowAll)
     var searchString by mutableStateOf("")
         private set
     var sortDirection by mutableStateOf(SortDirection.Descending)
@@ -67,21 +75,33 @@ class SingleGameViewModel(
     // Other
 
     private val totalScoreString: String
+    private val gameId = savedStateHandle.get<Long>("gameId")!!
 
     // region Initialization and recomposition
 
     init {
 
+        viewModelScope.launch {
+            val gameUiModel = getGame(gameId)
+            game.entity.apply {
+                name = gameUiModel.name.value.text
+                color = gameUiModel.color
+                scoringMode = gameUiModel.scoringMode.ordinal
+            }
+            onRecompose(game)
+            screenTitle = game.entity.name
+            matches = game.matches
+            scoringMode = game.getScoringMode()
+            color = game.entity.color
+        }
+
         totalScoreString = resources.getString(R.string.field_total_score)
-        screenTitle = gameObject.entity.name
 
-        matches = gameObject.matches
-        scoringMode = gameObject.getScoringMode()
         updateDisplayedMatchesAndListState()
 
         if (matches.isNotEmpty()) {
             playerCount = calculateUniquePlayers(matches).toString()
-            statisticsObjects = generateStatisticsObjects(categoryTitles = gameObject.subscoreTitles)
+//            statisticsObjects = generateStatisticsObjects(categoryTitles = gameObject.categories)
             winners = mapAndOrderWinnersByWins()
         } else {
             playerCount = "0"
@@ -90,7 +110,7 @@ class SingleGameViewModel(
         }
     }
 
-    fun onRecompose(gameObject: GameObject) = this.apply {
+    fun onRecompose(gameObject: GameDataRelationModel) = this.apply {
 
         screenTitle = gameObject.entity.name
 
@@ -100,7 +120,7 @@ class SingleGameViewModel(
 
         if (matches.isNotEmpty()) {
             playerCount = calculateUniquePlayers(matches).toString()
-            statisticsObjects = generateStatisticsObjects(categoryTitles = gameObject.subscoreTitles)
+            statisticsObjects = generateStatisticsObjects(categoryTitles = gameObject.categories)
             winners = mapAndOrderWinnersByWins()
         } else {
             playerCount = "0"
@@ -109,7 +129,7 @@ class SingleGameViewModel(
         }
     }
 
-    private fun generateStatisticsObjects(categoryTitles: List<CategoryTitleEntity>) =
+    private fun generateStatisticsObjects(categoryTitles: List<CategoryDataModel>) =
         listOf(
             ScoringStatisticsForCategory(
                 categoryTitle = totalScoreString,
@@ -117,7 +137,7 @@ class SingleGameViewModel(
             )
         ) + categoryTitles.map {
             ScoringStatisticsForCategory(
-                categoryTitle = it.title,
+                categoryTitle = it.name,
                 data = getScoreDataByCategoryId(it.id)
             )
         }
@@ -130,7 +150,7 @@ class SingleGameViewModel(
         match.players.map { player ->
             Pair(
                 first = player.entity.name,
-                second = player.entity.score.toBigDecimal()
+                second = player.entity.totalScore.toBigDecimal()
             )
         }
     }
@@ -151,7 +171,7 @@ class SingleGameViewModel(
                 }
         }
 
-    private fun calculateUniquePlayers(matchData: List<MatchObject>) = matchData
+    private fun calculateUniquePlayers(matchData: List<MatchDataRelationModel>) = matchData
         .flatMap { it.players }
         .map { it.entity.name }
         .distinct()
@@ -179,7 +199,7 @@ class SingleGameViewModel(
     // region Filter logic
 
     private fun matchContainsPlayerWithString(
-        match: MatchObject,
+        match: MatchDataRelationModel,
         substring: String
     ): Boolean {
         return match.players.any {
@@ -188,18 +208,18 @@ class SingleGameViewModel(
     }
 
     private fun matchContainsExactScoreMatch(
-        match: MatchObject,
+        match: MatchDataRelationModel,
         bigDecimalToSearch: BigDecimal?
     ): Boolean {
         return if (bigDecimalToSearch != null) {
             match.players.any {
-                it.entity.score.toBigDecimal().isEqualTo(bigDecimalToSearch)
+                it.entity.totalScore.toBigDecimal().isEqualTo(bigDecimalToSearch)
             }
         } else false
     }
 
     private fun shouldShowMatch(
-        match: MatchObject,
+        match: MatchDataRelationModel,
         searchString: String
     ): Boolean {
         if (searchString.isEmpty()) return true
@@ -207,12 +227,12 @@ class SingleGameViewModel(
                 matchContainsExactScoreMatch(match, searchString.toBigDecimalOrNull())
     }
 
-    private fun updateListState(allMatches: List<MatchObject>) {
-        matchesListState = when {
-            allMatches.isEmpty() -> ListState.ListEmpty
-            matchesToDisplay.isEmpty() -> ListState.SearchResultsEmpty
-            searchString.isNotBlank() -> ListState.SearchResultsNotEmpty
-            else -> ListState.Default
+    private fun updateListState(allMatches: List<MatchDataRelationModel>) {
+        matchesListDisplayState = when {
+            allMatches.isEmpty() -> ListDisplayState.Empty
+            matchesToDisplay.isEmpty() -> ListDisplayState.EmptyFiltered
+            searchString.isNotBlank() -> ListDisplayState.ShowFiltered
+            else -> ListDisplayState.ShowAll
         }
     }
 
@@ -232,8 +252,8 @@ class SingleGameViewModel(
      */
     private fun updateDisplayedMatchesAndListState() {
         val allMatches = matches
-        val matchesToSort: MutableList<MatchObject> = mutableListOf()
-        val emptyMatches: MutableList<MatchObject> = mutableListOf()
+        val matchesToSort: MutableList<MatchDataRelationModel> = mutableListOf()
+        val emptyMatches: MutableList<MatchDataRelationModel> = mutableListOf()
         allMatches.forEach {
             if (shouldShowMatch(it, searchString)) {
                 if (it.players.isEmpty()) {
@@ -241,13 +261,13 @@ class SingleGameViewModel(
                 } else matchesToSort.add(it)
             }
         }
-        var matchesInOrder: List<MatchObject> = when (sortMode) {
+        var matchesInOrder: List<MatchDataRelationModel> = when (sortMode) {
             MatchSortMode.ByMatchAge -> matchesToSort.reversed()
             MatchSortMode.ByWinningPlayer -> matchesToSort.sortedBy { match ->
                 match.players.getWinningPlayer(scoringMode).entity.name
             }
             MatchSortMode.ByWinningScore -> matchesToSort.sortedBy { match ->
-                match.players.getWinningPlayer(scoringMode).entity.score
+                match.players.getWinningPlayer(scoringMode).entity.totalScore
             }
             MatchSortMode.ByPlayerCount -> matchesToSort.sortedBy { it.players.size }
         }
@@ -299,7 +319,7 @@ class SingleGameViewModel(
     private suspend fun scrollToTop() = matchesLazyListState.animateScrollToItem(0)
 }
 
-class SingleGameViewModelFactory(
+/*class SingleGameViewModelFactory(
     private val gameObject: GameObject,
     private val resources: Resources,
 ) : ViewModelProvider.NewInstanceFactory() {
@@ -307,4 +327,4 @@ class SingleGameViewModelFactory(
         gameObject = gameObject,
         resources = resources
     ) as T
-}
+}*/

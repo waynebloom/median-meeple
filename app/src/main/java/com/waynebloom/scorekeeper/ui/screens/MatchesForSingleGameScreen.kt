@@ -32,12 +32,12 @@ import com.waynebloom.scorekeeper.ui.components.MatchListItem
 import com.waynebloom.scorekeeper.ui.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.constants.DurationMs
-import com.waynebloom.scorekeeper.data.MatchObjectsDefaultPreview
-import com.waynebloom.scorekeeper.data.model.game.GameEntity
-import com.waynebloom.scorekeeper.data.model.match.MatchObject
-import com.waynebloom.scorekeeper.enums.ListState
+import com.waynebloom.scorekeeper.MatchObjectsDefaultPreview
+import com.waynebloom.scorekeeper.room.data.model.GameDataModel
+import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
+import com.waynebloom.scorekeeper.enums.ListDisplayState
 import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
-import com.waynebloom.scorekeeper.ui.LocalGameColors
+import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
@@ -46,10 +46,10 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 @Composable
 fun MatchesForSingleGameScreen(
     currentAd: NativeAd?,
-    gameEntity: GameEntity,
+    gameEntity: GameDataModel,
     lazyListState: LazyListState,
-    listState: ListState,
-    matches: List<MatchObject>,
+    listDisplayState: ListDisplayState,
+    matches: List<MatchDataRelationModel>,
     searchString: String,
     themeColor: Color,
     onNewMatchTap: () -> Unit,
@@ -71,23 +71,23 @@ fun MatchesForSingleGameScreen(
         ) {
 
             AnimatedContent(
-                targetState = listState,
+                targetState = listDisplayState,
                 transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay }
             ) {
 
-                if (it != ListState.Default) {
+                if (it != ListDisplayState.ShowAll) {
 
-                    val type = if (it == ListState.SearchResultsNotEmpty) {
+                    val type = if (it == ListDisplayState.ShowFiltered) {
                         HelperBoxType.Info
                     } else HelperBoxType.Missing
 
                     val text = when (it) {
-                        ListState.ListEmpty -> stringResource(R.string.text_empty_matches)
-                        ListState.SearchResultsEmpty -> stringResource(
+                        ListDisplayState.Empty -> stringResource(R.string.text_empty_matches)
+                        ListDisplayState.EmptyFiltered -> stringResource(
                             id = R.string.text_empty_match_search_results,
                             searchString
                         )
-                        ListState.SearchResultsNotEmpty -> stringResource(
+                        ListDisplayState.ShowFiltered -> stringResource(
                             R.string.text_showing_search_results,
                             searchString
                         )
@@ -137,7 +137,7 @@ fun MatchesForSingleGameScreen(
                     item {
                         if (index == adSeparatedSubLists.lastIndex) {
                             AdCard(
-                                currentAd = currentAd,
+                                ad = currentAd,
                                 themeColor = themeColor.toArgb()
                             )
                         }
@@ -155,15 +155,15 @@ fun SingleGameScreenPreview() {
         Scaffold {
             MatchesForSingleGameScreen(
                 currentAd = null,
-                gameEntity = GameEntity(
+                gameEntity = GameDataModel(
                     name = "Wingspan",
                     color = "ORANGE"
                 ),
                 lazyListState = rememberLazyListState(),
-                listState = ListState.Default,
+                listDisplayState = ListDisplayState.ShowAll,
                 matches = MatchObjectsDefaultPreview,
                 searchString = "",
-                themeColor = LocalGameColors.current.getColorByKey("ORANGE"),
+                themeColor = LocalCustomThemeColors.current.getColorByKey("ORANGE"),
                 onNewMatchTap = {},
                 onSingleMatchTap = {},
                 modifier = Modifier

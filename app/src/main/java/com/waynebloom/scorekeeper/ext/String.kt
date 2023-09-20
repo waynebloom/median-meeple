@@ -1,7 +1,11 @@
 package com.waynebloom.scorekeeper.ext
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.constants.Constants
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
+import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
+import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import java.math.RoundingMode
 
 fun String.getScoreValidityState(): ScoreStringValidityState {
@@ -55,3 +59,10 @@ fun String.toShortScoreFormat(): String {
             .toPlainString() + "*"
     }
 }
+
+fun String.toTextFieldValue() = TextFieldValue(this)
+
+fun String.toTextFieldInput() = TextFieldInput(value = this.toTextFieldValue())
+
+@Composable
+fun String.toColor() = LocalCustomThemeColors.current.getColorByKey(this)

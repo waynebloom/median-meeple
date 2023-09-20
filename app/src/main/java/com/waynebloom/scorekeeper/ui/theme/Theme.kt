@@ -9,7 +9,7 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import com.waynebloom.scorekeeper.ui.LocalGameColors
+import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.ui.theme.color.DarkThemeGameColors
 import com.waynebloom.scorekeeper.ui.theme.color.LightThemeGameColors
 import com.waynebloom.scorekeeper.ui.theme.color.gray400
@@ -43,17 +43,30 @@ private val DarkColorPalette = darkColors(
 )
 
 @Composable
+fun CustomGameTheme(gameColor: Color, content: @Composable () -> Unit) {
+    MedianMeepleTheme(primaryColor = gameColor, content = content)
+}
+
+@Composable
 fun MedianMeepleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    primaryColor: Color = if (darkTheme) rust300 else rust600,
     shapes: Shapes = MedianMeepleShapes,
     typography: Typography = MedianMeepleTypography,
     content: @Composable () -> Unit
 ) {
 
-    val themeColors = if (isSystemInDarkTheme()) DarkThemeGameColors() else LightThemeGameColors()
-    CompositionLocalProvider(LocalGameColors provides themeColors) {
+    val customThemeColors = if (isSystemInDarkTheme()) DarkThemeGameColors() else LightThemeGameColors()
+    CompositionLocalProvider(LocalCustomThemeColors provides customThemeColors) {
+
+        val colors = if (darkTheme) {
+            DarkColorPalette.copy(primary = primaryColor)
+        } else {
+            LightColorPalette.copy(primary = primaryColor)
+        }
+
         MaterialTheme(
-            colors = if (darkTheme) DarkColorPalette else LightColorPalette,
+            colors = colors,
             shapes = shapes,
             typography = typography,
             content = content

@@ -11,7 +11,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -24,19 +23,18 @@ import com.waynebloom.scorekeeper.ext.onFocusSelectAll
 fun OutlinedTextFieldWithErrorDescription(
     textFieldValue: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
-    groupModifier: Modifier = Modifier,
     label: @Composable (() -> Unit)?,
     isError: Boolean,
-    colors: TextFieldColors,
+    @StringRes errorDescription: Int,
+    selectAllOnFocus: Boolean,
+    modifier: Modifier = Modifier,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     singleLine: Boolean = true,
-    @StringRes errorDescription: Int,
-    selectAllOnFocus: Boolean
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = groupModifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         val textFieldModifier = if (selectAllOnFocus) {
             Modifier
@@ -50,7 +48,6 @@ fun OutlinedTextFieldWithErrorDescription(
         OutlinedTextField(
             value = textFieldValue,
             onValueChange = onValueChange,
-            colors = colors,
             label = label,
             isError = isError,
             keyboardOptions = keyboardOptions,

@@ -16,7 +16,7 @@ import com.waynebloom.scorekeeper.ext.sentenceCase
 
 @Composable
 fun AdCard(
-    currentAd: NativeAd? = null,
+    ad: NativeAd? = null,
     themeColor: Int = MaterialTheme.colors.primary.toArgb(),
     onThemeColor: Int = MaterialTheme.colors.onPrimary.toArgb(),
     onSurface: Int = MaterialTheme.colors.onSurface.toArgb()
@@ -26,46 +26,46 @@ fun AdCard(
             factory = AdCardBinding::inflate,
             modifier = Modifier.padding(16.dp)
         ) {
-            if (currentAd != null) {
+            if (ad != null) {
                 adLoadingTag.visibility = View.INVISIBLE
                 adProgressBar.visibility = View.INVISIBLE
                 adTag.background.setTint(themeColor)
                 adTag.setTextColor(onThemeColor)
 
                 adView.apply {
-                    setNativeAd(currentAd)
+                    setNativeAd(ad)
                     visibility = View.VISIBLE
 
                     advertiserView = adAdvertiserName.apply {
-                        text = if (currentAd.advertiser.isNullOrBlank()) {
+                        text = if (ad.advertiser.isNullOrBlank()) {
                             context.getString(R.string.ad_no_advertiser)
-                        } else currentAd.advertiser
+                        } else ad.advertiser
                         setTextColor(onSurface)
                     }
                     bodyView = adBody.apply {
-                        text = currentAd.body
+                        text = ad.body
                         setTextColor(onSurface)
                     }
                     callToActionView = adCtaButton.apply {
-                        text = currentAd.callToAction?.sentenceCase() ?: "Learn More"
+                        text = ad.callToAction?.sentenceCase() ?: "Learn More"
                         setBackgroundColor(themeColor)
                         setTextColor(onThemeColor)
                     }
                     headlineView = adHeadline.apply {
-                        text = currentAd.headline
+                        text = ad.headline
                         setTextColor(onSurface)
                     }
-                    iconView = adAppIcon.apply { setImageDrawable(currentAd.icon?.drawable) }
+                    iconView = adAppIcon.apply { setImageDrawable(ad.icon?.drawable) }
                     priceView = adPrice.apply {
-                        text = currentAd.price
+                        text = ad.price
                         setTextColor(onSurface)
                     }
                     starRatingView = adStars.apply {
-                        rating = currentAd.starRating?.toFloat() ?: 0f
+                        rating = ad.starRating?.toFloat() ?: 0f
                         progressDrawable.setTint(themeColor)
                     }
                     storeView = adSourceStore.apply {
-                        text = currentAd.store
+                        text = ad.store
                         setTextColor(onSurface)
                     }
                 }

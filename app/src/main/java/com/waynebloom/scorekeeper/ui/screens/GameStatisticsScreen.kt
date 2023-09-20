@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.ui.screens
 
 import android.content.res.Configuration
-import android.content.res.Resources
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.BorderStroke
@@ -45,18 +44,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.waynebloom.scorekeeper.GameObjectStatisticsPreview
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.ui.components.ExpandCollapseButton
-import com.waynebloom.scorekeeper.ui.components.HelperBox
-import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.data.GameObjectStatisticsPreview
-import com.waynebloom.scorekeeper.data.model.ScoringStatisticsForCategory
-import com.waynebloom.scorekeeper.data.model.game.GameObject
-import com.waynebloom.scorekeeper.enums.SingleGameScreen
+import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
+import com.waynebloom.scorekeeper.room.domain.model.ScoringStatisticsForCategory
+import com.waynebloom.scorekeeper.ui.components.ExpandCollapseButton
+import com.waynebloom.scorekeeper.ui.components.HelperBox
+import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
@@ -64,21 +62,14 @@ import com.waynebloom.scorekeeper.ui.theme.color.deepOrange100
 import com.waynebloom.scorekeeper.ui.theme.color.deepOrange500
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel.Companion.NumberOfItemsToShowExpanded
-import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModelFactory
 
 @Composable
 fun GameStatisticsScreen(
-    gameObject: GameObject,
+    gameObject: GameDataRelationModel,
     themeColor: Color,
     modifier: Modifier = Modifier,
+    viewModel: SingleGameViewModel = hiltViewModel()
 ) {
-    val viewModel = viewModel<SingleGameViewModel>(
-        key = SingleGameScreen.GameStatistics.name,
-        factory = SingleGameViewModelFactory(
-            gameObject = gameObject,
-            resources = Resources.getSystem()
-        )
-    ).onRecompose(gameObject = gameObject)
 
     LazyColumn(
         contentPadding = PaddingValues(bottom = Spacing.betweenSections),
@@ -685,7 +676,10 @@ fun SingleLineListItem(
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
-                        .defaultMinSize(minWidth = Size.minTappableSize, minHeight = Size.minTappableSize)
+                        .defaultMinSize(
+                            minWidth = Size.minTappableSize,
+                            minHeight = Size.minTappableSize
+                        )
                         .clip(MaterialTheme.shapes.medium)
                         .background(MaterialTheme.colors.surface)
                         .padding(horizontal = 12.dp, vertical = 4.dp),

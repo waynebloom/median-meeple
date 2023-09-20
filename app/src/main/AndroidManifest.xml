@@ -6,12 +6,13 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_median_meeple"
         android:label="@string/app_name"
+        android:name=".ui.base.MedianMeepleApplication"
         android:roundIcon="@mipmap/ic_median_meeple_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MedianMeeple"
         tools:targetApi="31">
         <activity
-            android:name=".MedianMeepleActivity"
+            android:name=".ui.base.MedianMeepleActivity"
             android:exported="true"
             android:theme="@style/Theme.MedianMeeple"
             android:windowSoftInputMode="adjustResize">

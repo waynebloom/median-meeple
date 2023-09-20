@@ -6,7 +6,7 @@ enum class MatchesForSingleGameTopBarState {
     SortMenuOpen
 }
 
-enum class GamesTopBarState {
+enum class LibraryTopBarState {
     Default,
     SearchBarOpen
 }

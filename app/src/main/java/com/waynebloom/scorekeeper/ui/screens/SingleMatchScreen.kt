@@ -39,17 +39,16 @@ import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.data.*
-import com.waynebloom.scorekeeper.data.model.*
-import com.waynebloom.scorekeeper.data.model.game.GameObject
-import com.waynebloom.scorekeeper.data.model.match.MatchEntity
-import com.waynebloom.scorekeeper.data.model.match.MatchObject
-import com.waynebloom.scorekeeper.data.model.player.PlayerEntity
-import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
+import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.ext.toShortScoreFormat
-import com.waynebloom.scorekeeper.ui.LocalGameColors
+import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
+import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.ui.theme.color.orange100
 import com.waynebloom.scorekeeper.viewmodel.SingleMatchViewModel
@@ -59,13 +58,13 @@ import java.util.*
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SingleMatchScreen(
-    game: GameObject,
-    match: MatchObject,
+    game: GameDataRelationModel,
+    match: MatchDataRelationModel,
     onAddPlayerTap: () -> Unit,
     onDeleteMatchTap: (Long) -> Unit,
     onPlayerTap: (Long) -> Unit,
     onViewDetailedScoresTap: () -> Unit,
-    saveMatch: (EntityStateBundle<MatchEntity>) -> Unit,
+    saveMatch: (EntityStateBundle<MatchDataModel>) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val viewModel = viewModel<SingleMatchViewModel>(
@@ -78,7 +77,7 @@ fun SingleMatchScreen(
     )
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    val themeColor: Color = LocalGameColors.current.getColorByKey(game.entity.color)
+    val themeColor: Color = LocalCustomThemeColors.current.getColorByKey(game.entity.color)
     val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
         focusedBorderColor = themeColor,
         focusedLabelColor = themeColor,
@@ -117,7 +116,7 @@ fun SingleMatchScreen(
                     scoringMode = game.getScoringMode(),
                     showDetailedScoresButton = viewModel.shouldShowDetailedScoresButton(
                         players = match.players.map { it.entity },
-                        subscoreTitles = game.subscoreTitles
+                        subscoreTitles = game.categories
                     ),
                     showMaximumPlayersErrorState = viewModel.showMaximumPlayersError,
                     themeColor = themeColor,
@@ -247,7 +246,7 @@ private fun PlayersSectionHeader(
 
 @Composable
 fun PlayersSection(
-    players: List<PlayerEntity>,
+    players: List<PlayerDataModel>,
     scoringMode: ScoringMode,
     showDetailedScoresButton: Boolean,
     showMaximumPlayersErrorState: Boolean,
@@ -273,8 +272,8 @@ fun PlayersSection(
 
         if (players.isNotEmpty()) {
             val playersInRankOrder = when(scoringMode) {
-                ScoringMode.Ascending -> players.sortedBy { it.score.toBigDecimal() }
-                ScoringMode.Descending -> players.sortedBy { it.score.toBigDecimal() }.reversed()
+                ScoringMode.Ascending -> players.sortedBy { it.totalScore.toBigDecimal() }
+                ScoringMode.Descending -> players.sortedBy { it.totalScore.toBigDecimal() }.reversed()
                 ScoringMode.Manual -> players.sortedBy { it.position }
             }
 
@@ -340,7 +339,7 @@ private fun OtherSection(
 
 @Composable
 fun RankedListItem(
-    player: PlayerEntity,
+    player: PlayerDataModel,
     rank: Int,
     themeColor: Color,
     onPlayerTap: (Long) -> Unit,
@@ -404,7 +403,7 @@ fun RankedListItem(
                             .size(24.dp)
                     )
                     Text(
-                        text = player.score.toShortScoreFormat(),
+                        text = player.totalScore.toShortScoreFormat(),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.body1,
                         fontWeight = FontWeight.SemiBold
@@ -446,9 +445,9 @@ fun SingleMatchScreenPreview() {
     MedianMeepleTheme {
         SingleMatchScreen(
             game = GameObjectsDefaultPreview[0],
-            match = MatchObject(
+            match = MatchDataRelationModel(
                 entity = MatchEntitiesDefaultPreview[0],
-                players = PlayerEntitiesDefaultPreview.map { PlayerObject(entity = it) }
+                players = PlayerEntitiesDefaultPreview.map { PlayerDataRelationModel(entity = it) }
             ),
             onAddPlayerTap = {},
             onDeleteMatchTap = {},

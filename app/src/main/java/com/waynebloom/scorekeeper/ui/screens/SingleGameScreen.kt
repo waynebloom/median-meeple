@@ -3,7 +3,6 @@ package com.waynebloom.scorekeeper.ui.screens
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,8 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.RadioButton
-import androidx.compose.material.RadioButtonDefaults
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
@@ -29,9 +26,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -39,36 +34,36 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.ads.nativead.NativeAd
+import com.waynebloom.scorekeeper.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.ui.components.CustomIconButton
-import com.waynebloom.scorekeeper.ui.components.SearchTopBar
 import com.waynebloom.scorekeeper.constants.Dimensions
-import com.waynebloom.scorekeeper.data.GameObjectsDefaultPreview
-import com.waynebloom.scorekeeper.data.model.game.GameObject
 import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.MatchesForSingleGameTopBarState
-import com.waynebloom.scorekeeper.enums.MenuOption
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
-import com.waynebloom.scorekeeper.ui.LocalGameColors
+import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
+import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
+import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.RadioButtonOption
+import com.waynebloom.scorekeeper.ui.components.SearchTopBar
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
-import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModelFactory
 
 @Composable
 fun SingleGameScreen(
-    gameObject: GameObject,
+    gameObject: GameDataRelationModel,
     currentAd: NativeAd?,
     onEditGameTap: () -> Unit,
     onNewMatchTap: () -> Unit,
     onSingleMatchTap: (Long) -> Unit,
+    viewModel: SingleGameViewModel = hiltViewModel(),
 ) {
-    val viewModel = viewModel<SingleGameViewModel>(
+    /*val viewModel = viewModel<SingleGameViewModel>(
         key = SingleGameScreen.GameStatistics.name,
         factory = SingleGameViewModelFactory(
             gameObject = gameObject,
@@ -76,9 +71,9 @@ fun SingleGameScreen(
         )
     ).onRecompose(
         gameObject = gameObject
-    )
+    )*/
 
-    val themeColor = LocalGameColors.current.getColorByKey(gameObject.entity.color)
+    val themeColor = LocalCustomThemeColors.current.getColorByKey(viewModel.color)
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
@@ -117,9 +112,9 @@ fun SingleGameScreen(
         if (viewModel.selectedTab == SingleGameScreen.MatchesForSingleGame) {
             MatchesForSingleGameScreen(
                 currentAd = currentAd,
-                gameEntity = gameObject.entity,
+                gameEntity = viewModel.game.entity,
                 lazyListState = viewModel.matchesLazyListState,
-                listState = viewModel.matchesListState,
+                listDisplayState = viewModel.matchesListDisplayState,
                 matches = viewModel.matchesToDisplay,
                 searchString = viewModel.searchString,
                 themeColor = themeColor,
@@ -129,7 +124,7 @@ fun SingleGameScreen(
             )
         } else {
             GameStatisticsScreen(
-                gameObject = gameObject,
+                gameObject = viewModel.game,
                 themeColor = themeColor,
                 modifier = Modifier.padding(innerPadding),
             )
@@ -371,7 +366,6 @@ fun MatchesForSingleGameSortMenuActionBar(
             MatchSortMode.values().forEach { option ->
                 RadioButtonOption(
                     menuOption = option,
-                    themeColor = themeColor,
                     isSelected = sortMode == option,
                     onSelected = { onSortModeChanged(it as MatchSortMode) }
                 )
@@ -388,38 +382,11 @@ fun MatchesForSingleGameSortMenuActionBar(
             SortDirection.values().forEach { option ->
                 RadioButtonOption(
                     menuOption = option,
-                    themeColor = themeColor,
                     isSelected = sortDirection == option,
                     onSelected = { onSortDirectionChanged(it as SortDirection) }
                 )
             }
         }
-    }
-}
-
-@Composable
-fun RadioButtonOption(
-    menuOption: MenuOption,
-    themeColor: Color,
-    isSelected: Boolean,
-    onSelected: (MenuOption) -> Unit
-) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.small)
-            .clickable { onSelected(menuOption) }
-            .fillMaxWidth()
-    ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = { onSelected(menuOption) },
-            colors = RadioButtonDefaults.colors(
-                selectedColor = themeColor,
-                unselectedColor = MaterialTheme.colors.onSurface
-            )
-        )
-        Text(text = stringResource(menuOption.label))
     }
 }
 
