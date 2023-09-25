@@ -176,14 +176,14 @@ private fun SingleMatchScreenTopBar(
                     imageVector = Icons.Rounded.Done,
                     backgroundColor = Color.Transparent,
                     foregroundColor = themeColor,
-                    onTap = onDoneTap,
+                    onClick = onDoneTap,
                 )
 
                 CustomIconButton(
                     imageVector = Icons.Rounded.Delete,
                     backgroundColor = Color.Transparent,
                     foregroundColor = MaterialTheme.colors.error,
-                    onTap = onDeleteTap,
+                    onClick = onDeleteTap,
                 )
             }
         }
@@ -223,7 +223,7 @@ private fun PlayersSectionHeader(
                 CustomIconButton(
                     imageVector = Icons.Rounded.List,
                     foregroundColor = themeColor,
-                    onTap = onViewDetailedScoresTap
+                    onClick = onViewDetailedScoresTap
                 )
             }
 
@@ -231,13 +231,13 @@ private fun PlayersSectionHeader(
                 CustomIconButton(
                     imageVector = Icons.Rounded.Add,
                     foregroundColor = themeColor,
-                    onTap = onAddPlayerTap
+                    onClick = onAddPlayerTap
                 )
             } else {
                 CustomIconButton(
                     imageVector = Icons.Rounded.Warning,
                     foregroundColor = MaterialTheme.colors.error,
-                    onTap = onAddPlayerTap
+                    onClick = onAddPlayerTap
                 )
             }
         }

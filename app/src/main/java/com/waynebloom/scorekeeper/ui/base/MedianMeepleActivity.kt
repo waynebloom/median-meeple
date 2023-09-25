@@ -3,11 +3,14 @@ package com.waynebloom.scorekeeper.ui.base
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
 import com.waynebloom.scorekeeper.ui.navigation.NavHost
 import com.google.android.gms.ads.MobileAds
@@ -29,6 +32,7 @@ class MedianMeepleActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // remove this once rework complete
         viewModel = ViewModelProvider(this)[MedianMeepleActivityViewModel::class.java]
 
         // TODO: Both of these are here for now until the rework is complete

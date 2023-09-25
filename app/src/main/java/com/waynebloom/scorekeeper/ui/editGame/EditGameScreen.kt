@@ -1,7 +1,15 @@
 package com.waynebloom.scorekeeper.ui.editGame
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.*
+import androidx.compose.animation.core.Ease
+import androidx.compose.animation.core.EaseInOutCubic
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
@@ -9,27 +17,37 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusState
-import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
@@ -38,17 +56,16 @@ import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.ui.components.CustomIconButton
-import com.waynebloom.scorekeeper.ui.components.HelperBox
-import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.ui.components.Loading
+import com.waynebloom.scorekeeper.ui.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.ui.components.OutlinedTextFieldWithErrorDescription
 import com.waynebloom.scorekeeper.ui.components.RadioButtonOption
 import com.waynebloom.scorekeeper.ui.editGame.EditGameViewModel.EditGameUiState
 import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
-import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.CustomGameTheme
-import com.waynebloom.scorekeeper.viewmodel.CategorySectionState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import java.util.*
 
 @Composable
@@ -56,15 +73,16 @@ fun EditGameScreen(
     uiState: EditGameUiState,
     modifier: Modifier = Modifier,
     onCategoryClick: (CategoryUiModel) -> Unit,
-    onCategoryInputChanged: (TextFieldValue) -> Unit,
-    onCategoryInputFocusChanged: (FocusState) -> Unit,
+    onCategoryDialogDismiss: () -> Unit,
+    onCategoryInputChanged: (CategoryUiModel, TextFieldValue) -> Unit,
     onColorClick: (String) -> Unit,
     onDeleteCategoryClick: (CategoryUiModel) -> Unit,
     onDeleteClick: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
     onDragStart: (Int) -> Unit,
-    onEditModeClick: () -> Unit,
+    onEditButtonClick: () -> Unit,
+    onHideCategoryInputField: () -> Unit,
     onNameChanged: (TextFieldValue) -> Unit,
     onNewCategoryClick: () -> Unit,
     onScoringModeChanged: (ScoringMode) -> Unit,
@@ -77,27 +95,26 @@ fun EditGameScreen(
             CustomGameTheme(gameColor = uiState.getResolvedColor()) {
 
                 EditGameScreen(
-                    categories = uiState.displayedCategories,
-                    categoryTextFieldInput = uiState.categoryInput,
-                    categoryInputTitle = uiState.categoryInputTitle,
-                    categorySectionState = uiState.categorySectionDisplayState,
-                    colorOptions = LocalCustomThemeColors.current.getColorsAsKeyList(),
-                    lazyListState = uiState.lazyListState,
-                    modifier = modifier,
                     nameInput = uiState.nameInput,
                     scoringMode = uiState.scoringMode,
+                    categories = uiState.displayedCategories,
+                    indexOfCategoryReceivingInput = uiState.indexOfCategoryReceivingInput,
+                    indexOfSelectedCategory = uiState.indexOfSelectedCategory,
+                    isCategoryDialogOpen = uiState.isCategoryDialogOpen,
+                    colorOptions = LocalCustomThemeColors.current.getColorsAsKeyList(),
                     selectedColorId = uiState.color,
-                    showCategoryInput = uiState.showCategoryInput,
+                    modifier = modifier,
                     onCategoryClick = onCategoryClick,
+                    onCategoryDialogDismiss = onCategoryDialogDismiss,
                     onCategoryInputChanged = onCategoryInputChanged,
-                    onCategoryInputFocusChanged = onCategoryInputFocusChanged,
                     onColorClick = onColorClick,
                     onDeleteCategoryClick = onDeleteCategoryClick,
                     onDeleteClick = onDeleteClick,
                     onDrag = onDrag,
                     onDragEnd = onDragEnd,
                     onDragStart = onDragStart,
-                    onEditModeClick = onEditModeClick,
+                    onEditButtonClick = onEditButtonClick,
+                    onHideCategoryInputField = onHideCategoryInputField,
                     onNameChanged = onNameChanged,
                     onNewCategoryClick = onNewCategoryClick,
                     onScoringModeChanged = onScoringModeChanged
@@ -109,91 +126,131 @@ fun EditGameScreen(
 
 @Composable
 fun EditGameScreen(
-    categories: List<CategoryUiModel>,
-    categoryTextFieldInput: TextFieldInput,
-    categoryInputTitle: String,
-    categorySectionState: CategorySectionState,
-    colorOptions: List<String>,
-    lazyListState: LazyListState,
     nameInput: TextFieldInput,
     scoringMode: ScoringMode,
+    categories: List<CategoryUiModel>,
+    indexOfCategoryReceivingInput: Int?,
+    indexOfSelectedCategory: Int?,
+    isCategoryDialogOpen: Boolean,
+    colorOptions: List<String>,
     selectedColorId: String,
-    showCategoryInput: Boolean,
     modifier: Modifier = Modifier,
     onCategoryClick: (CategoryUiModel) -> Unit,
-    onCategoryInputChanged: (TextFieldValue) -> Unit,
-    onCategoryInputFocusChanged: (FocusState) -> Unit,
+    onCategoryDialogDismiss: () -> Unit,
+    onCategoryInputChanged: (CategoryUiModel, TextFieldValue) -> Unit,
     onColorClick: (String) -> Unit,
     onDeleteCategoryClick: (CategoryUiModel) -> Unit,
     onDeleteClick: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
     onDragStart: (Int) -> Unit,
-    onEditModeClick: () -> Unit,
+    onEditButtonClick: () -> Unit,
+    onHideCategoryInputField: () -> Unit,
     onNameChanged: (TextFieldValue) -> Unit,
     onNewCategoryClick: () -> Unit,
     onScoringModeChanged: (ScoringMode) -> Unit,
 ) {
 
-    Scaffold(
-        topBar = {
-            EditGameScreenTopBar(
-                title = nameInput.value.text,
-                onDeleteTap = { onDeleteClick() }
-            )
-        }
-    ) {
+    Box {
 
-        LazyColumn(
-            state = lazyListState,
-            verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
-            contentPadding = PaddingValues(vertical = Spacing.betweenSections),
-            modifier = modifier.padding(it)
+        if (isCategoryDialogOpen) {
+            BackHandler {
+                onCategoryDialogDismiss()
+            }
+        }
+
+        Scaffold(
+            topBar = {
+                EditGameScreenTopBar(
+                    title = nameInput.value.text,
+                    onDeleteTap = { onDeleteClick() }
+                )
+            }
         ) {
 
-            item {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+                contentPadding = PaddingValues(
+                    bottom = Spacing.screenEdge,
+                    top = Spacing.betweenSections
+                ),
+                modifier = modifier.padding(it)
+            ) {
 
-                GameDetailsSection(
-                    selectedMode = scoringMode,
-                    nameTextFieldValue = nameInput.value,
-                    isNameValid = nameInput.isValid,
-                    onNameChanged = onNameChanged,
-                    onScoringModeTap = onScoringModeChanged,
-                    modifier = Modifier.padding(horizontal = Spacing.screenEdge),
-                )
+                item {
+
+                    GameDetailsSection(
+                        selectedMode = scoringMode,
+                        nameTextFieldValue = nameInput.value,
+                        isNameValid = nameInput.isValid,
+                        onNameChanged = onNameChanged,
+                        onScoringModeTap = onScoringModeChanged,
+                        modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+                    )
+                }
+
+                item {
+
+                    Column(modifier = modifier) {
+
+                        ScoringCategoryHeader(
+                            onEditButtonClick = onEditButtonClick,
+                            modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+                        )
+
+                        Spacer(modifier = Modifier.height(Spacing.sectionContent))
+
+                        ScoringCategoryList(
+                            categories = categories,
+                            onCategoryClick = onCategoryClick,
+                            modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+                        )
+                    }
+                }
+
+                item {
+
+                    CustomThemeSection(
+                        selectedColor = selectedColorId,
+                        colorOptions = colorOptions,
+                        onColorClick = onColorClick
+                    )
+                }
             }
+        }
 
-            item {
-
-                ScoringCategorySection(
-                    categories = categories,
-                    inputTitle = categoryInputTitle,
-                    categoryTextFieldInput = categoryTextFieldInput,
-                    showInput = showCategoryInput,
-                    state = categorySectionState,
-                    onCategoryClick = onCategoryClick,
-                    onCategoryInputFocusChanged = onCategoryInputFocusChanged,
-                    onDeleteCategoryClick = onDeleteCategoryClick,
-                    onDrag = onDrag,
-                    onDragEnd = onDragEnd,
-                    onDragStart = onDragStart,
-                    onEditModeClick = onEditModeClick,
-                    onInputChanged = onCategoryInputChanged,
-                    onNewClick = onNewCategoryClick,
-                    modifier = Modifier.padding(horizontal = Spacing.screenEdge),
+        AnimatedVisibility(
+            visible = isCategoryDialogOpen,
+            enter = slideInVertically(
+                initialOffsetY = { it },
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = EaseInOutCubic
                 )
-            }
-
-            item {
-
-                CustomThemeSection(
-                    selectedColor = selectedColorId,
-                    colorOptions = colorOptions,
-                    onColorClick = onColorClick
+            ) + fadeIn(),
+            exit = slideOutVertically(
+                targetOffsetY = { it },
+                animationSpec = tween(
+                    durationMillis = 300,
+                    easing = EaseInOutCubic
                 )
+            ) + fadeOut(),
+        ) {
 
-                Spacer(modifier = Modifier.height(Spacing.screenEdge))
-            }
+            EditCategoriesFullScreenDialog(
+                categories = categories,
+                indexOfCategoryReceivingInput = indexOfCategoryReceivingInput,
+                indexOfSelectedCategory = indexOfSelectedCategory,
+                onCategoryClick = onCategoryClick,
+                onCloseClick = onCategoryDialogDismiss,
+                onDeleteCategoryClick = onDeleteCategoryClick,
+                onDrag = onDrag,
+                onDragEnd = onDragEnd,
+                onDragStart = onDragStart,
+                onHideInputField = onHideCategoryInputField,
+                onInputChanged = onCategoryInputChanged,
+                onNewClick = onNewCategoryClick
+            )
         }
     }
 }
@@ -224,7 +281,7 @@ private fun EditGameScreenTopBar(
             )
 
             CustomIconButton(
-                onTap = onDeleteTap,
+                onClick = onDeleteTap,
                 backgroundColor = Color.Transparent,
                 foregroundColor = MaterialTheme.colors.error,
                 imageVector = Icons.Rounded.Delete
@@ -279,7 +336,7 @@ private fun NameField(
 ) {
 
     OutlinedTextFieldWithErrorDescription(
-        textFieldValue = nameTextFieldValue,
+        value = nameTextFieldValue,
         onValueChange = onNameChanged,
         label = { Text(text = stringResource(id = R.string.field_name)) },
         isError = isError,
@@ -312,100 +369,192 @@ fun ScoringModeSelector(
 
 // region Categories
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ScoringCategorySection(
+private fun EditCategoriesFullScreenDialog(
     categories: List<CategoryUiModel>,
-    categoryTextFieldInput: TextFieldInput,
-    inputTitle: String,
-    showInput: Boolean,
-    state: CategorySectionState,
+    indexOfCategoryReceivingInput: Int?,
+    indexOfSelectedCategory: Int?,
     onCategoryClick: (CategoryUiModel) -> Unit,
-    onCategoryInputFocusChanged: (FocusState) -> Unit,
+    onCloseClick: () -> Unit,
     onDeleteCategoryClick: (CategoryUiModel) -> Unit,
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
     onDragStart: (Int) -> Unit,
-    onEditModeClick: () -> Unit,
-    onInputChanged: (TextFieldValue) -> Unit,
+    onHideInputField: () -> Unit,
+    onInputChanged: (CategoryUiModel, TextFieldValue) -> Unit,
     onNewClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
 
-    Column(modifier = modifier) {
+    Scaffold(
+        topBar = {
+            Column {
 
-        ScoringCategoryHeader(
-            isInEditMode = state == CategorySectionState.EditMode,
-            showEditModeButton = categories.isNotEmpty(),
-            onEditModeClick = onEditModeClick,
-            onNewCategoryClick = onNewClick
-        )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.height(Size.topBarHeight)
+                ) {
 
-        Spacer(modifier = Modifier.height(Spacing.sectionContent))
+                    IconButton(
+                        onClick = onCloseClick,
+                    ) {
 
-        AnimatedContent(
-            targetState = state,
-            transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
-            label = EditGameConstants.AnimationLabel.CategorySection
+                        Icon(
+                            imageVector = Icons.Rounded.Close,
+                            contentDescription = stringResource(R.string.a11y_categories_close_button),
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .size(24.dp)
+                        )
+                    }
+
+                    Text(
+                        text = stringResource(R.string.header_edit_categories),
+                        style = MaterialTheme.typography.h5.copy(
+                            fontSize = 22.sp
+                        )
+                    )
+                }
+
+                Divider()
+            }
+        },
+        floatingActionButton = { MedianMeepleFab(onClick = onNewClick) }
+    ) {
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+            contentPadding = PaddingValues(
+                bottom = Spacing.paddingForFab,
+                end = Spacing.screenEdge,
+                start = Spacing.screenEdge,
+                top = Spacing.sectionContent),
+            modifier = modifier.padding(it)
         ) {
 
-            when(it) {
-                CategorySectionState.Default -> {
-                    ScoringCategoryList(
-                        categories = categories,
-                        onCategoryClick = onCategoryClick,
+            itemsIndexed(
+                key = { index, _ -> index },
+                items = categories,
+            ) { index, category ->
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.height(Size.minTappableSize)
+                ) {
+
+                    AnimatedContent(
+                        targetState = indexOfCategoryReceivingInput,
+                        transitionSpec = { scaleIn() togetherWith scaleOut() },
+                        label = EditGameConstants.AnimationLabel.CategoryIcon,
+                    ) { animationState ->
+
+                        when (animationState) {
+                            index -> {
+                                CustomIconButton(
+                                    painter = painterResource(id = R.drawable.ic_checkmark),
+                                    backgroundColor = Color.Transparent,
+                                    foregroundColor = MaterialTheme.colors.onBackground,
+                                    onClick = onHideInputField
+                                )
+                            }
+                            null -> {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_drag_handle),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .minimumInteractiveComponentSize()
+                                        .size(24.dp)
+                                        .pointerInput(Unit) {
+                                            detectDragGestures(
+                                                onDragStart = { onDragStart(index) },
+                                                onDragEnd = onDragEnd,
+                                                onDrag = { _, dragAmount -> onDrag(dragAmount) }
+                                            )
+                                        },
+                                )
+                            }
+                            else -> {
+                                Box(
+                                    modifier = Modifier
+                                        .size(Size.minTappableSize)
+                                        .padding(20.dp)
+                                        .background(
+                                            color = MaterialTheme.colors.onBackground,
+                                            shape = CircleShape
+                                        )
+                                )
+                            }
+                        }
+                    }
+
+                    if (index == indexOfCategoryReceivingInput) {
+
+                        val focusRequester = remember { FocusRequester() }
+
+                        LaunchedEffect(index) {
+                            focusRequester.requestFocus()
+                        }
+
+                        OutlinedTextFieldWithErrorDescription(
+                            value = category.name.value,
+                            onValueChange = { value -> onInputChanged(category, value) },
+                            modifier = Modifier
+                                .weight(weight = 1f, fill = false)
+                                .padding(horizontal = Spacing.sectionContent)
+                                .focusRequester(focusRequester),
+                            isError = !category.name.isValid,
+                            errorDescription = R.string.field_error_empty,
+                            keyboardActions = KeyboardActions { onHideInputField() },
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                imeAction = ImeAction.Done
+                            ),
+                            selectAllOnFocus = true,
+                            contentPadding = PaddingValues(Spacing.sectionContent)
+                        )
+                    } else {
+
+                        val bringIntoViewRequester = remember { BringIntoViewRequester() }
+
+                        LaunchedEffect(index) {
+                            if (index == indexOfSelectedCategory) {
+                                bringIntoViewRequester.bringIntoView()
+                            }
+                        }
+
+                        Box(
+                            contentAlignment = Alignment.CenterStart,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(shape = MaterialTheme.shapes.medium)
+                                .clickable { onCategoryClick(category) }
+                                .padding(horizontal = Spacing.sectionContent)
+                                .bringIntoViewRequester(bringIntoViewRequester)
+                        ) {
+
+                            Text(
+                                text = category.name.value.text,
+                                style = MaterialTheme.typography.body1
+                            )
+                        }
+                    }
+
+                    CustomIconButton(
+                        imageVector = Icons.Rounded.Delete,
+                        backgroundColor = Color.Transparent,
+                        foregroundColor = MaterialTheme.colors.error,
+                        onClick = { onDeleteCategoryClick(category) },
                     )
                 }
-                CategorySectionState.EditMode -> {
-                    ScoringCategoryListEditMode(
-                        categories = categories,
-                        onDeleteCategoryClick = onDeleteCategoryClick,
-                        onCategoryClick = onCategoryClick,
-                        onDrag = onDrag,
-                        onDragEnd = onDragEnd,
-                        onDragStart = onDragStart,
-                    )
-                }
-                CategorySectionState.Empty -> {
-                    HelperBox(
-                        message = stringResource(id = R.string.info_categories_section_helper),
-                        type = HelperBoxType.Info
-                    )
-                }
-            }
-        }
-
-        AnimatedContent(
-            targetState = showInput,
-            transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
-            label = EditGameConstants.AnimationLabel.CategorySectionInput
-        ) { visible ->
-
-            if (visible) {
-                
-                Spacer(Modifier.height(Spacing.sectionContent))
-
-                OutlinedTextFieldWithErrorDescription(
-                    textFieldValue = categoryTextFieldInput.value,
-                    onValueChange = { onInputChanged(it) },
-                    label = { Text(text = inputTitle) },
-                    isError = !categoryTextFieldInput.isValid && !categoryTextFieldInput.hasReceivedInput,
-                    errorDescription = R.string.field_error_empty,
-                    selectAllOnFocus = true,
-                    modifier = Modifier.onFocusChanged(onCategoryInputFocusChanged)
-                )
             }
         }
     }
 }
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 private fun ScoringCategoryHeader(
-    isInEditMode: Boolean,
-    showEditModeButton: Boolean,
-    onEditModeClick: () -> Unit,
-    onNewCategoryClick: () -> Unit,
+    onEditButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -416,53 +565,16 @@ private fun ScoringCategoryHeader(
     ) {
 
         Text(
-            text = stringResource(id = R.string.field_categories),
+            text = stringResource(id = R.string.header_scoring_categories),
             style = MaterialTheme.typography.h6,
             fontWeight = FontWeight.SemiBold,
         )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.medium)
-        ) {
-
-            AnimatedContent(
-                targetState = showEditModeButton,
-                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
-                label = EditGameConstants.AnimationLabel.EditModeButton
-            ) { showEditModeButton ->
-
-                if (showEditModeButton) {
-
-                    AnimatedContent(
-                        targetState = isInEditMode,
-                        transitionSpec = { fadeIn() togetherWith fadeOut() },
-                        label = EditGameConstants.AnimationLabel.CategorySectionHeaderState
-                    ) { isInEditMode ->
-
-                        if (isInEditMode) {
-                            CustomIconButton(
-                                painter = painterResource(id = R.drawable.ic_edit_off),
-                                foregroundColor = MaterialTheme.colors.primary,
-                                onTap = onEditModeClick
-                            )
-                        } else {
-                            CustomIconButton(
-                                painter = painterResource(id = R.drawable.ic_edit),
-                                foregroundColor = MaterialTheme.colors.primary,
-                                onTap = onEditModeClick
-                            )
-                        }
-                    }
-                }
-            }
-
-            CustomIconButton(
-                imageVector = Icons.Rounded.Add,
-                foregroundColor = MaterialTheme.colors.primary,
-                onTap = onNewCategoryClick
-            )
-        }
+        
+        CustomIconButton(
+            painter = painterResource(id = R.drawable.ic_edit),
+            foregroundColor = MaterialTheme.colors.primary,
+            onClick = onEditButtonClick
+        )
     }
 }
 
@@ -490,70 +602,6 @@ private fun ScoringCategoryList(
                     contentColor = MaterialTheme.colors.onBackground,
                 ),
             )
-        }
-    }
-}
-
-@Composable
-private fun ScoringCategoryListEditMode(
-    categories: List<CategoryUiModel>,
-    onCategoryClick: (CategoryUiModel) -> Unit,
-    onDeleteCategoryClick: (CategoryUiModel) -> Unit,
-    onDrag: (Offset) -> Unit,
-    onDragEnd: () -> Unit,
-    onDragStart: (Int) -> Unit,
-) {
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-        modifier = Modifier.defaultMinSize(minHeight = Size.minTappableSize)
-    ) {
-
-        categories.forEachIndexed { index, category ->
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.height(Size.minTappableSize)
-            ) {
-
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_drag_handle),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(Size.minTappableSize)
-                        .padding(12.dp)
-                        .pointerInput(Unit) {
-                            detectDragGestures(
-                                onDragStart = { onDragStart(index) },
-                                onDragEnd = onDragEnd,
-                                onDrag = { _, dragAmount -> onDrag(dragAmount) }
-                            )
-                        },
-                )
-
-                Box(
-                    contentAlignment = Alignment.CenterStart,
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .clip(MaterialTheme.shapes.medium)
-                        .clickable { onCategoryClick(category) }
-                        .padding(horizontal = Spacing.sectionContent),
-                    content = {
-                        Text(
-                            text = category.name.value.text,
-                            style = MaterialTheme.typography.body1,
-                        )
-                    }
-                )
-
-                CustomIconButton(
-                    imageVector = Icons.Rounded.Delete,
-                    backgroundColor = Color.Transparent,
-                    foregroundColor = MaterialTheme.colors.error,
-                    onTap = { onDeleteCategoryClick(category) },
-                )
-            }
         }
     }
 }
@@ -634,22 +682,59 @@ fun ColorSelector(
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Preview
 @Composable
-fun EditGameScreenPreview() {
+fun EditGameScreenDefaultPreview() {
 
     EditGameScreen(
-        uiState = EditGameSampleData.UiState,
+        uiState = EditGameSampleData.Default,
         onCategoryClick = {},
-        onCategoryInputChanged = {},
-        onCategoryInputFocusChanged = {},
+        onCategoryDialogDismiss = {},
+        onCategoryInputChanged = {_,_ ->},
         onColorClick = {},
         onDeleteCategoryClick = {},
         onDeleteClick = {},
         onDrag = {},
         onDragEnd = {},
         onDragStart = {},
-        onEditModeClick = {},
+        onEditButtonClick = {},
+        onHideCategoryInputField = {},
         onNameChanged = {},
         onNewCategoryClick = {},
         onScoringModeChanged = {}
     )
+}
+
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Preview
+@Composable
+fun EditGameScreenEditCategoriesPreview() {
+
+    var uiState = EditGameSampleData.CategoryDialog
+
+    CustomGameTheme(gameColor = uiState.getResolvedColor()) {
+
+        EditGameScreen(
+            nameInput = uiState.nameInput,
+            scoringMode = uiState.scoringMode,
+            categories = uiState.displayedCategories,
+            indexOfCategoryReceivingInput = uiState.indexOfCategoryReceivingInput,
+            indexOfSelectedCategory = uiState.indexOfSelectedCategory,
+            isCategoryDialogOpen = uiState.isCategoryDialogOpen,
+            colorOptions = listOf(),
+            selectedColorId = uiState.color,
+            onCategoryClick = { uiState = uiState.copy(indexOfCategoryReceivingInput = it.position) },
+            onCategoryDialogDismiss = {},
+            onCategoryInputChanged = {_,_->},
+            onColorClick = {},
+            onDeleteCategoryClick = {},
+            onDeleteClick = {},
+            onDrag = {},
+            onDragEnd = {},
+            onDragStart = {},
+            onEditButtonClick = {},
+            onHideCategoryInputField = { uiState = uiState.copy(indexOfCategoryReceivingInput = null) },
+            onNameChanged = {},
+            onNewCategoryClick = {},
+            onScoringModeChanged = {}
+        )
+    }
 }

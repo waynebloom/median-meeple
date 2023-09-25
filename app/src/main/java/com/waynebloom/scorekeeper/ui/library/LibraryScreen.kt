@@ -117,7 +117,7 @@ fun LibraryScreen(
                 onStateChanged = { onTopBarStateChanged(it) }
             )
         },
-        floatingActionButton = { MedianMeepleFab(onTap = onAddNewGameTap) },
+        floatingActionButton = { MedianMeepleFab(onClick = onAddNewGameTap) },
         modifier = modifier,
     ) { contentPadding ->
 
@@ -230,7 +230,7 @@ fun GamesDefaultActionBar(
             imageVector = Icons.Rounded.Search,
             backgroundColor = Color.Transparent,
             foregroundColor = themeColor,
-            onTap = { onOpenSearchTap() }
+            onClick = { onOpenSearchTap() }
         )
     }
 }

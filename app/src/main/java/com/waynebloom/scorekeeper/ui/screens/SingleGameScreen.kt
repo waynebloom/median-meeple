@@ -166,7 +166,7 @@ fun GameStatisticsTopBar(
                 imageVector = Icons.Rounded.Edit,
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onTap = { onEditGameTap() }
+                onClick = { onEditGameTap() }
             )
         }
 
@@ -303,21 +303,21 @@ fun MatchesForSingleGameDefaultActionBar(
                 imageVector = Icons.Rounded.Search,
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onTap = { onOpenSearchTap() }
+                onClick = { onOpenSearchTap() }
             )
 
             CustomIconButton(
                 painter = painterResource(id = R.drawable.ic_sort),
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onTap = { onSortTap() }
+                onClick = { onSortTap() }
             )
 
             CustomIconButton(
                 imageVector = Icons.Rounded.Edit,
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onTap = { onEditGameTap() }
+                onClick = { onEditGameTap() }
             )
         }
     }
@@ -352,7 +352,7 @@ fun MatchesForSingleGameSortMenuActionBar(
                 imageVector = Icons.Rounded.Close,
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onTap = { onCloseTap() }
+                onClick = { onCloseTap() }
             )
         }
 

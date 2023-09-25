@@ -26,9 +26,9 @@ fun CustomIconButton(
     imageVector: ImageVector,
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colors.surface,
-    foregroundColor: Color,
+    foregroundColor: Color = MaterialTheme.colors.primary,
     enabled: Boolean = true,
-    onTap: () -> Unit,
+    onClick: () -> Unit,
 ) {
     var boxModifier = modifier
         .clip(MaterialTheme.shapes.medium)
@@ -41,7 +41,7 @@ fun CustomIconButton(
         .padding(12.dp)
 
     boxModifier = if (enabled) {
-        boxModifier.clickable { onTap() }
+        boxModifier.clickable { onClick() }
     } else boxModifier
     iconModifier = if (!enabled) {
         iconModifier.alpha(Alpha.disabled)
@@ -66,10 +66,10 @@ fun CustomIconButton(
     painter: Painter,
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colors.surface,
-    foregroundColor: Color,
+    foregroundColor: Color = MaterialTheme.colors.primary,
     enabled: Boolean = true,
     endText: String? = null,
-    onTap: () -> Unit,
+    onClick: () -> Unit,
 ) {
     var boxModifier = modifier
         .clip(MaterialTheme.shapes.medium)
@@ -82,7 +82,7 @@ fun CustomIconButton(
         .padding(12.dp)
 
     boxModifier = if (enabled) {
-        boxModifier.clickable { onTap() }
+        boxModifier.clickable { onClick() }
     } else boxModifier
     iconModifier = if (!enabled) {
         iconModifier.alpha(Alpha.disabled)

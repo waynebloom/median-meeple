@@ -161,13 +161,13 @@ private fun GamesHeader(
                 backgroundColor = Color.Transparent,
                 foregroundColor = MaterialTheme.colors.primary,
                 endText = "Library",
-                onTap = onSeeAllGamesTap
+                onClick = onSeeAllGamesTap
             )
         } else {
             CustomIconButton(
                 imageVector = Icons.Rounded.Add,
                 foregroundColor = MaterialTheme.colors.primary,
-                onTap = onAddNewGameTap,
+                onClick = onAddNewGameTap,
             )
         }
     }

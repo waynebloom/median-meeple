@@ -60,7 +60,7 @@ fun MatchesForSingleGameScreen(
     Scaffold(
         floatingActionButton = { MedianMeepleFab(
             backgroundColor = themeColor,
-            onTap = onNewMatchTap,
+            onClick = onNewMatchTap,
         ) },
         modifier = modifier,
     ) { contentPadding ->

@@ -95,14 +95,14 @@ fun SearchTopBar(
             painter = painterResource(id = R.drawable.ic_search_off),
             backgroundColor = Color.Transparent,
             foregroundColor = themeColor,
-            onTap = onClearFiltersTap
+            onClick = onClearFiltersTap
         )
 
         CustomIconButton(
             imageVector = Icons.Rounded.Close,
             backgroundColor = Color.Transparent,
             foregroundColor = themeColor,
-            onTap = onCloseTap
+            onClick = onCloseTap
         )
     }
 }

@@ -19,15 +19,16 @@ fun EditGameRoute(
     EditGameScreen(
         uiState = uiState,
         onCategoryClick = viewModel::onCategoryClick,
+        onCategoryDialogDismiss = viewModel::onCategoryDialogDismiss,
         onCategoryInputChanged = viewModel::onCategoryInputChanged,
-        onCategoryInputFocusChanged = viewModel::onCategoryInputFocusChanged,
         onColorClick = viewModel::onColorClick,
         onDeleteCategoryClick = viewModel::onDeleteCategoryClick,
         onDeleteClick = viewModel::onDeleteClick,
         onDrag = { viewModel.onDrag(it, rowHeightForDrag) },
         onDragEnd = viewModel::onDragEnd,
         onDragStart = viewModel::onDragStart,
-        onEditModeClick = viewModel::onEditModeClick,
+        onEditButtonClick = viewModel::onEditButtonClick,
+        onHideCategoryInputField = viewModel::onHideCategoryInput,
         onNameChanged = viewModel::onNameChanged,
         onNewCategoryClick = viewModel::onNewCategoryClick,
         onScoringModeChanged = viewModel::onScoringModeChanged

@@ -195,14 +195,14 @@ private fun EditPlayerScoreScreenTopBar(
                     backgroundColor = Color.Transparent,
                     foregroundColor = themeColor,
                     enabled = submitButtonEnabled,
-                    onTap = onDoneTap
+                    onClick = onDoneTap
                 )
 
                 CustomIconButton(
                     imageVector = Icons.Rounded.Delete,
                     backgroundColor = Color.Transparent,
                     foregroundColor = MaterialTheme.colors.error,
-                    onTap = onDeleteTap
+                    onClick = onDeleteTap
                 )
             }
         }
@@ -229,7 +229,7 @@ private fun InformationSection(
         )
 
         OutlinedTextFieldWithErrorDescription(
-            textFieldValue = name,
+            value = name,
             onValueChange = { onNameChanged(it) },
             label = { Text(text = stringResource(id = R.string.field_name)) },
             isError = isError,
@@ -268,7 +268,7 @@ private fun RankingSection(
         )
 
         OutlinedTextFieldWithErrorDescription(
-            textFieldValue = playerRankTextFieldValue,
+            value = playerRankTextFieldValue,
             onValueChange = { onPlayerRankUpdate(it) },
             modifier = Modifier
                 .fillMaxWidth()
@@ -391,7 +391,7 @@ private fun TotalScoreField(
     onDoneTap: () -> Unit
 ) {
     OutlinedTextFieldWithErrorDescription(
-        textFieldValue = totalScoreData.textFieldValue,
+        value = totalScoreData.textFieldValue,
         onValueChange = { onChanged(it) },
         modifier = Modifier.padding(bottom = 8.dp),
         label = { Text(text = stringResource(id = R.string.field_total_score)) },
@@ -425,7 +425,7 @@ private fun CategoryFields(
         categoryData.forEachIndexed { index, data ->
 
             OutlinedTextFieldWithErrorDescription(
-                textFieldValue = data.textFieldValue,
+                value = data.textFieldValue,
                 onValueChange = { onFieldChanged(data.entity.categoryTitleId, it) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = categoryTitles[index].name) },
@@ -443,7 +443,7 @@ private fun CategoryFields(
         }
 
         OutlinedTextFieldWithErrorDescription(
-            textFieldValue = uncategorizedScoreData.textFieldValue,
+            value = uncategorizedScoreData.textFieldValue,
             modifier = Modifier.fillMaxWidth(),
             onValueChange = { onUncategorizedFieldChanged(it) },
             label = { Text(text = stringResource(id = R.string.field_uncategorized)) },

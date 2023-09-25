@@ -2,16 +2,13 @@ package com.waynebloom.scorekeeper.ui.editGame
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions
-import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.di.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.transformElement
@@ -27,16 +24,12 @@ import com.waynebloom.scorekeeper.shared.domain.usecase.GetString
 import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
 import com.waynebloom.scorekeeper.ui.model.GameUiModel
-import com.waynebloom.scorekeeper.viewmodel.CategorySectionState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.time.DurationUnit
-import kotlin.time.toDuration
 
 @HiltViewModel
 class EditGameViewModel @Inject constructor(
@@ -44,7 +37,6 @@ class EditGameViewModel @Inject constructor(
     private val deleteGame: DeleteGame,
     getCategoriesByGameId: GetCategoriesByGameId,
     getGame: GetGame,
-    private val getString: GetString,
     private val insertCategory: InsertCategory,
     mutableStateFlowFactory: MutableStateFlowFactory,
     savedStateHandle: SavedStateHandle,
@@ -55,8 +47,8 @@ class EditGameViewModel @Inject constructor(
     private val viewModelState: MutableStateFlow<EditGameUiState>
     val uiState: MutableStateFlow<EditGameUiState>
 
-    lateinit var composableCoroutineScope: CoroutineScope
     private val gameId = savedStateHandle.get<Long>("gameId")!!
+    lateinit var composableCoroutineScope: CoroutineScope
 
     private val contentState: EditGameUiState.Content
         get() = viewModelState.value.asContent()
@@ -130,7 +122,6 @@ class EditGameViewModel @Inject constructor(
     fun onNameChanged(value: TextFieldValue) = updateState(pushGameUpdate = true) {
         it.copy(
             nameInput = it.nameInput.copy(
-                hasReceivedInput = true,
                 isValid = value.text.isNotBlank(),
                 value = value
             )
@@ -149,59 +140,65 @@ class EditGameViewModel @Inject constructor(
     fun getCategoryRowHeight(): Float =
         LocalDensity.current.run { Dimensions.Size.minTappableSize.toPx() }
 
-    fun onCategoryInputChanged(value: TextFieldValue) {
-        updateState { state ->
-            val updatedCategoryInput = state.categoryInput.copy(
-                hasReceivedInput = true,
-                isValid = value.text.isNotBlank(),
-                value = value
-            )
-            val index = state.indexOfCategoryReceivingInput!!
-            val updatedCategories = state.categories.toMutableList().apply {
-                this[index] = this[index].copy(name = updatedCategoryInput)
+    fun onCategoryClick(category: CategoryUiModel) {
+
+        updateState {
+
+            val indexOfCategory = it.categories.indexOf(category)
+            val indexOfCategoryReceivingInput = if (it.isCategoryDialogOpen) {
+                indexOfCategory
+            } else {
+                null
             }
 
-            pushCategoryUpdate(updatedCategories[index])
+            it.copy(
+                indexOfCategoryReceivingInput = indexOfCategoryReceivingInput,
+                indexOfSelectedCategory = indexOfCategory,
+                isCategoryDialogOpen = true
+            )
+        }
+    }
+
+    fun onEditButtonClick() = updateState {
+        it.copy(isCategoryDialogOpen = true)
+    }
+
+    fun onCategoryInputChanged(categoryUiModel: CategoryUiModel, input: TextFieldValue) {
+        updateState { state ->
+            val updatedCategory = categoryUiModel.copy(
+                name = categoryUiModel.name.copy(value = input))
+            val updatedCategories = state.categories.toMutableList().apply {
+                this[indexOf(categoryUiModel)] = updatedCategory
+            }
+
+            pushCategoryUpdate(updatedCategory)
             state.copy(categories = updatedCategories)
         }
     }
 
-    fun onCategoryInputFocusChanged(focusState: FocusState) {
-        /*if (!focusState.isFocused) {
+    fun onNewCategoryClick() {
+        viewModelScope.launch {
+
+            val newCategoryPosition = contentState.categories.lastIndex + 1
+            val newCategory = CategoryUiModel(
+                name = TextFieldInput(),
+                position = newCategoryPosition
+            )
+            val newId = insertCategory(
+                category = newCategory,
+                gameId = gameId
+            )
+
             updateState {
+                val updatedCategories = it.categories.plus(newCategory.copy(id = newId))
+
                 it.copy(
-                    indexOfCategoryReceivingInput = null,
-                    showCategoryInput = false
+                    categories = updatedCategories,
+                    indexOfCategoryReceivingInput = updatedCategories.lastIndex,
+                    indexOfSelectedCategory = updatedCategories.lastIndex,
+                    isCategoryDialogOpen = true,
                 )
             }
-        }*/
-    }
-
-    fun onCategoryClick(category: CategoryUiModel) {
-
-        updateState {
-            it.copy(
-                categoryInputTitle = getString(R.string.field_edit_category),
-                indexOfCategoryReceivingInput = it.categories.indexOf(category),
-                isEditMode = true,
-                showCategoryInput = true
-            )
-        }
-
-        composableCoroutineScope.launch {
-            delayToAllowForAnimationToComplete()
-            scrollToCategoryInput()
-        }
-    }
-
-    fun onDeleteCategoryClick(category: CategoryUiModel) {
-        updateState {
-            val updatedCategories = it.categories.minus(category)
-            it.copy(categories = updatedCategories)
-        }
-
-        viewModelScope.launch {
-            deleteCategory(category.id)
         }
     }
 
@@ -253,67 +250,51 @@ class EditGameViewModel @Inject constructor(
         it.copy(dragState = it.dragState.copy(dragStart = index))
     }
 
-    fun onEditModeClick() = updateState {
-        if (it.categorySectionDisplayState != CategorySectionState.EditMode) {
-            it.copy(isEditMode = true)
-        } else {
-            it.copy(
-                indexOfCategoryReceivingInput = null,
-                isEditMode = false,
-                showCategoryInput = false
-            )
-        }
+    fun onHideCategoryInput() = updateState {
+        it.copy(indexOfCategoryReceivingInput = null)
     }
 
-    fun onNewCategoryClick() {
-        viewModelScope.launch {
+    fun onDeleteCategoryClick(deletedCategory: CategoryUiModel) {
 
-            val newCategoryPosition = contentState.categories.lastIndex + 1
-            val newCategory = CategoryUiModel(
-                name = TextFieldInput(),
-                position = newCategoryPosition
-            )
-            val newId = insertCategory(
-                category = newCategory,
-                gameId = gameId
-            )
+        updateState { state ->
+            val indexOfDeletedCategory = state.categories.indexOf(deletedCategory)
+            val updatedCategories = state.categories.toMutableList()
+            updatedCategories.listIterator(indexOfDeletedCategory).apply {
 
-            updateState {
-                val updatedCategories = it.categories.plus(newCategory.copy(id = newId))
+                // remove the element that is being deleted
+                next(); remove()
 
-                it.copy(
-                    categories = updatedCategories,
-                    categoryInputTitle = getString(R.string.field_new_category),
-                    indexOfCategoryReceivingInput = updatedCategories.lastIndex,
-                    showCategoryInput = true
-                )
+                // adjust the position property of the remaining elements
+                while(hasNext()) {
+                    val category = next()
+                    val adjustedPosition = category.position - 1
+                    set(category.copy(position = adjustedPosition))
+                }
             }
+
+            state.copy(
+                categories = updatedCategories,
+                indexOfCategoryReceivingInput = state.indexOfCategoryReceivingInput?.let {
+                    if (it > indexOfDeletedCategory) it - 1 else it
+                },
+                indexOfSelectedCategory = state.indexOfSelectedCategory?.let {
+                    if (it > indexOfDeletedCategory) it - 1 else it
+                }
+            )
         }
 
-        composableCoroutineScope.launch {
-            delayToAllowForAnimationToComplete()
-            scrollToCategoryInput()
+        viewModelScope.launch {
+            deleteCategory(deletedCategory.id)
         }
     }
 
-    private suspend fun delayToAllowForAnimationToComplete() {
-        val isInEditMode = viewModelState
-            .value
-            .asContent()
-            .categorySectionDisplayState == CategorySectionState.EditMode
-        val duration = if (isInEditMode) {
-            DurationMs.short
-        } else DurationMs.veryShort
-
-        delay(duration.toDuration(DurationUnit.MILLISECONDS))
+    fun onCategoryDialogDismiss() = updateState {
+        it.copy(
+            indexOfCategoryReceivingInput = null,
+            indexOfSelectedCategory = null,
+            isCategoryDialogOpen = false
+        )
     }
-
-    private suspend fun scrollToCategoryInput() =
-        viewModelState
-            .value
-            .asContent()
-            .lazyListState
-            .animateScrollToItem(EditGameUiState.CategorySectionIndex)
 
     // endregion
 
@@ -323,7 +304,6 @@ class EditGameViewModel @Inject constructor(
             const val CastFailContent =
                 "An attempt was made to cast EditGameUiState to Content, but it was not in the " +
                         "Content state."
-            const val CategorySectionIndex = 2
         }
 
         fun asContent() = this as? Content ?: throw IllegalStateException(CastFailContent)
@@ -332,15 +312,13 @@ class EditGameViewModel @Inject constructor(
 
         data class Content(
             val categories: List<CategoryUiModel>,
-            val categoryInputTitle: String = "",
             val color: String,
             val dragState: DragState = DragState(),
             val indexOfCategoryReceivingInput: Int? = null,
-            private val isEditMode: Boolean = false,
-            val lazyListState: LazyListState = LazyListState(),
+            val indexOfSelectedCategory: Int? = null,
+            val isCategoryDialogOpen: Boolean = false,
             val nameInput: TextFieldInput,
             val scoringMode: ScoringMode,
-            val showCategoryInput: Boolean = false,
             val showColorMenu: Boolean = false
         ): EditGameUiState {
 
@@ -351,13 +329,6 @@ class EditGameViewModel @Inject constructor(
                         add(dragState.dragEnd, itemBeingDragged)
                     }
                 } else categories
-            
-            val categorySectionDisplayState: CategorySectionState
-                get() = when {
-                    categories.isEmpty() -> CategorySectionState.Empty
-                    isEditMode -> CategorySectionState.EditMode
-                    else -> CategorySectionState.Default
-                }
 
             val categoryInput: TextFieldInput
                 get() = if (indexOfCategoryReceivingInput != null) {

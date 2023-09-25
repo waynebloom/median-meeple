@@ -52,20 +52,6 @@
 
     <!-- endregion -->
 
-    <!-- region EditGameScreen -->
-
-    <string name="field_categories">Scoring Categories</string>
-    <string name="field_edit_category">Edit Category</string>
-    <string name="field_new_category">New Category</string>
-    <string name="header_game_details">Game Details</string>
-    <string name="header_custom_theme">Custom Theme</string>
-    <string name="info_categories_section_helper">If your game has multiple scoring sources, add them here. An example set would be City, Farm, Road, and Monastery.</string>
-    <string name="scoring_option_ascending">Lowest Score Wins</string>
-    <string name="scoring_option_descending">Highest Score Wins</string>
-    <string name="scoring_option_manual">Decide Your Own Ranks</string>
-
-    <!-- endregion -->
-
     <!-- region EditPlayerScoreScreen -->
 
     <string name="error_invalid_rank">This is not a valid rank. Please enter a positive integer less than 101.</string>
