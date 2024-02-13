@@ -33,12 +33,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.ui.components.AdCard
-import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.IconButton
 import com.waynebloom.scorekeeper.ui.components.GameListItem
 import com.waynebloom.scorekeeper.ui.components.HelperBox
 import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.ui.components.MedianMeepleFab
-import com.waynebloom.scorekeeper.ui.components.SearchTopBar
+import com.waynebloom.scorekeeper.ui.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.enums.LibraryTopBarState
@@ -226,7 +226,7 @@ fun GamesDefaultActionBar(
             maxLines = 1
         )
 
-        CustomIconButton(
+        IconButton(
             imageVector = Icons.Rounded.Search,
             backgroundColor = Color.Transparent,
             foregroundColor = themeColor,
@@ -278,7 +278,7 @@ fun GamesTopBar(
                         )
                     }
                     LibraryTopBarState.SearchBarOpen -> {
-                        SearchTopBar(
+                        TopBarWithSearch(
                             isSearchBarFocused = isSearchBarFocused,
                             searchString = searchString,
                             themeColor = themeColor,

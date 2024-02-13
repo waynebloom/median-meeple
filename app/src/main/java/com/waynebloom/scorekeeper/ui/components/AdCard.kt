@@ -17,8 +17,8 @@ import com.waynebloom.scorekeeper.ext.sentenceCase
 @Composable
 fun AdCard(
     ad: NativeAd? = null,
-    themeColor: Int = MaterialTheme.colors.primary.toArgb(),
-    onThemeColor: Int = MaterialTheme.colors.onPrimary.toArgb(),
+    primaryColor: Int = MaterialTheme.colors.primary.toArgb(),
+    onPrimaryColor: Int = MaterialTheme.colors.onPrimary.toArgb(),
     onSurface: Int = MaterialTheme.colors.onSurface.toArgb()
 ) {
     Surface(shape = MaterialTheme.shapes.large) {
@@ -29,8 +29,8 @@ fun AdCard(
             if (ad != null) {
                 adLoadingTag.visibility = View.INVISIBLE
                 adProgressBar.visibility = View.INVISIBLE
-                adTag.background.setTint(themeColor)
-                adTag.setTextColor(onThemeColor)
+                adTag.background.setTint(primaryColor)
+                adTag.setTextColor(onPrimaryColor)
 
                 adView.apply {
                     setNativeAd(ad)
@@ -48,8 +48,8 @@ fun AdCard(
                     }
                     callToActionView = adCtaButton.apply {
                         text = ad.callToAction?.sentenceCase() ?: "Learn More"
-                        setBackgroundColor(themeColor)
-                        setTextColor(onThemeColor)
+                        setBackgroundColor(primaryColor)
+                        setTextColor(onPrimaryColor)
                     }
                     headlineView = adHeadline.apply {
                         text = ad.headline
@@ -62,7 +62,7 @@ fun AdCard(
                     }
                     starRatingView = adStars.apply {
                         rating = ad.starRating?.toFloat() ?: 0f
-                        progressDrawable.setTint(themeColor)
+                        progressDrawable.setTint(primaryColor)
                     }
                     storeView = adSourceStore.apply {
                         text = ad.store
@@ -70,9 +70,9 @@ fun AdCard(
                     }
                 }
             } else {
-                adLoadingTag.setTextColor(themeColor)
+                adLoadingTag.setTextColor(primaryColor)
                 adLoadingTag.visibility = View.VISIBLE
-                adProgressBar.indeterminateDrawable.setTint(themeColor)
+                adProgressBar.indeterminateDrawable.setTint(primaryColor)
                 adProgressBar.visibility = View.VISIBLE
                 adView.visibility = View.INVISIBLE
             }

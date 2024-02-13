@@ -1,4 +1,5 @@
-package com.waynebloom.scorekeeper.ui.screens
+/*
+package com.waynebloom.scorekeeper.ui.singleGame TODO: remove, reference only
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
@@ -22,11 +25,17 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode.Companion.Screen
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -35,6 +44,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.GameObjectsDefaultPreview
 import com.waynebloom.scorekeeper.R
@@ -48,11 +66,78 @@ import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.ui.components.CustomIconButton
 import com.waynebloom.scorekeeper.ui.components.RadioButtonOption
 import com.waynebloom.scorekeeper.ui.components.SearchTopBar
+import com.waynebloom.scorekeeper.ui.singleGame.matchesForGame.MatchesForGameRoute
+import com.waynebloom.scorekeeper.ui.singleGame.matchesForGame.MatchesForSingleGameScreen
+import com.waynebloom.scorekeeper.ui.navigation.Destination
+import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.StatisticsForGameRoute
+import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.ui.StatisticsForGameScreen
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
+
+@Composable
+fun SingleGameTopBar(
+    name: String
+) {
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        CustomIconButton(
+            painter = painterResource(R.drawable.ic_x),
+            backgroundColor = MaterialTheme.colors.onPrimary,
+            onClick = {}
+        )
+        
+        Text(text = name)
+        
+        CustomIconButton(
+            painter = painterResource(R.drawable.ic_edit),
+            backgroundColor = MaterialTheme.colors.onPrimary,
+            onClick = {}
+        )
+    }
+}
+
+@Composable
+fun SingleGameBottomNavigation(
+    items: List<Destination.BottomNavDestination>,
+    navController: NavController
+) {
+
+    BottomNavigation {
+
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+
+        items.forEach { screen ->
+
+            BottomNavigationItem(
+                icon = { Icon(painterResource(screen.iconResource), null) },
+                label = { Text(stringResource(screen.labelResource)) },
+                selected = currentDestination?.hierarchy?.any { it.route == screen.route } == true,
+                onClick = {
+                    navController.navigate(screen.route) {
+                        // Pop up to the start destination of the graph to
+                        // avoid building up a large stack of destinations
+                        // on the back stack as users select items
+                        popUpTo(navController.graph.findStartDestination().id) {
+                            saveState = true
+                        }
+                        // Avoid multiple copies of the same destination when
+                        // reselecting the same item
+                        launchSingleTop = true
+                        // Restore state when reselecting a previously selected item
+                        restoreState = true
+                    }
+                }
+            )
+        }
+    }
+}
 
 @Composable
 fun SingleGameScreen(
@@ -63,7 +148,7 @@ fun SingleGameScreen(
     onSingleMatchTap: (Long) -> Unit,
     viewModel: SingleGameViewModel = hiltViewModel(),
 ) {
-    /*val viewModel = viewModel<SingleGameViewModel>(
+    val viewModel = viewModel<SingleGameViewModel>(
         key = SingleGameScreen.GameStatistics.name,
         factory = SingleGameViewModelFactory(
             gameObject = gameObject,
@@ -71,7 +156,8 @@ fun SingleGameScreen(
         )
     ).onRecompose(
         gameObject = gameObject
-    )*/
+    )
+
 
     val themeColor = LocalCustomThemeColors.current.getColorByKey(viewModel.color)
     val coroutineScope = rememberCoroutineScope()
@@ -123,7 +209,7 @@ fun SingleGameScreen(
                 modifier = Modifier.padding(innerPadding),
             )
         } else {
-            GameStatisticsScreen(
+            StatisticsForGameScreen(
                 gameObject = viewModel.game,
                 themeColor = themeColor,
                 modifier = Modifier.padding(innerPadding),
@@ -286,7 +372,9 @@ fun MatchesForSingleGameDefaultActionBar(
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth().height(Dimensions.Size.topBarHeight)
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Dimensions.Size.topBarHeight)
     ) {
 
         Text(
@@ -420,18 +508,4 @@ fun SingleGameTabBar(
         }
     }
 }
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Composable
-fun SingleGameScreenStatsPreview() {
-    MedianMeepleTheme {
-        SingleGameScreen(
-            gameObject = GameObjectsDefaultPreview[0],
-            currentAd = null,
-            onEditGameTap = {},
-            onNewMatchTap = {},
-            onSingleMatchTap = {},
-        )
-    }
-}
+*/

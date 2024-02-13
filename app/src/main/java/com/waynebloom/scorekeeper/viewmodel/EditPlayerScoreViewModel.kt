@@ -20,7 +20,7 @@ import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.ext.statefulUpdateElement
-import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
+import com.waynebloom.scorekeeper.ext.toStringForDisplay
 
 class EditPlayerScoreViewModel(
     playerObject: PlayerDataRelationModel,
@@ -76,14 +76,14 @@ class EditPlayerScoreViewModel(
         categoryData = categoryTitles
             .map { subscoreTitle ->
                 val correspondingSubscore = categoryScores
-                    .find { it.categoryTitleId == subscoreTitle.id }
+                    .find { it.categoryId == subscoreTitle.id }
 
                 if (correspondingSubscore != null) {
                     CategoryScoreEntityState(entity = correspondingSubscore)
                 } else {
                     CategoryScoreEntityState(
                         entity = CategoryScoreDataModel(
-                            categoryTitleId = subscoreTitle.id,
+                            categoryId = subscoreTitle.id,
                             playerId = initialPlayerEntity.id
                         ),
                         databaseAction = DatabaseAction.INSERT
@@ -96,7 +96,7 @@ class EditPlayerScoreViewModel(
         uncategorizedScoreData.apply {
             bigDecimal = playerObject.getUncategorizedScore()
             textFieldValue = TextFieldValue(
-                text = playerObject.getUncategorizedScore().toTrimmedScoreString()
+                text = playerObject.getUncategorizedScore().toStringForDisplay()
             )
         }
     }
@@ -107,7 +107,7 @@ class EditPlayerScoreViewModel(
 
     fun onCategoryFieldChanged(id: Long, value: TextFieldValue) {
         categoryData.statefulUpdateElement(
-            predicate = { it.entity.categoryTitleId == id },
+            predicate = { it.entity.categoryId == id },
             update = {
                 val textWasChanged = it.textFieldValue.text != value.text
                 if (textWasChanged) {
@@ -188,7 +188,7 @@ class EditPlayerScoreViewModel(
     private fun getPlayerToCommit(): EntityStateBundle<PlayerDataModel> {
         val categorySum = categoryData.sumOf { it.bigDecimal }
         val uncategorizedScore = uncategorizedScoreData.bigDecimal
-        val scoreTotalAsString = (categorySum + uncategorizedScore).toTrimmedScoreString()
+        val scoreTotalAsString = (categorySum + uncategorizedScore).toStringForDisplay()
 
         return EntityStateBundle(
             entity = initialPlayerEntity.copy(
@@ -205,7 +205,7 @@ class EditPlayerScoreViewModel(
 
     private fun prepareSubscoreEntitiesForCommit() {
         categoryData.forEach {
-            it.entity.value = it.bigDecimal.toTrimmedScoreString()
+            it.entity.value = it.bigDecimal.toStringForDisplay()
         }
     }
 

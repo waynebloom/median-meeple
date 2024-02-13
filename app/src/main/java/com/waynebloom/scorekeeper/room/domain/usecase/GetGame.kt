@@ -10,13 +10,13 @@ class GetGame @Inject constructor(
     private val gameRepository: GameRepository
 ) {
 
-    suspend operator fun invoke(id: Long): GameUiModel = gameRepository.get(id).entity
-        .let { gameEntity ->
+    suspend operator fun invoke(id: Long): GameUiModel = gameRepository.get(id)
+        .let { game ->
             GameUiModel(
                 id = id,
-                color = gameEntity.color,
-                name = gameEntity.name.toTextFieldInput(),
-                scoringMode = gameEntity.scoringMode.toScoringMode()
+                color = game.color,
+                name = game.name.toTextFieldInput(),
+                scoringMode = game.scoringMode.toScoringMode()
             )
         }
 }

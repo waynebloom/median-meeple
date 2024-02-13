@@ -32,7 +32,7 @@ import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 
 @Composable
-fun SearchTopBar(
+fun TopBarWithSearch(
     isSearchBarFocused: Boolean,
     searchString: String,
     themeColor: Color,
@@ -91,14 +91,14 @@ fun SearchTopBar(
             )
         }
 
-        CustomIconButton(
+        IconButton(
             painter = painterResource(id = R.drawable.ic_search_off),
             backgroundColor = Color.Transparent,
             foregroundColor = themeColor,
             onClick = onClearFiltersTap
         )
 
-        CustomIconButton(
+        IconButton(
             imageVector = Icons.Rounded.Close,
             backgroundColor = Color.Transparent,
             foregroundColor = themeColor,

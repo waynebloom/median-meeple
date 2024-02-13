@@ -30,7 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.IconButton
 import com.waynebloom.scorekeeper.ui.components.HelperBox
 import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.ui.components.OutlinedTextFieldWithErrorDescription
@@ -190,7 +190,7 @@ private fun EditPlayerScoreScreenTopBar(
 
             Row(verticalAlignment = Alignment.CenterVertically) {
 
-                CustomIconButton(
+                IconButton(
                     imageVector = Icons.Rounded.Done,
                     backgroundColor = Color.Transparent,
                     foregroundColor = themeColor,
@@ -198,7 +198,7 @@ private fun EditPlayerScoreScreenTopBar(
                     onClick = onDoneTap
                 )
 
-                CustomIconButton(
+                IconButton(
                     imageVector = Icons.Rounded.Delete,
                     backgroundColor = Color.Transparent,
                     foregroundColor = MaterialTheme.colors.error,
@@ -426,7 +426,7 @@ private fun CategoryFields(
 
             OutlinedTextFieldWithErrorDescription(
                 value = data.textFieldValue,
-                onValueChange = { onFieldChanged(data.entity.categoryTitleId, it) },
+                onValueChange = { onFieldChanged(data.entity.categoryId, it) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = categoryTitles[index].name) },
                 isError = data.validityState != ScoreStringValidityState.Valid,

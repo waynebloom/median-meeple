@@ -10,5 +10,5 @@ class InsertCategory @Inject constructor(
 ) {
 
     suspend operator fun invoke(category: CategoryUiModel, gameId: Long) =
-        categoryRepository.insert(entity = category.toDataModel(gameId = gameId))
+        categoryRepository.insert(entity = category.toDataModel(gameId))
 }

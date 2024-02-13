@@ -2,19 +2,13 @@ package com.waynebloom.scorekeeper.ui.editGame
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.*
-import androidx.compose.animation.core.Ease
 import androidx.compose.animation.core.EaseInOutCubic
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -25,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
-import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.runtime.*
@@ -46,8 +39,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
@@ -55,17 +46,14 @@ import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.IconButton
 import com.waynebloom.scorekeeper.ui.components.Loading
 import com.waynebloom.scorekeeper.ui.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.ui.components.OutlinedTextFieldWithErrorDescription
 import com.waynebloom.scorekeeper.ui.components.RadioButtonOption
 import com.waynebloom.scorekeeper.ui.editGame.EditGameViewModel.EditGameUiState
 import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
-import com.waynebloom.scorekeeper.ui.theme.CustomGameTheme
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
+import com.waynebloom.scorekeeper.ui.theme.UserSelectedPrimaryColorTheme
 import java.util.*
 
 @Composable
@@ -92,7 +80,7 @@ fun EditGameScreen(
         is EditGameUiState.Loading -> Loading()
         is EditGameUiState.Content -> {
 
-            CustomGameTheme(gameColor = uiState.getResolvedColor()) {
+            UserSelectedPrimaryColorTheme(primaryColor = uiState.getResolvedColor()) {
 
                 EditGameScreen(
                     nameInput = uiState.nameInput,
@@ -280,7 +268,7 @@ private fun EditGameScreenTopBar(
                 maxLines = 1,
             )
 
-            CustomIconButton(
+            IconButton(
                 onClick = onDeleteTap,
                 backgroundColor = Color.Transparent,
                 foregroundColor = MaterialTheme.colors.error,
@@ -451,7 +439,7 @@ private fun EditCategoriesFullScreenDialog(
 
                         when (animationState) {
                             index -> {
-                                CustomIconButton(
+                                IconButton(
                                     painter = painterResource(id = R.drawable.ic_checkmark),
                                     backgroundColor = Color.Transparent,
                                     foregroundColor = MaterialTheme.colors.onBackground,
@@ -540,7 +528,7 @@ private fun EditCategoriesFullScreenDialog(
                         }
                     }
 
-                    CustomIconButton(
+                    IconButton(
                         imageVector = Icons.Rounded.Delete,
                         backgroundColor = Color.Transparent,
                         foregroundColor = MaterialTheme.colors.error,
@@ -569,8 +557,8 @@ private fun ScoringCategoryHeader(
             style = MaterialTheme.typography.h6,
             fontWeight = FontWeight.SemiBold,
         )
-        
-        CustomIconButton(
+
+        IconButton(
             painter = painterResource(id = R.drawable.ic_edit),
             foregroundColor = MaterialTheme.colors.primary,
             onClick = onEditButtonClick
@@ -710,7 +698,7 @@ fun EditGameScreenEditCategoriesPreview() {
 
     var uiState = EditGameSampleData.CategoryDialog
 
-    CustomGameTheme(gameColor = uiState.getResolvedColor()) {
+    UserSelectedPrimaryColorTheme(primaryColor = uiState.getResolvedColor()) {
 
         EditGameScreen(
             nameInput = uiState.nameInput,

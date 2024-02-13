@@ -7,6 +7,8 @@
       </list>
     </option>
     <option name="detektDebugMode" value="true" />
+    <option name="enableDetekt" value="true" />
+    <option name="enableForProjectResult" value="Accepted" />
     <option name="redirectChannels" value="true" />
   </component>
 </project>

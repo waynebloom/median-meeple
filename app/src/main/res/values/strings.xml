@@ -15,8 +15,9 @@
     <string name="header_sort_menu">Sorting Options</string>
     <string name="sort_direction_ascending">Ascending</string>
     <string name="sort_direction_descending">Descending</string>
-    <string name="text_empty_games">No games to display.</string>
-    <string name="text_empty_matches">No matches to display.</string>
+    <string name="text_empty_games">You haven\'t added any games to your library yet.</string>
+    <string name="text_empty_matches">You haven\'t recorded any matches for this game yet.</string>
+    <string name="text_library">Library</string>
     <string name="text_matches">Matches</string>
     <string name="text_showing_search_results">Searching for \"%s\".</string>
     <string name="text_statistics">Stats</string>

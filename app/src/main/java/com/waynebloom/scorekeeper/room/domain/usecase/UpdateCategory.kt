@@ -12,10 +12,3 @@ class UpdateCategory @Inject constructor(
     suspend operator fun invoke(category: CategoryUiModel, gameId: Long) =
         categoryRepository.update(entity = category.toDataModel(gameId))
 }
-
-internal fun CategoryUiModel.toDataModel(gameId: Long) = CategoryDataModel(
-    id = id,
-    gameId = gameId,
-    name = name.value.text,
-    position = position
-)

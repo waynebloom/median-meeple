@@ -3,16 +3,13 @@ package com.waynebloom.scorekeeper.ui.base
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.ViewModelProvider
-import com.waynebloom.scorekeeper.ui.navigation.NavHost
+import com.waynebloom.scorekeeper.ui.navigation.MedianMeepleApp
 import com.google.android.gms.ads.MobileAds
 import com.waynebloom.scorekeeper.admob.AdService
 import com.waynebloom.scorekeeper.admob.domain.usecase.InitializeAdFlowAndLoader
@@ -63,12 +60,6 @@ private fun App(viewModel: MedianMeepleActivityViewModel) {
             }
         }
 
-        Scaffold { innerPadding ->
-
-            NavHost(
-                viewModel = viewModel,
-                modifier = Modifier.padding(innerPadding)
-            )
-        }
+        MedianMeepleApp(viewModel)
     }
 }

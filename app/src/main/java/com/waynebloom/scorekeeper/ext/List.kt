@@ -4,6 +4,7 @@ import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.AdSpacing.firstAdMaximumIndex
 import com.waynebloom.scorekeeper.ext.AdSpacing.itemsBetweenAds
+import com.waynebloom.scorekeeper.ui.model.PlayerUiModel
 
 private object AdSpacing {
     const val firstAdMaximumIndex = 5
@@ -48,6 +49,15 @@ fun <T> List<T>.toAdSeparatedSubLists(): List<List<T>> {
     return result
 }
 
+fun List<PlayerUiModel>.getWinningPlayer(scoringMode: ScoringMode) =
+    when(scoringMode) {
+        ScoringMode.Ascending -> minBy { it.totalScore }
+        ScoringMode.Descending -> maxBy { it.totalScore }
+        ScoringMode.Manual -> minBy { it.position }
+    }
+
+
+// TODO: remove
 fun List<PlayerDataRelationModel>.getWinningPlayer(scoringMode: ScoringMode) =
     when(scoringMode) {
         ScoringMode.Ascending -> minBy { it.entity.totalScore.toBigDecimal() }

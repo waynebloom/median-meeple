@@ -4,7 +4,39 @@ import com.waynebloom.scorekeeper.constants.Constants
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-fun BigDecimal.toTrimmedScoreString(): String =
+fun BigDecimal.toShortFormatString(): String {
+    val maximumAcceptablePrecisionForDisplay = 6
+    val billionScale = -9
+    val billionMark = "B"
+    val millionScale = -6
+    val millionMark = "M"
+    val tenThousandScale = -3
+    val thousandMark = "K"
+
+    return when {
+
+        // The precision is low enough to display without conversion
+        precision() <= maximumAcceptablePrecisionForDisplay -> toPlainString()
+
+        greaterThanOrEqualTo(BigDecimalValues.Trillion) -> "1000B+"
+
+        greaterThanOrEqualTo(BigDecimalValues.Billion) -> this
+            .scaleByPowerOfTen(billionScale)
+            .toStringForDisplay() + billionMark
+
+        greaterThanOrEqualTo(BigDecimalValues.Million) -> this
+            .scaleByPowerOfTen(millionScale)
+            .toStringForDisplay() + millionMark
+
+        greaterThanOrEqualTo(BigDecimalValues.TenThousand) -> this
+            .scaleByPowerOfTen(tenThousandScale)
+            .toStringForDisplay() + thousandMark
+
+        else -> setScale(0, RoundingMode.HALF_UP).toPlainString() + "*"
+    }
+}
+
+fun BigDecimal.toStringForDisplay(): String =
     setScale(Constants.maximumDecimalPlaces, RoundingMode.HALF_UP)
     .stripTrailingZeros()
     .toPlainString()

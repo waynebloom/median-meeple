@@ -1,11 +1,9 @@
 package com.waynebloom.scorekeeper.ext
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.constants.Constants
 import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
 import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
-import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import java.math.RoundingMode
 
 fun String.getScoreValidityState(): ScoreStringValidityState {
@@ -28,8 +26,8 @@ fun String.sentenceCase(): String {
     return result.toString()
 }
 
-fun String.toShortScoreFormat(): String {
-    val maximumRawNumberLength = 6
+fun String.convertToShortFormatScore(): String {
+    val maximumAcceptablePrecisionForDisplay = 6
     val billionScale = -9
     val billionMark = "B"
     val millionScale = -6
@@ -37,32 +35,31 @@ fun String.toShortScoreFormat(): String {
     val tenThousandScale = -3
     val thousandMark = "K"
 
-    if (count { it != '.' } <= maximumRawNumberLength) return this
-    val bigDecimal = toBigDecimal()
-    return if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Trillion)) {
-        "1000B+"
-    } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Billion)) {
-        bigDecimal
-            .scaleByPowerOfTen(billionScale)
-            .toTrimmedScoreString() + billionMark
-    } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Million)) {
-        bigDecimal
-            .scaleByPowerOfTen(millionScale)
-            .toTrimmedScoreString() + millionMark
-    } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.TenThousand)) {
-        bigDecimal
-            .scaleByPowerOfTen(tenThousandScale)
-            .toTrimmedScoreString() + thousandMark
-    } else {
-        bigDecimal
-            .setScale(0, RoundingMode.HALF_UP)
-            .toPlainString() + "*"
+    return with(toBigDecimal()) {
+        when {
+
+            // The precision is low enough to display without conversion
+            precision() <= maximumAcceptablePrecisionForDisplay -> toPlainString()
+
+            greaterThanOrEqualTo(BigDecimalValues.Trillion) -> "1000B+"
+
+            greaterThanOrEqualTo(BigDecimalValues.Billion) -> this
+                .scaleByPowerOfTen(billionScale)
+                .toStringForDisplay() + billionMark
+
+            greaterThanOrEqualTo(BigDecimalValues.Million) -> this
+                .scaleByPowerOfTen(millionScale)
+                .toStringForDisplay() + millionMark
+
+            greaterThanOrEqualTo(BigDecimalValues.TenThousand) -> this
+                .scaleByPowerOfTen(tenThousandScale)
+                .toStringForDisplay() + thousandMark
+
+            else -> setScale(0, RoundingMode.HALF_UP).toPlainString() + "*"
+        }
     }
 }
 
 fun String.toTextFieldValue() = TextFieldValue(this)
 
 fun String.toTextFieldInput() = TextFieldInput(value = this.toTextFieldValue())
-
-@Composable
-fun String.toColor() = LocalCustomThemeColors.current.getColorByKey(this)

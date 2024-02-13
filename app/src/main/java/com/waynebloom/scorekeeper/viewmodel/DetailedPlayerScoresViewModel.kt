@@ -11,8 +11,8 @@ import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.ext.isEqualTo
-import com.waynebloom.scorekeeper.ext.toShortScoreFormat
-import com.waynebloom.scorekeeper.ext.toTrimmedScoreString
+import com.waynebloom.scorekeeper.ext.convertToShortFormatScore
+import com.waynebloom.scorekeeper.ext.toStringForDisplay
 import java.math.BigDecimal
 
 class DetailedPlayerScoresViewModel(
@@ -34,17 +34,17 @@ class DetailedPlayerScoresViewModel(
 
     fun getScoreToDisplay(scoreString: String): String {
         return if (!scoreString.toBigDecimal().isEqualTo(BigDecimal.ZERO)) {
-            scoreString.toShortScoreFormat()
+            scoreString.convertToShortFormatScore()
         } else "-"
     }
 
     fun getSubscoresInOrder(player: PlayerDataRelationModel): List<CategoryScoreDataModel> {
         val categorizedSubscores = subscoreTitles.map { subscoreTitle ->
-            player.score.find { it.categoryTitleId == subscoreTitle.id } ?: CategoryScoreDataModel()
+            player.score.find { it.categoryId == subscoreTitle.id } ?: CategoryScoreDataModel()
         }
         return if (includeUncategorizedScoreColumn) {
             categorizedSubscores.plus(
-                CategoryScoreDataModel(value = player.getUncategorizedScore().toTrimmedScoreString())
+                CategoryScoreDataModel(value = player.getUncategorizedScore().toStringForDisplay())
             )
         } else categorizedSubscores
     }

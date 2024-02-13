@@ -1,6 +1,5 @@
 package com.waynebloom.scorekeeper.ui.editGame
 
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalDensity
@@ -20,7 +19,6 @@ import com.waynebloom.scorekeeper.room.domain.usecase.InsertCategory
 import com.waynebloom.scorekeeper.room.domain.usecase.UpdateCategory
 import com.waynebloom.scorekeeper.room.domain.usecase.UpdateGame
 import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
-import com.waynebloom.scorekeeper.shared.domain.usecase.GetString
 import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
 import com.waynebloom.scorekeeper.ui.model.GameUiModel
@@ -51,7 +49,7 @@ class EditGameViewModel @Inject constructor(
     lateinit var composableCoroutineScope: CoroutineScope
 
     private val contentState: EditGameUiState.Content
-        get() = viewModelState.value.asContent()
+        get() = viewModelState.value as EditGameUiState.Content
 
     init {
 
@@ -96,12 +94,12 @@ class EditGameViewModel @Inject constructor(
         }
     }
 
-    private fun updateState(
+    private fun updateContentState(
         pushGameUpdate: Boolean = false,
         function: (EditGameUiState.Content) -> EditGameUiState.Content
     ) {
         viewModelState.update(
-            function = { viewModelState -> function(viewModelState.asContent()) }
+            function = { viewModelState -> function(viewModelState as EditGameUiState.Content) }
         )
 
         if (pushGameUpdate) pushGameUpdate()
@@ -109,7 +107,7 @@ class EditGameViewModel @Inject constructor(
 
     // region Game Details
 
-    fun onColorClick(value: String) = updateState(pushGameUpdate = true) {
+    fun onColorClick(value: String) = updateContentState(pushGameUpdate = true) {
         it.copy(
             color = value,
             showColorMenu = false
@@ -119,7 +117,7 @@ class EditGameViewModel @Inject constructor(
     // TODO: make this better. Animation, confirmation state
     fun onDeleteClick() = viewModelScope.launch { deleteGame(gameId) }
 
-    fun onNameChanged(value: TextFieldValue) = updateState(pushGameUpdate = true) {
+    fun onNameChanged(value: TextFieldValue) = updateContentState(pushGameUpdate = true) {
         it.copy(
             nameInput = it.nameInput.copy(
                 isValid = value.text.isNotBlank(),
@@ -128,7 +126,7 @@ class EditGameViewModel @Inject constructor(
         )
     }
 
-    fun onScoringModeChanged(value: ScoringMode) = updateState(pushGameUpdate = true) {
+    fun onScoringModeChanged(value: ScoringMode) = updateContentState(pushGameUpdate = true) {
         it.copy(scoringMode = value)
     }
 
@@ -142,7 +140,7 @@ class EditGameViewModel @Inject constructor(
 
     fun onCategoryClick(category: CategoryUiModel) {
 
-        updateState {
+        updateContentState {
 
             val indexOfCategory = it.categories.indexOf(category)
             val indexOfCategoryReceivingInput = if (it.isCategoryDialogOpen) {
@@ -159,12 +157,12 @@ class EditGameViewModel @Inject constructor(
         }
     }
 
-    fun onEditButtonClick() = updateState {
+    fun onEditButtonClick() = updateContentState {
         it.copy(isCategoryDialogOpen = true)
     }
 
     fun onCategoryInputChanged(categoryUiModel: CategoryUiModel, input: TextFieldValue) {
-        updateState { state ->
+        updateContentState { state ->
             val updatedCategory = categoryUiModel.copy(
                 name = categoryUiModel.name.copy(value = input))
             val updatedCategories = state.categories.toMutableList().apply {
@@ -189,7 +187,7 @@ class EditGameViewModel @Inject constructor(
                 gameId = gameId
             )
 
-            updateState {
+            updateContentState {
                 val updatedCategories = it.categories.plus(newCategory.copy(id = newId))
 
                 it.copy(
@@ -202,7 +200,7 @@ class EditGameViewModel @Inject constructor(
         }
     }
 
-    fun onDrag(dragDistance: Offset, rowHeight: Float) = updateState {
+    fun onDrag(dragDistance: Offset, rowHeight: Float) = updateContentState {
         val newDistance = it.dragState.dragDistance + dragDistance
         val dragDelta = newDistance.y / rowHeight
         val draggedToIndex = it.dragState.dragStart + dragDelta
@@ -222,7 +220,7 @@ class EditGameViewModel @Inject constructor(
     fun onDragEnd() {
         val dragResult = contentState.dragState.let { it.dragStart to it.dragEnd }
 
-        updateState { state ->
+        updateContentState { state ->
             val updatedCategories = state.categories.toMutableList().apply {
 
                 // swap positions in the List
@@ -246,17 +244,17 @@ class EditGameViewModel @Inject constructor(
         }
     }
 
-    fun onDragStart(index: Int) = updateState {
+    fun onDragStart(index: Int) = updateContentState {
         it.copy(dragState = it.dragState.copy(dragStart = index))
     }
 
-    fun onHideCategoryInput() = updateState {
+    fun onHideCategoryInput() = updateContentState {
         it.copy(indexOfCategoryReceivingInput = null)
     }
 
     fun onDeleteCategoryClick(deletedCategory: CategoryUiModel) {
 
-        updateState { state ->
+        updateContentState { state ->
             val indexOfDeletedCategory = state.categories.indexOf(deletedCategory)
             val updatedCategories = state.categories.toMutableList()
             updatedCategories.listIterator(indexOfDeletedCategory).apply {
@@ -288,7 +286,7 @@ class EditGameViewModel @Inject constructor(
         }
     }
 
-    fun onCategoryDialogDismiss() = updateState {
+    fun onCategoryDialogDismiss() = updateContentState {
         it.copy(
             indexOfCategoryReceivingInput = null,
             indexOfSelectedCategory = null,
@@ -299,14 +297,6 @@ class EditGameViewModel @Inject constructor(
     // endregion
 
     sealed interface EditGameUiState {
-
-        companion object {
-            const val CastFailContent =
-                "An attempt was made to cast EditGameUiState to Content, but it was not in the " +
-                        "Content state."
-        }
-
-        fun asContent() = this as? Content ?: throw IllegalStateException(CastFailContent)
 
         data class Loading(val loading: Boolean = true): EditGameUiState
 
@@ -329,11 +319,6 @@ class EditGameViewModel @Inject constructor(
                         add(dragState.dragEnd, itemBeingDragged)
                     }
                 } else categories
-
-            val categoryInput: TextFieldInput
-                get() = if (indexOfCategoryReceivingInput != null) {
-                    categories[indexOfCategoryReceivingInput].name
-                } else TextFieldInput()
 
             @Composable
             fun getResolvedColor() = LocalCustomThemeColors.current.getColorByKey(color)

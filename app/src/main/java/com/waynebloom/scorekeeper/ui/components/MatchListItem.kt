@@ -3,6 +3,7 @@ package com.waynebloom.scorekeeper.ui.components
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -29,11 +30,49 @@ import com.waynebloom.scorekeeper.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.ext.convertToShortFormatScore
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
-import com.waynebloom.scorekeeper.ext.toShortScoreFormat
+import com.waynebloom.scorekeeper.ext.toShortFormatString
 import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
+import com.waynebloom.scorekeeper.ui.model.GameUiModel
+import com.waynebloom.scorekeeper.ui.model.MatchUiModel
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
+@Composable
+fun MatchListItem(
+    match: MatchUiModel,
+    scoringMode: ScoringMode,
+    onClick: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        modifier = modifier.clickable { onClick(match.id) }
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp).fillMaxWidth()
+        ) {
+
+            if (match.players.isNotEmpty()) {
+                val winningPlayer = match.players.getWinningPlayer(scoringMode)
+
+                VictorCard(
+                    name = winningPlayer.name.value.text,
+                    score = winningPlayer.totalScore.toShortFormatString(),
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+            } else {
+                EmptyPlayersCard()
+            }
+
+            PlayerCountCard(count = match.players.size)
+        }
+    }
+}
+
+// TODO: change this to use UiModels and cleaner code
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MatchListItem(
@@ -74,7 +113,7 @@ fun MatchListItem(
 
                 VictorCard(
                     name = winningPlayer.entity.name,
-                    score = winningPlayer.entity.totalScore.toShortScoreFormat(),
+                    score = winningPlayer.entity.totalScore.convertToShortFormatScore(),
                     color = gameColor,
                     modifier = Modifier.weight(1f, fill = false)
                 )
@@ -149,8 +188,8 @@ fun EmptyPlayersCard() {
 fun VictorCard(
     name: String,
     score: String,
-    color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.primary
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,
@@ -202,8 +241,8 @@ fun VictorCard(
 @Composable
 fun PlayerCountCard(
     count: Int,
-    color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.primary
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,

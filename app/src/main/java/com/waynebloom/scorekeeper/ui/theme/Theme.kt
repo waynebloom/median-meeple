@@ -25,7 +25,7 @@ private val LightColorPalette = lightColors(
     secondary = gray800,
     background = taupe100,
     surface = gray400,
-    onPrimary = Color.White,
+    onPrimary = taupe100,
     onSecondary = Color.White,
     onBackground = taupe800,
     onSurface = taupe800
@@ -43,8 +43,8 @@ private val DarkColorPalette = darkColors(
 )
 
 @Composable
-fun CustomGameTheme(gameColor: Color, content: @Composable () -> Unit) {
-    MedianMeepleTheme(primaryColor = gameColor, content = content)
+fun UserSelectedPrimaryColorTheme(primaryColor: Color, content: @Composable () -> Unit) {
+    MedianMeepleTheme(primaryColor = primaryColor, content = content)
 }
 
 @Composable

@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.ui.components.CustomIconButton
+import com.waynebloom.scorekeeper.ui.components.IconButton
 import com.waynebloom.scorekeeper.ui.components.HelperBox
 import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.constants.Alpha
@@ -46,7 +46,7 @@ import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
-import com.waynebloom.scorekeeper.ext.toShortScoreFormat
+import com.waynebloom.scorekeeper.ext.convertToShortFormatScore
 import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
 import com.waynebloom.scorekeeper.ui.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
@@ -172,14 +172,14 @@ private fun SingleMatchScreenTopBar(
 
             Row {
 
-                CustomIconButton(
+                IconButton(
                     imageVector = Icons.Rounded.Done,
                     backgroundColor = Color.Transparent,
                     foregroundColor = themeColor,
                     onClick = onDoneTap,
                 )
 
-                CustomIconButton(
+                IconButton(
                     imageVector = Icons.Rounded.Delete,
                     backgroundColor = Color.Transparent,
                     foregroundColor = MaterialTheme.colors.error,
@@ -220,7 +220,7 @@ private fun PlayersSectionHeader(
         ) {
 
             if (showDetailedScoresButton) {
-                CustomIconButton(
+                IconButton(
                     imageVector = Icons.Rounded.List,
                     foregroundColor = themeColor,
                     onClick = onViewDetailedScoresTap
@@ -228,13 +228,13 @@ private fun PlayersSectionHeader(
             }
 
             if (!showMaximumPlayersErrorState) {
-                CustomIconButton(
+                IconButton(
                     imageVector = Icons.Rounded.Add,
                     foregroundColor = themeColor,
                     onClick = onAddPlayerTap
                 )
             } else {
-                CustomIconButton(
+                IconButton(
                     imageVector = Icons.Rounded.Warning,
                     foregroundColor = MaterialTheme.colors.error,
                     onClick = onAddPlayerTap
@@ -403,7 +403,7 @@ fun RankedListItem(
                             .size(24.dp)
                     )
                     Text(
-                        text = player.totalScore.toShortScoreFormat(),
+                        text = player.totalScore.convertToShortFormatScore(),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.body1,
                         fontWeight = FontWeight.SemiBold

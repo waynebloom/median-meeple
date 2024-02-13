@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.ui.screens
+package com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.ui
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -37,33 +38,177 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.waynebloom.scorekeeper.GameObjectStatisticsPreview
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
-import com.waynebloom.scorekeeper.room.domain.model.ScoringStatisticsForCategory
 import com.waynebloom.scorekeeper.ui.components.ExpandCollapseButton
 import com.waynebloom.scorekeeper.ui.components.HelperBox
 import com.waynebloom.scorekeeper.ui.components.HelperBoxType
+import com.waynebloom.scorekeeper.ui.components.IconButton
+import com.waynebloom.scorekeeper.ui.components.Loading
+import com.waynebloom.scorekeeper.ui.components.SingleGameDestinationTopBar
+import com.waynebloom.scorekeeper.ui.singleGame.StatisticsForGameUiState
+import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.ui.model.ScoringPlayerUiModel
+import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.ui.model.WinningPlayerUiModel
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.ui.theme.color.deepOrange100
-import com.waynebloom.scorekeeper.ui.theme.color.deepOrange500
-import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel
-import com.waynebloom.scorekeeper.viewmodel.SingleGameViewModel.Companion.NumberOfItemsToShowExpanded
 
 @Composable
+fun StatisticsForGameScreen(
+    uiState: StatisticsForGameUiState,
+    onBestWinnerButtonClick: () -> Unit,
+    onHighScoreButtonClick: () -> Unit,
+    onUniqueWinnersButtonClick: () -> Unit,
+    onCategoryClick: (Int) -> Unit
+) {
+
+    Scaffold(
+        topBar = {
+            SingleGameDestinationTopBar(title = uiState.screenTitle)
+        }
+    ) { innerPadding ->
+
+        when(uiState) {
+
+            is StatisticsForGameUiState.Loading -> Loading()
+
+            is StatisticsForGameUiState.Empty -> {
+                HelperBox(
+                    message = stringResource(R.string.helper_empty_data),
+                    type = HelperBoxType.Missing,
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .padding(horizontal = Spacing.screenEdge)
+                        .padding(top = Spacing.sectionContent)
+                )
+            }
+
+            is StatisticsForGameUiState.Content -> {
+                StatisticsForGameScreen(
+                    matchCount = uiState.matchCount,
+                    playCount = uiState.playCount,
+                    uniquePlayerCount = uiState.uniquePlayerCount,
+                    isBestWinnerExpanded = uiState.isBestWinnerExpanded,
+                    playersWithMostWins = uiState.playersWithMostWins,
+                    playersWithMostWinsOverflow = uiState.playersWithMostWinsOverflow,
+                    isHighScoreExpanded = uiState.isHighScoreExpanded,
+                    playersWithHighScore = uiState.playersWithHighScore,
+                    playersWithHighScoreOverflow = uiState.playersWithHighScoreOverflow,
+                    isUniqueWinnersExpanded = uiState.isUniqueWinnersExpanded,
+                    uniqueWinners = uiState.uniqueWinners,
+                    uniqueWinnersOverflow = uiState.uniqueWinnersOverflow,
+                    categoryNames = uiState.categoryNames,
+                    indexOfSelectedCategory = uiState.indexOfSelectedCategory,
+                    isCategoryDataEmpty = uiState.isCategoryDataEmpty,
+                    categoryTopScorers = uiState.categoryTopScorers,
+                    categoryLow = uiState.categoryLow,
+                    categoryMean = uiState.categoryMean,
+                    categoryRange = uiState.categoryRange,
+                    onBestWinnerButtonClick = onBestWinnerButtonClick,
+                    onHighScoreButtonClick = onHighScoreButtonClick,
+                    onUniqueWinnerButtonClick = onUniqueWinnersButtonClick,
+                    onCategoryClick = onCategoryClick,
+                    modifier = Modifier.padding(innerPadding)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun StatisticsForGameScreen(
+    matchCount: String,
+    playCount: String,
+    uniquePlayerCount: String,
+    isBestWinnerExpanded: Boolean,
+    playersWithMostWins: List<WinningPlayerUiModel>,
+    playersWithMostWinsOverflow: Int,
+    isHighScoreExpanded: Boolean,
+    playersWithHighScore: List<ScoringPlayerUiModel>,
+    playersWithHighScoreOverflow: Int,
+    isUniqueWinnersExpanded: Boolean,
+    uniqueWinners: List<WinningPlayerUiModel>,
+    uniqueWinnersOverflow: Int,
+    categoryNames: List<String>,
+    indexOfSelectedCategory: Int,
+    isCategoryDataEmpty: Boolean,
+    categoryTopScorers: List<ScoringPlayerUiModel>,
+    categoryLow: String,
+    categoryMean: String,
+    categoryRange: String,
+    onBestWinnerButtonClick: () -> Unit,
+    onHighScoreButtonClick: () -> Unit,
+    onUniqueWinnerButtonClick: () -> Unit,
+    onCategoryClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
+) {
+
+    LazyColumn(
+        contentPadding = PaddingValues(bottom = Spacing.betweenSections),
+        verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+        modifier = modifier,
+    ) {
+
+        item {
+
+            PlaysSection(
+                matchCount = matchCount,
+                playerCount = uniquePlayerCount,
+                modifier = Modifier
+                    .padding(horizontal = Spacing.screenEdge)
+                    .padding(top = Spacing.betweenSections)
+            )
+
+            Divider()
+        }
+
+        item {
+
+            WinsSection(
+                isBestWinnerExpanded = isBestWinnerExpanded,
+                playersWithMostWins = playersWithMostWins,
+                playersWithMostWinsOverflow = playersWithMostWinsOverflow,
+                isHighScoreExpanded = isHighScoreExpanded,
+                playersWithHighScore = playersWithHighScore,
+                playersWithHighScoreOverflow = playersWithHighScoreOverflow,
+                isUniqueWinnersExpanded = isUniqueWinnersExpanded,
+                uniqueWinners = uniqueWinners,
+                uniqueWinnersOverflow = uniqueWinnersOverflow,
+                onBestWinnerButtonClick = onBestWinnerButtonClick,
+                onHighScoreButtonClick = onHighScoreButtonClick,
+                onUniqueWinnerButtonClick = onUniqueWinnerButtonClick,
+                modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+            )
+
+            Divider()
+        }
+
+        item {
+
+            ScoringSection(
+                categories = categoryNames,
+                indexOfSelectedCategory = indexOfSelectedCategory,
+                isCategoryDataEmpty = isCategoryDataEmpty,
+                topScorers = categoryTopScorers,
+                low = categoryLow,
+                mean = categoryMean,
+                range = categoryRange,
+                onCategoryClick = onCategoryClick
+            )
+        }
+
+    }
+}
+
+/*@Composable
 fun GameStatisticsScreen(
     gameObject: GameDataRelationModel,
     themeColor: Color,
@@ -94,18 +239,18 @@ fun GameStatisticsScreen(
             item {
 
                 WinsSection(
-                    playersWithHighScore = viewModel.getTotalScoreStatistics().getHighScorers(),
-                    winningPlayers = viewModel.winners,
-                    tieDegreeMostWins = viewModel.getMostWinsTieDegree(),
+                    topFiveScorers = viewModel.getTotalScoreStatistics().getHighScorers(),
+                    topFiveWinners = viewModel.winners,
+                    degreeOfTieForBestWinner = viewModel.getMostWinsTieDegree(),
                     themeColor = themeColor,
-                    bestWinnerIsExpanded = viewModel.bestWinnerIsExpanded,
-                    highScoreIsExpanded = viewModel.highScoreIsExpanded,
-                    uniqueWinnersIsExpanded = viewModel.uniqueWinnersIsExpanded,
-                    onBestWinnerTap = {
+                    isBestWinnerExpanded = viewModel.bestWinnerIsExpanded,
+                    isHighScoreExpanded = viewModel.highScoreIsExpanded,
+                    isUniqueWinnersExpanded = viewModel.uniqueWinnersIsExpanded,
+                    onBestWinnerButtonClick = {
                         viewModel.bestWinnerIsExpanded = !viewModel.bestWinnerIsExpanded
                     },
-                    onHighScoreTap = { viewModel.highScoreIsExpanded = !viewModel.highScoreIsExpanded },
-                    onUniqueWinnersTap = {
+                    onHighScoreButtonClick = { viewModel.highScoreIsExpanded = !viewModel.highScoreIsExpanded },
+                    onUniqueWinnerButtonClick = {
                         viewModel.uniqueWinnersIsExpanded = !viewModel.uniqueWinnersIsExpanded
                     },
                     modifier = Modifier.padding(horizontal = Spacing.screenEdge))
@@ -135,7 +280,7 @@ fun GameStatisticsScreen(
             }
         }
     }
-}
+}*/
 
 @Composable
 private fun PlaysSection(
@@ -172,30 +317,36 @@ private fun PlaysSection(
 
 @Composable
 private fun WinsSection(
-    playersWithHighScore: List<Pair<String, String>>,
-    winningPlayers: Map<String, Int>,
-    tieDegreeMostWins: Int,
-    themeColor: Color,
-    bestWinnerIsExpanded: Boolean,
-    highScoreIsExpanded: Boolean,
-    uniqueWinnersIsExpanded: Boolean,
-    onBestWinnerTap: () -> Unit,
-    onHighScoreTap: () -> Unit,
-    onUniqueWinnersTap: () -> Unit,
+    isBestWinnerExpanded: Boolean,
+    playersWithMostWins: List<WinningPlayerUiModel>,
+    playersWithMostWinsOverflow: Int,
+    isHighScoreExpanded: Boolean,
+    playersWithHighScore: List<ScoringPlayerUiModel>,
+    playersWithHighScoreOverflow: Int,
+    isUniqueWinnersExpanded: Boolean,
+    uniqueWinners: List<WinningPlayerUiModel>,
+    uniqueWinnersOverflow: Int,
+    onBestWinnerButtonClick: () -> Unit,
+    onHighScoreButtonClick: () -> Unit,
+    onUniqueWinnerButtonClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
-    val bestWinnerEndText = if (tieDegreeMostWins < 2) {
-        winningPlayers.keys.first()
-    } else stringResource(R.string.text_tied)
+    val bestWinnerEndText = if (playersWithMostWins.size < 2) {
+        playersWithMostWins.first().name
+    } else {
+        stringResource(R.string.text_tied)
+    }
     val highScoreEndText = if (playersWithHighScore.size < 2) {
-        playersWithHighScore.first().second
-    } else stringResource(R.string.text_tied)
+        playersWithHighScore.first().score
+    } else {
+        stringResource(R.string.text_tied)
+    }
     val personIcon: @Composable (() -> Unit) = {
         Icon(
             painter = painterResource(id = R.drawable.ic_person),
             contentDescription = null,
-            tint = themeColor,
+            tint = MaterialTheme.colors.primary,
             modifier = Modifier
                 .padding(end = 4.dp)
                 .size(16.dp)
@@ -213,113 +364,112 @@ private fun WinsSection(
             fontWeight = FontWeight.SemiBold,
         )
 
-        // Best winner
+        // Best Winner
+
         TwoLineExpandableListItem(
             startHeadline = stringResource(R.string.headline_best_winner),
             startSupportingText = stringResource(R.string.description_best_winner),
             buttonText = bestWinnerEndText,
-            expanded = bestWinnerIsExpanded,
-            onItemTap = onBestWinnerTap,
-            themeColor = themeColor,
+            expanded = isBestWinnerExpanded,
+            onItemTap = onBestWinnerButtonClick
         ) {
-            val playersWithMostWins = winningPlayers.toList().take(tieDegreeMostWins)
 
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
-                playersWithMostWins.take(NumberOfItemsToShowExpanded).forEach { (name, wins) ->
+                playersWithMostWins.forEach {
                     SingleLineListItem(
-                        startText = name,
+                        startText = it.name,
                         startIcon = personIcon,
                         endText = pluralStringResource(
                             id = R.plurals.number_with_wins,
-                            count = wins,
-                            wins
-                        ),
-                        showEndBackground = false,
-                    )
-                }
-
-                if (playersWithMostWins.size > NumberOfItemsToShowExpanded) {
-                    Text(
-                        text = stringResource(
-                            id = R.string.number_list_overflow,
-                            playersWithMostWins.size - NumberOfItemsToShowExpanded
-                        ),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                    )
-                }
-            }
-        }
-
-        Divider()
-
-        // High score
-        TwoLineExpandableListItem(
-            startHeadline = stringResource(R.string.headline_high_score),
-            startSupportingText = stringResource(R.string.description_high_score),
-            buttonText = highScoreEndText,
-            themeColor = themeColor,
-            onItemTap = onHighScoreTap,
-            expanded = highScoreIsExpanded
-        ) {
-
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
-
-                playersWithHighScore.take(NumberOfItemsToShowExpanded).forEach {
-                    SingleLineListItem(
-                        startText = it.first,
-                        startIcon = personIcon,
-                        endText = it.second,
-                        showEndBackground = false,
-                    )
-                }
-
-                if (playersWithHighScore.size > NumberOfItemsToShowExpanded) {
-                    Text(
-                        text = stringResource(
-                            id = R.string.number_list_overflow,
-                            playersWithHighScore.size - NumberOfItemsToShowExpanded
-                        ),
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                    )
-                }
-            }
-        }
-
-        Divider()
-
-        // Unique winners
-        TwoLineExpandableListItem(
-            startHeadline = stringResource(R.string.headline_unique_winners),
-            startSupportingText = stringResource(R.string.description_unique_winners),
-            buttonText = winningPlayers.size.toString(),
-            themeColor = themeColor,
-            onItemTap = onUniqueWinnersTap,
-            expanded = uniqueWinnersIsExpanded
-        ) {
-
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
-
-                winningPlayers.toList().take(NumberOfItemsToShowExpanded).forEach {
-                    SingleLineListItem(
-                        startText = it.first,
-                        startIcon = personIcon,
-                        endText = pluralStringResource(
-                            id = R.plurals.number_with_wins,
-                            count = it.second,
-                            it.second
+                            count = it.numberOfWins.toInt(),
+                            it.numberOfWins
                         ),
                         showEndBackground = false
                     )
                 }
 
-                if (winningPlayers.size > NumberOfItemsToShowExpanded) {
+                if (playersWithMostWinsOverflow > 0) {
                     Text(
                         text = stringResource(
                             id = R.string.number_list_overflow,
-                            winningPlayers.size - NumberOfItemsToShowExpanded
+                            playersWithMostWinsOverflow
+                        ),
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
+        }
+
+        Divider()
+
+        // High Score
+
+        TwoLineExpandableListItem(
+            startHeadline = stringResource(R.string.headline_high_score),
+            startSupportingText = stringResource(R.string.description_high_score),
+            buttonText = highScoreEndText,
+            onItemTap = onHighScoreButtonClick,
+            expanded = isHighScoreExpanded
+        ) {
+
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+                playersWithHighScore.forEach {
+                    SingleLineListItem(
+                        startText = it.name,
+                        startIcon = personIcon,
+                        endText = it.score,
+                        showEndBackground = false
+                    )
+                }
+
+                if (playersWithHighScoreOverflow > 0) {
+                    Text(
+                        text = stringResource(
+                            id = R.string.number_list_overflow,
+                            playersWithHighScoreOverflow
+                        ),
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
+            }
+        }
+
+        Divider()
+
+        // Unique Winners
+
+        TwoLineExpandableListItem(
+            startHeadline = stringResource(R.string.headline_unique_winners),
+            startSupportingText = stringResource(R.string.description_unique_winners),
+            buttonText = uniqueWinners.size.toString(),
+            onItemTap = onUniqueWinnerButtonClick,
+            expanded = isUniqueWinnersExpanded
+        ) {
+
+            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+
+                uniqueWinners.forEach {
+                    SingleLineListItem(
+                        startText = it.name,
+                        startIcon = personIcon,
+                        endText = pluralStringResource(
+                            id = R.plurals.number_with_wins,
+                            count = it.numberOfWins.toInt(),
+                            it.numberOfWins
+                        ),
+                        showEndBackground = false
+                    )
+                }
+
+                if (uniqueWinnersOverflow > 0) {
+                    Text(
+                        text = stringResource(
+                            id = R.string.number_list_overflow,
+                            uniqueWinnersOverflow
                         ),
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -334,10 +484,14 @@ private fun WinsSection(
 
 @Composable
 private fun ScoringSection(
-    statisticsObjects: List<ScoringStatisticsForCategory>,
-    currentCategoryIndex: Int,
-    themeColor: Color,
-    onCategoryTap: (Int) -> Unit,
+    categories: List<String>,
+    indexOfSelectedCategory: Int,
+    isCategoryDataEmpty: Boolean,
+    topScorers: List<ScoringPlayerUiModel>,
+    low: String,
+    mean: String,
+    range: String,
+    onCategoryClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -346,8 +500,6 @@ private fun ScoringSection(
         modifier = modifier.fillMaxWidth()
     ) {
 
-        val currentSummary = statisticsObjects[currentCategoryIndex]
-
         Text(
             text = stringResource(id = R.string.header_scoring),
             style = MaterialTheme.typography.h6,
@@ -355,32 +507,39 @@ private fun ScoringSection(
             modifier = Modifier.padding(horizontal = Spacing.screenEdge)
         )
 
-        CategoryChipsMenu(
-            categories = statisticsObjects.map { it.categoryTitle },
-            currentCategoryIndex = currentCategoryIndex,
-            onItemTap = onCategoryTap,
-            themeColor = themeColor,
-        )
+        if (categories.isNotEmpty()) {
+            CategoryChips(
+                categories = categories,
+                currentCategoryIndex = indexOfSelectedCategory,
+                onClick = onCategoryClick,
+            )
+        }
 
-        ScoringStatisticsColumn(
-            high = currentSummary.getHigh(),
-            mean = currentSummary.getMean(),
-            low = currentSummary.getLow(),
-            range = currentSummary.getRange(),
-            topScorers = currentSummary.getTopSelection(),
-            themeColor = themeColor,
-            modifier = Modifier.padding(horizontal = Spacing.screenEdge)
-        )
+        if (isCategoryDataEmpty) {
+            HelperBox(
+                message = "There is no data recorded for this category",
+                type = HelperBoxType.Missing,
+                modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+            )
+        } else {
+            ScoringStatisticsColumn(
+                high = topScorers[0].score,
+                mean = mean,
+                low = low,
+                range = range,
+                topScorers = topScorers,
+                modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+            )
+        }
     }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-private fun CategoryChipsMenu(
+private fun CategoryChips(
     categories: List<String>,
     currentCategoryIndex: Int,
-    onItemTap: (Int) -> Unit,
-    themeColor: Color,
+    onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -388,7 +547,7 @@ private fun CategoryChipsMenu(
         backgroundColor = MaterialTheme.colors.background,
         contentColor = MaterialTheme.colors.onBackground,
         leadingIconColor = MaterialTheme.colors.onBackground,
-        selectedBackgroundColor = themeColor.copy(alpha = 0.25f),
+        selectedBackgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.25f),
     )
 
     LazyRow(
@@ -409,7 +568,7 @@ private fun CategoryChipsMenu(
 
             FilterChip(
                 selected = isSelected,
-                onClick = { onItemTap(index) },
+                onClick = { onClick(index) },
                 shape = MaterialTheme.shapes.small,
                 border = chipBorderStroke,
                 colors = chipColors,
@@ -434,14 +593,15 @@ private fun ScoringStatisticsColumn(
     low: String,
     mean: String,
     range: String,
-    topScorers: List<Pair<String, String>>,
-    themeColor: Color,
+    topScorers: List<ScoringPlayerUiModel>,
     modifier: Modifier = Modifier,
 ) {
     var highSectionExpanded by rememberSaveable { mutableStateOf(false) }
-    val highStartText = if (highSectionExpanded)
+    val highStartText = if (highSectionExpanded) {
         stringResource(R.string.headline_top_scores)
-    else stringResource(R.string.headline_high)
+    } else {
+        stringResource(R.string.headline_high)
+    }
 
     Column(
         verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
@@ -451,28 +611,27 @@ private fun ScoringStatisticsColumn(
         SingleLineExpandableListItem(
             startText = highStartText,
             buttonText = high,
-            themeColor = themeColor,
             onItemTap = { highSectionExpanded = !highSectionExpanded },
             expanded = highSectionExpanded,
         ) {
 
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
-                topScorers.forEach { (name, score) ->
+                topScorers.forEach { scorer ->
 
                     SingleLineListItem(
-                        startText = name,
+                        startText = scorer.name,
                         startIcon = {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_person),
                                 contentDescription = null,
-                                tint = themeColor,
+                                tint = MaterialTheme.colors.primary,
                                 modifier = Modifier
                                     .padding(end = 4.dp)
                                     .size(16.dp)
                             )
                         },
-                        endText = score,
+                        endText = scorer.score,
                         showEndBackground = false,
                     )
                 }
@@ -511,7 +670,6 @@ fun TwoLineExpandableListItem(
     startHeadline: String,
     startSupportingText: String? = null,
     buttonText: String? = null,
-    themeColor: Color,
     onItemTap: () -> Unit,
     expanded: Boolean,
     expandedContent: @Composable () -> Unit,
@@ -543,7 +701,6 @@ fun TwoLineExpandableListItem(
                 ExpandCollapseButton(
                     text = buttonText,
                     expanded = expanded,
-                    themeColor = themeColor,
                     onTap = onItemTap
                 )
             }
@@ -611,7 +768,6 @@ fun SingleLineExpandableListItem(
     modifier: Modifier = Modifier,
     startText: String,
     buttonText: String? = null,
-    themeColor: Color,
     expanded: Boolean,
     onItemTap: () -> Unit,
     expandedContent: @Composable () -> Unit,
@@ -627,13 +783,14 @@ fun SingleLineExpandableListItem(
 
             Text(text = startText, modifier = Modifier
                 .weight(1f)
-                .padding(end = 16.dp))
+                .padding(end = 16.dp)
+            )
 
             ExpandCollapseButton(
                 text = buttonText,
                 expanded = expanded,
-                themeColor = themeColor,
-                onTap = onItemTap)
+                onTap = onItemTap
+            )
         }
 
         AnimatedContent(
@@ -692,6 +849,15 @@ fun SingleLineListItem(
     }
 }
 
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+fun StatisticsForGameTopBarPreview() {
+    MedianMeepleTheme {
+        SingleGameDestinationTopBar(title = "Wingspan")
+    }
+}
+
 @Suppress("MagicNumber")
 @Preview(
     name = "SingleLineExpandableListItem, interactive",
@@ -706,7 +872,6 @@ fun SingleLineExpandableListItemPreview() {
             SingleLineExpandableListItem(
                 startText = "Item title",
                 buttonText = "Value",
-                themeColor = deepOrange100,
                 expanded = expanded,
                 onItemTap = { expanded = !expanded},
                 expandedContent = {
@@ -744,7 +909,6 @@ fun TwoLineExpandableListItemPreview() {
                 startHeadline = "Item title",
                 startSupportingText = "Supporting text",
                 buttonText = "Value",
-                themeColor = deepOrange100,
                 expanded = expanded,
                 onItemTap = { expanded = !expanded},
                 expandedContent = {
@@ -762,38 +926,6 @@ fun TwoLineExpandableListItemPreview() {
                     }
                 },
                 modifier = Modifier.padding(16.dp)
-            )
-        }
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Composable
-fun GameStatisticsScreenPreview() {
-    MedianMeepleTheme {
-        Scaffold {
-            GameStatisticsScreen(
-                gameObject = GameObjectStatisticsPreview,
-                themeColor = deepOrange100,
-                modifier = Modifier
-                    .padding(it)
-                    .padding(vertical = 16.dp)
-            )
-        }
-    }
-}
-
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
-@Composable
-fun GameStatisticsScreenPreviewLight() {
-    MedianMeepleTheme {
-        Scaffold {
-            GameStatisticsScreen(
-                gameObject = GameObjectStatisticsPreview,
-                themeColor = deepOrange500,
-                modifier = Modifier
-                    .padding(it)
-                    .padding(vertical = 16.dp)
             )
         }
     }

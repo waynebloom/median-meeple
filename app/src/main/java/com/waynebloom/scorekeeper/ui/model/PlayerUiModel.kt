@@ -4,7 +4,8 @@ import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import java.math.BigDecimal
 
 data class PlayerUiModel(
-    val categoryScores: List<Pair<CategoryUiModel, BigDecimal>>,
+    val id: Long = 0,
+    val categoryScores: List<CategoryScoreUiModel>,
     val name: TextFieldInput,
     val position: Int,
     val showDetailedScore: Boolean,

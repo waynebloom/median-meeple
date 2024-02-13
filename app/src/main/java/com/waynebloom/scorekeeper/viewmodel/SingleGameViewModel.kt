@@ -1,5 +1,6 @@
-package com.waynebloom.scorekeeper.viewmodel
 
+package com.waynebloom.scorekeeper.viewmodel
+/*
 import android.content.res.Resources
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
@@ -10,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.DurationMs
-import com.waynebloom.scorekeeper.room.domain.model.ScoringStatisticsForCategory
+import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
@@ -37,17 +38,13 @@ class SingleGameViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ): ViewModel() {
 
-    companion object {
-        const val NumberOfItemsToShowExpanded = 15
-    }
-
     // Recomposition-aware properties
 
     var matches: List<MatchDataRelationModel> = listOf()
     var playerCount: String
     private var scoringMode: ScoringMode = ScoringMode.Descending
     var screenTitle: String = ""
-    var statisticsObjects: List<ScoringStatisticsForCategory> = listOf()
+    var statisticsObjects: List<StatisticsForCategory> = listOf()
     var winners: Map<String, Int>
     var color: String = "DEEP_ORANGE"
     var game = GameDataRelationModel()
@@ -131,12 +128,12 @@ class SingleGameViewModel @Inject constructor(
 
     private fun generateStatisticsObjects(categoryTitles: List<CategoryDataModel>) =
         listOf(
-            ScoringStatisticsForCategory(
+            StatisticsForCategory(
                 categoryTitle = totalScoreString,
                 data = getTotalScoreData()
             )
         ) + categoryTitles.map {
-            ScoringStatisticsForCategory(
+            StatisticsForCategory(
                 categoryTitle = it.name,
                 data = getScoreDataByCategoryId(it.id)
             )
@@ -161,7 +158,7 @@ class SingleGameViewModel @Inject constructor(
                 .filter { it.entity.showDetailedScore }
                 .map { player ->
                     val scoreInCategoryOrZero = player.score.find {
-                        it.categoryTitleId == categoryID
+                        it.categoryId == categoryID
                     }?.value?.toBigDecimalOrNull() ?: BigDecimal.ZERO
 
                     Pair(
@@ -236,7 +233,8 @@ class SingleGameViewModel @Inject constructor(
         }
     }
 
-    /**
+    */
+/**
      * This will filter and sort the passed matches based on
      * the current string being searched and the current sort
      * mode.
@@ -249,7 +247,8 @@ class SingleGameViewModel @Inject constructor(
      *      3. Reverse the order of the list if the user selects descending sort.
      *      4. Add the empty matches sublist to the end of the sorted list.
      *      5. Update state with the sorted list.
-     */
+     *//*
+
     private fun updateDisplayedMatchesAndListState() {
         val allMatches = matches
         val matchesToSort: MutableList<MatchDataRelationModel> = mutableListOf()
@@ -319,6 +318,7 @@ class SingleGameViewModel @Inject constructor(
     private suspend fun scrollToTop() = matchesLazyListState.animateScrollToItem(0)
 }
 
+*/
 /*class SingleGameViewModelFactory(
     private val gameObject: GameObject,
     private val resources: Resources,

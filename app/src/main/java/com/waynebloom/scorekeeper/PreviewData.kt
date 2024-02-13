@@ -47,42 +47,42 @@ val CategoryEntitiesDefaultPreview: List<CategoryDataModel> = listOf(
 val CategoryScoreEntitiesDefaultPreview: List<CategoryScoreDataModel> = listOf(
     CategoryScoreDataModel(
         id = 0,
-        categoryTitleId = 1,
+        categoryId = 1,
         value = "1"
     ),
     CategoryScoreDataModel(
         id = 1,
-        categoryTitleId = 2,
+        categoryId = 2,
         value = "1"
     ),
     CategoryScoreDataModel(
         id = 2,
-        categoryTitleId = 3,
+        categoryId = 3,
         value = "2"
     ),
     CategoryScoreDataModel(
         id = 3,
-        categoryTitleId = 4,
+        categoryId = 4,
         value = "4"
     ),
     CategoryScoreDataModel(
         id = 4,
-        categoryTitleId = 5,
+        categoryId = 5,
         value = "2"
     ),
     CategoryScoreDataModel(
         id = 5,
-        categoryTitleId = 6,
+        categoryId = 6,
         value = "1"
     ),
     CategoryScoreDataModel(
         id = 6,
-        categoryTitleId = 7,
+        categoryId = 7,
         value = "5"
     ),
     CategoryScoreDataModel(
         id = 7,
-        categoryTitleId = 8,
+        categoryId = 8,
         value = "3"
     )
 )
@@ -231,42 +231,42 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
                     score = listOf(
                         CategoryScoreDataModel(
                             id = 0,
-                            categoryTitleId = 0,
+                            categoryId = 0,
                             value = "5"
                         ),
                         CategoryScoreDataModel(
                             id = 1,
-                            categoryTitleId = 1,
+                            categoryId = 1,
                             value = "6"
                         ),
                         CategoryScoreDataModel(
                             id = 2,
-                            categoryTitleId = 2,
+                            categoryId = 2,
                             value = "7"
                         ),
                         CategoryScoreDataModel(
                             id = 3,
-                            categoryTitleId = 3,
+                            categoryId = 3,
                             value = "8"
                         ),
                         CategoryScoreDataModel(
                             id = 4,
-                            categoryTitleId = 4,
+                            categoryId = 4,
                             value = "9"
                         ),
                         CategoryScoreDataModel(
                             id = 5,
-                            categoryTitleId = 5,
+                            categoryId = 5,
                             value = "10"
                         ),
                         CategoryScoreDataModel(
                             id = 6,
-                            categoryTitleId = 6,
+                            categoryId = 6,
                             value = "11"
                         ),
                         CategoryScoreDataModel(
                             id = 7,
-                            categoryTitleId = 7,
+                            categoryId = 7,
                             value = "12"
                         )
                     )
@@ -280,42 +280,42 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
                     score = listOf(
                         CategoryScoreDataModel(
                             id = 0,
-                            categoryTitleId = 0,
+                            categoryId = 0,
                             value = "10"
                         ),
                         CategoryScoreDataModel(
                             id = 1,
-                            categoryTitleId = 1,
+                            categoryId = 1,
                             value = "11"
                         ),
                         CategoryScoreDataModel(
                             id = 2,
-                            categoryTitleId = 2,
+                            categoryId = 2,
                             value = "12"
                         ),
                         CategoryScoreDataModel(
                             id = 3,
-                            categoryTitleId = 3,
+                            categoryId = 3,
                             value = "13"
                         ),
                         CategoryScoreDataModel(
                             id = 4,
-                            categoryTitleId = 4,
+                            categoryId = 4,
                             value = "14"
                         ),
                         CategoryScoreDataModel(
                             id = 5,
-                            categoryTitleId = 5,
+                            categoryId = 5,
                             value = "15"
                         ),
                         CategoryScoreDataModel(
                             id = 6,
-                            categoryTitleId = 6,
+                            categoryId = 6,
                             value = "16"
                         ),
                         CategoryScoreDataModel(
                             id = 7,
-                            categoryTitleId = 7,
+                            categoryId = 7,
                             value = "17"
                         )
                     )
@@ -337,42 +337,42 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
                     score = listOf(
                         CategoryScoreDataModel(
                             id = 0,
-                            categoryTitleId = 0,
+                            categoryId = 0,
                             value = "14"
                         ),
                         CategoryScoreDataModel(
                             id = 1,
-                            categoryTitleId = 1,
+                            categoryId = 1,
                             value = "13"
                         ),
                         CategoryScoreDataModel(
                             id = 2,
-                            categoryTitleId = 2,
+                            categoryId = 2,
                             value = "12"
                         ),
                         CategoryScoreDataModel(
                             id = 3,
-                            categoryTitleId = 3,
+                            categoryId = 3,
                             value = "11"
                         ),
                         CategoryScoreDataModel(
                             id = 4,
-                            categoryTitleId = 4,
+                            categoryId = 4,
                             value = "10"
                         ),
                         CategoryScoreDataModel(
                             id = 5,
-                            categoryTitleId = 5,
+                            categoryId = 5,
                             value = "9"
                         ),
                         CategoryScoreDataModel(
                             id = 6,
-                            categoryTitleId = 6,
+                            categoryId = 6,
                             value = "8"
                         ),
                         CategoryScoreDataModel(
                             id = 7,
-                            categoryTitleId = 7,
+                            categoryId = 7,
                             value = "7"
                         )
                     )
@@ -386,42 +386,42 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
                     score = listOf(
                         CategoryScoreDataModel(
                             id = 0,
-                            categoryTitleId = 0,
+                            categoryId = 0,
                             value = "5"
                         ),
                         CategoryScoreDataModel(
                             id = 1,
-                            categoryTitleId = 1,
+                            categoryId = 1,
                             value = "6"
                         ),
                         CategoryScoreDataModel(
                             id = 2,
-                            categoryTitleId = 2,
+                            categoryId = 2,
                             value = "7"
                         ),
                         CategoryScoreDataModel(
                             id = 3,
-                            categoryTitleId = 3,
+                            categoryId = 3,
                             value = "8"
                         ),
                         CategoryScoreDataModel(
                             id = 4,
-                            categoryTitleId = 4,
+                            categoryId = 4,
                             value = "9"
                         ),
                         CategoryScoreDataModel(
                             id = 5,
-                            categoryTitleId = 5,
+                            categoryId = 5,
                             value = "10"
                         ),
                         CategoryScoreDataModel(
                             id = 6,
-                            categoryTitleId = 6,
+                            categoryId = 6,
                             value = "11"
                         ),
                         CategoryScoreDataModel(
                             id = 7,
-                            categoryTitleId = 7,
+                            categoryId = 7,
                             value = "12"
                         )
                     )

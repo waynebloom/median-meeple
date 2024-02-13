@@ -36,7 +36,7 @@ data class CategoryScoreDataModel(
     val id: Long = 0,
 
     @ColumnInfo(name = "subscore_title_id")
-    var categoryTitleId: Long = 0,
+    var categoryId: Long = 0,
 
     @ColumnInfo(name = "player_id")
     var playerId: Long = 0,

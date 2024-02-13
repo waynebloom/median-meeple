@@ -19,9 +19,12 @@ interface GameRepository {
     @Delete
     suspend fun delete(entity: GameDataModel)
 
+    @Query("SELECT * FROM game WHERE id = :id")
+    suspend fun get(id: Long): GameDataModel
+
     @Transaction
     @Query("SELECT * FROM game WHERE id = :id")
-    suspend fun get(id: Long): GameDataRelationModel
+    suspend fun getWithRelations(id: Long): GameDataRelationModel
 
     @Transaction
     @Query("SELECT * FROM game")
@@ -29,10 +32,6 @@ interface GameRepository {
 
     @Insert
     suspend fun insert(game: GameDataModel): Long
-
-    @Transaction
-    @Query("SELECT * FROM game WHERE id = :id")
-    fun observe(id: Long): Flow<GameDataRelationModel>
 
     @Update
     suspend fun update(game: GameDataModel)

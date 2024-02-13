@@ -156,7 +156,7 @@ private fun GamesHeader(
         )
 
         if (games.isNotEmpty()) {
-            CustomIconButton(
+            IconButton(
                 painter = painterResource(id = R.drawable.ic_list),
                 backgroundColor = Color.Transparent,
                 foregroundColor = MaterialTheme.colors.primary,
@@ -164,7 +164,7 @@ private fun GamesHeader(
                 onClick = onSeeAllGamesTap
             )
         } else {
-            CustomIconButton(
+            IconButton(
                 imageVector = Icons.Rounded.Add,
                 foregroundColor = MaterialTheme.colors.primary,
                 onClick = onAddNewGameTap,
