@@ -32,10 +32,10 @@ import com.waynebloom.scorekeeper.viewmodel.OverviewUiState
 @Composable
 fun OverviewScreen(
     uiState: OverviewUiState,
-    onAddGameTap: () -> Unit,
-    onGoToLibraryTap: () -> Unit,
-    onGameTap: (Long) -> Unit,
-    onMatchTap: (Long) -> Unit,
+    onAddGameClick: () -> Unit,
+    onGoToLibraryClick: () -> Unit,
+    onGameClick: (Long) -> Unit,
+    onMatchClick: (Long) -> Unit,
 ) {
 
     OverviewScreen(
@@ -43,10 +43,10 @@ fun OverviewScreen(
         games = uiState.displayedGames,
         loading = uiState.loading,
         matches = uiState.displayedMatches,
-        onAddGameTap = onAddGameTap,
-        onGoToLibraryTap = onGoToLibraryTap,
-        onGameTap = onGameTap,
-        onMatchTap = onMatchTap
+        onAddGameTap = onAddGameClick,
+        onGoToLibraryTap = onGoToLibraryClick,
+        onGameTap = onGameClick,
+        onMatchTap = onMatchClick
     )
 }
 
@@ -301,10 +301,10 @@ fun OverviewScreenPreview() {
             
             OverviewScreen(
                 uiState = OverviewSampleData.UiState,
-                onAddGameTap = {},
-                onGoToLibraryTap = {},
-                onGameTap = {},
-                onMatchTap = {}
+                onAddGameClick = {},
+                onGoToLibraryClick = {},
+                onGameClick = {},
+                onMatchClick = {}
             )
         }
     }

@@ -1,17 +1,21 @@
 package com.waynebloom.scorekeeper.ui.singleGame.matchesForGame
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Ease
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,8 +32,11 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
+import androidx.compose.material.Tab
+import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
@@ -38,20 +45,25 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.ui.components.AdCard
 import com.waynebloom.scorekeeper.ui.components.HelperBox
 import com.waynebloom.scorekeeper.ui.components.HelperBoxType
@@ -61,15 +73,19 @@ import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
+import com.waynebloom.scorekeeper.ui.components.IconButton
 import com.waynebloom.scorekeeper.ui.components.Loading
 import com.waynebloom.scorekeeper.ui.components.RadioButtonOption
 import com.waynebloom.scorekeeper.ui.components.SingleGameDestinationTopBar
 import com.waynebloom.scorekeeper.ui.components.SmallIconButton
+import com.waynebloom.scorekeeper.ui.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.ui.model.MatchUiModel
 import com.waynebloom.scorekeeper.ui.singleGame.MatchesForGameUiState
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
@@ -77,12 +93,14 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 fun MatchesForGameScreen(
     uiState: MatchesForGameUiState,
     onSearchInputChanged: (TextFieldValue) -> Unit,
-    onSortButtonClick: () -> Unit,
     onSortModeChanged: (MatchSortMode) -> Unit,
     onSortDirectionChanged: (SortDirection) -> Unit,
-    onSortDialogDismiss: () -> Unit,
+    onEditGameClick: () -> Unit,
+    onStatisticsTabClick: () -> Unit,
+    onSortButtonClick: () -> Unit,
     onMatchClick: (Long) -> Unit,
-    onAddMatchClick: () -> Unit
+    onAddMatchClick: () -> Unit,
+    onSortDialogDismiss: () -> Unit,
 ) {
 
     when (uiState) {
@@ -96,15 +114,17 @@ fun MatchesForGameScreen(
                 sortMode = uiState.sortMode,
                 ad = uiState.ad,
                 matches = uiState.matches,
-                scoringMode = uiState.scoringMode,
                 listState = rememberLazyListState(),
-                onSearchInputChanged,
-                onSortButtonClick,
-                onSortModeChanged,
-                onSortDirectionChanged,
-                onSortDialogDismiss,
-                onMatchClick,
-                onAddMatchClick
+                scoringMode = uiState.scoringMode,
+                onEditGameClick = onEditGameClick,
+                onSortButtonClick = onSortButtonClick,
+                onStatisticsTabClick = onStatisticsTabClick,
+                onMatchClick = onMatchClick,
+                onAddMatchClick = onAddMatchClick,
+                onSearchInputChanged = onSearchInputChanged,
+                onSortModeChanged = onSortModeChanged,
+                onSortDirectionChanged = onSortDirectionChanged,
+                onSortDialogDismiss = onSortDialogDismiss,
             )
         }
         is MatchesForGameUiState.Empty -> Loading() // TODO: create a real empty state here
@@ -112,7 +132,8 @@ fun MatchesForGameScreen(
     }
 }
 
-/*@Composable
+/* Can't remember what this is here for
+@Composable
 fun MatchesForGameTopBar(
     title: String,
     onOpenSearchTap: () -> Unit,
@@ -229,8 +250,151 @@ fun MatchesForGameSortMenu(
     }
 }*/
 
+// region Top Bar
+@OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun MatchesForGameTopBar(
+fun MatchesForSingleGameTopBar(
+    searchInput: TextFieldValue,
+    selectedTab: SingleGameScreen,
+    title: String,
+    onSearchInputChanged: (TextFieldValue) -> Unit,
+    onSortClick: () -> Unit,
+    onEditGameClick: () -> Unit,
+    onTabClick: (SingleGameScreen) -> Unit,
+) {
+
+    var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
+    Column {
+
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 16.dp, end = 8.dp)
+                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
+                .fillMaxWidth()
+        ) {
+
+            AnimatedContent(
+                targetState = isSearchBarVisible,
+                transitionSpec = { fadeInWithFadeOut },
+                label = "MatchesForGameTopBarTransition"
+            ) { visible ->
+
+                if (visible) {
+                    TopBarWithSearch(
+                        searchInput = searchInput,
+                        onSearchInputChanged = onSearchInputChanged,
+                        onCloseClick = {
+                            isSearchBarVisible = false
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        },
+                        onClearClick = {
+                            onSearchInputChanged(TextFieldValue())
+                        },
+                    )
+                } else {
+                    MatchesForSingleGameDefaultActionBar(
+                        title = title,
+                        onSearchClick = { isSearchBarVisible = true },
+                        onSortClick = onSortClick,
+                        onEditGameClick = onEditGameClick,
+                    )
+                }
+            }
+        }
+
+        SingleGameTabBar(selectedTab, onTabClick)
+    }
+}
+
+@Composable
+fun MatchesForSingleGameDefaultActionBar(
+    title: String,
+    onSearchClick: () -> Unit,
+    onSortClick: () -> Unit,
+    onEditGameClick: () -> Unit,
+) {
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(Dimensions.Size.topBarHeight)
+    ) {
+
+        Text(
+            text = title,
+            color = MaterialTheme.colors.primary,
+            style = MaterialTheme.typography.h5,
+            overflow = TextOverflow.Ellipsis,
+            maxLines = 1
+        )
+
+        Row {
+
+            IconButton(
+                imageVector = Icons.Rounded.Search,
+                backgroundColor = Color.Transparent,
+                foregroundColor = MaterialTheme.colors.primary,
+                onClick = onSearchClick
+            )
+
+            IconButton(
+                painter = painterResource(id = R.drawable.ic_sort),
+                backgroundColor = Color.Transparent,
+                foregroundColor = MaterialTheme.colors.primary,
+                onClick = onSortClick
+            )
+
+            IconButton(
+                imageVector = Icons.Rounded.Edit,
+                backgroundColor = Color.Transparent,
+                foregroundColor = MaterialTheme.colors.primary,
+                onClick = onEditGameClick
+            )
+        }
+    }
+}
+
+@Composable
+fun SingleGameTabBar(
+    selectedTab: SingleGameScreen,
+    onTabSelected: (SingleGameScreen) -> Unit
+) {
+
+    TabRow(
+        selectedTabIndex = selectedTab.ordinal,
+        backgroundColor = MaterialTheme.colors.background,
+    ) {
+        SingleGameScreen.entries.forEachIndexed { index, screen ->
+            Tab(
+                selected = index == selectedTab.ordinal,
+                onClick = { onTabSelected(screen) },
+                text = { Text(text = stringResource(id = screen.titleResource)) },
+                icon = {
+                    Icon(
+                        painter = painterResource(id = screen.iconResource),
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                },
+                selectedContentColor = MaterialTheme.colors.primary,
+            )
+        }
+    }
+}
+
+// endregion
+
+// TODO: I like the idea of making a new top bar, but I need to table it. Remove this.
+@Composable
+fun MatchesForGameTopBarDEPR(
     screenTitle: String,
     searchFieldValue: TextFieldValue,
     onSortButtonClick: () -> Unit,
@@ -314,44 +478,36 @@ fun MatchesForGameSortOptionsDialog(
     onSortDirectionChanged: (SortDirection) -> Unit,
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        Surface {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(12.dp)
-            ) {
+    Dialog(onDismiss) {
+        Column(Modifier
+            .clip(shape = MaterialTheme.shapes.large)
+            .background(MaterialTheme.colors.surface)
+            .padding(16.dp)
+        ) {
+            Text(text = "Sort by")
 
-                Text(text = "Sort by...")
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp)
-                ) {
-                    MatchSortMode.values().forEach { option ->
-                        RadioButtonOption(
-                            menuOption = option,
-                            isSelected = sortMode == option,
-                            onSelected = { onSortModeChanged(option) }
-                        )
+            MatchSortMode.entries.forEach { option ->
+                RadioButtonOption(
+                    menuOption = option,
+                    isSelected = sortMode == option,
+                    onSelected = {
+                        onSortModeChanged(option)
                     }
-                }
+                )
+            }
+            
+            Spacer(Modifier.height(8.dp))
 
-                Text(text = "Sort direction")
+            Text(text = "Sort direction")
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(end = 16.dp)
-                ) {
-                    SortDirection.values().forEach { option ->
-                        RadioButtonOption(
-                            menuOption = option,
-                            isSelected = sortDirection == option,
-                            onSelected = { onSortDirectionChanged(it as SortDirection) }
-                        )
+            SortDirection.entries.forEach { option ->
+                RadioButtonOption(
+                    menuOption = option,
+                    isSelected = sortDirection == option,
+                    onSelected = {
+                        onSortDirectionChanged(option)
                     }
-                }
+                )
             }
         }
     }
@@ -379,122 +535,142 @@ fun MatchesForGameScreen(
     sortMode: MatchSortMode,
     ad: NativeAd?,
     matches: List<MatchUiModel>,
-    scoringMode: ScoringMode,
     listState: LazyListState,
-    onSearchInputChanged: (TextFieldValue) -> Unit,
+    scoringMode: ScoringMode,
+    onEditGameClick: () -> Unit,
     onSortButtonClick: () -> Unit,
+    onStatisticsTabClick: () -> Unit,
+    onMatchClick: (Long) -> Unit,
+    onAddMatchClick: () -> Unit,
+    onSearchInputChanged: (TextFieldValue) -> Unit,
     onSortModeChanged: (MatchSortMode) -> Unit,
     onSortDirectionChanged: (SortDirection) -> Unit,
     onSortDialogDismiss: () -> Unit,
-    onMatchClick: (Long) -> Unit,
-    onAddMatchClick: () -> Unit
 ) {
 
-    if (isSortDialogShowing) {
-        MatchesForGameSortOptionsDialog(
-            sortMode,
-            sortDirection,
-            onSortModeChanged,
-            onSortDirectionChanged,
-            onSortDialogDismiss
-        )
-    }
+    Box {
 
-    Scaffold(
-        topBar = {
-            MatchesForGameTopBar(
-                screenTitle,
-                searchInput,
-                onSortButtonClick,
-                onSearchInputChanged,
-            )
-        },
-        floatingActionButton = {
-            MedianMeepleFab(
-                // backgroundColor = MaterialTheme.colors.primary,
-                onClick = onAddMatchClick,
+        if (isSortDialogShowing) {
+            BackHandler {
+                onSortDialogDismiss()
+            }
+        }
+
+        if (isSortDialogShowing) {
+            MatchesForGameSortOptionsDialog(
+                sortMode,
+                sortDirection,
+                onSortModeChanged,
+                onSortDirectionChanged,
+                onSortDialogDismiss
             )
         }
-    ) { innerPadding ->
 
-        Column(modifier = Modifier
-            .padding(innerPadding)
-            .padding(horizontal = Spacing.screenEdge)
-        ) {
+        Scaffold(
+            topBar = {
+                MatchesForSingleGameTopBar(
+                    searchInput = searchInput,
+                    selectedTab = SingleGameScreen.MatchesForGame,
+                    title = screenTitle,
+                    onSearchInputChanged = onSearchInputChanged,
+                    onTabClick = {
+                        when (it) {
+                            SingleGameScreen.MatchesForGame -> {}
+                            SingleGameScreen.StatisticsForGame -> onStatisticsTabClick()
+                        }
+                    },
+                    onSortClick = onSortButtonClick,
+                    onEditGameClick = onEditGameClick,
+                )
+            },
+            floatingActionButton = {
+                MedianMeepleFab(
+                    // backgroundColor = MaterialTheme.colors.primary,
+                    onClick = onAddMatchClick,
+                )
+            }
+        ) { innerPadding ->
 
-            AnimatedContent(
-                targetState = matches.isNotEmpty() to searchInput.text.isNotBlank(),
-                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
-                label = MatchesForGameConstants.AnimationLabel.HelperBox
+            Column(modifier = Modifier
+                .padding(innerPadding)
+                .padding(horizontal = Spacing.screenEdge)
             ) {
 
-                when(it) {
+                AnimatedContent(
+                    targetState = matches.isNotEmpty() to searchInput.text.isNotBlank(),
+                    transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+                    label = MatchesForGameConstants.AnimationLabel.HelperBox
+                ) {
 
-                    // There are matches and there is search input
-                    true to true -> {
-                        MatchesForGameHelperBoxListHeader(
-                            message = stringResource(
-                                id = R.string.text_showing_search_results,
-                                searchInput),
-                            type = HelperBoxType.Info
-                        )
-                    }
+                    when(it) {
 
-                    // There are matches and there is no search input
-                    true to false -> {}
+                        // There are matches and there is search input
+                        true to true -> {
+                            MatchesForGameHelperBoxListHeader(
+                                message = stringResource(
+                                    id = R.string.text_showing_search_results,
+                                    searchInput.text),
+                                type = HelperBoxType.Info
+                            )
+                        }
 
-                    // There are no matches and there is search input
-                    false to true -> {
-                        MatchesForGameHelperBoxListHeader(
-                            message = stringResource(
-                                id = R.string.text_empty_match_search_results,
-                                searchInput),
-                            type = HelperBoxType.Missing
-                        )
-                    }
+                        // There are matches and there is no search input
+                        true to false -> {}
 
-                    // There are no matches and no search input
-                    false to false -> {
-                        MatchesForGameHelperBoxListHeader(
-                            message = stringResource(R.string.text_empty_matches),
-                            type = HelperBoxType.Missing
-                        )
+                        // There are no matches and there is search input
+                        false to true -> {
+                            MatchesForGameHelperBoxListHeader(
+                                message = stringResource(
+                                    id = R.string.text_empty_match_search_results,
+                                    searchInput.text),
+                                type = HelperBoxType.Missing
+                            )
+                        }
+
+                        // There are no matches and no search input
+                        false to false -> {
+                            MatchesForGameHelperBoxListHeader(
+                                message = stringResource(R.string.text_empty_matches),
+                                type = HelperBoxType.Missing
+
+                            )
+                        }
                     }
                 }
-            }
 
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(
-                    top = Spacing.sectionContent, bottom = Spacing.paddingForFab),
-                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-            ) {
+                LazyColumn(
+                    state = listState,
+                    contentPadding = PaddingValues(
+                        top = Spacing.sectionContent, bottom = Spacing.paddingForFab),
+                    verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                ) {
 
-                val adSeparatedSubLists = matches.toAdSeparatedSubLists()
+                    val adSeparatedSubLists = matches.toAdSeparatedSubLists()
 
-                adSeparatedSubLists.forEachIndexed { index, subList ->
+                    adSeparatedSubLists.forEachIndexed { index, subList ->
 
-                    items(
-                        items = subList,
-                        key = { item -> item.id }
-                    ) { match ->
+                        items(
+                            items = subList,
+                            key = { item -> item.id }
+                        ) { match ->
 
-                        MatchListItem(
-                            match,
-                            scoringMode,
-                            onClick = onMatchClick,
-                            modifier = Modifier.animateItemPlacement(
-                                animationSpec = tween(
-                                    durationMillis = DurationMs.medium,
-                                    easing = Ease
+                            MatchListItem(
+                                match,
+                                scoringMode,
+                                onClick = onMatchClick,
+                                modifier = Modifier.animateItemPlacement(
+                                    animationSpec = tween(
+                                        durationMillis = DurationMs.medium,
+                                        easing = Ease
+                                    )
                                 )
                             )
-                        )
-                    }
+                        }
 
-                    if (index == adSeparatedSubLists.lastIndex) {
-                        item {
-                            AdCard(ad)
+                        if (index == adSeparatedSubLists.lastIndex) {
+                            item {
+                                AdCard(ad)
+                            }
                         }
                     }
                 }
@@ -608,19 +784,6 @@ fun MatchesForSingleGameScreen(
         }
     }
 }*/
-
-@Preview
-@Composable
-fun MatchesForGameTopBarPreview() {
-    MedianMeepleTheme {
-        MatchesForGameTopBar(
-            screenTitle = "Wingspan",
-            searchFieldValue = TextFieldValue("Search for something"),
-            onSortButtonClick = {},
-            onSearchInputChanged = {}
-        )
-    }
-}
 
 @Preview
 @Composable

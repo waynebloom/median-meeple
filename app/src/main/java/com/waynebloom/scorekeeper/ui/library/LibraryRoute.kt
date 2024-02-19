@@ -17,11 +17,8 @@ fun LibraryRoute(
 
     LibraryScreen(
         uiState = uiState,
-        onAddGameTap = { viewModel.addEmptyGame() },
-        onClearFiltersTap = { viewModel.onClearFiltersTap() },
-        onGameTap = { id -> navController.navigate("${Destinations.SingleGame}/$id") },
-        onSearchBarFocusedChanged = { viewModel.onSearchBarFocusedChanged(it) },
         onSearchInputChanged = { viewModel.onSearchInputChanged(it) },
-        onTopBarStateChanged = { viewModel.onTopBarStateChanged(it) },
+        onAddGameClick = { viewModel.addEmptyGame() },
+        onGameClick = { id -> navController.navigate("${Destinations.SingleGame}/$id") },
     )
 }

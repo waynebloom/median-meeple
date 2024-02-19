@@ -12,7 +12,7 @@ import com.waynebloom.scorekeeper.ui.theme.UserSelectedPrimaryColorTheme
 @Composable
 fun MatchesForGameRoute(
     navController: NavHostController,
-    viewModel: SingleGameViewModel
+    viewModel: SingleGameViewModel,
 ) {
 
     val uiState by viewModel.matchesForGameUiState.collectAsState()
@@ -20,15 +20,24 @@ fun MatchesForGameRoute(
 
     UserSelectedPrimaryColorTheme(primaryColor) {
         MatchesForGameScreen(
-            uiState,
+            uiState = uiState,
             onSearchInputChanged = viewModel::onSearchInputChanged,
-            onSortButtonClick = viewModel::onSortButtonClick,
             onSortModeChanged = viewModel::onSortModeChanged,
             onSortDirectionChanged = viewModel::onSortDirectionChanged,
+            onEditGameClick = {
+                navController.navigate("${Destination.EditGame.route}/${viewModel.gameId}")
+            },
+            onStatisticsTabClick = {
+                navController.navigate("${Destination.StatisticsForGame.route}/${viewModel.gameId}")
+            },
+            onSortButtonClick = viewModel::onSortButtonClick,
+            onMatchClick = {
+                navController.navigate("${Destination.SingleMatch.route}/$it")
+            },
+            onAddMatchClick = { // TODO: this doesn't work anymore. Fix it.
+                navController.navigate("${Destination.SingleMatch.route}/new")
+            },
             onSortDialogDismiss = viewModel::onSortDialogDismiss,
-            onMatchClick = { navController.navigate("${Destination.SingleMatch}/$it") },
-            onAddMatchClick = { navController.navigate(Destination.StatisticsForGame.route) }
-            // onAddMatchClick = { navController.navigate("${Destination.SingleMatch}/new")}
         )
     }
 }

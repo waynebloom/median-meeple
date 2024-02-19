@@ -21,6 +21,10 @@ import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -28,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.android.gms.ads.nativead.NativeAd
@@ -41,7 +46,6 @@ import com.waynebloom.scorekeeper.ui.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.ui.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.enums.LibraryTopBarState
 import com.waynebloom.scorekeeper.enums.ListDisplayState
 import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
@@ -55,30 +59,21 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 @Composable
 fun LibraryScreen(
     uiState: LibraryUiState,
-    onAddGameTap: () -> Unit,
-    onClearFiltersTap: () -> Unit,
-    onGameTap: (Long) -> Unit,
-    onSearchBarFocusedChanged: (Boolean) -> Unit,
-    onSearchInputChanged: (String) -> Unit,
-    onTopBarStateChanged: (LibraryTopBarState) -> Unit,
-    modifier: Modifier = Modifier
+    onSearchInputChanged: (TextFieldValue) -> Unit,
+    onAddGameClick: () -> Unit,
+    onGameClick: (Long) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
 
     LibraryScreen(
         ad = uiState.ad,
         games = uiState.displayedGames,
-        isSearchBarFocused = uiState.isSearchBarFocused,
         lazyListState = uiState.lazyListState,
-        listDisplayState = uiState.listDisplayState,
         loading = uiState.loading,
         searchInput = uiState.searchInput,
-        topBarState = uiState.topBarState,
-        onAddNewGameTap = onAddGameTap,
-        onClearFiltersTap = onClearFiltersTap,
-        onGameTap = onGameTap,
-        onSearchBarFocusedChanged = onSearchBarFocusedChanged,
         onSearchInputChanged = onSearchInputChanged,
-        onTopBarStateChanged = onTopBarStateChanged,
+        onAddNewGameClick = onAddGameClick,
+        onGameClick = onGameClick,
         modifier = modifier
     )
 }
@@ -88,36 +83,24 @@ fun LibraryScreen(
 fun LibraryScreen(
     ad: NativeAd?,
     games: List<GameDataRelationModel>,
-    isSearchBarFocused: Boolean,
     lazyListState: LazyListState,
-    listDisplayState: ListDisplayState,
     loading: Boolean,
-    searchInput: String,
-    topBarState: LibraryTopBarState,
-    onAddNewGameTap: () -> Unit,
-    onClearFiltersTap: () -> Unit,
-    onSearchBarFocusedChanged: (Boolean) -> Unit,
-    onSearchInputChanged: (String) -> Unit,
-    onGameTap: (Long) -> Unit,
-    onTopBarStateChanged: (LibraryTopBarState) -> Unit,
+    searchInput: TextFieldValue,
+    onSearchInputChanged: (TextFieldValue) -> Unit,
+    onAddNewGameClick: () -> Unit,
+    onGameClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
     Scaffold(
         topBar = {
             GamesTopBar(
-                state = topBarState,
                 title = stringResource(id = R.string.header_games),
-                isSearchBarFocused = isSearchBarFocused,
-                searchString = searchInput,
-                themeColor = MaterialTheme.colors.primary,
-                onClearFiltersTap = onClearFiltersTap,
-                onSearchBarFocusedChanged = { onSearchBarFocusedChanged(it) },
-                onSearchStringChanged = { onSearchInputChanged(it) },
-                onStateChanged = { onTopBarStateChanged(it) }
+                searchInput = searchInput,
+                onSearchInputChanged = { onSearchInputChanged(it) },
             )
         },
-        floatingActionButton = { MedianMeepleFab(onClick = onAddNewGameTap) },
+        floatingActionButton = { MedianMeepleFab(onClick = onAddNewGameClick) },
         modifier = modifier,
     ) { contentPadding ->
 
@@ -130,38 +113,68 @@ fun LibraryScreen(
             ) {
 
                 AnimatedContent(
-                    targetState = listDisplayState,
+                    targetState = games.isNotEmpty() to searchInput.text.isNotBlank(),
                     transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
                     label = LibraryConstants.ListAnimationTag,
                 ) {
 
-                    if (it != ListDisplayState.ShowAll) {
+                    when(it) {
 
-                        val type = if (it == ListDisplayState.ShowFiltered) {
-                            HelperBoxType.Info
-                        } else HelperBoxType.Missing
+                        true to true -> {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                                modifier = Modifier.padding(top = Spacing.sectionContent)
+                            ) {
 
-                        val text = when (it) {
-                            ListDisplayState.Empty -> stringResource(R.string.text_empty_games)
-                            ListDisplayState.EmptyFiltered -> stringResource(
-                                id = R.string.text_empty_game_search_results,
-                                searchInput
-                            )
-                            ListDisplayState.ShowFiltered -> stringResource(
-                                R.string.text_showing_search_results,
-                                searchInput
-                            )
-                            else -> ""
+                                HelperBox(
+                                    message = stringResource(
+                                        id = R.string.text_showing_search_results,
+                                        searchInput),
+                                    type = HelperBoxType.Info,
+                                    maxLines = 2
+                                )
+
+                                Divider()
+                            }
                         }
 
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier.padding(top = Spacing.sectionContent)
-                        ) {
+                        true to false -> {
 
-                            HelperBox(message = text, type = type, maxLines = 2)
+                        }
 
-                            Divider()
+                        false to true -> {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                                modifier = Modifier.padding(top = Spacing.sectionContent)
+                            ) {
+
+                                HelperBox(
+                                    message = stringResource(
+                                        id = R.string.text_empty_game_search_results,
+                                        searchInput
+                                    ),
+                                    type = HelperBoxType.Missing,
+                                    maxLines = 2
+                                )
+
+                                Divider()
+                            }
+                        }
+
+                        false to false -> {
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                                modifier = Modifier.padding(top = Spacing.sectionContent)
+                            ) {
+
+                                HelperBox(
+                                    message = stringResource(R.string.text_empty_games),
+                                    type = HelperBoxType.Missing,
+                                    maxLines = 2
+                                )
+
+                                Divider()
+                            }
                         }
                     }
                 }
@@ -186,7 +199,7 @@ fun LibraryScreen(
                             GameListItem(
                                 name = game.name,
                                 color = LocalCustomThemeColors.current.getColorByKey(game.color),
-                                onClick = { onGameTap(game.id) },
+                                onClick = { onGameClick(game.id) },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .animateItemPlacement()
@@ -206,8 +219,7 @@ fun LibraryScreen(
 @Composable
 fun GamesDefaultActionBar(
     title: String,
-    themeColor: Color,
-    onOpenSearchTap: () -> Unit
+    onSearchClick: () -> Unit
 ) {
 
     Row(
@@ -220,7 +232,7 @@ fun GamesDefaultActionBar(
 
         Text(
             text = title,
-            color = themeColor,
+            color = MaterialTheme.colors.primary,
             style = MaterialTheme.typography.h5,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1
@@ -229,8 +241,8 @@ fun GamesDefaultActionBar(
         IconButton(
             imageVector = Icons.Rounded.Search,
             backgroundColor = Color.Transparent,
-            foregroundColor = themeColor,
-            onClick = { onOpenSearchTap() }
+            foregroundColor = MaterialTheme.colors.primary,
+            onClick = { onSearchClick() }
         )
     }
 }
@@ -238,17 +250,12 @@ fun GamesDefaultActionBar(
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun GamesTopBar(
-    state: LibraryTopBarState,
     title: String,
-    isSearchBarFocused: Boolean,
-    searchString: String,
-    themeColor: Color,
-    onClearFiltersTap: () -> Unit,
-    onSearchBarFocusedChanged: (Boolean) -> Unit,
-    onSearchStringChanged: (String) -> Unit,
-    onStateChanged: (LibraryTopBarState) -> Unit,
+    searchInput: TextFieldValue,
+    onSearchInputChanged: (TextFieldValue) -> Unit,
 ) {
 
+    var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
 
@@ -263,35 +270,29 @@ fun GamesTopBar(
         ) {
 
             AnimatedContent(
-                targetState = state,
+                targetState = isSearchBarVisible,
                 transitionSpec = { fadeInWithFadeOut },
                 label = LibraryConstants.TopBarAnimationTag,
             ) {
 
-                when (it) {
-
-                    LibraryTopBarState.Default -> {
-                        GamesDefaultActionBar(
-                            title = title,
-                            themeColor = themeColor,
-                            onOpenSearchTap = { onStateChanged(LibraryTopBarState.SearchBarOpen) },
-                        )
-                    }
-                    LibraryTopBarState.SearchBarOpen -> {
-                        TopBarWithSearch(
-                            isSearchBarFocused = isSearchBarFocused,
-                            searchString = searchString,
-                            themeColor = themeColor,
-                            onClearFiltersTap = onClearFiltersTap,
-                            onSearchBarFocusChanged = onSearchBarFocusedChanged,
-                            onSearchStringChanged = onSearchStringChanged,
-                            onCloseTap = {
-                                onStateChanged(LibraryTopBarState.Default)
-                                focusManager.clearFocus()
-                                keyboardController?.hide()
-                            }
-                        )
-                    }
+                if (it) {
+                    TopBarWithSearch(
+                        searchInput = searchInput,
+                        onSearchInputChanged = onSearchInputChanged,
+                        onCloseClick = {
+                            isSearchBarVisible = false
+                            focusManager.clearFocus()
+                            keyboardController?.hide()
+                        },
+                        onClearClick = {
+                            onSearchInputChanged(TextFieldValue())
+                        }
+                    )
+                } else {
+                    GamesDefaultActionBar(
+                        title = title,
+                        onSearchClick = { isSearchBarVisible = true }
+                    )
                 }
             }
         }
@@ -308,8 +309,8 @@ fun GamesScreenPreview() {
         /*LibraryScreen(
             games = GameEntitiesDefaultPreview,
             currentAd = null,
-            onAddNewGameTap = {},
-            onSingleGameTap = {}
+            onAddNewGameClick = {},
+            onSingleGameClick = {}
         )*/
     }
 }

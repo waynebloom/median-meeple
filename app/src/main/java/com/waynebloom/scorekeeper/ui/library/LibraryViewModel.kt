@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.ui.library
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.ads.nativead.NativeAd
@@ -70,15 +71,7 @@ class LibraryViewModel @Inject constructor(
 
     fun addEmptyGame() = viewModelScope.launch { insertEmptyGame() }
 
-    fun onClearFiltersTap() = viewModelState.update {
-        it.copy(searchInput = "")
-    }
-
-    fun onSearchBarFocusedChanged(value: Boolean) = viewModelState.update {
-        it.copy(isSearchBarFocused = value)
-    }
-
-    fun onSearchInputChanged(value: String) = viewModelScope.launch {
+    fun onSearchInputChanged(value: TextFieldValue) = viewModelScope.launch {
         viewModelState.update { it.copy(searchInput = value) }
         delay(DurationMs.long.toLong())
         if (viewModelState.value.lazyListState.firstVisibleItemIndex > 0)
@@ -88,11 +81,15 @@ class LibraryViewModel @Inject constructor(
 
     private suspend fun scrollToTop() =
         viewModelState.value.lazyListState.animateScrollToItem(0)
-
-    fun onTopBarStateChanged(value: LibraryTopBarState) = viewModelState.update {
-        it.copy(topBarState = value)
-    }
 }
+
+/**
+ * TODO
+ *
+ * Make a ViewModelState since there is a loading state
+ *
+ * Cleanify the data flow (DomainModel vs. DataModel)
+ */
 
 data class LibraryUiState(
     val ad: NativeAd? = null,
@@ -100,23 +97,24 @@ data class LibraryUiState(
     val isSearchBarFocused: Boolean = false,
     val lazyListState: LazyListState = LazyListState(),
     val loading: Boolean = true,
-    val searchInput: String = "",
+    val searchInput: TextFieldValue = TextFieldValue(),
     val topBarState: LibraryTopBarState = LibraryTopBarState.Default,
 ) {
 
+    // TODO: the match filtering based on search is probably not working, check on it.
     val displayedGames: List<GameDataRelationModel>
-        get() = if (searchInput.isNotBlank()) {
-            games.filter { it.entity.name.lowercase().contains(searchInput.lowercase()) }
+        get() = if (searchInput.text.isNotBlank()) {
+            games.filter { it.entity.name.lowercase().contains(searchInput.text.lowercase()) }
         } else games
 
     val listDisplayState: ListDisplayState
         get() = if (displayedGames.isEmpty()) {
-            if (searchInput.isBlank()) {
+            if (searchInput.text.isBlank()) {
                 ListDisplayState.Empty
             } else {
                 ListDisplayState.EmptyFiltered
             }
-        } else if (searchInput.isNotBlank()) {
+        } else if (searchInput.text.isNotBlank()) {
             ListDisplayState.ShowFiltered
         } else {
             ListDisplayState.ShowAll

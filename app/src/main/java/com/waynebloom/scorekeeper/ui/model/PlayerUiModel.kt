@@ -9,5 +9,5 @@ data class PlayerUiModel(
     val name: TextFieldInput,
     val position: Int,
     val showDetailedScore: Boolean,
-    val totalScore: BigDecimal
+    val totalScore: BigDecimal,
 )

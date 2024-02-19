@@ -36,25 +36,25 @@ fun IconButton(
     modifier: Modifier = Modifier,
     backgroundColor: Color = MaterialTheme.colors.surface,
     foregroundColor: Color = MaterialTheme.colors.primary,
+    shape: Shape = MaterialTheme.shapes.medium,
+    visibleSize: Dp = 48.dp,
     enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
-    var boxModifier = modifier
-        .clip(MaterialTheme.shapes.medium)
-        .background(
-            color = backgroundColor,
-            shape = MaterialTheme.shapes.medium
-        )
-    var iconModifier = Modifier
-        .size(Dimensions.Size.minTappableSize)
-        .padding(12.dp)
+    var boxModifier = modifier.clip(shape).background(backgroundColor, shape).size(visibleSize)
+    var iconModifier = Modifier.fillMaxSize().padding(visibleSize / 4)
+    val clickableModifier = Modifier.minimumInteractiveComponentSize().clickable(onClick = onClick)
 
     boxModifier = if (enabled) {
-        boxModifier.clickable { onClick() }
-    } else boxModifier
+        boxModifier.then(clickableModifier)
+    } else {
+        boxModifier
+    }
     iconModifier = if (!enabled) {
         iconModifier.alpha(Alpha.disabled)
-    } else iconModifier
+    } else {
+        iconModifier
+    }
 
     Box(
         modifier = boxModifier,
@@ -87,7 +87,7 @@ fun IconButton(
     val clickableModifier = Modifier.minimumInteractiveComponentSize().clickable { onClick() }
 
     boxModifier = if (enabled) {
-        clickableModifier.then(boxModifier)
+        boxModifier.then(clickableModifier)
     } else {
         boxModifier
     }

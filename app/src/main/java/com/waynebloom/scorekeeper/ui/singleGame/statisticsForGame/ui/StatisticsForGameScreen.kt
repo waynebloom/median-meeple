@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ChipDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
@@ -29,6 +28,8 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,25 +39,28 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Alpha
+import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.ui.components.ExpandCollapseButton
 import com.waynebloom.scorekeeper.ui.components.HelperBox
 import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.ui.components.IconButton
 import com.waynebloom.scorekeeper.ui.components.Loading
-import com.waynebloom.scorekeeper.ui.components.SingleGameDestinationTopBar
 import com.waynebloom.scorekeeper.ui.singleGame.StatisticsForGameUiState
-import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.ui.model.ScoringPlayerUiModel
-import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.ui.model.WinningPlayerUiModel
+import com.waynebloom.scorekeeper.ui.singleGame.matchesForGame.SingleGameTabBar
+import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
@@ -64,6 +68,8 @@ import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 @Composable
 fun StatisticsForGameScreen(
     uiState: StatisticsForGameUiState,
+    onEditGameClick: () -> Unit,
+    onMatchesTabClick: () -> Unit,
     onBestWinnerButtonClick: () -> Unit,
     onHighScoreButtonClick: () -> Unit,
     onUniqueWinnersButtonClick: () -> Unit,
@@ -72,7 +78,17 @@ fun StatisticsForGameScreen(
 
     Scaffold(
         topBar = {
-            SingleGameDestinationTopBar(title = uiState.screenTitle)
+            StatisticsForGameTopBar(
+                title = uiState.screenTitle,
+                selectedTab = SingleGameScreen.StatisticsForGame,
+                onEditGameClick = onEditGameClick,
+                onTabClick = {
+                    when(it) {
+                        SingleGameScreen.StatisticsForGame -> {}
+                        SingleGameScreen.MatchesForGame -> onMatchesTabClick()
+                    }
+                },
+            )
         }
     ) { innerPadding ->
 
@@ -116,7 +132,7 @@ fun StatisticsForGameScreen(
                     onHighScoreButtonClick = onHighScoreButtonClick,
                     onUniqueWinnerButtonClick = onUniqueWinnersButtonClick,
                     onCategoryClick = onCategoryClick,
-                    modifier = Modifier.padding(innerPadding)
+                    modifier = Modifier.padding(innerPadding),
                 )
             }
         }
@@ -129,18 +145,18 @@ fun StatisticsForGameScreen(
     playCount: String,
     uniquePlayerCount: String,
     isBestWinnerExpanded: Boolean,
-    playersWithMostWins: List<WinningPlayerUiModel>,
+    playersWithMostWins: List<WinningPlayerDomainModel>,
     playersWithMostWinsOverflow: Int,
     isHighScoreExpanded: Boolean,
-    playersWithHighScore: List<ScoringPlayerUiModel>,
+    playersWithHighScore: List<ScoringPlayerDomainModel>,
     playersWithHighScoreOverflow: Int,
     isUniqueWinnersExpanded: Boolean,
-    uniqueWinners: List<WinningPlayerUiModel>,
+    uniqueWinners: List<WinningPlayerDomainModel>,
     uniqueWinnersOverflow: Int,
     categoryNames: List<String>,
     indexOfSelectedCategory: Int,
     isCategoryDataEmpty: Boolean,
-    categoryTopScorers: List<ScoringPlayerUiModel>,
+    categoryTopScorers: List<ScoringPlayerDomainModel>,
     categoryLow: String,
     categoryMean: String,
     categoryRange: String,
@@ -204,83 +220,50 @@ fun StatisticsForGameScreen(
                 onCategoryClick = onCategoryClick
             )
         }
-
     }
 }
 
-/*@Composable
-fun GameStatisticsScreen(
-    gameObject: GameDataRelationModel,
-    themeColor: Color,
-    modifier: Modifier = Modifier,
-    viewModel: SingleGameViewModel = hiltViewModel()
+@Composable
+fun StatisticsForGameTopBar(
+    title: String,
+    selectedTab: SingleGameScreen,
+    onEditGameClick: () -> Unit,
+    onTabClick: (SingleGameScreen) -> Unit,
 ) {
 
-    LazyColumn(
-        contentPadding = PaddingValues(bottom = Spacing.betweenSections),
-        verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
-        modifier = modifier,
-    ) {
+    Column {
 
-        if (viewModel.matches.isNotEmpty()) {
-            item {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .padding(start = 16.dp, end = 8.dp)
+                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
+                .fillMaxWidth()
+        ) {
 
-                PlaysSection(
-                    matchCount = viewModel.matches.size.toString(),
-                    playerCount = viewModel.playerCount,
-                    modifier = Modifier
-                        .padding(horizontal = Spacing.screenEdge)
-                        .padding(top = Spacing.betweenSections)
-                )
+            Text(
+                text = title,
+                color = MaterialTheme.colors.primary,
+                style = MaterialTheme.typography.h5,
+                overflow = TextOverflow.Ellipsis,
+                maxLines = 1
+            )
 
-                Divider()
-            }
-
-            item {
-
-                WinsSection(
-                    topFiveScorers = viewModel.getTotalScoreStatistics().getHighScorers(),
-                    topFiveWinners = viewModel.winners,
-                    degreeOfTieForBestWinner = viewModel.getMostWinsTieDegree(),
-                    themeColor = themeColor,
-                    isBestWinnerExpanded = viewModel.bestWinnerIsExpanded,
-                    isHighScoreExpanded = viewModel.highScoreIsExpanded,
-                    isUniqueWinnersExpanded = viewModel.uniqueWinnersIsExpanded,
-                    onBestWinnerButtonClick = {
-                        viewModel.bestWinnerIsExpanded = !viewModel.bestWinnerIsExpanded
-                    },
-                    onHighScoreButtonClick = { viewModel.highScoreIsExpanded = !viewModel.highScoreIsExpanded },
-                    onUniqueWinnerButtonClick = {
-                        viewModel.uniqueWinnersIsExpanded = !viewModel.uniqueWinnersIsExpanded
-                    },
-                    modifier = Modifier.padding(horizontal = Spacing.screenEdge))
-
-                Divider()
-            }
-
-            item {
-
-                ScoringSection(
-                    statisticsObjects = viewModel.statisticsObjects,
-                    currentCategoryIndex = viewModel.currentCategoryIndex,
-                    themeColor = themeColor,
-                    onCategoryTap = { index -> viewModel.currentCategoryIndex = index }
-                )
-            }
-        } else {
-            item {
-
-                HelperBox(
-                    message = stringResource(R.string.helper_empty_data),
-                    type = HelperBoxType.Missing,
-                    modifier = Modifier
-                        .padding(horizontal = Spacing.screenEdge)
-                        .padding(top = Spacing.sectionContent)
-                )
-            }
+            IconButton(
+                imageVector = Icons.Rounded.Edit,
+                backgroundColor = Color.Transparent,
+                foregroundColor = MaterialTheme.colors.primary,
+                onClick = onEditGameClick
+            )
         }
+
+        SingleGameTabBar(
+            selectedTab = selectedTab,
+            onTabSelected = onTabClick
+        )
     }
-}*/
+}
 
 @Composable
 private fun PlaysSection(
@@ -288,6 +271,7 @@ private fun PlaysSection(
     playerCount: String,
     modifier: Modifier = Modifier,
 ) {
+
     Column(
         verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
         modifier = modifier.padding(bottom = Spacing.sectionContent),
@@ -318,13 +302,13 @@ private fun PlaysSection(
 @Composable
 private fun WinsSection(
     isBestWinnerExpanded: Boolean,
-    playersWithMostWins: List<WinningPlayerUiModel>,
+    playersWithMostWins: List<WinningPlayerDomainModel>,
     playersWithMostWinsOverflow: Int,
     isHighScoreExpanded: Boolean,
-    playersWithHighScore: List<ScoringPlayerUiModel>,
+    playersWithHighScore: List<ScoringPlayerDomainModel>,
     playersWithHighScoreOverflow: Int,
     isUniqueWinnersExpanded: Boolean,
-    uniqueWinners: List<WinningPlayerUiModel>,
+    uniqueWinners: List<WinningPlayerDomainModel>,
     uniqueWinnersOverflow: Int,
     onBestWinnerButtonClick: () -> Unit,
     onHighScoreButtonClick: () -> Unit,
@@ -487,7 +471,7 @@ private fun ScoringSection(
     categories: List<String>,
     indexOfSelectedCategory: Int,
     isCategoryDataEmpty: Boolean,
-    topScorers: List<ScoringPlayerUiModel>,
+    topScorers: List<ScoringPlayerDomainModel>,
     low: String,
     mean: String,
     range: String,
@@ -593,7 +577,7 @@ private fun ScoringStatisticsColumn(
     low: String,
     mean: String,
     range: String,
-    topScorers: List<ScoringPlayerUiModel>,
+    topScorers: List<ScoringPlayerDomainModel>,
     modifier: Modifier = Modifier,
 ) {
     var highSectionExpanded by rememberSaveable { mutableStateOf(false) }
@@ -708,6 +692,7 @@ fun TwoLineExpandableListItem(
             AnimatedContent(
                 targetState = expanded,
                 transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+                label = "ExpandableListItemExpand"
             ) {
                 if (it) {
 
@@ -796,6 +781,7 @@ fun SingleLineExpandableListItem(
         AnimatedContent(
             targetState = expanded,
             transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+            label = "ExpandableListItemExpand"
         ) {
             if (it) {
 
@@ -854,7 +840,14 @@ fun SingleLineListItem(
 @Composable
 fun StatisticsForGameTopBarPreview() {
     MedianMeepleTheme {
-        SingleGameDestinationTopBar(title = "Wingspan")
+        Box(Modifier.background(MaterialTheme.colors.background)) {
+            StatisticsForGameTopBar(
+                title = "Wingspan",
+                selectedTab = SingleGameScreen.StatisticsForGame,
+                onEditGameClick = {},
+                onTabClick = {},
+            )
+        }
     }
 }
 

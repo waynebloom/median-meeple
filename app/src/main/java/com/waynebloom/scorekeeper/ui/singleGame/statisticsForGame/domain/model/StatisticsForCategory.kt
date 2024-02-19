@@ -8,11 +8,11 @@ import java.math.RoundingMode
 
 class StatisticsForCategory(
     val category: CategoryUiModel,
-    data: List<ScoringPlayer>
+    data: List<ScoringPlayerDomainModel>
 ) {
 
-    val dataHighToLow: List<ScoringPlayer>
-    val topScorers: List<ScoringPlayer>
+    val dataHighToLow: List<ScoringPlayerDomainModel>
+    val topScorers: List<ScoringPlayerDomainModel>
     val low: BigDecimal
     val mean: BigDecimal
     val range: BigDecimal
