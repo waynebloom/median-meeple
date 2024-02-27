@@ -41,7 +41,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.google.android.material.color.utilities.MaterialDynamicColors.onBackground
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
@@ -55,7 +54,6 @@ import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescripti
 import com.waynebloom.scorekeeper.components.RadioButtonOption
 import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
 import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
-import com.waynebloom.scorekeeper.theme.color.deepOrange500
 
 @Composable
 fun EditGameScreen(
@@ -369,26 +367,6 @@ private fun GameDetailsSection(
     }
 }
 
-@Composable
-fun ScoringModeSelector(
-    selectedMode: ScoringMode,
-    onItemTap: (ScoringMode) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-
-    Column(modifier = modifier.fillMaxWidth()) {
-
-        ScoringMode.entries.forEach { option ->
-
-            RadioButtonOption(
-                menuOption = option,
-                isSelected = selectedMode == option,
-                onSelected = { onItemTap(it as ScoringMode) }
-            )
-        }
-    }
-}
-
 // endregion
 
 // region Categories
@@ -399,7 +377,7 @@ fun ScoringModeSelector(
     ExperimentalLayoutApi::class,
 )
 @Composable
-private fun EditCategoriesDialogContent(
+private fun EditCategoriesBottomSheetContent(
     categories: List<CategoryUiModel>,
     indexOfCategoryReceivingInput: Int?,
     onCategoryClick: (Int) -> Unit,
@@ -653,6 +631,7 @@ private fun EditCategoriesBottomSheet(
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(
+            decorFitsSystemWindows = false,
             usePlatformDefaultWidth = false,
         ),
     ) {
@@ -669,7 +648,7 @@ private fun EditCategoriesBottomSheet(
                     .clickable(onClick = onDismiss)
                     .fillMaxSize())
 
-            EditCategoriesDialogContent(
+            EditCategoriesBottomSheetContent(
                 categories,
                 indexOfCategoryReceivingInput,
                 onCategoryClick,
@@ -681,34 +660,6 @@ private fun EditCategoriesBottomSheet(
                 onDrag,
                 onDragStart,
                 onDragEnd,
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
-@Composable
-private fun ScoringCategoryList(
-    categories: List<CategoryUiModel>,
-    modifier: Modifier = Modifier,
-    onCategoryClick: (index: Int) -> Unit,
-) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
-        modifier = modifier.fillMaxWidth()
-    ) {
-
-        categories.forEachIndexed { index, category ->
-
-            Chip(
-                onClick = { onCategoryClick(index) },
-                shape = MaterialTheme.shapes.small,
-                content = { Text(text = category.name.value.text) },
-                border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(alpha = Alpha.disabled)),
-                colors = ChipDefaults.chipColors(
-                    backgroundColor = Color.Transparent,
-                    contentColor = MaterialTheme.colors.onBackground,
-                ),
             )
         }
     }

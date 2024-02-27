@@ -158,9 +158,6 @@ class EditGameViewModel @Inject constructor(
             this[index] = updatedCategory
         }
 
-        // TODO: need to figure out why this was needed. Comment your code better, loser
-        // pushUpdate(updatedCategory)
-
         it.copy(categories = updatedCategories)
     }
 
@@ -183,7 +180,6 @@ class EditGameViewModel @Inject constructor(
                 it.copy(
                     categories = updatedCategories,
                     indexOfCategoryReceivingInput = updatedCategories.lastIndex,
-                    isCategoryDialogOpen = true,
                 )
             }
         }
