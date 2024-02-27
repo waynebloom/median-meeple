@@ -2,9 +2,8 @@ package com.waynebloom.scorekeeper.ui
 
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.toTextFieldInput
-import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
-import com.waynebloom.scorekeeper.ui.model.GameUiModel
+import com.waynebloom.scorekeeper.ui.model.GameDomainModel
 
 object PreviewData {
 
@@ -24,17 +23,17 @@ object PreviewData {
     )
 
     val Games = listOf(
-        GameUiModel(
+        GameDomainModel(
             name = "Wingspan".toTextFieldInput(),
             color = "LIGHT_BLUE",
             scoringMode = ScoringMode.Descending
         ),
-        GameUiModel(
+        GameDomainModel(
             name = "Splendor".toTextFieldInput(),
             color = "YELLOW",
             scoringMode = ScoringMode.Descending
         ),
-        GameUiModel(
+        GameDomainModel(
             name = "Catan".toTextFieldInput(),
             color = "DEEP_ORANGE",
             scoringMode = ScoringMode.Descending

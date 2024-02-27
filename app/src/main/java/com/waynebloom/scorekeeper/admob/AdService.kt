@@ -7,11 +7,6 @@ import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.BuildConfig
-import com.waynebloom.scorekeeper.enums.AdmobID
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 
 class AdService(
     context: Context

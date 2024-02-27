@@ -5,4 +5,4 @@ interface GameDomainModel {
     val color: String
     val name: String
     val scoringMode: Int
-}
+} // TODO over-optimization, get rid of it

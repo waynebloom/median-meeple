@@ -9,7 +9,7 @@ import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.room.domain.repository.GameRepository
 import com.waynebloom.scorekeeper.ui.model.CategoryScoreUiModel
 import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
-import com.waynebloom.scorekeeper.ui.model.GameUiModel
+import com.waynebloom.scorekeeper.ui.model.GameDomainModel
 import com.waynebloom.scorekeeper.ui.model.MatchUiModel
 import com.waynebloom.scorekeeper.ui.model.PlayerUiModel
 import javax.inject.Inject
@@ -20,7 +20,7 @@ class GetGameWithRelations @Inject constructor(
 
     suspend operator fun invoke(id: Long) = gameRepository.getWithRelations(id).toUiModel()
 
-    private fun GameDataRelationModel.toUiModel(): GameUiModel {
+    private fun GameDataRelationModel.toUiModel(): GameDomainModel {
 
         val categoryUiModels = categories
             .map {
@@ -32,7 +32,7 @@ class GetGameWithRelations @Inject constructor(
             }
             .associateBy { it.id }
 
-        return GameUiModel(
+        return GameDomainModel(
             id = entity.id,
             categories = categoryUiModels.values.toList(),
             color = entity.color,

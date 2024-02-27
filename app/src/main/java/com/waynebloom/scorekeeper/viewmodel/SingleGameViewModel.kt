@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.DurationMs
-import com.waynebloom.scorekeeper.ui.singleGame.statisticsForGame.domain.model.StatisticsForCategory
+import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel

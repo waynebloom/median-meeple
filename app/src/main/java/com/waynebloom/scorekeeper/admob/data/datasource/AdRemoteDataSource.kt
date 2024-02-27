@@ -3,8 +3,8 @@ package com.waynebloom.scorekeeper.admob.data.datasource
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.BuildConfig
-import com.waynebloom.scorekeeper.di.wrapper.GoogleAdsWrapper
-import com.waynebloom.scorekeeper.enums.AdmobID
+import com.waynebloom.scorekeeper.dagger.wrapper.GoogleAdsWrapper
+import com.waynebloom.scorekeeper.admob.AdmobID
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton

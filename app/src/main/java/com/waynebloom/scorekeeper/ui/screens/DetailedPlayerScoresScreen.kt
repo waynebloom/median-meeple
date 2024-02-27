@@ -42,8 +42,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.ui.components.HelperBox
-import com.waynebloom.scorekeeper.ui.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
@@ -55,7 +55,7 @@ import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
-import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModel
 import com.waynebloom.scorekeeper.viewmodel.DetailedPlayerScoresViewModelFactory
 
