@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.waynebloom.scorekeeper.enums.MenuOption
 
@@ -18,7 +19,8 @@ import com.waynebloom.scorekeeper.enums.MenuOption
 fun RadioButtonOption(
     menuOption: MenuOption,
     isSelected: Boolean,
-    onSelected: (MenuOption) -> Unit
+    onSelected: (MenuOption) -> Unit,
+    unselectedColor: Color = MaterialTheme.colors.onSurface,
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -31,10 +33,14 @@ fun RadioButtonOption(
             selected = isSelected,
             onClick = { onSelected(menuOption) },
             colors = RadioButtonDefaults.colors(
-                selectedColor = MaterialTheme.colors.primary
+                selectedColor = MaterialTheme.colors.primary,
+                unselectedColor = unselectedColor
             )
         )
 
-        Text(text = stringResource(menuOption.label))
+        Text(
+            text = stringResource(menuOption.label),
+            color = unselectedColor
+        )
     }
 }

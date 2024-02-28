@@ -28,7 +28,10 @@ fun MatchesForGameRoute(
                 navController.navigate("${Destination.EditGame.route}/${viewModel.gameId}")
             },
             onStatisticsTabClick = {
-                navController.navigate("${Destination.StatisticsForGame.route}/${viewModel.gameId}")
+                val route = "${Destination.StatisticsForGame.route}/${viewModel.gameId}"
+                if (!navController.popBackStack(route = route, inclusive = false)) {
+                    navController.navigate(route)
+                }
             },
             onSortButtonClick = viewModel::onSortButtonClick,
             onMatchClick = {

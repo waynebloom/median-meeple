@@ -55,8 +55,8 @@ fun HelperBox(
             .border(
                 width = 1.dp,
                 color = borderColor,
-                shape = MaterialTheme.shapes.small)
-            .clip(MaterialTheme.shapes.small)
+                shape = MaterialTheme.shapes.medium)
+            .clip(MaterialTheme.shapes.medium)
             .background(color = backgroundColor)
             .fillMaxWidth()
     ) {

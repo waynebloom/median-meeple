@@ -26,7 +26,10 @@ fun StatisticsForGameRoute(
                 navController.navigate("${Destination.EditGame.route}/${viewModel.gameId}")
             },
             onMatchesTabClick = {
-                navController.navigate("${Destination.MatchesForGame.route}/${viewModel.gameId}")
+                val route = "${Destination.MatchesForGame.route}/${viewModel.gameId}"
+                if (!navController.popBackStack(route = route, inclusive = false)) {
+                    navController.navigate(route)
+                }
             },
             onBestWinnerButtonClick = viewModel::onBestWinnerButtonClick,
             onHighScoreButtonClick = viewModel::onHighScoreButtonClick,
