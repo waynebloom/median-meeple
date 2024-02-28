@@ -1,5 +1,8 @@
 package com.waynebloom.scorekeeper.room.domain.model
 
-interface CategoryScoreDomainModel {
-    val value: String
-}
+import java.math.BigDecimal
+
+data class CategoryScoreDomainModel(
+    val category: CategoryDomainModel,
+    val score: BigDecimal
+)

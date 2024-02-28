@@ -6,7 +6,6 @@ import com.waynebloom.scorekeeper.MatchObjectsDefaultPreview
 object OverviewSampleData {
     val UiState = OverviewUiState(
         games = GameObjectsDefaultPreview,
-        loading = false,
         matches = MatchObjectsDefaultPreview,
     )
 }

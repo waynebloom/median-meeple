@@ -145,7 +145,7 @@ class EditPlayerScoreViewModel(
     }
 
     @OptIn(ExperimentalComposeUiApi::class)
-    fun onSaveTap(keyboardController: SoftwareKeyboardController?) {
+    fun onSaveClick(keyboardController: SoftwareKeyboardController?) {
         prepareSubscoreEntitiesForCommit()
 
         if (!saveWasTapped) {

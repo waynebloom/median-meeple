@@ -30,35 +30,33 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun OverviewScreen(
-        uiState: OverviewUiState,
-        onAddGameClick: () -> Unit,
-        onGoToLibraryClick: () -> Unit,
-        onGameClick: (Long) -> Unit,
-        onMatchClick: (Long) -> Unit,
+    uiState: OverviewUiState,
+    onAddGameClick: () -> Unit,
+    onGoToLibraryClick: () -> Unit,
+    onGameClick: (Long) -> Unit,
+    onMatchClick: (Long) -> Unit,
 ) {
 
     OverviewScreen(
+        games = uiState.games,
+        matches = uiState.matches,
         ad = uiState.ad,
-        games = uiState.displayedGames,
-        loading = uiState.loading,
-        matches = uiState.displayedMatches,
-        onAddGameTap = onAddGameClick,
-        onGoToLibraryTap = onGoToLibraryClick,
-        onGameTap = onGameClick,
-        onMatchTap = onMatchClick
+        onAddGameClick = onAddGameClick,
+        onGoToLibraryClick = onGoToLibraryClick,
+        onGameClick = onGameClick,
+        onMatchClick = onMatchClick
     )
 }
 
 @Composable
 fun OverviewScreen(
-    ad: NativeAd?,
     games: List<GameDataRelationModel>,
-    loading: Boolean,
     matches: List<MatchDataRelationModel>,
-    onGoToLibraryTap: () -> Unit,
-    onAddGameTap: () -> Unit,
-    onGameTap: (Long) -> Unit,
-    onMatchTap: (Long) -> Unit,
+    ad: NativeAd?,
+    onGoToLibraryClick: () -> Unit,
+    onAddGameClick: () -> Unit,
+    onGameClick: (Long) -> Unit,
+    onMatchClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -68,36 +66,32 @@ fun OverviewScreen(
         }
     ) { contentPadding ->
 
-        if (loading) {
-            Loading()
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(
-                    horizontal = Spacing.screenEdge,
-                    vertical = Spacing.sectionContent),
-                verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
-                modifier = modifier.padding(contentPadding)
-            ) {
+        LazyColumn(
+            contentPadding = PaddingValues(
+                horizontal = Spacing.screenEdge,
+                vertical = Spacing.sectionContent),
+            verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+            modifier = modifier.padding(contentPadding)
+        ) {
 
-                item {
+            item {
 
-                    GamesSection(
-                        ad = ad,
-                        games = games,
-                        onAddNewGameTap = onAddGameTap,
-                        onSeeAllGamesTap = onGoToLibraryTap,
-                        onSingleGameTap = onGameTap,
-                    )
-                }
+                GamesSection(
+                    ad = ad,
+                    games = games,
+                    onAddNewGameClick = onAddGameClick,
+                    onSeeAllGamesClick = onGoToLibraryClick,
+                    onSingleGameClick = onGameClick,
+                )
+            }
 
-                item {
+            item {
 
-                    MatchesSection(
-                        matches = matches,
-                        games = games,
-                        onSingleMatchTap = onMatchTap
-                    )
-                }
+                MatchesSection(
+                    matches = matches,
+                    games = games,
+                    onSingleMatchClick = onMatchClick
+                )
             }
         }
     }
@@ -108,17 +102,17 @@ fun OverviewScreen(
 private fun GamesSection(
     ad: NativeAd?,
     games: List<GameDataRelationModel>,
-    onAddNewGameTap: () -> Unit,
-    onSeeAllGamesTap: () -> Unit,
-    onSingleGameTap: (Long) -> Unit,
+    onAddNewGameClick: () -> Unit,
+    onSeeAllGamesClick: () -> Unit,
+    onSingleGameClick: (Long) -> Unit,
 ) {
 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
         GamesHeader(
             games = games,
-            onAddNewGameTap = onAddNewGameTap,
-            onSeeAllGamesTap = onSeeAllGamesTap
+            onAddNewGameClick = onAddNewGameClick,
+            onSeeAllGamesClick = onSeeAllGamesClick
         )
 
         if (games.isEmpty()) {
@@ -128,7 +122,7 @@ private fun GamesSection(
             )
         } else TopGames(
             games = games,
-            onSingleGameTap = onSingleGameTap
+            onSingleGameClick = onSingleGameClick
         )
 
         AdCard(ad = ad)
@@ -138,8 +132,8 @@ private fun GamesSection(
 @Composable
 private fun GamesHeader(
     games: List<GameDataRelationModel>,
-    onAddNewGameTap: () -> Unit,
-    onSeeAllGamesTap: () -> Unit,
+    onAddNewGameClick: () -> Unit,
+    onSeeAllGamesClick: () -> Unit,
 ) {
 
     Row(
@@ -160,13 +154,13 @@ private fun GamesHeader(
                 backgroundColor = Color.Transparent,
                 foregroundColor = MaterialTheme.colors.primary,
                 endText = "Library",
-                onClick = onSeeAllGamesTap
+                onClick = onSeeAllGamesClick
             )
         } else {
             IconButton(
                 imageVector = Icons.Rounded.Add,
                 foregroundColor = MaterialTheme.colors.primary,
-                onClick = onAddNewGameTap,
+                onClick = onAddNewGameClick,
             )
         }
     }
@@ -176,7 +170,7 @@ private fun GamesHeader(
 private fun MatchesSection(
     matches: List<MatchDataRelationModel>,
     games: List<GameDataRelationModel>,
-    onSingleMatchTap: (Long) -> Unit,
+    onSingleMatchClick: (Long) -> Unit,
 ) {
 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
@@ -191,7 +185,7 @@ private fun MatchesSection(
             RecentMatches(
                 matches = matches,
                 games = games,
-                onSingleMatchTap = onSingleMatchTap)
+                onSingleMatchClick = onSingleMatchClick)
         } else {
             HelperBox(
                 message = stringResource(R.string.text_empty_matches),
@@ -227,7 +221,10 @@ fun OverviewTopBar(title: String) {
 }
 
 @Composable
-fun TopGames(games: List<GameDataRelationModel>, onSingleGameTap: (Long) -> Unit) {
+fun TopGames(
+    games: List<GameDataRelationModel>,
+    onSingleGameClick: (Long) -> Unit
+) {
 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
@@ -242,7 +239,7 @@ fun TopGames(games: List<GameDataRelationModel>, onSingleGameTap: (Long) -> Unit
         gameRows.forEach { gameRow ->
             GamesHeadRow(
                 games = gameRow,
-                onSingleGameTap = onSingleGameTap
+                onSingleGameClick = onSingleGameClick
             )
         }
     }
@@ -251,7 +248,7 @@ fun TopGames(games: List<GameDataRelationModel>, onSingleGameTap: (Long) -> Unit
 @Composable
 fun GamesHeadRow(
     games: List<GameDataRelationModel>,
-    onSingleGameTap: (Long) -> Unit,
+    onSingleGameClick: (Long) -> Unit,
 ) {
     Row(
         horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
@@ -261,7 +258,7 @@ fun GamesHeadRow(
             GameListItem(
                 name = game.entity.name,
                 color = LocalCustomThemeColors.current.getColorByKey(game.entity.color),
-                onClick = { onSingleGameTap(game.entity.id) },
+                onClick = { onSingleGameClick(game.entity.id) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -272,7 +269,7 @@ fun GamesHeadRow(
 fun RecentMatches(
     matches: List<MatchDataRelationModel>,
     games: List<GameDataRelationModel>,
-    onSingleMatchTap: (Long) -> Unit
+    onSingleMatchClick: (Long) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
@@ -285,7 +282,7 @@ fun RecentMatches(
             MatchListItem(
                 gameEntity = parentGame,
                 match = match,
-                onSingleMatchTap = onSingleMatchTap
+                onSingleMatchClick = onSingleMatchClick
             )
         }
     }

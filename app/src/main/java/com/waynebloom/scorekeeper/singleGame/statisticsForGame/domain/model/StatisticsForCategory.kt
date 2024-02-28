@@ -1,13 +1,13 @@
 package com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model
 
 import com.waynebloom.scorekeeper.constants.Constants
-import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.StatisticsForGameConstants
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 class StatisticsForCategory(
-    val category: CategoryUiModel,
+    val category: CategoryDomainModel,
     data: List<ScoringPlayerDomainModel>
 ) {
 

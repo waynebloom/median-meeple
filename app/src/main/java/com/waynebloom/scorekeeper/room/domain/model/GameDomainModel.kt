@@ -1,8 +1,14 @@
 package com.waynebloom.scorekeeper.room.domain.model
 
-interface GameDomainModel {
-    val id: Long
-    val color: String
-    val name: String
-    val scoringMode: Int
-} // TODO over-optimization, get rid of it
+import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
+
+
+data class GameDomainModel(
+    val id: Long = 0,
+    val categories: List<CategoryDomainModel> = listOf(),
+    val color: String,
+    val matches: List<MatchDomainModel> = listOf(),
+    val name: TextFieldInput, // TODO: make this a string again, do the same for any other ui models
+    val scoringMode: ScoringMode
+)

@@ -8,7 +8,6 @@ import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import java.math.BigDecimal
 
 @Entity(
@@ -30,16 +29,16 @@ data class PlayerDataModel(
     @ColumnInfo(name = "match_id")
     var matchId: Long = 0,
 
-    override var name: String = "",
+    var name: String = "",
 
-    override var position: Int = 0,
+    var position: Int = 0,
 
     @ColumnInfo(name = "score")
-    override var totalScore: String = "0",
+    var totalScore: String = "0",
 
     @ColumnInfo(name = "show_detailed_score")
-    override var showDetailedScore: Boolean = false
-): PlayerDomainModel
+    var showDetailedScore: Boolean = false
+)
 
 class PlayerDataRelationModel(
     @Embedded

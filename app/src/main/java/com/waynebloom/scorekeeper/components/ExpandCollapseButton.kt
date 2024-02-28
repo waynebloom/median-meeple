@@ -30,7 +30,7 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 fun ExpandCollapseButton(
     text: String?,
     expanded: Boolean,
-    onTap: () -> Unit,
+    onClick: () -> Unit,
 ) {
 
     Box(
@@ -41,7 +41,7 @@ fun ExpandCollapseButton(
                 minHeight = Dimensions.Size.minTappableSize)
             .clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colors.surface)
-            .clickable { onTap() }
+            .clickable { onClick() }
     ) {
 
         AnimatedContent(

@@ -104,7 +104,7 @@ fun MedianMeepleApp(
                 SingleMatchScreen(
                     game = deprecatedViewModel.gameCache.dataObject,
                     match = deprecatedViewModel.matchCache.dataObject,
-                    onAddPlayerTap = {
+                    onAddPlayerClick = {
                         with(deprecatedViewModel) {
                             executeDbOperation {
                                 insertNewEmptyPlayer()
@@ -112,7 +112,7 @@ fun MedianMeepleApp(
                         }
                         navController.navigate(TopLevelScreen.EditPlayerScore.name)
                     },
-                    onDeleteMatchTap = { matchId ->
+                    onDeleteMatchClick = { matchId ->
                         val popSuccess = navController.popBackStack(
                             route = TopLevelScreen.SingleGame.name,
                             inclusive = true
@@ -128,14 +128,14 @@ fun MedianMeepleApp(
                         Toast.makeText(context, R.string.toast_match_deleted, Toast.LENGTH_SHORT)
                             .show()
                     },
-                    onPlayerTap = { playerId ->
+                    onPlayerClick = { playerId ->
                         deprecatedViewModel.updatePlayerCacheById(
                             id = playerId,
                             players = deprecatedViewModel.matchCache.dataObject.players
                         )
                         navController.navigate(TopLevelScreen.EditPlayerScore.name)
                     },
-                    onViewDetailedScoresTap = {
+                    onViewDetailedScoresClick = {
                         navController.navigate(TopLevelScreen.DetailedPlayerScores.name)
                     },
                     saveMatch = { updatedMatch ->
@@ -164,7 +164,7 @@ fun MedianMeepleApp(
                     players = deprecatedViewModel.matchCache.dataObject.players,
                     subscoreTitles = deprecatedViewModel.gameCache.dataObject.categories,
                     themeColor = LocalCustomThemeColors.current.getColorByKey(deprecatedViewModel.gameCache.dataObject.entity.color),
-                    onExistingPlayerTap = { playerId ->
+                    onExistingPlayerClick = { playerId ->
                         deprecatedViewModel.updatePlayerCacheById(
                             id = playerId,
                             players = deprecatedViewModel.matchCache.dataObject.players
@@ -187,7 +187,7 @@ fun MedianMeepleApp(
                     categories = deprecatedViewModel.gameCache.dataObject.categories,
                     isGameManualRanked = deprecatedViewModel.gameCache.dataObject.getScoringMode() == ScoringMode.Manual,
                     themeColor = LocalCustomThemeColors.current.getColorByKey(deprecatedViewModel.gameCache.dataObject.entity.color),
-                    onSaveTap = { playerBundle, subscoreBundles ->
+                    onSaveClick = { playerBundle, subscoreBundles ->
                         with(deprecatedViewModel) {
                             executeDbOperation {
                                 commitPlayerBundle(playerBundle)
@@ -196,7 +196,7 @@ fun MedianMeepleApp(
                         }
                         navController.popBackStack()
                     },
-                    onDeleteTap = { playerId ->
+                    onDeleteClick = { playerId ->
                         with(deprecatedViewModel) {
                             executeDbOperation {
                                 deletePlayerById(playerId)
@@ -234,18 +234,18 @@ fun MedianMeepleApp(
                     games = allGames,
                     allMatches = allMatches,
                     ad = currentAd,
-                    onAddGameTap = {
+                    onAddGameClick = {
                         viewModel.executeDbOperation {
                             viewModel.insertNewEmptyGame()
                         }
                         navController.navigate(TopLevelScreen.EditGame.name)
                     },
-                    onGoToLibraryTap = { navController.navigate(TopLevelScreen.Games.name) },
-                    onGameTap = { gameId ->
+                    onGoToLibraryClick = { navController.navigate(TopLevelScreen.Games.name) },
+                    onGameClick = { gameId ->
                         viewModel.updateGameCacheById(id = gameId, games = allGames)
                         navController.navigate(TopLevelScreen.SingleGame.name)
                     },
-                    onMatchTap = { matchId ->
+                    onMatchClick = { matchId ->
                         with(viewModel) {
                             updateMatchCacheById(id = matchId, matches = allMatches)
                             updateGameCacheById(
@@ -275,13 +275,13 @@ fun MedianMeepleApp(
                 LibraryScreen(
                     games = allGames.map { it.entity },
                     currentAd = currentAd,
-                    onAddNewGameTap = {
+                    onAddNewGameClick = {
                         viewModel.executeDbOperation {
                             viewModel.insertNewEmptyGame()
                         }
                         navController.navigate(TopLevelScreen.EditGame.name)
                     },
-                    onSingleGameTap = { gameId ->
+                    onSingleGameClick = { gameId ->
                         viewModel.updateGameCacheById(id = gameId, games = allGames)
                         navController.navigate(TopLevelScreen.SingleGame.name)
                     }
@@ -299,10 +299,10 @@ fun MedianMeepleApp(
             SingleGameScreen(
                 gameObject = viewModel.gameCache.dataObject,
                 currentAd = currentAd,
-                onEditGameTap = {
+                onEditGameClick = {
                     navController.navigate("${TopLevelScreen.EditGame.name}/$gameId")
                 },
-                onNewMatchTap = {
+                onNewMatchClick = {
                     with(viewModel) {
                         executeDbOperation {
                             insertNewEmptyMatch()
@@ -310,7 +310,7 @@ fun MedianMeepleApp(
                     }
                     navController.navigate(TopLevelScreen.SingleMatch.name)
                 },
-                onSingleMatchTap = { matchId ->
+                onSingleMatchClick = { matchId ->
                     viewModel.updateMatchCacheById(
                         id = matchId,
                         matches = viewModel.gameCache.dataObject.matches
@@ -335,7 +335,7 @@ fun MedianMeepleApp(
                         Toast.makeText(context, R.string.toast_game_updated, Toast.LENGTH_SHORT)
                             .show()
                     },
-                    onDeleteTap = { gameId ->
+                    onDeleteClick = { gameId ->
                         navController.popBackStack(
                             route = TopLevelScreen.Overview.name,
                             inclusive = false

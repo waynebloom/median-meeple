@@ -6,25 +6,25 @@ import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.room.domain.repository.GameRepository
-import com.waynebloom.scorekeeper.ui.model.CategoryScoreUiModel
-import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
-import com.waynebloom.scorekeeper.ui.model.GameDomainModel
-import com.waynebloom.scorekeeper.ui.model.MatchUiModel
-import com.waynebloom.scorekeeper.ui.model.PlayerUiModel
 import javax.inject.Inject
 
 class GetGameWithRelations @Inject constructor(
     private val gameRepository: GameRepository
 ) {
 
-    suspend operator fun invoke(id: Long) = gameRepository.getWithRelations(id).toUiModel()
+    suspend operator fun invoke(id: Long) = gameRepository.getOneWithRelations(id).toDomainModel()
 
-    private fun GameDataRelationModel.toUiModel(): GameDomainModel {
+    private fun GameDataRelationModel.toDomainModel(): GameDomainModel {
 
-        val categoryUiModels = categories
+        val categoryDomainModels = categories
             .map {
-                CategoryUiModel(
+                CategoryDomainModel(
                     id = it.id,
                     name = it.name.toTextFieldInput(),
                     position = it.position
@@ -34,36 +34,36 @@ class GetGameWithRelations @Inject constructor(
 
         return GameDomainModel(
             id = entity.id,
-            categories = categoryUiModels.values.toList(),
+            categories = categoryDomainModels.values.toList(),
             color = entity.color,
-            matches = matches.map { it.toUiModel(categoryUiModels) },
+            matches = matches.map { it.toDomainModel(categoryDomainModels) },
             name = entity.name.toTextFieldInput(),
             scoringMode = entity.scoringMode.toScoringMode()
         )
     }
 
-    private fun MatchDataRelationModel.toUiModel(
-        categories: Map<Long, CategoryUiModel>
-    ) = MatchUiModel(
+    private fun MatchDataRelationModel.toDomainModel(
+        categories: Map<Long, CategoryDomainModel>
+    ) = MatchDomainModel(
         id = entity.id,
         notes = entity.notes.toTextFieldInput(),
-        players = players.map { it.toUiModel(categories) }
+        players = players.map { it.toDomainModel(categories) }
     )
 
-    private fun PlayerDataRelationModel.toUiModel(
-        categories: Map<Long, CategoryUiModel>
-    ) = PlayerUiModel(
+    private fun PlayerDataRelationModel.toDomainModel(
+        categories: Map<Long, CategoryDomainModel>
+    ) = PlayerDomainModel(
         id = entity.id,
-        categoryScores = score.map { it.toUiModel(categories) },
+        categoryScores = score.map { it.toDomainModel(categories) },
         name = entity.name.toTextFieldInput(),
         position = entity.position,
         showDetailedScore = entity.showDetailedScore,
         totalScore = entity.totalScore.toBigDecimal()
     )
 
-    private fun CategoryScoreDataModel.toUiModel(
-        categories: Map<Long, CategoryUiModel>
-    ) = CategoryScoreUiModel(
+    private fun CategoryScoreDataModel.toDomainModel(
+        categories: Map<Long, CategoryDomainModel>
+    ) = CategoryScoreDomainModel(
         category = categories.getValue(categoryId),
         score = value.toBigDecimal()
     )

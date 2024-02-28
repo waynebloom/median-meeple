@@ -29,7 +29,7 @@ class AdRepository @Inject constructor(
         }
     }
 
-    fun observeAd() = adRemoteDataSource.adFlow
+    fun getAdAsFlow() = adRemoteDataSource.adFlow
 
     private fun launchAdLoader() = coroutineScope.launch {
         while (true) {

@@ -69,7 +69,7 @@ fun DetailedPlayerScoresScreen(
     players: List<PlayerDataRelationModel>,
     subscoreTitles: List<CategoryDataModel>,
     themeColor: Color = MaterialTheme.colors.primary,
-    onExistingPlayerTap: (Long) -> Unit,
+    onExistingPlayerClick: (Long) -> Unit,
 ) {
     val viewModel = viewModel<DetailedPlayerScoresViewModel>(
         key = TopLevelScreen.DetailedPlayerScores.name,
@@ -148,7 +148,7 @@ fun DetailedPlayerScoresScreen(
                                 isFirstSubscoreDisplayed = isFirstSubscoreDisplayed,
                                 playerIdentifierScreenPortion = playerIdentifierWeight,
                                 scoresScreenPortion = subscoresSectionWeight,
-                                onPlayerTap = { onExistingPlayerTap(player.entity.id) },
+                                onPlayerClick = { onExistingPlayerClick(player.entity.id) },
                                 getScoreString = { viewModel.getScoreToDisplay(it) }
                             )
                         }
@@ -179,7 +179,7 @@ fun DetailedPlayerScoresScreen(
                                 playerEntity = player.entity,
                                 playerTotalScoreString = viewModel.getScoreToDisplay(player.entity.totalScore),
                                 themeColor = themeColor,
-                                onPlayerTap = { onExistingPlayerTap(player.entity.id) }
+                                onPlayerClick = { onExistingPlayerClick(player.entity.id) }
                             )
                         }
                     }
@@ -192,12 +192,12 @@ fun DetailedPlayerScoresScreen(
         activePageNumber = viewModel.activePage + 1,
         totalPages = subscoreIndicesForPageMatrix.size,
         themeColor = themeColor,
-        onPageUpTap = {
+        onPageUpClick = {
             if (subscoreIndicesForPageMatrix.size - 1 > viewModel.activePage) {
                 viewModel.activePage += 1
             }
         },
-        onPageDownTap = { if (viewModel.activePage >= 1) viewModel.activePage -= 1 },
+        onPageDownClick = { if (viewModel.activePage >= 1) viewModel.activePage -= 1 },
     )
 }
 
@@ -208,7 +208,7 @@ fun DetailedPlayerCard(
     isFirstSubscoreDisplayed: Boolean,
     playerIdentifierScreenPortion: Float,
     scoresScreenPortion: Float,
-    onPlayerTap: () -> Unit,
+    onPlayerClick: () -> Unit,
     getScoreString: (String) -> String,
     modifier: Modifier = Modifier
 ) {
@@ -217,7 +217,7 @@ fun DetailedPlayerCard(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = Dimensions.Size.minTappableSize)
-            .clickable { onPlayerTap() }
+            .clickable { onPlayerClick() }
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -265,13 +265,13 @@ fun SimplePlayerCard(
     playerEntity: PlayerDataModel,
     playerTotalScoreString: String,
     themeColor: Color,
-    onPlayerTap: (Long) -> Unit
+    onPlayerClick: (Long) -> Unit
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onPlayerTap(playerEntity.id) },
+            .clickable { onPlayerClick(playerEntity.id) },
     ) {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -374,8 +374,8 @@ fun EditScoresPageActions(
     activePageNumber: Int,
     totalPages: Int,
     themeColor: Color,
-    onPageUpTap: () -> Unit,
-    onPageDownTap: () -> Unit
+    onPageUpClick: () -> Unit,
+    onPageDownClick: () -> Unit
 ) {
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -397,7 +397,7 @@ fun EditScoresPageActions(
                 .fillMaxWidth(Alpha.disabled)
         ) {
             Button(
-                onClick = { onPageDownTap() },
+                onClick = { onPageDownClick() },
                 elevation = ButtonDefaults.elevation(
                     defaultElevation = 0.dp,
                     pressedElevation = 0.dp
@@ -422,7 +422,7 @@ fun EditScoresPageActions(
             )
 
             Button(
-                onClick = { onPageUpTap() },
+                onClick = { onPageUpClick() },
                 elevation = ButtonDefaults.elevation(
                     defaultElevation = 0.dp,
                     pressedElevation = 0.dp
@@ -454,7 +454,7 @@ fun EditScoresScreenPreview() {
                 }
             ),
             subscoreTitles = CategoryEntitiesDefaultPreview,
-            onExistingPlayerTap = {},
+            onExistingPlayerClick = {},
         )
     }
 }

@@ -5,6 +5,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MatchRepository {
@@ -19,4 +20,8 @@ interface MatchRepository {
     @Transaction
     @Query("SELECT * FROM `match`")
     suspend fun getAll(): List<MatchDataRelationModel>
+
+    @Transaction
+    @Query("SELECT * FROM `match`")
+    fun getAllAsFlow(): Flow<List<MatchDataRelationModel>>
 }

@@ -38,7 +38,7 @@ class SingleMatchViewModel(
         } else DatabaseAction.NO_ACTION
     )
 
-    fun onAddPlayerTap(playerCount: Int) {
+    fun onAddPlayerClick(playerCount: Int) {
         if (playerCount < Constants.maximumPlayersInMatch)
             addPlayerCallback()
         else showMaximumPlayersError = !showMaximumPlayersError
@@ -50,7 +50,7 @@ class SingleMatchViewModel(
     }
 
     @OptIn(ExperimentalComposeUiApi::class)
-    fun onSaveTap(keyboardController: SoftwareKeyboardController?, focusManager: FocusManager) {
+    fun onSaveClick(keyboardController: SoftwareKeyboardController?, focusManager: FocusManager) {
         if (!saveWasTapped) {
             saveWasTapped = true
             keyboardController?.hide()

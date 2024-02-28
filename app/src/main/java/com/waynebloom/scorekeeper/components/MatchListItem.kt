@@ -34,12 +34,12 @@ import com.waynebloom.scorekeeper.ext.convertToShortFormatScore
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.toShortFormatString
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.ui.model.MatchUiModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun MatchListItem(
-    match: MatchUiModel,
+    match: MatchDomainModel,
     scoringMode: ScoringMode,
     onClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
@@ -77,7 +77,7 @@ fun MatchListItem(
 fun MatchListItem(
     gameEntity: GameDataModel,
     match: MatchDataRelationModel,
-    onSingleMatchTap: (Long) -> Unit,
+    onSingleMatchClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
     showGameIdentifier: Boolean = true
 ) {
@@ -88,7 +88,7 @@ fun MatchListItem(
 
     Surface(
         shape = MaterialTheme.shapes.large,
-        onClick = { onSingleMatchTap(match.entity.id) },
+        onClick = { onSingleMatchClick(match.entity.id) },
         modifier = modifier
     ) {
         Row(
@@ -282,7 +282,7 @@ fun ScoreCardPreview() {
             match = MatchDataRelationModel(
                 players = PlayerEntitiesDefaultPreview.map { PlayerDataRelationModel(entity = it) }
             ),
-            onSingleMatchTap = {}
+            onSingleMatchClick = {}
         )
     }
 }
@@ -294,7 +294,7 @@ fun EmptyScoreCardPreview() {
         MatchListItem(
             gameEntity = GameDataModel(name = "WWWW"),
             match = MatchDataRelationModel(),
-            onSingleMatchTap = {}
+            onSingleMatchClick = {}
         )
     }
 }

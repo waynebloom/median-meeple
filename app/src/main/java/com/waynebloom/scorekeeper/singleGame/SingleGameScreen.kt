@@ -143,9 +143,9 @@ fun SingleGameBottomNavigation(
 fun SingleGameScreen(
     gameObject: GameDataRelationModel,
     currentAd: NativeAd?,
-    onEditGameTap: () -> Unit,
-    onNewMatchTap: () -> Unit,
-    onSingleMatchTap: (Long) -> Unit,
+    onEditGameClick: () -> Unit,
+    onNewMatchClick: () -> Unit,
+    onSingleMatchClick: (Long) -> Unit,
     viewModel: SingleGameViewModel = hiltViewModel(),
 ) {
     val viewModel = viewModel<SingleGameViewModel>(
@@ -174,8 +174,8 @@ fun SingleGameScreen(
                     state = viewModel.matchesTopBarState,
                     title = viewModel.screenTitle,
                     themeColor = themeColor,
-                    onClearFiltersTap = { viewModel.clearFilters() },
-                    onEditGameTap = onEditGameTap,
+                    onClearFiltersClick = { viewModel.clearFilters() },
+                    onEditGameClick = onEditGameClick,
                     onSearchBarFocusChanged = { viewModel.isSearchBarFocused = it },
                     onSearchStringChanged = { viewModel.onSearchStringChanged(it, coroutineScope) },
                     onSortDirectionChanged = { viewModel.onSortDirectionChanged(it, coroutineScope) },
@@ -188,7 +188,7 @@ fun SingleGameScreen(
                     selectedTab = viewModel.selectedTab,
                     title = viewModel.screenTitle,
                     themeColor = themeColor,
-                    onEditGameTap = onEditGameTap,
+                    onEditGameClick = onEditGameClick,
                     onTabSelected = { viewModel.selectedTab = it },
                 )
             }
@@ -204,8 +204,8 @@ fun SingleGameScreen(
                 matches = viewModel.matchesToDisplay,
                 searchString = viewModel.searchString,
                 themeColor = themeColor,
-                onNewMatchTap = onNewMatchTap,
-                onSingleMatchTap = onSingleMatchTap,
+                onNewMatchClick = onNewMatchClick,
+                onSingleMatchClick = onSingleMatchClick,
                 modifier = Modifier.padding(innerPadding),
             )
         } else {
@@ -226,7 +226,7 @@ fun GameStatisticsTopBar(
     onTabSelected: (SingleGameScreen) -> Unit,
     title: String,
     themeColor: Color,
-    onEditGameTap: () -> Unit
+    onEditGameClick: () -> Unit
 ) {
 
     Column {
@@ -252,7 +252,7 @@ fun GameStatisticsTopBar(
                 imageVector = Icons.Rounded.Edit,
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onClick = { onEditGameTap() }
+                onClick = { onEditGameClick() }
             )
         }
 
@@ -275,8 +275,8 @@ fun MatchesForSingleGameTopBar(
     state: MatchesForSingleGameTopBarState,
     themeColor: Color,
     title: String,
-    onClearFiltersTap: () -> Unit,
-    onEditGameTap: () -> Unit,
+    onClearFiltersClick: () -> Unit,
+    onEditGameClick: () -> Unit,
     onSearchBarFocusChanged: (Boolean) -> Unit,
     onSearchStringChanged: (String) -> Unit,
     onSortDirectionChanged: (SortDirection) -> Unit,
@@ -318,9 +318,9 @@ fun MatchesForSingleGameTopBar(
                         MatchesForSingleGameDefaultActionBar(
                             title = title,
                             themeColor = themeColor,
-                            onEditGameTap = onEditGameTap,
-                            onSortTap = { onStateChanged(MatchesForSingleGameTopBarState.SortMenuOpen) },
-                            onOpenSearchTap = { onStateChanged(MatchesForSingleGameTopBarState.SearchBarOpen) }
+                            onEditGameClick = onEditGameClick,
+                            onSortClick = { onStateChanged(MatchesForSingleGameTopBarState.SortMenuOpen) },
+                            onOpenSearchClick = { onStateChanged(MatchesForSingleGameTopBarState.SearchBarOpen) }
                         )
                     }
                     MatchesForSingleGameTopBarState.SearchBarOpen -> {
@@ -328,10 +328,10 @@ fun MatchesForSingleGameTopBar(
                             isSearchBarFocused = isSearchBarFocused,
                             searchString = searchString,
                             themeColor = themeColor,
-                            onClearFiltersTap = onClearFiltersTap,
+                            onClearFiltersClick = onClearFiltersClick,
                             onSearchBarFocusChanged = onSearchBarFocusChanged,
                             onSearchStringChanged = onSearchStringChanged,
-                            onCloseTap = {
+                            onCloseClick = {
                                 onStateChanged(MatchesForSingleGameTopBarState.Default)
                                 focusManager.clearFocus()
                                 keyboardController?.hide()
@@ -345,7 +345,7 @@ fun MatchesForSingleGameTopBar(
                             sortMode = sortingMode,
                             onSortDirectionChanged = onSortDirectionChanged,
                             onSortModeChanged = onSortModeChanged,
-                            onCloseTap = { onStateChanged(MatchesForSingleGameTopBarState.Default) }
+                            onCloseClick = { onStateChanged(MatchesForSingleGameTopBarState.Default) }
                         )
                     }
                 }
@@ -364,9 +364,9 @@ fun MatchesForSingleGameTopBar(
 fun MatchesForSingleGameDefaultActionBar(
     themeColor: Color,
     title: String,
-    onOpenSearchTap: () -> Unit,
-    onSortTap: () -> Unit,
-    onEditGameTap: () -> Unit,
+    onOpenSearchClick: () -> Unit,
+    onSortClick: () -> Unit,
+    onEditGameClick: () -> Unit,
 ) {
 
     Row(
@@ -391,21 +391,21 @@ fun MatchesForSingleGameDefaultActionBar(
                 imageVector = Icons.Rounded.Search,
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onClick = { onOpenSearchTap() }
+                onClick = { onOpenSearchClick() }
             )
 
             CustomIconButton(
                 painter = painterResource(id = R.drawable.ic_sort),
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onClick = { onSortTap() }
+                onClick = { onSortClick() }
             )
 
             CustomIconButton(
                 imageVector = Icons.Rounded.Edit,
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onClick = { onEditGameTap() }
+                onClick = { onEditGameClick() }
             )
         }
     }
@@ -418,7 +418,7 @@ fun MatchesForSingleGameSortMenuActionBar(
     sortMode: MatchSortMode,
     onSortDirectionChanged: (SortDirection) -> Unit,
     onSortModeChanged: (MatchSortMode) -> Unit,
-    onCloseTap: () -> Unit
+    onCloseClick: () -> Unit
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -440,7 +440,7 @@ fun MatchesForSingleGameSortMenuActionBar(
                 imageVector = Icons.Rounded.Close,
                 backgroundColor = Color.Transparent,
                 foregroundColor = themeColor,
-                onClick = { onCloseTap() }
+                onClick = { onCloseClick() }
             )
         }
 

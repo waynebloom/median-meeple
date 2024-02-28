@@ -6,7 +6,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.admob.domain.usecase.ObserveAd
+import com.waynebloom.scorekeeper.admob.domain.usecase.GetAdAsFlow
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.MatchSortMode
@@ -15,12 +15,12 @@ import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.isEqualTo
 import com.waynebloom.scorekeeper.ext.toStringForDisplay
-import com.waynebloom.scorekeeper.room.domain.usecase.GetGameWithRelations
 import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
-import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
-import com.waynebloom.scorekeeper.ui.model.GameDomainModel
-import com.waynebloom.scorekeeper.ui.model.MatchUiModel
-import com.waynebloom.scorekeeper.ui.model.PlayerUiModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import com.waynebloom.scorekeeper.room.domain.usecase.GetGameWithRelationsAsFlow
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.StatisticsForGameConstants
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
@@ -39,9 +39,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SingleGameViewModel @Inject constructor(
-    getGame: GetGameWithRelations,
+    getGameWithRelationsAsFlow: GetGameWithRelationsAsFlow,
     mutableStateFlowFactory: MutableStateFlowFactory,
-    observeAd: ObserveAd,
+    getAdAsFlow: GetAdAsFlow,
     savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
@@ -68,9 +68,13 @@ class SingleGameViewModel @Inject constructor(
                 initialValue = viewModelState.value.toStatisticsForGameUiState()
             )
 
-        viewModelScope.launch { createInitialState(game = getGame(gameId)) }
         viewModelScope.launch {
-            observeAd().collectLatest { latestAd ->
+            getGameWithRelationsAsFlow(gameId).collectLatest {
+                updateViewModelStateWithLatest(game = it)
+            }
+        }
+        viewModelScope.launch {
+            getAdAsFlow().collectLatest { latestAd ->
                 viewModelState.update {
                     it.copy(ad = latestAd)
                 }
@@ -78,7 +82,7 @@ class SingleGameViewModel @Inject constructor(
         }
     }
 
-    private fun createInitialState(game: GameDomainModel) = with(game) {
+    private fun updateViewModelStateWithLatest(game: GameDomainModel) = with(game) {
         viewModelState.update { state ->
 
             if (matches.isEmpty()) {
@@ -128,7 +132,7 @@ class SingleGameViewModel @Inject constructor(
 
     // region Statistics generation
 
-    private fun getTotalScoreData(matches: List<MatchUiModel>) = matches
+    private fun getTotalScoreData(matches: List<MatchDomainModel>) = matches
         .flatMap { match ->
             match.players.map { player ->
                 ScoringPlayerDomainModel(
@@ -139,16 +143,16 @@ class SingleGameViewModel @Inject constructor(
         }
 
     private fun generateTotalScoreStatistics(
-        matches: List<MatchUiModel>
+        matches: List<MatchDomainModel>
     ) = StatisticsForCategory(
-        category = CategoryUiModel(
+        category = CategoryDomainModel(
             name = TextFieldInput(),
             position = 0
         ),
         data = getTotalScoreData(matches)
     )
 
-    private fun MatchUiModel.getDataForCategory(category: CategoryUiModel) = players
+    private fun MatchDomainModel.getDataForCategory(category: CategoryDomainModel) = players
         .filter { it.showDetailedScore }
         .map { player ->
             ScoringPlayerDomainModel(
@@ -157,12 +161,12 @@ class SingleGameViewModel @Inject constructor(
             )
         }
 
-    private fun CategoryUiModel.getData(matches: List<MatchUiModel>) = matches
+    private fun CategoryDomainModel.getData(matches: List<MatchDomainModel>) = matches
         .flatMap { it.getDataForCategory(this) }
 
     private fun generateCategoryStatistics(
-        categories: List<CategoryUiModel>,
-        matches: List<MatchUiModel>
+        categories: List<CategoryDomainModel>,
+        matches: List<MatchDomainModel>
     ) = categories
         .map {
 
@@ -178,20 +182,20 @@ class SingleGameViewModel @Inject constructor(
             }
         }
 
-    private fun getPlayCount(matches: List<MatchUiModel>) = matches
+    private fun getPlayCount(matches: List<MatchDomainModel>) = matches
         .foldRight(initial = 0) { element, sum ->
             sum + element.players.count()
         }
 
-    private fun getUniquePlayerCount(matches: List<MatchUiModel>) = matches
+    private fun getUniquePlayerCount(matches: List<MatchDomainModel>) = matches
         .flatMap { it.players }
         .distinctBy { it.name.value.text }
         .count()
 
     private fun getWinnersOrderedByNumberOfWins(
-        matches: List<MatchUiModel>,
+        matches: List<MatchDomainModel>,
         scoringMode: ScoringMode
-    ): List<com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel> {
+    ): List<WinningPlayerDomainModel> {
         val winners = mutableMapOf<String, Int>()
 
         matches.forEach {
@@ -204,7 +208,7 @@ class SingleGameViewModel @Inject constructor(
             .toList()
             .sortedByDescending { (_, value) -> value }
             .map {
-                com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel(
+                WinningPlayerDomainModel(
                     name = it.first,
                     numberOfWins = it.second
                 )
@@ -275,7 +279,7 @@ private data class SingleGameViewModelState(
     val sortMode: MatchSortMode = MatchSortMode.ByMatchAge,
     val ad: NativeAd? = null,
     val matchesLazyListState: LazyListState = LazyListState(),
-    val matches: List<MatchUiModel> = listOf(),
+    val matches: List<MatchDomainModel> = listOf(),
     val scoringMode: ScoringMode = ScoringMode.Descending,
     // endregion
 
@@ -298,7 +302,7 @@ private data class SingleGameViewModelState(
 
     // region Matches Filtering & Sort Logic
 
-    private fun PlayerUiModel.showWithFilter(filter: String): Boolean {
+    private fun PlayerDomainModel.showWithFilter(filter: String): Boolean {
         val nameMatches = name.value.text.lowercase().contains(filter.lowercase())
         val totalScoreMatches = filter.toBigDecimalOrNull()?.let {
             totalScore.isEqualTo(it)
@@ -307,10 +311,10 @@ private data class SingleGameViewModelState(
         return nameMatches || totalScoreMatches
     }
 
-    private fun MatchUiModel.atLeastOnePlayerMatchesFilter(filter: String) =
+    private fun MatchDomainModel.atLeastOnePlayerMatchesFilter(filter: String) =
         players.any { it.showWithFilter(filter) }
 
-    private fun matchMatchesFilters(match: MatchUiModel): Boolean {
+    private fun matchMatchesFilters(match: MatchDomainModel): Boolean {
         return if (searchInput.text.isNotEmpty()) {
             match.atLeastOnePlayerMatchesFilter(filter = searchInput.text)
         } else {
@@ -318,9 +322,9 @@ private data class SingleGameViewModelState(
         }
     }
 
-    private fun getFilteredMatches(): List<MatchUiModel> {
-        val filteredMatches: MutableList<MatchUiModel> = mutableListOf()
-        val matchesWithNoPlayers: MutableList<MatchUiModel> = mutableListOf()
+    private fun getFilteredMatches(): List<MatchDomainModel> {
+        val filteredMatches: MutableList<MatchDomainModel> = mutableListOf()
+        val matchesWithNoPlayers: MutableList<MatchDomainModel> = mutableListOf()
 
         matches.forEach {
             if (matchMatchesFilters(it)) {
@@ -441,7 +445,7 @@ sealed interface MatchesForGameUiState {
         val sortMode: MatchSortMode,
         val ad: NativeAd?,
         val matchesLazyListState: LazyListState,
-        val matches: List<MatchUiModel>,
+        val matches: List<MatchDomainModel>,
         val scoringMode: ScoringMode,
     ): MatchesForGameUiState
 

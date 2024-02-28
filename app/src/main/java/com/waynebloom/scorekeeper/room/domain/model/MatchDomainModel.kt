@@ -1,6 +1,10 @@
 package com.waynebloom.scorekeeper.room.domain.model
 
-interface MatchDomainModel {
-    val notes: String
-    val timeModified: Long
-}
+import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
+
+data class MatchDomainModel(
+//    val timeModified: Date,
+    val id: Long = 0,
+    val notes: TextFieldInput,
+    val players: List<PlayerDomainModel>
+)

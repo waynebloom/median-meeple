@@ -59,8 +59,8 @@ fun PlayerScoreScreen(
     categories: List<CategoryDataModel>,
     isGameManualRanked: Boolean,
     themeColor: Color,
-    onSaveTap: (EntityStateBundle<PlayerDataModel>, List<CategoryScoreEntityState>) -> Unit,
-    onDeleteTap: (Long) -> Unit,
+    onSaveClick: (EntityStateBundle<PlayerDataModel>, List<CategoryScoreEntityState>) -> Unit,
+    onDeleteClick: (Long) -> Unit,
 ) {
     val viewModel = viewModel<EditPlayerScoreViewModel>(
         key = TopLevelScreen.EditPlayerScore.name,
@@ -70,7 +70,7 @@ fun PlayerScoreScreen(
             playerSubscores = initialPlayer.score,
             subscoreTitles = categories,
             isGameManualRanked = isGameManualRanked,
-            saveCallback = onSaveTap
+            saveCallback = onSaveClick
         )
     ).also { it.initialPlayerEntity.id = initialPlayer.entity.id }
     val focusManager = LocalFocusManager.current
@@ -87,8 +87,8 @@ fun PlayerScoreScreen(
                 title = initialPlayer.entity.name,
                 themeColor = themeColor,
                 submitButtonEnabled = viewModel.isSubmitButtonEnabled(),
-                onDoneTap = { viewModel.onSaveTap(keyboardController) },
-                onDeleteTap = { onDeleteTap(initialPlayer.entity.id) }
+                onDoneClick = { viewModel.onSaveClick(keyboardController) },
+                onDeleteClick = { onDeleteClick(initialPlayer.entity.id) }
             )
         }
     ) { contentPadding ->
@@ -146,9 +146,9 @@ fun PlayerScoreScreen(
                         themeColor = themeColor,
                         textFieldColors = textFieldColors,
                         onDetailedModeChanged = { viewModel.onDetailedModeChanged(it) },
-                        onDoneTap = { viewModel.onSaveTap(keyboardController) },
+                        onDoneClick = { viewModel.onSaveClick(keyboardController) },
                         onFieldChanged = { id, value -> viewModel.onCategoryFieldChanged(id, value) },
-                        onNextTap = { focusManager.moveFocus(FocusDirection.Next) },
+                        onNextClick = { focusManager.moveFocus(FocusDirection.Next) },
                         onTotalFieldChanged = { viewModel.onTotalFieldChanged(it) },
                         onUncategorizedFieldChanged = { viewModel.onUncategorizedFieldChanged(it) }
                     )
@@ -163,8 +163,8 @@ private fun EditPlayerScoreScreenTopBar(
     title: String,
     themeColor: Color,
     submitButtonEnabled: Boolean,
-    onDoneTap: () -> Unit,
-    onDeleteTap: () -> Unit,
+    onDoneClick: () -> Unit,
+    onDeleteClick: () -> Unit,
 ) {
 
     Column {
@@ -193,14 +193,14 @@ private fun EditPlayerScoreScreenTopBar(
                     backgroundColor = Color.Transparent,
                     foregroundColor = themeColor,
                     enabled = submitButtonEnabled,
-                    onClick = onDoneTap
+                    onClick = onDoneClick
                 )
 
                 IconButton(
                     imageVector = Icons.Rounded.Delete,
                     backgroundColor = Color.Transparent,
                     foregroundColor = MaterialTheme.colors.error,
-                    onClick = onDeleteTap
+                    onClick = onDeleteClick
                 )
             }
         }
@@ -297,9 +297,9 @@ private fun ScoreSection(
     themeColor: Color,
     textFieldColors: TextFieldColors,
     onDetailedModeChanged: (Boolean) -> Unit,
-    onDoneTap: () -> Unit,
+    onDoneClick: () -> Unit,
     onFieldChanged: (Long, TextFieldValue) -> Unit,
-    onNextTap: () -> Unit,
+    onNextClick: () -> Unit,
     onTotalFieldChanged: (TextFieldValue) -> Unit,
     onUncategorizedFieldChanged: (TextFieldValue) -> Unit,
 ) {
@@ -332,8 +332,8 @@ private fun ScoreSection(
                         categoryTitles = categoryTitles,
                         textFieldColors = textFieldColors,
                         uncategorizedScoreData = uncategorizedScoreData,
-                        onDoneTap = onDoneTap,
-                        onNextTap = onNextTap,
+                        onDoneClick = onDoneClick,
+                        onNextClick = onNextClick,
                         onFieldChanged = onFieldChanged,
                         onUncategorizedFieldChanged = onUncategorizedFieldChanged,
                     )
@@ -349,7 +349,7 @@ private fun ScoreSection(
                     totalScoreData = totalScoreData,
                     textFieldColors = textFieldColors,
                     onChanged = onTotalFieldChanged,
-                    onDoneTap = onDoneTap,
+                    onDoneClick = onDoneClick,
                 )
             }
         }
@@ -386,7 +386,7 @@ private fun TotalScoreField(
     totalScoreData: CategoryScoreEntityState,
     textFieldColors: TextFieldColors,
     onChanged: (TextFieldValue) -> Unit,
-    onDoneTap: () -> Unit
+    onDoneClick: () -> Unit
 ) {
     OutlinedTextFieldWithErrorDescription(
         value = totalScoreData.textFieldValue,
@@ -399,7 +399,7 @@ private fun TotalScoreField(
             imeAction = ImeAction.Done
         ),
         keyboardActions = KeyboardActions(
-            onDone = { onDoneTap() }
+            onDone = { onDoneClick() }
         ),
         errorDescription = totalScoreData.validityState.descriptionResource,
         selectAllOnFocus = true
@@ -412,9 +412,9 @@ private fun CategoryFields(
     categoryTitles: List<CategoryDataModel>,
     uncategorizedScoreData: CategoryScoreEntityState,
     textFieldColors: TextFieldColors,
-    onDoneTap: () -> Unit,
+    onDoneClick: () -> Unit,
     onFieldChanged: (Long, TextFieldValue) -> Unit,
-    onNextTap: () -> Unit,
+    onNextClick: () -> Unit,
     onUncategorizedFieldChanged: (TextFieldValue) -> Unit,
 ) {
 
@@ -433,7 +433,7 @@ private fun CategoryFields(
                     imeAction = ImeAction.Next
                 ),
                 keyboardActions = KeyboardActions(
-                    onNext = { onNextTap() }
+                    onNext = { onNextClick() }
                 ),
                 errorDescription = data.validityState.descriptionResource,
                 selectAllOnFocus = true
@@ -451,7 +451,7 @@ private fun CategoryFields(
                 imeAction = ImeAction.Done
             ),
             keyboardActions = KeyboardActions(
-                onDone = { onDoneTap() }
+                onDone = { onDoneClick() }
             ),
             errorDescription = uncategorizedScoreData.validityState.descriptionResource,
             selectAllOnFocus = true
@@ -479,8 +479,8 @@ fun EditPlayerScoreScreenPreview() {
             ),
             isGameManualRanked = true,
             themeColor = deepOrange500,
-            onSaveTap = { _, _ -> },
-            onDeleteTap = {}
+            onSaveClick = { _, _ -> },
+            onDeleteClick = {}
         )
     }
 }

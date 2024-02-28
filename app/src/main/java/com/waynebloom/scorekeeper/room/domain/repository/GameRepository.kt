@@ -20,15 +20,23 @@ interface GameRepository {
     suspend fun delete(entity: GameDataModel)
 
     @Query("SELECT * FROM game WHERE id = :id")
-    suspend fun get(id: Long): GameDataModel
+    suspend fun getOne(id: Long): GameDataModel
 
     @Transaction
     @Query("SELECT * FROM game WHERE id = :id")
-    suspend fun getWithRelations(id: Long): GameDataRelationModel
+    suspend fun getOneWithRelations(id: Long): GameDataRelationModel
+
+    @Transaction
+    @Query("SELECT * FROM game WHERE id = :id")
+    fun getOneWithRelationsAsFlow(id: Long): Flow<GameDataRelationModel>
 
     @Transaction
     @Query("SELECT * FROM game")
     suspend fun getAll(): List<GameDataRelationModel>
+
+    @Transaction
+    @Query("SELECT * FROM game")
+    fun getAllAsFlow(): Flow<List<GameDataRelationModel>>
 
     @Insert
     suspend fun insert(game: GameDataModel): Long

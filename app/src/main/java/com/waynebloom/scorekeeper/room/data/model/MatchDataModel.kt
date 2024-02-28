@@ -7,7 +7,6 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import java.util.Date
 
 @Entity(
@@ -31,12 +30,12 @@ data class MatchDataModel(
     val gameId: Long = 0,
 
     @ColumnInfo(name = "match_notes")
-    override var notes: String = "",
+    var notes: String = "",
 
     @ColumnInfo(name = "time_modified")
-    override var timeModified: Long = Date().time
+    var timeModified: Long = Date().time
 
-): MatchDomainModel
+)
 
 data class MatchDataRelationModel(
     @Embedded

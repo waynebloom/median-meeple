@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.admob.domain.usecase.ObserveAd
+import com.waynebloom.scorekeeper.admob.domain.usecase.GetAdAsFlow
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.LibraryTopBarState
@@ -31,7 +31,7 @@ class LibraryViewModel @Inject constructor(
     getGames: GetGames,
     private val insertEmptyGame: InsertEmptyGame,
     mutableStateFlowFactory: MutableStateFlowFactory,
-    observeAd: ObserveAd
+    getAdAsFlow: GetAdAsFlow
 ): ViewModel() {
 
     private val viewModelState: MutableStateFlow<LibraryUiState>
@@ -49,12 +49,12 @@ class LibraryViewModel @Inject constructor(
         }
 
         launchInitialState(getGames)
-        launchAdCollection(observeAd)
+        launchAdCollection(getAdAsFlow)
     }
 
-    private fun launchAdCollection(observeAd: ObserveAd) =
+    private fun launchAdCollection(getAdAsFlow: GetAdAsFlow) =
         viewModelScope.launch {
-            observeAd().collectLatest { latestAd ->
+            getAdAsFlow().collectLatest { latestAd ->
                 viewModelState.update {
                     it.copy(ad = latestAd)
                 }

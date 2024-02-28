@@ -2,21 +2,21 @@ package com.waynebloom.scorekeeper.ui
 
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.toTextFieldInput
-import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
-import com.waynebloom.scorekeeper.ui.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 
 object PreviewData {
 
     val Categories = listOf(
-        CategoryUiModel(
+        CategoryDomainModel(
             name = "Eggs".toTextFieldInput(),
             position = 0
         ),
-        CategoryUiModel(
+        CategoryDomainModel(
             name = "Cached Food".toTextFieldInput(),
             position = 1
         ),
-        CategoryUiModel(
+        CategoryDomainModel(
             name = "Tucked Cards".toTextFieldInput(),
             position = 2
         )

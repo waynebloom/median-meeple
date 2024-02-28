@@ -88,7 +88,7 @@ fun TopBarWithSearch(
                 cursorBrush = SolidColor(themeColor),
                 onValueChange = { onSearchStringChanged(it) },
                 keyboardActions = KeyboardActions(
-                    onDone = { onCloseTap() }
+                    onDone = { onCloseClick() }
                 ),
                 modifier = Modifier
                     .weight(1f)

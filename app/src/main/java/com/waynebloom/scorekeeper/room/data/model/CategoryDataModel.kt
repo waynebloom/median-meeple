@@ -5,7 +5,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 
 @Entity(
     tableName = "SubscoreTitle",
@@ -27,7 +26,7 @@ data class CategoryDataModel(
     var gameId: Long = 0,
 
     @ColumnInfo(name = "title")
-    override var name: String = "",
+    var name: String = "",
 
-    override var position: Int = 0
-): CategoryDomainModel
+    var position: Int = 0
+)

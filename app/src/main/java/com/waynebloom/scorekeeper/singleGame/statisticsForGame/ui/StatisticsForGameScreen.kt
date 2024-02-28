@@ -240,7 +240,7 @@ fun StatisticsForGameTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .padding(start = 16.dp, end = 8.dp)
-                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
+                .defaultMinSize(minHeight = Size.topBarHeight)
                 .fillMaxWidth()
         ) {
 
@@ -357,7 +357,7 @@ private fun WinsSection(
             startSupportingText = stringResource(R.string.description_best_winner),
             buttonText = bestWinnerEndText,
             expanded = isBestWinnerExpanded,
-            onItemTap = onBestWinnerButtonClick
+            onItemClick = onBestWinnerButtonClick
         ) {
 
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
@@ -368,7 +368,7 @@ private fun WinsSection(
                         startIcon = personIcon,
                         endText = pluralStringResource(
                             id = R.plurals.number_with_wins,
-                            count = it.numberOfWins.toInt(),
+                            count = it.numberOfWins,
                             it.numberOfWins
                         ),
                         showEndBackground = false
@@ -396,7 +396,7 @@ private fun WinsSection(
             startHeadline = stringResource(R.string.headline_high_score),
             startSupportingText = stringResource(R.string.description_high_score),
             buttonText = highScoreEndText,
-            onItemTap = onHighScoreButtonClick,
+            onItemClick = onHighScoreButtonClick,
             expanded = isHighScoreExpanded
         ) {
 
@@ -432,7 +432,7 @@ private fun WinsSection(
             startHeadline = stringResource(R.string.headline_unique_winners),
             startSupportingText = stringResource(R.string.description_unique_winners),
             buttonText = uniqueWinners.size.toString(),
-            onItemTap = onUniqueWinnerButtonClick,
+            onItemClick = onUniqueWinnerButtonClick,
             expanded = isUniqueWinnersExpanded
         ) {
 
@@ -444,7 +444,7 @@ private fun WinsSection(
                         startIcon = personIcon,
                         endText = pluralStringResource(
                             id = R.plurals.number_with_wins,
-                            count = it.numberOfWins.toInt(),
+                            count = it.numberOfWins,
                             it.numberOfWins
                         ),
                         showEndBackground = false
@@ -597,7 +597,7 @@ private fun ScoringStatisticsColumn(
         SingleLineExpandableListItem(
             startText = highStartText,
             buttonText = high,
-            onItemTap = { highSectionExpanded = !highSectionExpanded },
+            onItemClick = { highSectionExpanded = !highSectionExpanded },
             expanded = highSectionExpanded,
         ) {
 
@@ -656,7 +656,7 @@ fun TwoLineExpandableListItem(
     startHeadline: String,
     startSupportingText: String? = null,
     buttonText: String? = null,
-    onItemTap: () -> Unit,
+    onItemClick: () -> Unit,
     expanded: Boolean,
     expandedContent: @Composable () -> Unit,
 ) {
@@ -687,7 +687,7 @@ fun TwoLineExpandableListItem(
                 ExpandCollapseButton(
                     text = buttonText,
                     expanded = expanded,
-                    onTap = onItemTap
+                    onClick = onItemClick
                 )
             }
 
@@ -756,7 +756,7 @@ fun SingleLineExpandableListItem(
     startText: String,
     buttonText: String? = null,
     expanded: Boolean,
-    onItemTap: () -> Unit,
+    onItemClick: () -> Unit,
     expandedContent: @Composable () -> Unit,
 ) {
 
@@ -776,7 +776,7 @@ fun SingleLineExpandableListItem(
             ExpandCollapseButton(
                 text = buttonText,
                 expanded = expanded,
-                onTap = onItemTap
+                onClick = onItemClick
             )
         }
 
@@ -868,7 +868,7 @@ fun SingleLineExpandableListItemPreview() {
                 startText = "Item title",
                 buttonText = "Value",
                 expanded = expanded,
-                onItemTap = { expanded = !expanded},
+                onItemClick = { expanded = !expanded},
                 expandedContent = {
                     mapOf(
                         Pair("Wayne", 6),
@@ -905,7 +905,7 @@ fun TwoLineExpandableListItemPreview() {
                 startSupportingText = "Supporting text",
                 buttonText = "Value",
                 expanded = expanded,
-                onItemTap = { expanded = !expanded},
+                onItemClick = { expanded = !expanded},
                 expandedContent = {
                     mapOf(
                         Pair("Wayne", 6),

@@ -30,7 +30,7 @@ class GamesViewModel: ViewModel() {
     fun getGamesToDisplay(games: List<GameDataModel>) =
         games.filter { it.name.lowercase().contains(searchString.lowercase()) }
 
-    fun onClearFiltersTap() {
+    fun onClearFiltersClick() {
         searchString = ""
     }
 

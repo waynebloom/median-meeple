@@ -20,8 +20,8 @@ import com.waynebloom.scorekeeper.room.domain.usecase.UpdateCategory
 import com.waynebloom.scorekeeper.room.domain.usecase.UpdateGame
 import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
-import com.waynebloom.scorekeeper.ui.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -165,7 +165,7 @@ class EditGameViewModel @Inject constructor(
         viewModelScope.launch {
 
             val newCategoryPosition = viewModelState.value.categories.lastIndex + 1
-            val newCategory = CategoryUiModel(
+            val newCategory = CategoryDomainModel(
                 name = TextFieldInput(),
                 position = newCategoryPosition
             )
@@ -282,7 +282,7 @@ class EditGameViewModel @Inject constructor(
 
 private data class EditGameViewModelState(
     val loading: Boolean = true,
-    val categories: List<CategoryUiModel> = emptyList(),
+    val categories: List<CategoryDomainModel> = emptyList(),
     val color: String = "",
     val dragState: DragState = DragState(),
     val indexOfCategoryReceivingInput: Int? = null,
@@ -307,7 +307,7 @@ private data class EditGameViewModelState(
         )
     }
 
-    private fun getCategoriesAdjustedForActiveDragAction(): List<CategoryUiModel> {
+    private fun getCategoriesAdjustedForActiveDragAction(): List<CategoryDomainModel> {
         return if (dragState.isDragging && dragState.isDraggedToNewIndex) {
             categories.toMutableList().apply {
                 val itemBeingDragged = removeAt(dragState.dragStart)
@@ -324,7 +324,7 @@ sealed interface EditGameUiState {
     data object Loading: EditGameUiState
 
     data class Content(
-        val categories: List<CategoryUiModel>,
+        val categories: List<CategoryDomainModel>,
         val color: String,
         val dragState: DragState,
         val indexOfCategoryReceivingInput: Int?,

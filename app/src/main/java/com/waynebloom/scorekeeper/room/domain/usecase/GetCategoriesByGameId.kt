@@ -2,7 +2,7 @@ package com.waynebloom.scorekeeper.room.domain.usecase
 
 import com.waynebloom.scorekeeper.ext.toTextFieldInput
 import com.waynebloom.scorekeeper.room.domain.repository.CategoryRepository
-import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import javax.inject.Inject
 
 class GetCategoriesByGameId @Inject constructor(
@@ -11,7 +11,7 @@ class GetCategoriesByGameId @Inject constructor(
 
     suspend operator fun invoke(id: Long) = categoryRepository.getByGameId(id)
         .map {
-            CategoryUiModel(
+            CategoryDomainModel(
                 id = it.id,
                 name = it.name.toTextFieldInput(),
                 position = it.position

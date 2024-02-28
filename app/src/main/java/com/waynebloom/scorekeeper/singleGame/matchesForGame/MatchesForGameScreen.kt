@@ -82,7 +82,7 @@ import com.waynebloom.scorekeeper.components.RadioButtonOption
 import com.waynebloom.scorekeeper.components.SingleGameDestinationTopBar
 import com.waynebloom.scorekeeper.components.SmallIconButton
 import com.waynebloom.scorekeeper.components.TopBarWithSearch
-import com.waynebloom.scorekeeper.ui.model.MatchUiModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.singleGame.MatchesForGameUiState
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.fadeInWithFadeOut
@@ -277,84 +277,6 @@ fun SingleGameTabBar(
 
 // endregion
 
-// TODO: I like the idea of making a new top bar, but I need to table it. Remove this.
-@Composable
-fun MatchesForGameTopBarDEPR(
-    screenTitle: String,
-    searchFieldValue: TextFieldValue,
-    onSortButtonClick: () -> Unit,
-    onSearchInputChanged: (TextFieldValue) -> Unit
-) {
-
-    var isSearchFieldFocused by rememberSaveable { mutableStateOf(false) }
-    val focusManager = LocalFocusManager.current
-    val searchFieldFocusRequester = FocusRequester()
-
-    Surface(color = MaterialTheme.colors.primary) {
-        Column(modifier = Modifier.padding(8.dp)) {
-            if (!isSearchFieldFocused) {
-                SingleGameDestinationTopBar(title = screenTitle)
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-
-            Row {
-                if (isSearchFieldFocused) {
-                    SmallIconButton(
-                        painter = painterResource(R.drawable.ic_back),
-                        backgroundColor = Color.Transparent,
-                        foregroundColor = MaterialTheme.colors.onPrimary,
-                        onClick = { focusManager.clearFocus() }
-                    )
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
-                        .height(40.dp)
-                        .padding(horizontal = 4.dp) // Adjustment to match the base top bar
-                        .background(MaterialTheme.colors.onPrimary, CircleShape)
-                        .padding(horizontal = Spacing.sectionContent)
-                        .clickable { searchFieldFocusRequester.requestFocus() }
-                ) {
-
-                    if (!isSearchFieldFocused) {
-                        Icon(
-                            imageVector = Icons.Rounded.Search,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colors.primary
-                        )
-                    }
-
-                    BasicTextField(
-                        value = searchFieldValue,
-                        onValueChange = { onSearchInputChanged(it) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .focusRequester(searchFieldFocusRequester)
-                            .onFocusChanged { isSearchFieldFocused = it.isFocused },
-                        textStyle = MaterialTheme.typography.body1,
-                        singleLine = true,
-                        keyboardActions = KeyboardActions(
-                            onDone = { focusManager.clearFocus() }
-                        )
-                    )
-                }
-
-                if (isSearchFieldFocused) {
-                    SmallIconButton(
-                        painter = painterResource(id = R.drawable.ic_sort),
-                        backgroundColor = MaterialTheme.colors.onPrimary,
-                        onClick = onSortButtonClick,
-                    )
-                }
-            }
-        }
-    }
-}
-
 @Composable
 fun MatchesForGameSortOptionsDialog(
     sortMode: MatchSortMode,
@@ -430,7 +352,7 @@ fun MatchesForGameScreen(
     sortDirection: SortDirection,
     sortMode: MatchSortMode,
     ad: NativeAd?,
-    matches: List<MatchUiModel>,
+    matches: List<MatchDomainModel>,
     listState: LazyListState,
     scoringMode: ScoringMode,
     onEditGameClick: () -> Unit,

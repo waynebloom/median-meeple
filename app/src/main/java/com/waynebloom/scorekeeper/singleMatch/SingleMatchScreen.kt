@@ -56,10 +56,10 @@ import com.waynebloom.scorekeeper.theme.color.orange100
 fun SingleMatchScreen(
     game: GameDataRelationModel,
     match: MatchDataRelationModel,
-    onAddPlayerTap: () -> Unit,
-    onDeleteMatchTap: (Long) -> Unit,
-    onPlayerTap: (Long) -> Unit,
-    onViewDetailedScoresTap: () -> Unit,
+    onAddPlayerClick: () -> Unit,
+    onDeleteMatchClick: (Long) -> Unit,
+    onPlayerClick: (Long) -> Unit,
+    onViewDetailedScoresClick: () -> Unit,
     saveMatch: (EntityStateBundle<MatchDataModel>) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -67,7 +67,7 @@ fun SingleMatchScreen(
         key = TopLevelScreen.SingleMatch.name,
         factory = SingleMatchViewModelFactory(
             matchEntity = match.entity,
-            addPlayerCallback = onAddPlayerTap,
+            addPlayerCallback = onAddPlayerClick,
             saveCallback = saveMatch
         )
     )
@@ -90,8 +90,8 @@ fun SingleMatchScreen(
             SingleMatchScreenTopBar(
                 title = game.entity.name,
                 themeColor = themeColor,
-                onDoneTap = { viewModel.onSaveTap(keyboardController, focusManager) },
-                onDeleteTap = { onDeleteMatchTap(match.entity.id) },
+                onDoneClick = { viewModel.onSaveClick(keyboardController, focusManager) },
+                onDeleteClick = { onDeleteMatchClick(match.entity.id) },
             )
         },
         modifier = modifier,
@@ -116,9 +116,9 @@ fun SingleMatchScreen(
                     ),
                     showMaximumPlayersErrorState = viewModel.showMaximumPlayersError,
                     themeColor = themeColor,
-                    onAddPlayerTap = { viewModel.onAddPlayerTap(match.players.size) },
-                    onPlayerTap = onPlayerTap,
-                    onViewDetailedScoresTap = onViewDetailedScoresTap
+                    onAddPlayerClick = { viewModel.onAddPlayerClick(match.players.size) },
+                    onPlayerClick = onPlayerClick,
+                    onViewDetailedScoresClick = onViewDetailedScoresClick
                 )
             }
 
@@ -131,7 +131,7 @@ fun SingleMatchScreen(
                         notes = viewModel.notes,
                         textFieldColors = textFieldColors,
                         onNotesChanged = { viewModel.onNotesChanged(it) },
-                        onSaveTap = { viewModel.onSaveTap(keyboardController, focusManager) }
+                        onSaveClick = { viewModel.onSaveClick(keyboardController, focusManager) }
                     )
                 }
             }
@@ -143,8 +143,8 @@ fun SingleMatchScreen(
 private fun SingleMatchScreenTopBar(
     title: String,
     themeColor: Color,
-    onDoneTap: () -> Unit,
-    onDeleteTap: () -> Unit,
+    onDoneClick: () -> Unit,
+    onDeleteClick: () -> Unit,
 ) {
 
     Column {
@@ -172,14 +172,14 @@ private fun SingleMatchScreenTopBar(
                     imageVector = Icons.Rounded.Done,
                     backgroundColor = Color.Transparent,
                     foregroundColor = themeColor,
-                    onClick = onDoneTap,
+                    onClick = onDoneClick,
                 )
 
                 IconButton(
                     imageVector = Icons.Rounded.Delete,
                     backgroundColor = Color.Transparent,
                     foregroundColor = MaterialTheme.colors.error,
-                    onClick = onDeleteTap,
+                    onClick = onDeleteClick,
                 )
             }
         }
@@ -193,8 +193,8 @@ private fun PlayersSectionHeader(
     showDetailedScoresButton: Boolean,
     showMaximumPlayersErrorState: Boolean,
     themeColor: Color,
-    onAddPlayerTap: () -> Unit,
-    onViewDetailedScoresTap: () -> Unit,
+    onAddPlayerClick: () -> Unit,
+    onViewDetailedScoresClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -219,7 +219,7 @@ private fun PlayersSectionHeader(
                 IconButton(
                     imageVector = Icons.Rounded.List,
                     foregroundColor = themeColor,
-                    onClick = onViewDetailedScoresTap
+                    onClick = onViewDetailedScoresClick
                 )
             }
 
@@ -227,13 +227,13 @@ private fun PlayersSectionHeader(
                 IconButton(
                     imageVector = Icons.Rounded.Add,
                     foregroundColor = themeColor,
-                    onClick = onAddPlayerTap
+                    onClick = onAddPlayerClick
                 )
             } else {
                 IconButton(
                     imageVector = Icons.Rounded.Warning,
                     foregroundColor = MaterialTheme.colors.error,
-                    onClick = onAddPlayerTap
+                    onClick = onAddPlayerClick
                 )
             }
         }
@@ -247,9 +247,9 @@ fun PlayersSection(
     showDetailedScoresButton: Boolean,
     showMaximumPlayersErrorState: Boolean,
     themeColor: Color,
-    onAddPlayerTap: () -> Unit,
-    onPlayerTap: (Long) -> Unit,
-    onViewDetailedScoresTap: () -> Unit
+    onAddPlayerClick: () -> Unit,
+    onPlayerClick: (Long) -> Unit,
+    onViewDetailedScoresClick: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
@@ -257,8 +257,8 @@ fun PlayersSection(
             showDetailedScoresButton = showDetailedScoresButton,
             showMaximumPlayersErrorState = showMaximumPlayersErrorState,
             themeColor = themeColor,
-            onAddPlayerTap = onAddPlayerTap,
-            onViewDetailedScoresTap = onViewDetailedScoresTap,
+            onAddPlayerClick = onAddPlayerClick,
+            onViewDetailedScoresClick = onViewDetailedScoresClick,
         )
 
         if (showMaximumPlayersErrorState) HelperBox(
@@ -284,7 +284,7 @@ fun PlayersSection(
                         player = player,
                         rank = displayedRank,
                         themeColor = themeColor,
-                        onPlayerTap = onPlayerTap
+                        onPlayerClick = onPlayerClick
                     )
                 }
             }
@@ -303,7 +303,7 @@ private fun OtherSection(
     notes: String,
     textFieldColors: TextFieldColors,
     onNotesChanged: (String) -> Unit,
-    onSaveTap: () -> Unit,
+    onSaveClick: () -> Unit,
 ) {
 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
@@ -325,7 +325,7 @@ private fun OtherSection(
                 imeAction = ImeAction.Done,
             ),
             keyboardActions = KeyboardActions(
-                onDone = { onSaveTap() }
+                onDone = { onSaveClick() }
             ),
             maxLines = 8,
             modifier = Modifier.fillMaxWidth()
@@ -338,7 +338,7 @@ fun RankedListItem(
     player: PlayerDataModel,
     rank: Int,
     themeColor: Color,
-    onPlayerTap: (Long) -> Unit,
+    onPlayerClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -358,7 +358,7 @@ fun RankedListItem(
             modifier = modifier
                 .fillMaxWidth()
                 .clip(MaterialTheme.shapes.small)
-                .clickable { onPlayerTap(player.id) },
+                .clickable { onPlayerClick(player.id) },
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -424,9 +424,9 @@ fun ScoresSectionPreview() {
             showDetailedScoresButton = true,
             showMaximumPlayersErrorState = true,
             themeColor = orange100,
-            onAddPlayerTap = {},
-            onPlayerTap = {},
-            onViewDetailedScoresTap = {},
+            onAddPlayerClick = {},
+            onPlayerClick = {},
+            onViewDetailedScoresClick = {},
         )
     }
 }
@@ -445,10 +445,10 @@ fun SingleMatchScreenPreview() {
                 entity = MatchEntitiesDefaultPreview[0],
                 players = PlayerEntitiesDefaultPreview.map { PlayerDataRelationModel(entity = it) }
             ),
-            onAddPlayerTap = {},
-            onDeleteMatchTap = {},
-            onPlayerTap = {},
-            onViewDetailedScoresTap = {},
+            onAddPlayerClick = {},
+            onDeleteMatchClick = {},
+            onPlayerClick = {},
+            onViewDetailedScoresClick = {},
             saveMatch = {}
         )
     }

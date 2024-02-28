@@ -7,21 +7,20 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 
 @Entity(tableName = "Game")
 data class GameDataModel(
 
     @PrimaryKey(autoGenerate = true)
-    override var id: Long = 0,
+    var id: Long = 0,
 
-    override var color: String = "ORANGE",
+    var color: String = "ORANGE",
 
-    override var name: String = "",
+    var name: String = "",
 
     @ColumnInfo(name = "scoring_mode", defaultValue = "1")
-    override var scoringMode: Int = ScoringMode.Descending.ordinal
-): GameDomainModel
+    var scoringMode: Int = ScoringMode.Descending.ordinal
+)
 
 data class GameDataRelationModel(
     @Embedded

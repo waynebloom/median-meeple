@@ -52,7 +52,7 @@ import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescription
 import com.waynebloom.scorekeeper.components.RadioButtonOption
-import com.waynebloom.scorekeeper.ui.model.CategoryUiModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
 
 @Composable
@@ -117,7 +117,7 @@ fun EditGameScreen(
 fun EditGameScreen(
     nameInput: TextFieldInput,
     scoringMode: ScoringMode,
-    categories: List<CategoryUiModel>,
+    categories: List<CategoryDomainModel>,
     indexOfCategoryReceivingInput: Int?,
     isCategoryDialogOpen: Boolean,
     colorOptions: List<String>,
@@ -184,7 +184,7 @@ fun EditGameScreen(
                         nameTextFieldValue = nameInput.value,
                         isNameValid = nameInput.isValid,
                         onNameChanged = onNameChanged,
-                        onScoringModeTap = onScoringModeChanged,
+                        onScoringModeClick = onScoringModeChanged,
                         modifier = Modifier.padding(horizontal = Spacing.screenEdge)
                     )
                 }
@@ -328,7 +328,7 @@ private fun GameDetailsSection(
     nameTextFieldValue: TextFieldValue,
     isNameValid: Boolean,
     onNameChanged: (TextFieldValue) -> Unit,
-    onScoringModeTap: (ScoringMode) -> Unit,
+    onScoringModeClick: (ScoringMode) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -360,7 +360,7 @@ private fun GameDetailsSection(
                 RadioButtonOption(
                     menuOption = option,
                     isSelected = selectedMode == option,
-                    onSelected = { onScoringModeTap(it as ScoringMode) }
+                    onSelected = { onScoringModeClick(it as ScoringMode) }
                 )
             }
         }
@@ -378,7 +378,7 @@ private fun GameDetailsSection(
 )
 @Composable
 private fun EditCategoriesBottomSheetContent(
-    categories: List<CategoryUiModel>,
+    categories: List<CategoryDomainModel>,
     indexOfCategoryReceivingInput: Int?,
     onCategoryClick: (Int) -> Unit,
     onInputChanged: (TextFieldValue) -> Unit,
@@ -615,7 +615,7 @@ private fun EditCategoriesBottomSheetContent(
 
 @Composable
 private fun EditCategoriesBottomSheet(
-    categories: List<CategoryUiModel>,
+    categories: List<CategoryDomainModel>,
     indexOfCategoryReceivingInput: Int?,
     onCategoryClick: (Int) -> Unit,
     onDismiss: () -> Unit,
@@ -686,7 +686,7 @@ fun CustomThemeSection(
         ColorSelector(
             colorOptions = colorOptions,
             selectedColor = selectedColor,
-            onColorTap = onColorClick
+            onColorClick = onColorClick
         )
     }
 }
@@ -695,7 +695,7 @@ fun CustomThemeSection(
 fun ColorSelector(
     colorOptions: List<String>,
     selectedColor: String,
-    onColorTap: (String) -> Unit,
+    onColorClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val lazyListState = rememberLazyListState(colorOptions.indexOf(selectedColor))
@@ -717,7 +717,7 @@ fun ColorSelector(
                     .size(64.dp)
                     .clip(MaterialTheme.shapes.medium)
                     .background(color)
-                    .clickable { onColorTap(key) }
+                    .clickable { onColorClick(key) }
             ) {
 
                 AnimatedVisibility(
