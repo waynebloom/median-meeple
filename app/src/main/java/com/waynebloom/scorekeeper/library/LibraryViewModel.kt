@@ -13,7 +13,9 @@ import com.waynebloom.scorekeeper.enums.LibraryTopBarState
 import com.waynebloom.scorekeeper.enums.ListDisplayState
 import com.waynebloom.scorekeeper.navigation.Destination
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGames
+import com.waynebloom.scorekeeper.room.domain.usecase.GetGamesAsFlow
 import com.waynebloom.scorekeeper.room.domain.usecase.InsertEmptyGame
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
@@ -21,6 +23,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,31 +31,31 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-    getGames: GetGames,
+    getGamesAsFlow: GetGamesAsFlow,
     private val insertEmptyGame: InsertEmptyGame,
     mutableStateFlowFactory: MutableStateFlowFactory,
-    getAdAsFlow: GetAdAsFlow
+    getAdAsFlow: GetAdAsFlow,
 ): ViewModel() {
 
-    private val viewModelState: MutableStateFlow<LibraryUiState>
-
+    private val viewModelState: MutableStateFlow<LibraryViewModelState>
     val uiState: StateFlow<LibraryUiState>
 
     init {
-        LibraryUiState().let { initialState ->
-            viewModelState = mutableStateFlowFactory.newInstance(initialState)
-            uiState = viewModelState.stateIn(
+        viewModelState = mutableStateFlowFactory.newInstance(LibraryViewModelState())
+        uiState = viewModelState
+            .map(LibraryViewModelState::toUiState)
+            .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.Eagerly,
-                initialValue = initialState
-            )
+                initialValue = viewModelState.value.toUiState())
+
+        viewModelScope.launch {
+            getGamesAsFlow().collectLatest { games ->
+                viewModelState.update {
+                    it.copy(games = games)
+                }
+            }
         }
-
-        launchInitialState(getGames)
-        launchAdCollection(getAdAsFlow)
-    }
-
-    private fun launchAdCollection(getAdAsFlow: GetAdAsFlow) =
         viewModelScope.launch {
             getAdAsFlow().collectLatest { latestAd ->
                 viewModelState.update {
@@ -60,16 +63,7 @@ class LibraryViewModel @Inject constructor(
                 }
             }
         }
-
-    private fun launchInitialState(getGames: GetGames) =
-        viewModelScope.launch {
-            viewModelState.update {
-                it.copy(
-                    games = getGames(),
-                    loading = false
-                )
-            }
-        }
+    }
 
     fun addEmptyGame(navController: NavHostController) = viewModelScope.launch {
         val id = insertEmptyGame()
@@ -88,40 +82,31 @@ class LibraryViewModel @Inject constructor(
         viewModelState.value.lazyListState.animateScrollToItem(0)
 }
 
-/**
- * TODO
- *
- * Make a ViewModelState since there is a loading state
- *
- * Cleanify the data flow (DomainModel vs. DataModel)
- */
-
-data class LibraryUiState(
-    val ad: NativeAd? = null,
-    private val games: List<GameDataRelationModel> = listOf(),
-    val isSearchBarFocused: Boolean = false,
+data class LibraryViewModelState(
+    val games: List<GameDomainModel> = listOf(),
     val lazyListState: LazyListState = LazyListState(),
-    val loading: Boolean = true,
     val searchInput: TextFieldValue = TextFieldValue(),
-    val topBarState: LibraryTopBarState = LibraryTopBarState.Default,
+    val isSearchBarFocused: Boolean = false,
+    val ad: NativeAd? = null,
 ) {
 
-    // TODO: the match filtering based on search is probably not working, check on it.
-    val displayedGames: List<GameDataRelationModel>
-        get() = if (searchInput.text.isNotBlank()) {
-            games.filter { it.entity.name.lowercase().contains(searchInput.text.lowercase()) }
-        } else games
+    fun toUiState() = LibraryUiState(
+        ad = ad,
+        games = filterGamesWithSearchInput(),
+        isSearchBarFocused = isSearchBarFocused,
+        lazyListState = lazyListState,
+        searchInput = searchInput,
+    )
 
-    val listDisplayState: ListDisplayState
-        get() = if (displayedGames.isEmpty()) {
-            if (searchInput.text.isBlank()) {
-                ListDisplayState.Empty
-            } else {
-                ListDisplayState.EmptyFiltered
-            }
-        } else if (searchInput.text.isNotBlank()) {
-            ListDisplayState.ShowFiltered
-        } else {
-            ListDisplayState.ShowAll
-        }
+    private fun filterGamesWithSearchInput() = games.filter {
+        it.name.value.text.lowercase().contains(searchInput.text.lowercase())
+    }
 }
+
+data class LibraryUiState(
+    val games: List<GameDomainModel> = listOf(),
+    val lazyListState: LazyListState = LazyListState(),
+    val searchInput: TextFieldValue = TextFieldValue(),
+    val isSearchBarFocused: Boolean = false,
+    val ad: NativeAd? = null,
+)

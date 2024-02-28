@@ -26,6 +26,8 @@ import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
@@ -50,8 +52,8 @@ fun OverviewScreen(
 
 @Composable
 fun OverviewScreen(
-    games: List<GameDataRelationModel>,
-    matches: List<MatchDataRelationModel>,
+    games: List<GameDomainModel>,
+    matches: List<MatchDomainModel>,
     ad: NativeAd?,
     onGoToLibraryClick: () -> Unit,
     onAddGameClick: () -> Unit,
@@ -101,7 +103,7 @@ fun OverviewScreen(
 @Composable
 private fun GamesSection(
     ad: NativeAd?,
-    games: List<GameDataRelationModel>,
+    games: List<GameDomainModel>,
     onAddNewGameClick: () -> Unit,
     onSeeAllGamesClick: () -> Unit,
     onSingleGameClick: (Long) -> Unit,
@@ -131,7 +133,7 @@ private fun GamesSection(
 
 @Composable
 private fun GamesHeader(
-    games: List<GameDataRelationModel>,
+    games: List<GameDomainModel>,
     onAddNewGameClick: () -> Unit,
     onSeeAllGamesClick: () -> Unit,
 ) {
@@ -168,8 +170,8 @@ private fun GamesHeader(
 
 @Composable
 private fun MatchesSection(
-    matches: List<MatchDataRelationModel>,
-    games: List<GameDataRelationModel>,
+    matches: List<MatchDomainModel>,
+    games: List<GameDomainModel>,
     onSingleMatchClick: (Long) -> Unit,
 ) {
 
@@ -222,13 +224,13 @@ fun OverviewTopBar(title: String) {
 
 @Composable
 fun TopGames(
-    games: List<GameDataRelationModel>,
+    games: List<GameDomainModel>,
     onSingleGameClick: (Long) -> Unit
 ) {
 
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
-        val gameRows: MutableList<List<GameDataRelationModel>> = mutableListOf()
+        val gameRows: MutableList<List<GameDomainModel>> = mutableListOf()
 
         for (i in 1 until games.size step 2)
             gameRows.add(games.slice(i-1..i))
@@ -247,7 +249,7 @@ fun TopGames(
 
 @Composable
 fun GamesHeadRow(
-    games: List<GameDataRelationModel>,
+    games: List<GameDomainModel>,
     onSingleGameClick: (Long) -> Unit,
 ) {
     Row(
@@ -256,9 +258,9 @@ fun GamesHeadRow(
     ) {
         games.forEach { game ->
             GameListItem(
-                name = game.entity.name,
-                color = LocalCustomThemeColors.current.getColorByKey(game.entity.color),
-                onClick = { onSingleGameClick(game.entity.id) },
+                name = game.name.value.text,
+                color = LocalCustomThemeColors.current.getColorByKey(game.color),
+                onClick = { onSingleGameClick(game.id) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -267,14 +269,14 @@ fun GamesHeadRow(
 
 @Composable
 fun RecentMatches(
-    matches: List<MatchDataRelationModel>,
-    games: List<GameDataRelationModel>,
+    matches: List<MatchDomainModel>,
+    games: List<GameDomainModel>,
     onSingleMatchClick: (Long) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
 
         matches.forEach { match ->
-            val parentGame = games.find { it.entity.id == match.entity.gameId }?.entity
+            val parentGame = games.find { it.id == match.gameId }?.entity
                 ?: throw NoSuchElementException(
                     stringResource(id = R.string.exc_no_game_with_id, match.entity.gameId)
                 )

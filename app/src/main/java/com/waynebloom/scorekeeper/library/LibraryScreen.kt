@@ -36,7 +36,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import com.google.android.gms.ads.nativead.NativeAd
+import com.waynebloom.scorekeeper.GameEntitiesDefaultPreview
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.SampleGames
 import com.waynebloom.scorekeeper.components.AdCard
 import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.GameListItem
@@ -50,6 +52,8 @@ import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.components.Loading
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.sizeTransformWithDelay
@@ -65,14 +69,13 @@ fun LibraryScreen(
 ) {
 
     LibraryScreen(
-        ad = uiState.ad,
-        games = uiState.displayedGames,
+        games = uiState.games,
         lazyListState = uiState.lazyListState,
-        loading = uiState.loading,
         searchInput = uiState.searchInput,
-        onSearchInputChanged = onSearchInputChanged,
-        onAddNewGameClick = onAddGameClick,
+        ad = uiState.ad,
         onGameClick = onGameClick,
+        onAddNewGameClick = onAddGameClick,
+        onSearchInputChanged = onSearchInputChanged,
         modifier = modifier
     )
 }
@@ -80,14 +83,13 @@ fun LibraryScreen(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun LibraryScreen(
-    ad: NativeAd?,
-    games: List<GameDataRelationModel>,
+    games: List<GameDomainModel>,
     lazyListState: LazyListState,
-    loading: Boolean,
     searchInput: TextFieldValue,
-    onSearchInputChanged: (TextFieldValue) -> Unit,
-    onAddNewGameClick: () -> Unit,
+    ad: NativeAd?,
     onGameClick: (Long) -> Unit,
+    onAddNewGameClick: () -> Unit,
+    onSearchInputChanged: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -103,111 +105,106 @@ fun LibraryScreen(
         modifier = modifier,
     ) { contentPadding ->
 
-        if (loading) {
-            Loading()
-        } else {
-            Column(modifier = Modifier
-                .padding(contentPadding)
-                .padding(horizontal = Spacing.screenEdge)
+        Column(Modifier
+            .padding(contentPadding)
+            .padding(horizontal = Spacing.screenEdge)
+        ) {
+
+            AnimatedContent(
+                targetState = games.isNotEmpty() to searchInput.text.isNotBlank(),
+                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+                label = LibraryConstants.ListAnimationTag,
             ) {
 
-                AnimatedContent(
-                    targetState = games.isNotEmpty() to searchInput.text.isNotBlank(),
-                    transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
-                    label = LibraryConstants.ListAnimationTag,
-                ) {
+                when(it) {
 
-                    when(it) {
+                    true to true -> {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                            modifier = Modifier.padding(top = Spacing.sectionContent)
+                        ) {
 
-                        true to true -> {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                                modifier = Modifier.padding(top = Spacing.sectionContent)
-                            ) {
+                            HelperBox(
+                                message = stringResource(
+                                    id = R.string.text_showing_search_results,
+                                    searchInput),
+                                type = HelperBoxType.Info,
+                                maxLines = 2
+                            )
 
-                                HelperBox(
-                                    message = stringResource(
-                                        id = R.string.text_showing_search_results,
-                                        searchInput),
-                                    type = HelperBoxType.Info,
-                                    maxLines = 2
-                                )
-
-                                Divider()
-                            }
+                            Divider()
                         }
+                    }
 
-                        true to false -> {
+                    true to false -> {
 
+                    }
+
+                    false to true -> {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                            modifier = Modifier.padding(top = Spacing.sectionContent)
+                        ) {
+
+                            HelperBox(
+                                message = stringResource(
+                                    id = R.string.text_empty_game_search_results,
+                                    searchInput
+                                ),
+                                type = HelperBoxType.Missing,
+                                maxLines = 2
+                            )
+
+                            Divider()
                         }
+                    }
 
-                        false to true -> {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                                modifier = Modifier.padding(top = Spacing.sectionContent)
-                            ) {
+                    false to false -> {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                            modifier = Modifier.padding(top = Spacing.sectionContent)
+                        ) {
 
-                                HelperBox(
-                                    message = stringResource(
-                                        id = R.string.text_empty_game_search_results,
-                                        searchInput
-                                    ),
-                                    type = HelperBoxType.Missing,
-                                    maxLines = 2
-                                )
+                            HelperBox(
+                                message = stringResource(R.string.text_empty_games),
+                                type = HelperBoxType.Missing,
+                                maxLines = 2
+                            )
 
-                                Divider()
-                            }
-                        }
-
-                        false to false -> {
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                                modifier = Modifier.padding(top = Spacing.sectionContent)
-                            ) {
-
-                                HelperBox(
-                                    message = stringResource(R.string.text_empty_games),
-                                    type = HelperBoxType.Missing,
-                                    maxLines = 2
-                                )
-
-                                Divider()
-                            }
+                            Divider()
                         }
                     }
                 }
+            }
 
-                LazyColumn(
-                    state = lazyListState,
-                    contentPadding = PaddingValues(
-                        top = Spacing.sectionContent, bottom = Spacing.paddingForFab),
-                    verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                ) {
+            LazyColumn(
+                state = lazyListState,
+                contentPadding = PaddingValues(
+                    top = Spacing.sectionContent, bottom = Spacing.paddingForFab),
+                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+            ) {
 
-                    val subListsBetweenAds = games.map { it.entity }
-                        .toAdSeparatedSubLists()
+                val subListsBetweenAds = games.toAdSeparatedSubLists()
 
-                    subListsBetweenAds.forEachIndexed { index, subList ->
+                subListsBetweenAds.forEachIndexed { index, subList ->
 
-                        items(
-                            items = subList,
-                            key = { it.id }
-                        ) { game ->
+                    items(
+                        items = subList,
+                        key = { it.id }
+                    ) { game ->
 
-                            GameListItem(
-                                name = game.name,
-                                color = LocalCustomThemeColors.current.getColorByKey(game.color),
-                                onClick = { onGameClick(game.id) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .animateItemPlacement()
-                            )
-                        }
+                        GameListItem(
+                            name = game.name.value.text,
+                            color = LocalCustomThemeColors.current.getColorByKey(game.color),
+                            onClick = { onGameClick(game.id) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .animateItemPlacement()
+                        )
+                    }
 
-                        if (index != subListsBetweenAds.lastIndex) {
-                            item { AdCard(ad = ad) }
-                        }
+                    if (index != subListsBetweenAds.lastIndex) {
+                        item { AdCard(ad = ad) }
                     }
                 }
             }
@@ -305,11 +302,14 @@ fun GamesTopBar(
 fun GamesScreenPreview() {
     MedianMeepleTheme {
 
-        /*LibraryScreen(
-            games = GameEntitiesDefaultPreview,
-            currentAd = null,
+        LibraryScreen(
+            games = SampleGames,
+            lazyListState = LazyListState(),
+            searchInput = TextFieldValue(),
+            ad = null,
+            onGameClick = {},
             onAddNewGameClick = {},
-            onSingleGameClick = {}
-        )*/
+            onSearchInputChanged = {}
+        )
     }
 }

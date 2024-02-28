@@ -1,5 +1,7 @@
 package com.waynebloom.scorekeeper
 
+import com.waynebloom.scorekeeper.ext.toScoringMode
+import com.waynebloom.scorekeeper.ext.toTextFieldInput
 import com.waynebloom.scorekeeper.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
@@ -8,6 +10,7 @@ import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 
 val CategoryEntitiesDefaultPreview: List<CategoryDataModel> = listOf(
     CategoryDataModel(
@@ -189,6 +192,15 @@ val GameEntitiesDefaultPreview: List<GameDataModel> = listOf(
         scoringMode = 0
     ),
 )
+
+val SampleGames: List<GameDomainModel> = GameEntitiesDefaultPreview.map {
+    GameDomainModel(
+        id = it.id,
+        name = it.name.toTextFieldInput(),
+        color = it.color,
+        scoringMode = it.scoringMode.toScoringMode()
+    )
+}
 
 val GameObjectsDefaultPreview: List<GameDataRelationModel> = GameEntitiesDefaultPreview.map {
     GameDataRelationModel(

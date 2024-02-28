@@ -9,8 +9,8 @@ import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.navigation.Destination
 import com.waynebloom.scorekeeper.overview.OverviewViewModel.Companion.NumberOfGamesToDisplay
 import com.waynebloom.scorekeeper.overview.OverviewViewModel.Companion.NumberOfMatchesToDisplay
-import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
-import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGamesAsFlow
 import com.waynebloom.scorekeeper.room.domain.usecase.GetMatchesAsFlow
 import com.waynebloom.scorekeeper.room.domain.usecase.InsertEmptyGame
@@ -54,12 +54,12 @@ class OverviewViewModel @Inject constructor(
         viewModelScope.launch {
             getGamesAsFlow().collectLatest { games ->
                 viewModelState.update {
-                    it.copy(games = games.take(NumberOfGamesToDisplay))
+                    it.copy(games = games)
                 }
             }
             getMatchesAsFlow().collectLatest { matches ->
                 viewModelState.update {
-                    it.copy(matches = matches.take(NumberOfMatchesToDisplay))
+                    it.copy(matches = matches)
                 }
             }
             getAdAsFlow().collectLatest { latestAd ->
@@ -77,8 +77,8 @@ class OverviewViewModel @Inject constructor(
 }
 
 data class OverviewViewModelState(
-    val games: List<GameDataRelationModel> = listOf(),
-    val matches: List<MatchDataRelationModel> = listOf(),
+    val games: List<GameDomainModel> = listOf(),
+    val matches: List<MatchDomainModel> = listOf(),
     val ad: NativeAd? = null,
 ) {
 
@@ -90,7 +90,7 @@ data class OverviewViewModelState(
 }
 
 data class OverviewUiState(
-    val games: List<GameDataRelationModel>,
-    val matches: List<MatchDataRelationModel>,
+    val games: List<GameDomainModel>,
+    val matches: List<MatchDomainModel>,
     val ad: NativeAd? = null,
 )
