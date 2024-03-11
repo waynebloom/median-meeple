@@ -23,7 +23,6 @@ import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.editGame.EditGameRoute
 import com.waynebloom.scorekeeper.library.LibraryRoute
 import com.waynebloom.scorekeeper.singleGame.matchesForGame.MatchesForGameRoute
-import com.waynebloom.scorekeeper.overview.OverviewRoute
 import com.waynebloom.scorekeeper.playerScore.PlayerScoreScreen
 import com.waynebloom.scorekeeper.ui.screens.DetailedPlayerScoresScreen
 import com.waynebloom.scorekeeper.singleMatch.SingleMatchScreen
@@ -36,19 +35,12 @@ fun MedianMeepleApp(
     deprecatedViewModel: MedianMeepleActivityViewModel, // TODO: make a new view model for this or delete
 ) {
     val context = LocalContext.current
-    val currentAd = deprecatedViewModel.adService.currentAd.value // TODO: remove old ad service and all usages
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Destination.Overview.route,
+        startDestination = Destination.Library.route,
     ) {
-
-        // Overview
-
-        composable(Destination.Overview.route) {
-            OverviewRoute(navController)
-        }
 
         // Library
 

@@ -10,7 +10,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.databinding.AdCardBinding
 import com.waynebloom.scorekeeper.ext.sentenceCase
 
@@ -24,7 +23,7 @@ fun AdCard(
     Surface(shape = MaterialTheme.shapes.large) {
         AndroidViewBinding(
             factory = AdCardBinding::inflate,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 12.dp)
         ) {
             if (ad != null) {
                 adLoadingTag.visibility = View.INVISIBLE
@@ -36,12 +35,6 @@ fun AdCard(
                     setNativeAd(ad)
                     visibility = View.VISIBLE
 
-                    advertiserView = adAdvertiserName.apply {
-                        text = if (ad.advertiser.isNullOrBlank()) {
-                            context.getString(R.string.ad_no_advertiser)
-                        } else ad.advertiser
-                        setTextColor(onSurface)
-                    }
                     bodyView = adBody.apply {
                         text = ad.body
                         setTextColor(onSurface)
@@ -55,7 +48,9 @@ fun AdCard(
                         text = ad.headline
                         setTextColor(onSurface)
                     }
-                    iconView = adAppIcon.apply { setImageDrawable(ad.icon?.drawable) }
+                    iconView = adAppIcon.apply {
+                        setImageDrawable(ad.icon?.drawable)
+                    }
                     priceView = adPrice.apply {
                         text = ad.price
                         setTextColor(onSurface)
@@ -63,10 +58,6 @@ fun AdCard(
                     starRatingView = adStars.apply {
                         rating = ad.starRating?.toFloat() ?: 0f
                         progressDrawable.setTint(primaryColor)
-                    }
-                    storeView = adSourceStore.apply {
-                        text = ad.store
-                        setTextColor(onSurface)
                     }
                 }
             } else {

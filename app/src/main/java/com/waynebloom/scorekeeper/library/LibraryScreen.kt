@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -35,25 +36,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.GameEntitiesDefaultPreview
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.SampleGames
+import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.components.AdCard
-import com.waynebloom.scorekeeper.components.IconButton
-import com.waynebloom.scorekeeper.components.GameListItem
+import com.waynebloom.scorekeeper.components.GameListItemNew
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
-import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.sizeTransformWithDelay
@@ -105,10 +103,7 @@ fun LibraryScreen(
         modifier = modifier,
     ) { contentPadding ->
 
-        Column(Modifier
-            .padding(contentPadding)
-            .padding(horizontal = Spacing.screenEdge)
-        ) {
+        Column(Modifier.padding(contentPadding)) {
 
             AnimatedContent(
                 targetState = games.isNotEmpty() to searchInput.text.isNotBlank(),
@@ -121,13 +116,15 @@ fun LibraryScreen(
                     true to true -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier.padding(top = Spacing.sectionContent)
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = Spacing.sectionContent)
                         ) {
 
                             HelperBox(
                                 message = stringResource(
                                     id = R.string.text_showing_search_results,
-                                    searchInput),
+                                    searchInput.text),
                                 type = HelperBoxType.Info,
                                 maxLines = 2
                             )
@@ -143,7 +140,9 @@ fun LibraryScreen(
                     false to true -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier.padding(top = Spacing.sectionContent)
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = Spacing.sectionContent)
                         ) {
 
                             HelperBox(
@@ -162,7 +161,9 @@ fun LibraryScreen(
                     false to false -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier.padding(top = Spacing.sectionContent)
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp)
+                                .padding(top = Spacing.sectionContent)
                         ) {
 
                             HelperBox(
@@ -179,9 +180,7 @@ fun LibraryScreen(
 
             LazyColumn(
                 state = lazyListState,
-                contentPadding = PaddingValues(
-                    top = Spacing.sectionContent, bottom = Spacing.paddingForFab),
-                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                contentPadding = PaddingValues(bottom = Spacing.paddingForFab),
             ) {
 
                 val subListsBetweenAds = games.toAdSeparatedSubLists()
@@ -193,18 +192,27 @@ fun LibraryScreen(
                         key = { it.id }
                     ) { game ->
 
-                        GameListItem(
+                        GameListItemNew(
                             name = game.name.value.text,
-                            color = LocalCustomThemeColors.current.getColorByKey(game.color),
+                            gameColor = LocalCustomThemeColors.current.getColorByKey(game.color),
                             onClick = { onGameClick(game.id) },
                             modifier = Modifier
+                                .padding(
+                                    horizontal = Spacing.screenEdge,
+                                    vertical = Spacing.subSectionContent)
                                 .fillMaxWidth()
                                 .animateItemPlacement()
                         )
                     }
 
                     if (index != subListsBetweenAds.lastIndex) {
-                        item { AdCard(ad = ad) }
+                        item {
+                            Box(Modifier
+                                .padding(horizontal = Spacing.screenEdge, vertical = Spacing.sectionContent)
+                            ) {
+                                AdCard(ad = ad)
+                            }
+                        }
                     }
                 }
             }

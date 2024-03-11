@@ -16,7 +16,6 @@ fun MedianMeepleFab(
 ) {
 
     FloatingActionButton(
-        shape = MaterialTheme.shapes.large,
         backgroundColor = backgroundColor,
         contentColor = contentColor,
         onClick = { onClick() },
