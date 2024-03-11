@@ -9,12 +9,8 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.admob.domain.usecase.GetAdAsFlow
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
-import com.waynebloom.scorekeeper.enums.LibraryTopBarState
-import com.waynebloom.scorekeeper.enums.ListDisplayState
 import com.waynebloom.scorekeeper.navigation.Destination
-import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.room.domain.usecase.GetGames
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGamesAsFlow
 import com.waynebloom.scorekeeper.room.domain.usecase.InsertEmptyGame
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -76,7 +72,6 @@ class LibraryViewModel @Inject constructor(
         if (viewModelState.value.lazyListState.firstVisibleItemIndex > 0)
             scrollToTop()
     }
-
 
     private suspend fun scrollToTop() =
         viewModelState.value.lazyListState.animateScrollToItem(0)

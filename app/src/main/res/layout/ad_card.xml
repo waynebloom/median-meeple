@@ -142,11 +142,9 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/ad_cta_button"
                 android:layout_width="0dp"
-                android:layout_height="40dp"
+                android:layout_height="48dp"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@color/rust_300"
-                android:insetBottom="4dp"
-                android:insetTop="4dp"
                 android:textAllCaps="false"
                 android:textColor="@color/gray_900"
                 android:textStyle="bold"

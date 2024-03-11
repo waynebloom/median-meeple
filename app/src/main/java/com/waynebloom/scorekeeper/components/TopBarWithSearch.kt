@@ -1,5 +1,6 @@
 package com.waynebloom.scorekeeper.components
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -8,6 +9,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
@@ -24,6 +26,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -38,24 +41,11 @@ fun TopBarWithSearch(
     onSearchInputChanged: (TextFieldValue) -> Unit,
     onCloseClick: () -> Unit
 ) {
-    // TODO make sure the custom theme color still applies to text input cursor and selection
-    /*val textSelectionColors = TextSelectionColors(
-        handleColor = themeColor,
-        backgroundColor = themeColor.copy(Alpha.textSelectionBackground)
-    )*/
-
     var isSearchFieldFocused by rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-    val displayedText = if (searchInput.text.isEmpty()) {
-        if (!isSearchFieldFocused) {
-            TextFieldValue(text = stringResource(R.string.search_placeholder_match))
-        } else TextFieldValue()
-    } else searchInput
 
     LaunchedEffect(isSearchFieldFocused) {
-        if (isSearchFieldFocused) {
-            focusRequester.requestFocus()
-        }
+        focusRequester.requestFocus()
     }
 
     Row(
@@ -72,46 +62,28 @@ fun TopBarWithSearch(
             modifier = Modifier.padding(end = 16.dp),
         )
 
-        // TODO: relates to the other todo above
-        /*CompositionLocalProvider(LocalTextSelectionColors.provides(textSelectionColors)) {
-
+        Box(Modifier.weight(1f)) {
             BasicTextField(
-                value = searchString.ifEmpty {
-                    if (!isSearchBarFocused) {
-                        stringResource(R.string.search_placeholder_match)
-                    } else ""
-                },
+                value = searchInput,
                 textStyle = MaterialTheme.typography.body1.copy(
-                    color = MaterialTheme.colors.onSurface,
+                    color = MaterialTheme.colors.onBackground,
                 ),
+                cursorBrush = SolidColor(MaterialTheme.colors.onBackground),
                 singleLine = true,
-                cursorBrush = SolidColor(themeColor),
-                onValueChange = { onSearchStringChanged(it) },
+                onValueChange = { onSearchInputChanged(it) },
                 keyboardActions = KeyboardActions(
                     onDone = { onCloseClick() }
                 ),
                 modifier = Modifier
-                    .weight(1f)
+                    .fillMaxWidth()
                     .focusRequester(focusRequester)
-                    .onFocusChanged { onSearchBarFocusChanged(it.hasFocus) }
+                    .onFocusChanged { isSearchFieldFocused = it.hasFocus }
             )
-        }*/
 
-        BasicTextField(
-            value = displayedText,
-            textStyle = MaterialTheme.typography.body1.copy(
-                color = MaterialTheme.colors.onSurface,
-            ),
-            singleLine = true,
-            onValueChange = { onSearchInputChanged(it) },
-            keyboardActions = KeyboardActions(
-                onDone = { onCloseClick() }
-            ),
-            modifier = Modifier
-                .weight(1f)
-                .focusRequester(focusRequester)
-                .onFocusChanged { isSearchFieldFocused = it.hasFocus }
-        )
+            if (!isSearchFieldFocused) {
+                Text(text = stringResource(R.string.search_placeholder_match))
+            }
+        }
 
         IconButton(
             painter = painterResource(id = R.drawable.ic_search_off),

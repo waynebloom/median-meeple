@@ -30,8 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -148,7 +146,7 @@ fun LibraryScreen(
                             HelperBox(
                                 message = stringResource(
                                     id = R.string.text_empty_game_search_results,
-                                    searchInput
+                                    searchInput.text
                                 ),
                                 type = HelperBoxType.Missing,
                                 maxLines = 2
@@ -260,8 +258,6 @@ fun GamesTopBar(
 ) {
 
     var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
 
     Column {
 
@@ -285,8 +281,6 @@ fun GamesTopBar(
                         onSearchInputChanged = onSearchInputChanged,
                         onCloseClick = {
                             isSearchBarVisible = false
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
                         },
                         onClearClick = {
                             onSearchInputChanged(TextFieldValue())

@@ -8,7 +8,6 @@ import androidx.compose.animation.core.Ease
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,21 +23,16 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
 import androidx.compose.material.Tab
 import androidx.compose.material.TabRow
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Search
-import androidx.compose.material.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,12 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -63,12 +52,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.components.AdCard
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.IconButton
+import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.components.MatchListItem
 import com.waynebloom.scorekeeper.components.MedianMeepleFab
+import com.waynebloom.scorekeeper.components.RadioButtonOption
+import com.waynebloom.scorekeeper.components.TopBarWithSearch
+import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.enums.MatchSortMode
@@ -76,12 +69,6 @@ import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
-import com.waynebloom.scorekeeper.components.IconButton
-import com.waynebloom.scorekeeper.components.Loading
-import com.waynebloom.scorekeeper.components.RadioButtonOption
-import com.waynebloom.scorekeeper.components.SingleGameDestinationTopBar
-import com.waynebloom.scorekeeper.components.SmallIconButton
-import com.waynebloom.scorekeeper.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.singleGame.MatchesForGameUiState
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
@@ -149,8 +136,6 @@ fun MatchesForSingleGameTopBar(
 ) {
 
     var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
 
     Column {
 
@@ -175,8 +160,6 @@ fun MatchesForSingleGameTopBar(
                         onSearchInputChanged = onSearchInputChanged,
                         onCloseClick = {
                             isSearchBarVisible = false
-                            focusManager.clearFocus()
-                            keyboardController?.hide()
                         },
                         onClearClick = {
                             onSearchInputChanged(TextFieldValue())
