@@ -92,6 +92,15 @@ fun MedianMeepleApp(
                 navArgument(name = "matchId") { type = NavType.LongType }
             )
         ) {
+
+        }
+
+        composable(
+            route = "${Destination.SingleMatch.route}/{matchId}",
+            arguments = listOf(
+                navArgument(name = "matchId") { type = NavType.LongType }
+            )
+        ) {
             if (!deprecatedViewModel.matchCache.needsUpdate) {
                 SingleMatchScreen(
                     game = deprecatedViewModel.gameCache.dataObject,
