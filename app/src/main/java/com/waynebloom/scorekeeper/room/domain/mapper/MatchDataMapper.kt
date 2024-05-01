@@ -11,7 +11,7 @@ class MatchDataMapper @Inject constructor(
 ) {
 
     /**
-     * Map all relations, including lower level ones.
+     * Maps all relations recursively (players, player scores, etc).
      *
      * @param matchData The match data from db.
      * @param categories The scoring categories of the game for which this match is recorded. This
@@ -29,13 +29,16 @@ class MatchDataMapper @Inject constructor(
     )
 
     /**
-     * Only include relations at the 'match' level.
+     * Only map the first-level relations.
      *
      * @param matchData The match data from db.
      */
     fun mapWithRelations(matchData: MatchDataRelationModel) = MatchDomainModel(
         id = matchData.entity.id,
+        gameId = matchData.entity.gameId,
         notes = matchData.entity.notes.toTextFieldInput(),
-        players = matchData.players.map(playerDataMapper::map)
+        players = matchData.players.map {
+            playerDataMapper.map(it.entity)
+        }
     )
 }

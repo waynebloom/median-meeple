@@ -1,6 +1,5 @@
 package com.waynebloom.scorekeeper.navigation
 
-import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -13,21 +12,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.enums.DatabaseAction
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.base.MedianMeepleActivityViewModel
 import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.editGame.EditGameRoute
+import com.waynebloom.scorekeeper.editPlayer.EditPlayerRoute
 import com.waynebloom.scorekeeper.library.LibraryRoute
 import com.waynebloom.scorekeeper.singleGame.matchesForGame.MatchesForGameRoute
 import com.waynebloom.scorekeeper.playerScore.PlayerScoreScreen
 import com.waynebloom.scorekeeper.ui.screens.DetailedPlayerScoresScreen
-import com.waynebloom.scorekeeper.singleMatch.SingleMatchScreen
 import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameRoute
+import com.waynebloom.scorekeeper.singleMatch.SingleMatchRoute
 
 @SuppressWarnings("CyclomaticComplexMethod")
 @Composable
@@ -81,80 +79,19 @@ fun MedianMeepleApp(
             )
         ) {
 
-            EditGameRoute()
+            EditGameRoute(navController)
         }
 
         // SingleMatchScreen
 
         composable(
-            route = "${Destination.SingleMatch.route}/{matchId}",
+            route = "${Destination.SingleMatch.route}/{gameId}/{matchId}",
             arguments = listOf(
-                navArgument(name = "matchId") { type = NavType.LongType }
+                navArgument(name = "gameId") { type = NavType.LongType },
+                navArgument(name = "matchId") { type = NavType.LongType },
             )
         ) {
-
-        }
-
-        composable(
-            route = "${Destination.SingleMatch.route}/{matchId}",
-            arguments = listOf(
-                navArgument(name = "matchId") { type = NavType.LongType }
-            )
-        ) {
-            if (!deprecatedViewModel.matchCache.needsUpdate) {
-                SingleMatchScreen(
-                    game = deprecatedViewModel.gameCache.dataObject,
-                    match = deprecatedViewModel.matchCache.dataObject,
-                    onAddPlayerClick = {
-                        with(deprecatedViewModel) {
-                            executeDbOperation {
-                                insertNewEmptyPlayer()
-                            }
-                        }
-                        navController.navigate(TopLevelScreen.EditPlayerScore.name)
-                    },
-                    onDeleteMatchClick = { matchId ->
-                        val popSuccess = navController.popBackStack(
-                            route = TopLevelScreen.SingleGame.name,
-                            inclusive = true
-                        )
-                        if (!popSuccess) navController.popBackStack()
-                        with(deprecatedViewModel) {
-                            executeDbOperation {
-                                deleteMatchById(matchId)
-                            }
-                        }
-
-                        navController.navigate(TopLevelScreen.SingleGame.name)
-                        Toast.makeText(context, R.string.toast_match_deleted, Toast.LENGTH_SHORT)
-                            .show()
-                    },
-                    onPlayerClick = { playerId ->
-                        deprecatedViewModel.updatePlayerCacheById(
-                            id = playerId,
-                            players = deprecatedViewModel.matchCache.dataObject.players
-                        )
-                        navController.navigate(TopLevelScreen.EditPlayerScore.name)
-                    },
-                    onViewDetailedScoresClick = {
-                        navController.navigate(TopLevelScreen.DetailedPlayerScores.name)
-                    },
-                    saveMatch = { updatedMatch ->
-                        if (updatedMatch.databaseAction == DatabaseAction.UPDATE) {
-                            with(deprecatedViewModel) {
-                                executeDbOperation {
-                                    updateMatch(updatedMatch.entity)
-                                }
-                            }
-                        }
-                        navController.popBackStack()
-                        Toast.makeText(context, R.string.toast_match_updated, Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                )
-            } else {
-                Loading()
-            }
+            SingleMatchRoute(navController)
         }
 
         // DetailedPlayerScoresScreen
@@ -180,7 +117,20 @@ fun MedianMeepleApp(
 
         // PlayerScoreScreen
 
-        composable(route = TopLevelScreen.EditPlayerScore.name) {
+        composable(
+            route = "${Destination.EditPlayer.route}/{gameId}/{matchId}/{playerId}",
+            arguments = listOf(
+                navArgument(name = "gameId") { type = NavType.LongType },
+                navArgument(name = "matchId") { type = NavType.LongType },
+                navArgument(name = "playerId") { type = NavType.LongType },
+            )
+        ) {
+
+            EditPlayerRoute(navController = navController)
+        }
+
+        // TODO: garbage for reference
+        /*composable(route = TopLevelScreen.EditPlayerScore.name) {
             if (!deprecatedViewModel.playerCache.needsUpdate) {
                 PlayerScoreScreen(
                     initialPlayer = deprecatedViewModel.playerCache.dataObject,
@@ -209,9 +159,7 @@ fun MedianMeepleApp(
             } else {
                 Loading()
             }
-        }
-
-        // TODO: garbage for reference
+        }*/
         /*composable(route = TopLevelScreen.Overview.name) {
 
             var allGames: List<GameObject> by remember { mutableStateOf(listOf()) }

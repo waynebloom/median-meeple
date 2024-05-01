@@ -15,9 +15,7 @@ import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.isEqualTo
 import com.waynebloom.scorekeeper.ext.toStringForDisplay
-import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGameWithRelationsAsFlow
@@ -26,6 +24,7 @@ import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.Stat
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -58,19 +57,31 @@ class SingleGameViewModel @Inject constructor(
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = viewModelState.value.toMatchesForGameUiState()
-            )
+                initialValue = viewModelState.value.toMatchesForGameUiState())
         statisticsForGameUiState = viewModelState
             .map(SingleGameViewModelState::toStatisticsForGameUiState)
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(),
-                initialValue = viewModelState.value.toStatisticsForGameUiState()
-            )
+                initialValue = viewModelState.value.toStatisticsForGameUiState())
 
         viewModelScope.launch {
-            getGameWithRelationsAsFlow(gameId).collectLatest {
-                updateViewModelStateWithLatest(game = it)
+            getGameWithRelationsAsFlow(gameId).collectLatest { latest ->
+                if (latest == null) {
+                    this.cancel()
+                    return@collectLatest
+                }
+
+                viewModelState.update {
+                    it.copy(
+                        loading = false,
+                        nameOfGame = latest.name.value.text,
+                        primaryColorId = latest.color,
+                        matches = latest.matches,
+                        categories = latest.categories,
+                        scoringMode = latest.scoringMode,
+                    )
+                }
             }
         }
         viewModelScope.launch {
@@ -82,47 +93,6 @@ class SingleGameViewModel @Inject constructor(
         }
     }
 
-    private fun updateViewModelStateWithLatest(game: GameDomainModel) = with(game) {
-        viewModelState.update { state ->
-
-            if (matches.isEmpty()) {
-                state.copy(
-                    loading = false,
-                    nameOfGame = name.value.text,
-                    primaryColorId = color
-                )
-            } else {
-                val totalScoreStatistics = generateTotalScoreStatistics(matches)
-                val playersWithHighScore = totalScoreStatistics
-                    .dataHighToLow
-                    .takeWhile {
-                        it.score == totalScoreStatistics.dataHighToLow.first().score
-                    }
-                val winners = getWinnersOrderedByNumberOfWins(matches, scoringMode)
-                val playersWithMostWins = winners
-                    .takeWhile {
-                        it.numberOfWins == winners.first().numberOfWins
-                    }
-
-                state.copy(
-                    loading = false,
-                    nameOfGame = name.value.text,
-                    primaryColorId = color,
-                    matches = matches,
-                    scoringMode = scoringMode,
-                    matchCount = matches.count(),
-                    playCount = getPlayCount(matches),
-                    playerCount = getUniquePlayerCount(matches),
-                    playersWithMostWins = playersWithMostWins,
-                    playersWithHighScore = playersWithHighScore,
-                    uniqueWinners = winners,
-                    totalScoreStatistics = totalScoreStatistics,
-                    categoryStatistics = generateCategoryStatistics(categories, matches)
-                )
-            }
-        }
-    }
-
     private fun scrollToTop() = viewModelScope.launch {
         delay(DurationMs.long.toLong())
         viewModelState.value
@@ -130,94 +100,7 @@ class SingleGameViewModel @Inject constructor(
             .animateScrollToItem(0)
     }
 
-    // region Statistics generation
-
-    private fun getTotalScoreData(matches: List<MatchDomainModel>) = matches
-        .flatMap { match ->
-            match.players.map { player ->
-                ScoringPlayerDomainModel(
-                    name = player.name.value.text,
-                    score = player.totalScore
-                )
-            }
-        }
-
-    private fun generateTotalScoreStatistics(
-        matches: List<MatchDomainModel>
-    ) = StatisticsForCategory(
-        category = CategoryDomainModel(
-            name = TextFieldInput(),
-            position = 0
-        ),
-        data = getTotalScoreData(matches)
-    )
-
-    private fun MatchDomainModel.getDataForCategory(category: CategoryDomainModel) = players
-        .filter { it.showDetailedScore }
-        .map { player ->
-            ScoringPlayerDomainModel(
-                name = player.name.value.text,
-                score = player.categoryScores[category.position].score
-            )
-        }
-
-    private fun CategoryDomainModel.getData(matches: List<MatchDomainModel>) = matches
-        .flatMap { it.getDataForCategory(this) }
-
-    private fun generateCategoryStatistics(
-        categories: List<CategoryDomainModel>,
-        matches: List<MatchDomainModel>
-    ) = categories
-        .map {
-
-            val categoryData = it.getData(matches)
-
-            if (categoryData.isNotEmpty()) {
-                StatisticsForCategory(
-                    category = it,
-                    data = it.getData(matches)
-                )
-            } else {
-                null
-            }
-        }
-
-    private fun getPlayCount(matches: List<MatchDomainModel>) = matches
-        .foldRight(initial = 0) { element, sum ->
-            sum + element.players.count()
-        }
-
-    private fun getUniquePlayerCount(matches: List<MatchDomainModel>) = matches
-        .flatMap { it.players }
-        .distinctBy { it.name.value.text }
-        .count()
-
-    private fun getWinnersOrderedByNumberOfWins(
-        matches: List<MatchDomainModel>,
-        scoringMode: ScoringMode
-    ): List<WinningPlayerDomainModel> {
-        val winners = mutableMapOf<String, Int>()
-
-        matches.forEach {
-            if (it.players.isEmpty()) return@forEach
-            val winnerName = it.players.getWinningPlayer(scoringMode).name.value.text
-            winners[winnerName] = winners[winnerName]?.plus(1) ?: 1
-        }
-
-        return winners
-            .toList()
-            .sortedByDescending { (_, value) -> value }
-            .map {
-                WinningPlayerDomainModel(
-                    name = it.first,
-                    numberOfWins = it.second
-                )
-            }
-    }
-
-    // endregion
-
-    // region Matches Ui State
+    // region MatchesForGame
 
     fun onSearchInputChanged(value: TextFieldValue) = viewModelState.update {
         scrollToTop()
@@ -244,7 +127,7 @@ class SingleGameViewModel @Inject constructor(
 
     // endregion
 
-    // region Statistics Ui State
+    // region StatisticsForGame
 
     fun onBestWinnerButtonClick() = viewModelState.update {
         it.copy(isBestWinnerExpanded = !it.isBestWinnerExpanded)
@@ -255,7 +138,7 @@ class SingleGameViewModel @Inject constructor(
     }
 
     fun onUniqueWinnersButtonClick() = viewModelState.update {
-        it.copy(isUniqueWinnersExpanded = !it.isBestWinnerExpanded)
+        it.copy(isUniqueWinnersExpanded = !it.isUniqueWinnersExpanded)
     }
 
     fun onCategoryClick(index: Int) = viewModelState.update {
@@ -284,26 +167,19 @@ private data class SingleGameViewModelState(
     // endregion
 
     // region Statistics
-    val matchCount: Int = 0,
-    val playCount: Int = 0,
-    val playerCount: Int = 0,
     val isBestWinnerExpanded: Boolean = false,
-    val playersWithMostWins: List<WinningPlayerDomainModel> = listOf(),
     val isHighScoreExpanded: Boolean = false,
-    val playersWithHighScore: List<ScoringPlayerDomainModel> = listOf(),
     val isUniqueWinnersExpanded: Boolean = false,
-    val uniqueWinners: List<WinningPlayerDomainModel> = listOf(),
     val categoryNames: List<String> = listOf(),
+    val categories: List<CategoryDomainModel> = listOf(),
     val indexOfSelectedCategory: Int = 0,
-    val totalScoreStatistics: StatisticsForCategory? = null,
-    val categoryStatistics: List<StatisticsForCategory?> = listOf()
     // endregion
 ) {
 
     // region Matches Filtering & Sort Logic
 
     private fun PlayerDomainModel.showWithFilter(filter: String): Boolean {
-        val nameMatches = name.value.text.lowercase().contains(filter.lowercase())
+        val nameMatches = name.text.lowercase().contains(filter.lowercase())
         val totalScoreMatches = filter.toBigDecimalOrNull()?.let {
             totalScore.isEqualTo(it)
         } ?: false
@@ -339,7 +215,7 @@ private data class SingleGameViewModelState(
         when (sortMode) {
             MatchSortMode.ByMatchAge -> filteredMatches.reverse()
             MatchSortMode.ByWinningPlayer -> filteredMatches.sortBy { match ->
-                match.players.getWinningPlayer(scoringMode).name.value.text
+                match.players.getWinningPlayer(scoringMode).name.text
             }
             MatchSortMode.ByWinningScore -> filteredMatches.sortBy { match ->
                 match.players.getWinningPlayer(scoringMode).totalScore
@@ -353,6 +229,94 @@ private data class SingleGameViewModelState(
         filteredMatches.addAll(matchesWithNoPlayers)
 
         return filteredMatches
+    }
+
+    // endregion
+
+    // region Statistics Generation
+
+    private fun
+            getTotalScoreData(matches: List<MatchDomainModel>) = matches
+        .flatMap { match ->
+            match.players.map { player ->
+                ScoringPlayerDomainModel(
+                    name = player.name.text,
+                    score = player.totalScore
+                )
+            }
+        }
+
+    private fun generateTotalScoreStatistics(
+        matches: List<MatchDomainModel>
+    ) = StatisticsForCategory(
+        category = CategoryDomainModel(
+            name = TextFieldValue(),
+            position = 0
+        ),
+        data = getTotalScoreData(matches)
+    )
+
+    private fun MatchDomainModel.getDataForCategory(category: CategoryDomainModel) = players
+        .filter { it.useCategorizedScore }
+        .map { player ->
+            ScoringPlayerDomainModel(
+                name = player.name.text,
+                score = player.categoryScores[category.position].score
+            )
+        }
+
+    private fun CategoryDomainModel.getData(matches: List<MatchDomainModel>) = matches
+        .flatMap { it.getDataForCategory(this) }
+
+    private fun generateCategoryStatistics(
+        categories: List<CategoryDomainModel>,
+        matches: List<MatchDomainModel>
+    ) = categories
+        .map {
+
+            val categoryData = it.getData(matches)
+
+            if (categoryData.isNotEmpty()) {
+                StatisticsForCategory(
+                    category = it,
+                    data = it.getData(matches)
+                )
+            } else {
+                null
+            }
+        }
+
+    private fun getPlayCount(matches: List<MatchDomainModel>) = matches
+        .foldRight(initial = 0) { element, sum ->
+            sum + element.players.count()
+        }
+
+    private fun getUniquePlayerCount(matches: List<MatchDomainModel>) = matches
+        .flatMap { it.players }
+        .distinctBy { it.name.text }
+        .count()
+
+    private fun getWinnersOrderedByNumberOfWins(
+        matches: List<MatchDomainModel>,
+        scoringMode: ScoringMode
+    ): List<WinningPlayerDomainModel> {
+        val winners = mutableMapOf<String, Int>()
+
+        matches.forEach {
+            if (it.players.isEmpty()) return@forEach
+            val winnerName = it.players.getWinningPlayer(scoringMode).name.text
+            winners[winnerName] = winners[winnerName]?.plus(1) ?: 1
+        }
+
+        return winners
+            .toList()
+            .sortedByDescending { (_, value) -> value }
+            .map {
+                WinningPlayerDomainModel(
+                    name = it.first,
+                    numberOfWins = it.second
+                )
+            }
     }
 
     // endregion
@@ -389,27 +353,41 @@ private data class SingleGameViewModelState(
                 primaryColorId = primaryColorId
             )
         }
-        matches.isEmpty() -> {
+
+        matches.isEmpty() || matches.all { it.players.isEmpty() } -> {
             StatisticsForGameUiState.Empty(
                 screenTitle = nameOfGame,
                 primaryColorId = primaryColorId
             )
         }
+
         else -> {
+            val totalScoreStatistics = generateTotalScoreStatistics(matches)
+            val categoryStatistics = generateCategoryStatistics(categories, matches)
+            val playersWithHighScore = totalScoreStatistics
+                .dataHighToLow
+                .takeWhile {
+                    it.score == totalScoreStatistics.dataHighToLow.first().score
+                }
+            val winners = getWinnersOrderedByNumberOfWins(matches, scoringMode)
+            val playersWithMostWins = winners
+                .takeWhile {
+                    it.numberOfWins == winners.first().numberOfWins
+                }
             val selectedCategory = categoryStatistics[indexOfSelectedCategory]
             val playersWithMostWinsOverflow =
                 playersWithMostWins.size - StatisticsForGameConstants.numberOfRowsToShowExpanded
             val playersWithHighScoreOverflow =
                 playersWithHighScore.size - StatisticsForGameConstants.numberOfRowsToShowExpanded
-            val uniqueWinnersOverflow =
-                uniqueWinners.size - StatisticsForGameConstants.numberOfRowsToShowExpanded
+            val winnersOverflow =
+                winners.size - StatisticsForGameConstants.numberOfRowsToShowExpanded
 
             StatisticsForGameUiState.Content(
                 screenTitle = nameOfGame,
                 primaryColorId = primaryColorId,
-                matchCount = matchCount.toString(),
-                playCount = playCount.toString(),
-                uniquePlayerCount = playerCount.toString(),
+                matchCount = matches.count(),
+                playCount = getPlayCount(matches),
+                uniquePlayerCount = getUniquePlayerCount(matches),
                 isBestWinnerExpanded = isBestWinnerExpanded,
                 playersWithMostWins = playersWithMostWins,
                 playersWithMostWinsOverflow = playersWithMostWinsOverflow,
@@ -417,8 +395,8 @@ private data class SingleGameViewModelState(
                 playersWithHighScore = playersWithHighScore,
                 playersWithHighScoreOverflow = playersWithHighScoreOverflow,
                 isUniqueWinnersExpanded = isUniqueWinnersExpanded,
-                uniqueWinners = uniqueWinners,
-                uniqueWinnersOverflow = uniqueWinnersOverflow,
+                winners = winners,
+                winnersOverflow = winnersOverflow,
                 categoryNames = categoryNames,
                 indexOfSelectedCategory = indexOfSelectedCategory,
                 isCategoryDataEmpty = selectedCategory == null,
@@ -475,9 +453,9 @@ sealed interface StatisticsForGameUiState {
     data class Content(
         override val screenTitle: String,
         override val primaryColorId: String,
-        val matchCount: String,
-        val playCount: String,
-        val uniquePlayerCount: String,
+        val matchCount: Int,
+        val playCount: Int,
+        val uniquePlayerCount: Int,
         val isBestWinnerExpanded: Boolean,
         val playersWithMostWins: List<WinningPlayerDomainModel>,
         val playersWithMostWinsOverflow: Int,
@@ -485,8 +463,8 @@ sealed interface StatisticsForGameUiState {
         val playersWithHighScore: List<ScoringPlayerDomainModel>,
         val playersWithHighScoreOverflow: Int,
         val isUniqueWinnersExpanded: Boolean,
-        val uniqueWinners: List<WinningPlayerDomainModel>,
-        val uniqueWinnersOverflow: Int,
+        val winners: List<WinningPlayerDomainModel>,
+        val winnersOverflow: Int,
         val categoryNames: List<String>,
         val indexOfSelectedCategory: Int,
         val isCategoryDataEmpty: Boolean,

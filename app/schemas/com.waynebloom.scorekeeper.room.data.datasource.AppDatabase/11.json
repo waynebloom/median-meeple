@@ -35,17 +35,17 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [],
         "foreignKeys": []
       },
       {
         "tableName": "Match",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `game_owner_id` INTEGER NOT NULL, `time_modified` INTEGER NOT NULL, `match_notes` TEXT NOT NULL, FOREIGN KEY(`game_owner_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `game_owner_id` INTEGER NOT NULL, `match_notes` TEXT NOT NULL, `time_modified` INTEGER NOT NULL, FOREIGN KEY(`game_owner_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -61,23 +61,23 @@
             "notNull": true
           },
           {
+            "fieldPath": "notes",
+            "columnName": "match_notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "timeModified",
             "columnName": "time_modified",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "matchNotes",
-            "columnName": "match_notes",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -106,7 +106,7 @@
       },
       {
         "tableName": "Player",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `match_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `score` TEXT NOT NULL, `position` INTEGER NOT NULL, `show_detailed_score` INTEGER NOT NULL, FOREIGN KEY(`match_id`) REFERENCES `Match`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `match_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, `score` TEXT NOT NULL, `show_detailed_score` INTEGER NOT NULL, FOREIGN KEY(`match_id`) REFERENCES `Match`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -128,15 +128,15 @@
             "notNull": true
           },
           {
-            "fieldPath": "score",
-            "columnName": "score",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
             "fieldPath": "position",
             "columnName": "position",
             "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalScore",
+            "columnName": "score",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
@@ -147,10 +147,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -179,7 +179,7 @@
       },
       {
         "tableName": "SubscoreTitle",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `position` INTEGER NOT NULL, `title` TEXT NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `title` TEXT NOT NULL, `position` INTEGER NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -194,23 +194,23 @@
             "notNull": true
           },
           {
+            "fieldPath": "name",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "position",
             "columnName": "position",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "title",
-            "columnName": "title",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -248,7 +248,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "subscoreTitleId",
+            "fieldPath": "categoryId",
             "columnName": "subscore_title_id",
             "affinity": "INTEGER",
             "notNull": true
@@ -267,10 +267,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {

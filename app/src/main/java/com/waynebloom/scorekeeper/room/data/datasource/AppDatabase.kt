@@ -18,11 +18,13 @@ import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.room.domain.repository.CategoryRepository
+import com.waynebloom.scorekeeper.room.domain.repository.CategoryScoreRepository
 import com.waynebloom.scorekeeper.room.domain.repository.GameRepository
 import com.waynebloom.scorekeeper.room.domain.repository.MatchRepository
+import com.waynebloom.scorekeeper.room.domain.repository.PlayerRepository
 
 @Database(
-    version = 11,
+    version = 12,
     entities = [
         GameDataModel::class,
         MatchDataModel::class,
@@ -36,15 +38,18 @@ import com.waynebloom.scorekeeper.room.domain.repository.MatchRepository
         AutoMigration (from = 2, to = 3, spec = AppDatabase.DeleteGameImage::class),
         AutoMigration (from = 4, to = 5),
         AutoMigration (from = 5, to = 6),
-        AutoMigration (from = 6, to = 7)
+        AutoMigration (from = 6, to = 7),
+        AutoMigration (from = 11, to = 12)
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun appDao(): AppDao
     abstract fun getCategoryRepository(): CategoryRepository
+    abstract fun getCategoryScoreRepository(): CategoryScoreRepository
     abstract fun getGameRepository(): GameRepository
     abstract fun getMatchRepository(): MatchRepository
+    abstract fun getPlayerRepository(): PlayerRepository
 
     @DeleteColumn(tableName = "Game", columnName = "image")
     class DeleteGameImage : AutoMigrationSpec

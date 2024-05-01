@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 12,
-    "identityHash": "eb3dcd18510cb272051de208e1581134",
+    "identityHash": "d5045a47e31c9b0dc00579d0d10da458",
     "entities": [
       {
         "tableName": "Game",
@@ -35,24 +35,23 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [],
         "foreignKeys": []
       },
       {
         "tableName": "Match",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `game_owner_id` INTEGER NOT NULL, `time_modified` INTEGER NOT NULL, `match_notes` TEXT NOT NULL, FOREIGN KEY(`game_owner_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_owner_id` INTEGER NOT NULL, `match_notes` TEXT NOT NULL, `time_modified` INTEGER NOT NULL, FOREIGN KEY(`game_owner_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
             "columnName": "id",
             "affinity": "INTEGER",
-            "notNull": true,
-            "defaultValue": "0"
+            "notNull": true
           },
           {
             "fieldPath": "gameId",
@@ -61,23 +60,23 @@
             "notNull": true
           },
           {
+            "fieldPath": "notes",
+            "columnName": "match_notes",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "timeModified",
             "columnName": "time_modified",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "matchNotes",
-            "columnName": "match_notes",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -106,7 +105,7 @@
       },
       {
         "tableName": "Player",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `match_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, `score` TEXT NOT NULL, `show_detailed_score` INTEGER NOT NULL, `tie_behavior` TEXT NOT NULL DEFAULT 'Share', FOREIGN KEY(`match_id`) REFERENCES `Match`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `match_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, `score` TEXT NOT NULL, `show_detailed_score` INTEGER NOT NULL, FOREIGN KEY(`match_id`) REFERENCES `Match`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -134,7 +133,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "score",
+            "fieldPath": "totalScore",
             "columnName": "score",
             "affinity": "TEXT",
             "notNull": true
@@ -144,20 +143,13 @@
             "columnName": "show_detailed_score",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "tieBehavior",
-            "columnName": "tie_behavior",
-            "affinity": "TEXT",
-            "notNull": true,
-            "defaultValue": "'Share'"
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -186,7 +178,7 @@
       },
       {
         "tableName": "SubscoreTitle",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `position` INTEGER NOT NULL, `title` TEXT NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `title` TEXT NOT NULL, `position` INTEGER NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -201,23 +193,23 @@
             "notNull": true
           },
           {
+            "fieldPath": "name",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "position",
             "columnName": "position",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "title",
-            "columnName": "title",
-            "affinity": "TEXT",
-            "notNull": true
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -255,7 +247,7 @@
             "notNull": true
           },
           {
-            "fieldPath": "subscoreTitleId",
+            "fieldPath": "categoryId",
             "columnName": "subscore_title_id",
             "affinity": "INTEGER",
             "notNull": true
@@ -274,10 +266,10 @@
           }
         ],
         "primaryKey": {
+          "autoGenerate": true,
           "columnNames": [
             "id"
-          ],
-          "autoGenerate": true
+          ]
         },
         "indices": [
           {
@@ -328,7 +320,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'eb3dcd18510cb272051de208e1581134')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd5045a47e31c9b0dc00579d0d10da458')"
     ]
   }
 }

@@ -30,10 +30,16 @@ object DatabaseModule {
     fun providesCategoryRepository(appDatabase: AppDatabase) = appDatabase.getCategoryRepository()
 
     @Provides
+    fun providesCategoryScoreRepository(appDatabase: AppDatabase) = appDatabase.getCategoryScoreRepository()
+
+    @Provides
     fun providesGameRepository(appDatabase: AppDatabase) = appDatabase.getGameRepository()
 
     @Provides
     fun providesMatchRepository(appDatabase: AppDatabase) = appDatabase.getMatchRepository()
+
+    @Provides
+    fun providesPlayerRepository(appDatabase: AppDatabase) = appDatabase.getPlayerRepository()
 }
 
 

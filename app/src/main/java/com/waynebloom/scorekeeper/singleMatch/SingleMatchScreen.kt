@@ -241,7 +241,7 @@ private fun PlayersSectionHeader(
 }
 
 @Composable
-fun PlayersSection(
+private fun PlayersSection(
     players: List<PlayerDataModel>,
     scoringMode: ScoringMode,
     showDetailedScoresButton: Boolean,
@@ -334,7 +334,7 @@ private fun OtherSection(
 }
 
 @Composable
-fun RankedListItem(
+private fun RankedListItem(
     player: PlayerDataModel,
     rank: Int,
     themeColor: Color,

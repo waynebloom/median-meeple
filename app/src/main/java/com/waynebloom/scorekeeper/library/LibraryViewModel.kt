@@ -48,7 +48,7 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             getGamesAsFlow().collectLatest { games ->
                 viewModelState.update {
-                    it.copy(games = games)
+                    it.copy(games = games.filterNotNull())
                 }
             }
         }

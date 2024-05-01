@@ -7,6 +7,6 @@ import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 internal fun CategoryDomainModel.toDataModel(gameId: Long) = CategoryDataModel(
     id = id,
     gameId = gameId,
-    name = name.value.text,
+    name = name.text,
     position = position
 )

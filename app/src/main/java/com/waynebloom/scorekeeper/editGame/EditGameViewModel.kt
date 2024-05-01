@@ -53,18 +53,11 @@ class EditGameViewModel @Inject constructor(
     lateinit var composableCoroutineScope: CoroutineScope
 
     init {
-
-        val initialState = EditGameViewModelState()
-        viewModelState = mutableStateFlowFactory.newInstance(initialState)
+        viewModelState = mutableStateFlowFactory.newInstance(EditGameViewModelState())
         uiState = viewModelState
             .map(EditGameViewModelState::toUiState)
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.Eagerly,
-                initialValue = initialState.toUiState()
-            )
+            .stateIn(viewModelScope, SharingStarted.Eagerly, viewModelState.value.toUiState())
 
-        // fetching game data from db
         viewModelScope.launch {
 
             val game = getGame(gameId)
@@ -152,7 +145,7 @@ class EditGameViewModel @Inject constructor(
         val index = it.indexOfCategoryReceivingInput ?: return
         val category = it.categories[index]
         val updatedCategory = category.copy(
-            name = category.name.copy(value = input)
+            name = input
         )
         val updatedCategories = it.categories.toMutableList().apply {
             this[index] = updatedCategory
@@ -166,7 +159,7 @@ class EditGameViewModel @Inject constructor(
 
             val newCategoryPosition = viewModelState.value.categories.lastIndex + 1
             val newCategory = CategoryDomainModel(
-                name = TextFieldInput(),
+                name = TextFieldValue(),
                 position = newCategoryPosition
             )
             val newId = insertCategory(

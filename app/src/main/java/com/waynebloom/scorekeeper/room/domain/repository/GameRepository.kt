@@ -28,7 +28,7 @@ interface GameRepository {
 
     @Transaction
     @Query("SELECT * FROM game WHERE id = :id")
-    fun getOneWithRelationsAsFlow(id: Long): Flow<GameDataRelationModel>
+    fun getOneWithRelationsAsFlow(id: Long): Flow<GameDataRelationModel?>
 
     @Transaction
     @Query("SELECT * FROM game")

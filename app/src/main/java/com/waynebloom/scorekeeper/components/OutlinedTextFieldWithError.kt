@@ -50,7 +50,7 @@ fun OutlinedTextFieldWithErrorDescription(
     leadingIcon: @Composable (() -> Unit)? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     isError: Boolean = false,
-    @StringRes errorDescription: Int? = null,
+    @StringRes errorDescriptionResource: Int? = null,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
@@ -138,9 +138,9 @@ fun OutlinedTextFieldWithErrorDescription(
             }
         )
 
-        if (isError && errorDescription != null) {
+        if (isError && errorDescriptionResource != null) {
             Text(
-                text = stringResource(id = errorDescription),
+                text = stringResource(id = errorDescriptionResource),
                 color = MaterialTheme.colors.error,
                 style = MaterialTheme.typography.body2,
                 modifier = Modifier.padding(start = Dimensions.Spacing.betweenSections)

@@ -124,7 +124,7 @@
 
     <!-- region SingleMatchScreen -->
 
-    <string name="error_maximum_players_reached">You may only record up to 100 players for a single match.</string>
+    <string name="error_maximum_players_reached">You have reached the maximum supported number of players.</string>
     <string name="field_name">Name</string>
     <string name="field_notes">Notes</string>
     <string name="header_other">Other</string>

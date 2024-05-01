@@ -15,4 +15,6 @@ class InsertEmptyGame @Inject constructor(
         val defaultName = resources.getString(R.string.default_new_game_name)
         return gameRepository.insert(game = GameDataModel(name = defaultName))
     }
+
+    // TODO: remove this and use the empty insert style of SingleMatch
 }

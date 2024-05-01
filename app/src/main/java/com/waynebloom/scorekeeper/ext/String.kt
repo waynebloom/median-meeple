@@ -2,18 +2,18 @@ package com.waynebloom.scorekeeper.ext
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.constants.Constants
-import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
+import com.waynebloom.scorekeeper.enums.ValidityState
 import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import java.math.RoundingMode
 
-fun String.getScoreValidityState(): ScoreStringValidityState {
-    val scoreBigDecimal = toBigDecimalOrNull()
+fun String.isValidBigDecimal(): ValidityState {
+    val bigDecimal = toBigDecimalOrNull()
 
-    return if (scoreBigDecimal == null) {
-        ScoreStringValidityState.InvalidNumber
-    } else if (scoreBigDecimal.scale() > Constants.maximumDecimalPlaces) {
-        ScoreStringValidityState.ExcessiveDecimals
-    } else ScoreStringValidityState.Valid
+    return when {
+        bigDecimal == null -> ValidityState.InvalidNumber
+        bigDecimal.scale() > Constants.maximumDecimalPlaces -> ValidityState.ExcessiveDecimals
+        else -> ValidityState.Valid
+    }
 }
 
 fun String.sentenceCase(): String {

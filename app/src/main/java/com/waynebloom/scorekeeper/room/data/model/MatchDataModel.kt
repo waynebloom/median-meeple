@@ -23,7 +23,6 @@ import java.util.Date
 data class MatchDataModel(
 
     @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(defaultValue = "0")
     val id: Long = 0,
 
     @ColumnInfo(name = "game_owner_id")
@@ -34,7 +33,6 @@ data class MatchDataModel(
 
     @ColumnInfo(name = "time_modified")
     var timeModified: Long = Date().time
-
 )
 
 data class MatchDataRelationModel(

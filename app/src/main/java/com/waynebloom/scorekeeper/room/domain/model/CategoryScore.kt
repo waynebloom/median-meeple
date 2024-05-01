@@ -6,8 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.constants.Constants
 import com.waynebloom.scorekeeper.enums.DatabaseAction
-import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
-import com.waynebloom.scorekeeper.ext.getScoreValidityState
+import com.waynebloom.scorekeeper.enums.ValidityState
+import com.waynebloom.scorekeeper.ext.isValidBigDecimal
 import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -18,7 +18,7 @@ class CategoryScoreEntityState(
     databaseAction: DatabaseAction = DatabaseAction.NO_ACTION
 ) {
     var databaseAction by mutableStateOf(databaseAction)
-    var validityState by mutableStateOf(ScoreStringValidityState.Valid)
+    var validityState by mutableStateOf(ValidityState.Valid)
     var textFieldValue by mutableStateOf(
         value = TextFieldValue(text = entity.value)
     )
@@ -32,15 +32,15 @@ class CategoryScoreEntityState(
     }
 
     fun setScoreFromBigDecimal(scoreBigDecimal: BigDecimal) {
-        validityState = ScoreStringValidityState.Valid
+        validityState = ValidityState.Valid
         this.bigDecimal = beautifyBigDecimal(scoreBigDecimal)
         textFieldValue = textFieldValue.copy(text = this.bigDecimal.toPlainString())
     }
 
     fun setScoreFromTextValue(textFieldValue: TextFieldValue) {
-        validityState = textFieldValue.text.getScoreValidityState()
+        validityState = textFieldValue.text.isValidBigDecimal()
         this.textFieldValue = textFieldValue
-        if (validityState == ScoreStringValidityState.Valid)
+        if (validityState == ValidityState.Valid)
             bigDecimal = beautifyBigDecimal(textFieldValue.text.toBigDecimal())
     }
 

@@ -5,6 +5,7 @@ import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 data class MatchDomainModel(
 //    val timeModified: Date,
     val id: Long = 0,
-    val notes: TextFieldInput,
-    val players: List<PlayerDomainModel>
+    val gameId: Long = -1,
+    val notes: TextFieldInput = TextFieldInput(),
+    val players: List<PlayerDomainModel> = listOf()
 )

@@ -212,7 +212,7 @@ fun EditGameScreen(
                                 Chip(
                                     onClick = { onCategoryClick(index) },
                                     shape = MaterialTheme.shapes.small,
-                                    content = { Text(text = category.name.value.text) },
+                                    content = { Text(text = category.name.text) },
                                     border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(alpha = Alpha.disabled)),
                                     colors = ChipDefaults.chipColors(
                                         backgroundColor = Color.Transparent,
@@ -348,7 +348,7 @@ private fun GameDetailsSection(
             onValueChange = onNameChanged,
             label = { Text(text = stringResource(id = R.string.field_name)) },
             isError = !isNameValid,
-            errorDescription = R.string.error_empty_name,
+            errorDescriptionResource = R.string.error_empty_name,
             selectAllOnFocus = true,
             shape = MaterialTheme.shapes.medium,
         )
@@ -496,7 +496,7 @@ private fun EditCategoriesBottomSheetContent(
                         }
 
                         OutlinedTextFieldWithErrorDescription(
-                            value = category.name.value,
+                            value = category.name,
                             onValueChange = onInputChanged,
                             modifier = Modifier
                                 .weight(weight = 1f, fill = false)
@@ -504,8 +504,8 @@ private fun EditCategoriesBottomSheetContent(
                                 .focusRequester(focusRequester)
                                 .bringIntoViewRequester(bringIntoViewRequester),
                             selectAllOnFocus = false, // TODO: fix this bug, selecting new category when the text from the other is selected
-                            isError = !category.name.isValid,
-                            errorDescription = R.string.field_error_empty,
+                            isError = category.name.text.isBlank(),
+                            errorDescriptionResource = R.string.field_error_empty,
                             keyboardActions = KeyboardActions { onHideInputField() },
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 imeAction = ImeAction.Done
@@ -541,7 +541,7 @@ private fun EditCategoriesBottomSheetContent(
                         ) {
 
                             Text(
-                                text = category.name.value.text,
+                                text = category.name.text,
                                 color = MaterialTheme.colors.onBackground,
                                 style = MaterialTheme.typography.body1
                             )

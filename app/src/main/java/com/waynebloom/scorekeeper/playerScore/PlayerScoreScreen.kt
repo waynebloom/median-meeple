@@ -43,7 +43,7 @@ import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreEntityState
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
-import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
+import com.waynebloom.scorekeeper.enums.ValidityState
 import com.waynebloom.scorekeeper.enums.TopLevelScreen
 import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
@@ -237,7 +237,7 @@ private fun InformationSection(
             keyboardActions = KeyboardActions(
                 onNext = { focusManager.moveFocus(FocusDirection.Next) }
             ),
-            errorDescription = R.string.error_empty_name,
+            errorDescriptionResource = R.string.error_empty_name,
             selectAllOnFocus = true
         )
     }
@@ -280,7 +280,7 @@ private fun RankingSection(
             keyboardActions = KeyboardActions(
                 onDone = { focusManager.moveFocus(FocusDirection.Next) }
             ),
-            errorDescription = R.string.error_invalid_rank,
+            errorDescriptionResource = R.string.error_invalid_rank,
             selectAllOnFocus = true
         )
     }
@@ -393,7 +393,7 @@ private fun TotalScoreField(
         onValueChange = { onChanged(it) },
         modifier = Modifier.padding(bottom = 8.dp),
         label = { Text(text = stringResource(id = R.string.field_total_score)) },
-        isError = totalScoreData.validityState != ScoreStringValidityState.Valid,
+        isError = totalScoreData.validityState != ValidityState.Valid,
         keyboardOptions = KeyboardOptions(
             keyboardType = KeyboardType.Number,
             imeAction = ImeAction.Done
@@ -401,7 +401,7 @@ private fun TotalScoreField(
         keyboardActions = KeyboardActions(
             onDone = { onDoneClick() }
         ),
-        errorDescription = totalScoreData.validityState.descriptionResource,
+        errorDescriptionResource = totalScoreData.validityState.descriptionResource,
         selectAllOnFocus = true
     )
 }
@@ -427,7 +427,7 @@ private fun CategoryFields(
                 onValueChange = { onFieldChanged(data.entity.categoryId, it) },
                 modifier = Modifier.fillMaxWidth(),
                 label = { Text(text = categoryTitles[index].name) },
-                isError = data.validityState != ScoreStringValidityState.Valid,
+                isError = data.validityState != ValidityState.Valid,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next
@@ -435,7 +435,7 @@ private fun CategoryFields(
                 keyboardActions = KeyboardActions(
                     onNext = { onNextClick() }
                 ),
-                errorDescription = data.validityState.descriptionResource,
+                errorDescriptionResource = data.validityState.descriptionResource,
                 selectAllOnFocus = true
             )
         }
@@ -445,7 +445,7 @@ private fun CategoryFields(
             modifier = Modifier.fillMaxWidth(),
             onValueChange = { onUncategorizedFieldChanged(it) },
             label = { Text(text = stringResource(id = R.string.field_uncategorized)) },
-            isError = uncategorizedScoreData.validityState != ScoreStringValidityState.Valid,
+            isError = uncategorizedScoreData.validityState != ValidityState.Valid,
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number,
                 imeAction = ImeAction.Done
@@ -453,7 +453,7 @@ private fun CategoryFields(
             keyboardActions = KeyboardActions(
                 onDone = { onDoneClick() }
             ),
-            errorDescription = uncategorizedScoreData.validityState.descriptionResource,
+            errorDescriptionResource = uncategorizedScoreData.validityState.descriptionResource,
             selectAllOnFocus = true
         )
     }

@@ -58,7 +58,7 @@ fun MatchListItem(
                 val winningPlayer = match.players.getWinningPlayer(scoringMode)
 
                 VictorCard(
-                    name = winningPlayer.name.value.text,
+                    name = winningPlayer.name.text,
                     score = winningPlayer.totalScore.toShortFormatString(),
                     modifier = Modifier.weight(1f, fill = false)
                 )

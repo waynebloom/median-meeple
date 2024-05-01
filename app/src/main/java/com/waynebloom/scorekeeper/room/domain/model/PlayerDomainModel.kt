@@ -1,13 +1,14 @@
 package com.waynebloom.scorekeeper.room.domain.model
 
-import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
+import androidx.compose.ui.text.input.TextFieldValue
 import java.math.BigDecimal
 
 data class PlayerDomainModel(
-    val id: Long = 0,
-    val categoryScores: List<CategoryScoreDomainModel>,
-    val name: TextFieldInput,
+    val id: Long = -1,
+    val matchId: Long = -1,
+    val categoryScores: List<CategoryScoreDomainModel> = emptyList(),
+    val name: TextFieldValue = TextFieldValue("New Player"),
     val position: Int,
-    val showDetailedScore: Boolean,
-    val totalScore: BigDecimal,
+    val useCategorizedScore: Boolean = false,
+    val totalScore: BigDecimal = BigDecimal.ZERO,
 )

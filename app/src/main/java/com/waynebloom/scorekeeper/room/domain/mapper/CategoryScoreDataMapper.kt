@@ -14,4 +14,11 @@ class CategoryScoreDataMapper @Inject constructor() {
         category = categories.getValue(categoryScoreData.categoryId),
         score = categoryScoreData.value.toBigDecimal()
     )
+
+    fun map(categoryScore: CategoryScoreDataModel) = CategoryScoreDomainModel(
+        id = categoryScore.id,
+        playerId = categoryScore.playerId,
+        categoryId = categoryScore.categoryId,
+        score = categoryScore.value.toBigDecimal()
+    )
 }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -49,7 +50,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Alpha
-import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
@@ -111,9 +111,9 @@ fun StatisticsForGameScreen(
 
             is StatisticsForGameUiState.Content -> {
                 StatisticsForGameScreen(
-                    matchCount = uiState.matchCount,
-                    playCount = uiState.playCount,
-                    uniquePlayerCount = uiState.uniquePlayerCount,
+                    matchCount = uiState.matchCount.toString(),
+                    playCount = uiState.playCount.toString(),
+                    uniquePlayerCount = uiState.uniquePlayerCount.toString(),
                     isBestWinnerExpanded = uiState.isBestWinnerExpanded,
                     playersWithMostWins = uiState.playersWithMostWins,
                     playersWithMostWinsOverflow = uiState.playersWithMostWinsOverflow,
@@ -121,8 +121,8 @@ fun StatisticsForGameScreen(
                     playersWithHighScore = uiState.playersWithHighScore,
                     playersWithHighScoreOverflow = uiState.playersWithHighScoreOverflow,
                     isUniqueWinnersExpanded = uiState.isUniqueWinnersExpanded,
-                    uniqueWinners = uiState.uniqueWinners,
-                    uniqueWinnersOverflow = uiState.uniqueWinnersOverflow,
+                    uniqueWinners = uiState.winners,
+                    uniqueWinnersOverflow = uiState.winnersOverflow,
                     categoryNames = uiState.categoryNames,
                     indexOfSelectedCategory = uiState.indexOfSelectedCategory,
                     isCategoryDataEmpty = uiState.isCategoryDataEmpty,

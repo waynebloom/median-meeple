@@ -18,7 +18,7 @@ import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreEntityState
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.enums.DatabaseAction
-import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
+import com.waynebloom.scorekeeper.enums.ValidityState
 import com.waynebloom.scorekeeper.ext.statefulUpdateElement
 import com.waynebloom.scorekeeper.ext.toStringForDisplay
 
@@ -221,7 +221,7 @@ class EditPlayerScoreViewModel(
         isScoreDataValid = if (latestInput.toBigDecimalOrNull() != null) {
             categoryData
                 .plus(listOf(totalScoreData, uncategorizedScoreData))
-                .all { it.validityState == ScoreStringValidityState.Valid }
+                .all { it.validityState == ValidityState.Valid }
         } else false
     }
 }

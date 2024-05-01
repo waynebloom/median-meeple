@@ -1,5 +1,6 @@
 package com.waynebloom.scorekeeper.room.domain.mapper
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.ext.toScoringMode
 import com.waynebloom.scorekeeper.ext.toTextFieldInput
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
@@ -11,12 +12,13 @@ class GameDataMapper @Inject constructor(
     private val matchDataMapper: MatchDataMapper
 ) {
 
-    fun mapWithRelations(gameData: GameDataRelationModel): GameDomainModel {
+    fun mapWithRelations(gameData: GameDataRelationModel?): GameDomainModel? {
+        if (gameData == null) return null
         val categoryDomainModels = gameData.categories
             .map {
                 CategoryDomainModel(
                     id = it.id,
-                    name = it.name.toTextFieldInput(),
+                    name = TextFieldValue(it.name),
                     position = it.position
                 )
             }
