@@ -14,7 +14,7 @@ import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
 @Composable
 fun SingleMatchRoute(
     navController: NavHostController,
-    viewModel: NewSingleMatchViewModel = hiltViewModel(),
+    viewModel: SingleMatchViewModel = hiltViewModel(),
 ) {
 
     val uiState by viewModel.uiState.collectAsState()

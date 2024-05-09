@@ -130,51 +130,46 @@ class EditGameViewModel @Inject constructor(
         }
     }
 
-    fun onCategoryClick(index: Int) = viewModelState.update {
-        it.copy(
-            indexOfCategoryReceivingInput = index,
-            isCategoryDialogOpen = true
-        )
+    fun onCategoryClick(index: Int) {
+        viewModelState.update {
+            it.copy(
+                indexOfCategoryReceivingInput = index,
+                isCategoryDialogOpen = true
+            )
+        }
     }
 
     fun onEditButtonClick() = viewModelState.update {
         it.copy(isCategoryDialogOpen = true)
     }
 
-    fun onCategoryInputChanged(input: TextFieldValue) = viewModelState.update {
-        val index = it.indexOfCategoryReceivingInput ?: return
+    fun onCategoryInputChanged(input: TextFieldValue, index: Int) = viewModelState.update {
         val category = it.categories[index]
-        val updatedCategory = category.copy(
-            name = input
-        )
         val updatedCategories = it.categories.toMutableList().apply {
-            this[index] = updatedCategory
+            this[index] = category.copy(name = input)
         }
-
         it.copy(categories = updatedCategories)
     }
 
-    fun onNewCategoryClick() {
-        viewModelScope.launch {
+    fun onNewCategoryClick() = viewModelScope.launch {
+        val newCategoryPosition = viewModelState.value.categories.lastIndex + 1
+        val newCategory = CategoryDomainModel(
+            name = TextFieldValue(),
+            position = newCategoryPosition
+        )
+        val newId = insertCategory(
+            category = newCategory,
+            gameId = gameId
+        )
 
-            val newCategoryPosition = viewModelState.value.categories.lastIndex + 1
-            val newCategory = CategoryDomainModel(
-                name = TextFieldValue(),
-                position = newCategoryPosition
+        viewModelState.update {
+            val updatedCategories = it.categories.plus(newCategory.copy(id = newId))
+
+            it.copy(
+                isCategoryDialogOpen = true,
+                categories = updatedCategories,
+                indexOfCategoryReceivingInput = updatedCategories.lastIndex,
             )
-            val newId = insertCategory(
-                category = newCategory,
-                gameId = gameId
-            )
-
-            viewModelState.update {
-                val updatedCategories = it.categories.plus(newCategory.copy(id = newId))
-
-                it.copy(
-                    categories = updatedCategories,
-                    indexOfCategoryReceivingInput = updatedCategories.lastIndex,
-                )
-            }
         }
     }
 
@@ -228,7 +223,7 @@ class EditGameViewModel @Inject constructor(
         it.copy(dragState = it.dragState.copy(dragStart = index))
     }
 
-    fun onHideCategoryInput() = viewModelState.update {
+    fun onCategoryDoneClick() = viewModelState.update {
         it.copy(indexOfCategoryReceivingInput = null)
     }
 

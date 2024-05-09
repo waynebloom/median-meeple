@@ -9,6 +9,6 @@ data class GameDomainModel(
     val categories: List<CategoryDomainModel> = listOf(),
     val color: String = "",
     val matches: List<MatchDomainModel> = listOf(),
-    val name: TextFieldInput = TextFieldInput(), // TODO: make this a string again, do the same for any other ui models
+    val name: TextFieldInput = TextFieldInput(),
     val scoringMode: ScoringMode = ScoringMode.Descending
 )

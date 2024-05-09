@@ -1,82 +1,85 @@
 package com.waynebloom.scorekeeper.singleMatch
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.platform.SoftwareKeyboardController
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import com.waynebloom.scorekeeper.constants.Constants
-import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
-import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
-import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
-import com.waynebloom.scorekeeper.enums.DatabaseAction
-import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
-import java.util.*
+import androidx.lifecycle.viewModelScope
+import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.room.domain.usecase.DeleteMatch
+import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
+import com.waynebloom.scorekeeper.room.domain.usecase.GetMatchWithRelationsAsFlow
+import com.waynebloom.scorekeeper.room.domain.usecase.InsertMatch
+import com.waynebloom.scorekeeper.room.domain.usecase.UpdateMatch
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class SingleMatchViewModel(
-    private val matchEntity: MatchDataModel,
-    private val addPlayerCallback: () -> Unit,
-    private val saveCallback: (EntityStateBundle<MatchDataModel>) -> Unit
+@HiltViewModel
+class SingleMatchViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    mutableStateFlowFactory: MutableStateFlowFactory,
+    getMatchWithRelationsAsFlow: GetMatchWithRelationsAsFlow,
+    getGame: GetGame,
+    private val updateMatch: UpdateMatch,
+    private val insertMatch: InsertMatch,
+    private val deleteMatch: DeleteMatch,
 ): ViewModel() {
 
-    private var matchEntityWasChanged = false
-    private var saveWasTapped = false
+    private val viewModelState: MutableStateFlow<SingleMatchUiState>
+    val uiState: StateFlow<SingleMatchUiState>
 
-    var notes: String by mutableStateOf(matchEntity.notes)
-    var showMaximumPlayersError by mutableStateOf(false)
+    val gameId = savedStateHandle.get<Long>("gameId")!!
+    var matchId = savedStateHandle.get<Long>("matchId")!!
+    private val dataFetchJob: Job
 
-    private fun getMatchToCommit() = EntityStateBundle(
-        entity = matchEntity.copy(
-            notes = notes,
-            timeModified = Date().time
-        ),
-        databaseAction = if (matchEntityWasChanged) {
-            DatabaseAction.UPDATE
-        } else DatabaseAction.NO_ACTION
-    )
-
-    fun onAddPlayerClick(playerCount: Int) {
-        if (playerCount < Constants.maximumPlayersInMatch)
-            addPlayerCallback()
-        else showMaximumPlayersError = !showMaximumPlayersError
+    companion object {
+        const val MAXIMUM_PLAYERS = 100
     }
 
-    fun onNotesChanged(value: String) {
-        matchEntityWasChanged = true
-        notes = value
-    }
+    init {
+        viewModelState = mutableStateFlowFactory.newInstance(SingleMatchUiState())
+        uiState = viewModelState.stateIn(viewModelScope, SharingStarted.Eagerly, SingleMatchUiState())
 
-    @OptIn(ExperimentalComposeUiApi::class)
-    fun onSaveClick(keyboardController: SoftwareKeyboardController?, focusManager: FocusManager) {
-        if (!saveWasTapped) {
-            saveWasTapped = true
-            keyboardController?.hide()
-            focusManager.clearFocus(true)
-            saveCallback(getMatchToCommit())
+        dataFetchJob = viewModelScope.launch {
+
+            if (matchId == -1L) {
+                matchId = insertMatch(MatchDomainModel(gameId = gameId))
+            }
+
+            getMatchWithRelationsAsFlow(matchId).collectLatest { match ->
+                viewModelState.update {
+                    it.copy(game = getGame(gameId), match = match)
+                }
+            }
         }
     }
 
-    fun shouldShowDetailedScoresButton(
-        players: List<PlayerDataModel>,
-        subscoreTitles: List<CategoryDataModel>
-    ): Boolean {
-        val categoriesExist = subscoreTitles.isNotEmpty()
-        val detailedScoresExist = players.any { it.showDetailedScore }
-        return categoriesExist && detailedScoresExist
+    fun onSaveClick() = viewModelScope.launch {
+        updateMatch(viewModelState.value.match)
+    }
+
+    fun onDeleteClick() = viewModelScope.launch {
+        dataFetchJob.cancel()
+        deleteMatch(matchId)
+    }
+
+    fun onNotesChanged(value: TextFieldValue) = viewModelState.update {
+        it.copy(notes = value)
     }
 }
 
-class SingleMatchViewModelFactory (
-    private val matchEntity: MatchDataModel,
-    private val addPlayerCallback: () -> Unit,
-    private val saveCallback: (EntityStateBundle<MatchDataModel>) -> Unit
-) : ViewModelProvider.NewInstanceFactory() {
-    override fun <T : ViewModel> create(modelClass: Class<T>): T = SingleMatchViewModel(
-        matchEntity = matchEntity,
-        addPlayerCallback = addPlayerCallback,
-        saveCallback = saveCallback
-    ) as T
-}
+data class SingleMatchUiState(
+    val game: GameDomainModel = GameDomainModel(),
+    val match: MatchDomainModel = MatchDomainModel(),
+    val notes: TextFieldValue = match.notes.value,
+    val isNew: Boolean = false,
+)

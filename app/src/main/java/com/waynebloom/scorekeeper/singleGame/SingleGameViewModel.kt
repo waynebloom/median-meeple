@@ -19,7 +19,7 @@ import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGameWithRelationsAsFlow
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.StatisticsForGameConstants
+import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameConstants
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
@@ -250,7 +250,7 @@ private data class SingleGameViewModelState(
         matches: List<MatchDomainModel>
     ) = StatisticsForCategory(
         category = CategoryDomainModel(
-            name = TextFieldValue(),
+            name = TextFieldValue(""),
             position = 0
         ),
         data = getTotalScoreData(matches)

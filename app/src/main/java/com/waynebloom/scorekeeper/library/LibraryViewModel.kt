@@ -48,7 +48,7 @@ class LibraryViewModel @Inject constructor(
         viewModelScope.launch {
             getGamesAsFlow().collectLatest { games ->
                 viewModelState.update {
-                    it.copy(games = games.filterNotNull())
+                    it.copy(loading = false, games = games.filterNotNull())
                 }
             }
         }
@@ -78,6 +78,7 @@ class LibraryViewModel @Inject constructor(
 }
 
 data class LibraryViewModelState(
+    val loading: Boolean = true,
     val games: List<GameDomainModel> = listOf(),
     val lazyListState: LazyListState = LazyListState(),
     val searchInput: TextFieldValue = TextFieldValue(),
@@ -85,23 +86,30 @@ data class LibraryViewModelState(
     val ad: NativeAd? = null,
 ) {
 
-    fun toUiState() = LibraryUiState(
-        ad = ad,
-        games = filterGamesWithSearchInput(),
-        isSearchBarFocused = isSearchBarFocused,
-        lazyListState = lazyListState,
-        searchInput = searchInput,
-    )
+    fun toUiState() = if (loading) {
+        LibraryUiState.Loading
+    } else {
+        LibraryUiState.Content(
+            ad = ad,
+            games = filterGamesWithSearchInput(),
+            isSearchBarFocused = isSearchBarFocused,
+            lazyListState = lazyListState,
+            searchInput = searchInput,
+        )
+    }
 
     private fun filterGamesWithSearchInput() = games.filter {
         it.name.value.text.lowercase().contains(searchInput.text.lowercase())
     }
 }
 
-data class LibraryUiState(
-    val games: List<GameDomainModel> = listOf(),
-    val lazyListState: LazyListState = LazyListState(),
-    val searchInput: TextFieldValue = TextFieldValue(),
-    val isSearchBarFocused: Boolean = false,
-    val ad: NativeAd? = null,
-)
+sealed interface LibraryUiState {
+    data object Loading: LibraryUiState
+    data class Content(
+        val games: List<GameDomainModel> = listOf(),
+        val lazyListState: LazyListState = LazyListState(),
+        val searchInput: TextFieldValue = TextFieldValue(),
+        val isSearchBarFocused: Boolean = false,
+        val ad: NativeAd? = null,
+    ): LibraryUiState
+}

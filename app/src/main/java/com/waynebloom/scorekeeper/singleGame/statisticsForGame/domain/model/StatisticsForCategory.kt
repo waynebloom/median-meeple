@@ -2,7 +2,7 @@ package com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model
 
 import com.waynebloom.scorekeeper.constants.Constants
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.StatisticsForGameConstants
+import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameConstants
 import java.math.BigDecimal
 import java.math.RoundingMode
 

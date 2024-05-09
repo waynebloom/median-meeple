@@ -71,7 +71,6 @@ fun MatchListItem(
     }
 }
 
-// TODO: change this to use UiModels and cleaner code
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MatchListItem(

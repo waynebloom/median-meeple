@@ -1,138 +1,163 @@
 package com.waynebloom.scorekeeper.singleMatch
 
-import android.content.res.Configuration
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.LocalTextSelectionColors
-import androidx.compose.foundation.text.selection.TextSelectionColors
-import androidx.compose.material.*
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Scaffold
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material.minimumInteractiveComponentSize
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.waynebloom.scorekeeper.*
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.constants.Alpha
-import com.waynebloom.scorekeeper.constants.Dimensions.Size
-import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
-import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
-import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
-import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
-import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
+import com.waynebloom.scorekeeper.components.IconButton
+import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.enums.TopLevelScreen
-import com.waynebloom.scorekeeper.ext.convertToShortFormatScore
-import com.waynebloom.scorekeeper.room.domain.model.EntityStateBundle
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
+import com.waynebloom.scorekeeper.ext.onFocusSelectAll
+import com.waynebloom.scorekeeper.ext.toShortFormatString
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.theme.color.orange100
+import com.waynebloom.scorekeeper.ui.PreviewData
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun SingleMatchScreen(
-    game: GameDataRelationModel,
-    match: MatchDataRelationModel,
+    uiState: SingleMatchUiState,
     onAddPlayerClick: () -> Unit,
-    onDeleteMatchClick: (Long) -> Unit,
+    onDeleteClick: () -> Unit,
     onPlayerClick: (Long) -> Unit,
     onViewDetailedScoresClick: () -> Unit,
-    saveMatch: (EntityStateBundle<MatchDataModel>) -> Unit,
-    modifier: Modifier = Modifier
+    onNotesChanged: (TextFieldValue) -> Unit,
+    onSaveClick: () -> Unit
 ) {
-    val viewModel = viewModel<SingleMatchViewModel>(
-        key = TopLevelScreen.SingleMatch.name,
-        factory = SingleMatchViewModelFactory(
-            matchEntity = match.entity,
-            addPlayerCallback = onAddPlayerClick,
-            saveCallback = saveMatch
-        )
+
+    SingleMatchScreen(
+        game = uiState.game,
+        match = uiState.match,
+        notes = uiState.notes,
+        onAddPlayerClick,
+        onDeleteClick,
+        onPlayerClick,
+        onViewDetailedScoresClick,
+        onNotesChanged,
+        onSaveClick
     )
-    val focusManager = LocalFocusManager.current
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val themeColor: Color = LocalCustomThemeColors.current.getColorByKey(game.entity.color)
-    val textFieldColors = TextFieldDefaults.outlinedTextFieldColors(
-        focusedBorderColor = themeColor,
-        focusedLabelColor = themeColor,
-        cursorColor = themeColor,
-        disabledBorderColor = themeColor.copy(0.75f)
-    )
-    val textSelectionColors = TextSelectionColors(
-        handleColor = themeColor,
-        backgroundColor = themeColor.copy(Alpha.textSelectionBackground)
-    )
+}
+
+@Composable
+fun SingleMatchScreen(
+    game: GameDomainModel,
+    match: MatchDomainModel,
+    notes: TextFieldValue,
+    onAddPlayerClick: () -> Unit,
+    onDeleteClick: () -> Unit,
+    onPlayerClick: (Long) -> Unit,
+    onViewDetailedScoresClick: () -> Unit,
+    onNotesChanged: (TextFieldValue) -> Unit,
+    onSaveClick: () -> Unit,
+) {
 
     Scaffold(
         topBar = {
             SingleMatchScreenTopBar(
-                title = game.entity.name,
-                themeColor = themeColor,
-                onDoneClick = { viewModel.onSaveClick(keyboardController, focusManager) },
-                onDeleteClick = { onDeleteMatchClick(match.entity.id) },
+                title = game.name.value.text,
+                onDoneClick = onSaveClick,
             )
         },
-        modifier = modifier,
     ) { innerPadding ->
 
         LazyColumn(
             contentPadding = PaddingValues(
-                horizontal = Spacing.screenEdge,
-                vertical = Spacing.sectionContent),
-            verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
+                horizontal = Dimensions.Spacing.screenEdge,
+                vertical = Dimensions.Spacing.sectionContent),
+            verticalArrangement = Arrangement.spacedBy(Dimensions.Spacing.betweenSections),
             modifier = Modifier.padding(innerPadding),
         ) {
 
             item {
 
                 PlayersSection(
-                    players = match.players.map { it.entity },
-                    scoringMode = game.getScoringMode(),
-                    showDetailedScoresButton = viewModel.shouldShowDetailedScoresButton(
-                        players = match.players.map { it.entity },
-                        subscoreTitles = game.categories
-                    ),
-                    showMaximumPlayersErrorState = viewModel.showMaximumPlayersError,
-                    themeColor = themeColor,
-                    onAddPlayerClick = { viewModel.onAddPlayerClick(match.players.size) },
+                    players = match.players,
+                    scoringMode = game.scoringMode,
+                    isScorecardButtonEnabled = false,
+                    showMaximumPlayersErrorState = match.players.size >= SingleMatchViewModel.MAXIMUM_PLAYERS,
+                    onAddPlayerClick = onAddPlayerClick,
                     onPlayerClick = onPlayerClick,
-                    onViewDetailedScoresClick = onViewDetailedScoresClick
+                    onViewScorecardClick = onViewDetailedScoresClick
                 )
             }
 
-
             item {
 
-                CompositionLocalProvider(LocalTextSelectionColors.provides(textSelectionColors)) {
+                OtherSection(
+                    notes = notes,
+                    onNotesChanged = onNotesChanged,
+                    onSaveClick = onSaveClick
+                )
+            }
 
-                    OtherSection(
-                        notes = viewModel.notes,
-                        textFieldColors = textFieldColors,
-                        onNotesChanged = { viewModel.onNotesChanged(it) },
-                        onSaveClick = { viewModel.onSaveClick(keyboardController, focusManager) }
-                    )
+            item {
+                Divider()
+                Spacer(Modifier.height(Dimensions.Spacing.sectionContent))
+
+                // TODO: this needs a confirmation dialog before release
+                Button(
+                    onClick = onDeleteClick,
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .padding(
+                            top = Dimensions.Spacing.subSectionContent,
+                            bottom = Dimensions.Spacing.screenEdge
+                        )
+                        .height(40.dp)
+                        .fillMaxWidth(),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = MaterialTheme.colors.error,
+                        backgroundColor = MaterialTheme.colors.background,
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colors.error),
+                ) {
+                    Text(text = "Delete")
                 }
             }
         }
@@ -142,9 +167,7 @@ fun SingleMatchScreen(
 @Composable
 private fun SingleMatchScreenTopBar(
     title: String,
-    themeColor: Color,
     onDoneClick: () -> Unit,
-    onDeleteClick: () -> Unit,
 ) {
 
     Column {
@@ -154,14 +177,14 @@ private fun SingleMatchScreenTopBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .padding(start = 16.dp, end = 8.dp)
-                .defaultMinSize(minHeight = Size.topBarHeight)
+                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
                 .fillMaxWidth()
         ) {
 
             Text(
                 text = title,
-                color = themeColor,
                 style = MaterialTheme.typography.h5,
+                color = MaterialTheme.colors.primary,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
@@ -171,15 +194,7 @@ private fun SingleMatchScreenTopBar(
                 IconButton(
                     imageVector = Icons.Rounded.Done,
                     backgroundColor = Color.Transparent,
-                    foregroundColor = themeColor,
                     onClick = onDoneClick,
-                )
-
-                IconButton(
-                    imageVector = Icons.Rounded.Delete,
-                    backgroundColor = Color.Transparent,
-                    foregroundColor = MaterialTheme.colors.error,
-                    onClick = onDeleteClick,
                 )
             }
         }
@@ -189,91 +204,42 @@ private fun SingleMatchScreenTopBar(
 }
 
 @Composable
-private fun PlayersSectionHeader(
-    showDetailedScoresButton: Boolean,
+private fun PlayersSection(
+    players: List<PlayerDomainModel>,
+    scoringMode: ScoringMode,
+    isScorecardButtonEnabled: Boolean,
     showMaximumPlayersErrorState: Boolean,
-    themeColor: Color,
     onAddPlayerClick: () -> Unit,
-    onViewDetailedScoresClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onPlayerClick: (Long) -> Unit,
+    onViewScorecardClick: () -> Unit
 ) {
-
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth()
-    ) {
+    Column {
 
         Text(
             text = stringResource(id = R.string.header_players),
             style = MaterialTheme.typography.h6,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
         )
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.background(MaterialTheme.colors.surface, MaterialTheme.shapes.medium)
-        ) {
+        Spacer(Modifier.height(Dimensions.Spacing.sectionContent))
 
-            if (showDetailedScoresButton) {
-                IconButton(
-                    imageVector = Icons.Rounded.List,
-                    foregroundColor = themeColor,
-                    onClick = onViewDetailedScoresClick
-                )
-            }
+        if (showMaximumPlayersErrorState) {
+            HelperBox(
+                message = stringResource(id = R.string.error_maximum_players_reached),
+                type = HelperBoxType.Info,
+            )
 
-            if (!showMaximumPlayersErrorState) {
-                IconButton(
-                    imageVector = Icons.Rounded.Add,
-                    foregroundColor = themeColor,
-                    onClick = onAddPlayerClick
-                )
-            } else {
-                IconButton(
-                    imageVector = Icons.Rounded.Warning,
-                    foregroundColor = MaterialTheme.colors.error,
-                    onClick = onAddPlayerClick
-                )
-            }
+            Spacer(Modifier.height(Dimensions.Spacing.sectionContent))
         }
-    }
-}
-
-@Composable
-private fun PlayersSection(
-    players: List<PlayerDataModel>,
-    scoringMode: ScoringMode,
-    showDetailedScoresButton: Boolean,
-    showMaximumPlayersErrorState: Boolean,
-    themeColor: Color,
-    onAddPlayerClick: () -> Unit,
-    onPlayerClick: (Long) -> Unit,
-    onViewDetailedScoresClick: () -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
-
-        PlayersSectionHeader(
-            showDetailedScoresButton = showDetailedScoresButton,
-            showMaximumPlayersErrorState = showMaximumPlayersErrorState,
-            themeColor = themeColor,
-            onAddPlayerClick = onAddPlayerClick,
-            onViewDetailedScoresClick = onViewDetailedScoresClick,
-        )
-
-        if (showMaximumPlayersErrorState) HelperBox(
-            message = stringResource(id = R.string.error_maximum_players_reached),
-            type = HelperBoxType.Error,
-        )
 
         if (players.isNotEmpty()) {
             val playersInRankOrder = when(scoringMode) {
-                ScoringMode.Ascending -> players.sortedBy { it.totalScore.toBigDecimal() }
-                ScoringMode.Descending -> players.sortedBy { it.totalScore.toBigDecimal() }.reversed()
-                ScoringMode.Manual -> players.sortedBy { it.position }
+                ScoringMode.Ascending -> players.sortedBy(PlayerDomainModel::totalScore)
+                ScoringMode.Descending -> players.sortedBy(PlayerDomainModel::totalScore).reversed()
+                ScoringMode.Manual -> players.sortedBy(PlayerDomainModel::position)
             }
 
-            Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+            Column(verticalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent)) {
 
                 playersInRankOrder.forEachIndexed { index, player ->
                     val displayedRank = if (scoringMode == ScoringMode.Manual) {
@@ -283,7 +249,6 @@ private fun PlayersSection(
                     RankedListItem(
                         player = player,
                         rank = displayedRank,
-                        themeColor = themeColor,
                         onPlayerClick = onPlayerClick
                     )
                 }
@@ -295,18 +260,66 @@ private fun PlayersSection(
                 type = HelperBoxType.Missing
             )
         }
+
+        Row {
+
+            val border = if (isScorecardButtonEnabled) {
+                BorderStroke(1.dp, MaterialTheme.colors.primary)
+            } else {
+                null
+            }
+
+            Button(
+                onClick = onViewScorecardClick,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .padding(top = Dimensions.Spacing.sectionContent)
+                    .weight(1f)
+                    .height(40.dp)
+                    .fillMaxWidth(),
+                enabled = isScorecardButtonEnabled,
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = MaterialTheme.colors.primary,
+                    backgroundColor = MaterialTheme.colors.background,
+                ),
+                border = border,
+            ) {
+                Text(text = "View Scorecard")
+            }
+
+            Button(
+                onClick = onAddPlayerClick,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .padding(
+                        top = Dimensions.Spacing.sectionContent,
+                        start = Dimensions.Spacing.sectionContent
+                    )
+                    .weight(1f)
+                    .height(40.dp)
+                    .fillMaxWidth(),
+                enabled = !showMaximumPlayersErrorState,
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = MaterialTheme.colors.onPrimary,
+                    backgroundColor = MaterialTheme.colors.primary,
+                ),
+            ) {
+                Text(text = "Add Player")
+            }
+        }
     }
 }
 
 @Composable
 private fun OtherSection(
-    notes: String,
-    textFieldColors: TextFieldColors,
-    onNotesChanged: (String) -> Unit,
+    notes: TextFieldValue,
+    onNotesChanged: (TextFieldValue) -> Unit,
     onSaveClick: () -> Unit,
 ) {
 
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+    Column(verticalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent)) {
 
         Text(
             text = stringResource(id = R.string.header_other),
@@ -317,8 +330,7 @@ private fun OtherSection(
         OutlinedTextField(
             value = notes,
             label = { Text(text = stringResource(id = R.string.field_notes)) },
-            colors = textFieldColors,
-            onValueChange = { onNotesChanged(it) },
+            onValueChange = onNotesChanged,
             keyboardOptions = KeyboardOptions(
                 autoCorrect = true,
                 capitalization = KeyboardCapitalization.Sentences,
@@ -328,16 +340,18 @@ private fun OtherSection(
                 onDone = { onSaveClick() }
             ),
             maxLines = 8,
-            modifier = Modifier.fillMaxWidth()
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusSelectAll(notes, onNotesChanged)
         )
     }
 }
 
 @Composable
 private fun RankedListItem(
-    player: PlayerDataModel,
+    player: PlayerDomainModel,
     rank: Int,
-    themeColor: Color,
     onPlayerClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -372,13 +386,13 @@ private fun RankedListItem(
                     Image(
                         painterResource(id = R.drawable.ic_person),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(themeColor),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colors.primary),
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .size(20.dp)
                     )
                     Text(
-                        text = player.name,
+                        text = player.name.text,
                         textAlign = TextAlign.Start,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -393,13 +407,13 @@ private fun RankedListItem(
                     Image(
                         painterResource(id = R.drawable.ic_star),
                         contentDescription = null,
-                        colorFilter = ColorFilter.tint(themeColor),
+                        colorFilter = ColorFilter.tint(MaterialTheme.colors.primary),
                         modifier = Modifier
                             .padding(end = 4.dp)
                             .size(24.dp)
                     )
                     Text(
-                        text = player.totalScore.convertToShortFormatScore(),
+                        text = player.totalScore.toShortFormatString(),
                         textAlign = TextAlign.Start,
                         style = MaterialTheme.typography.body1,
                         fontWeight = FontWeight.SemiBold
@@ -410,46 +424,52 @@ private fun RankedListItem(
     }
 }
 
-@Preview(
-    backgroundColor = 0xFF333333,
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview
 @Composable
-fun ScoresSectionPreview() {
+private fun PlayerSectionBelowMaxPlayersPreview() {
     MedianMeepleTheme {
-        PlayersSection(
-            players = PlayerEntitiesDefaultPreview,
-            scoringMode = ScoringMode.Descending,
-            showDetailedScoresButton = true,
-            showMaximumPlayersErrorState = true,
-            themeColor = orange100,
-            onAddPlayerClick = {},
-            onPlayerClick = {},
-            onViewDetailedScoresClick = {},
-        )
+        Surface(color = MaterialTheme.colors.background) {
+            PlayersSection(
+                players = PreviewData.Players,
+                scoringMode = ScoringMode.Ascending,
+                isScorecardButtonEnabled = true,
+                showMaximumPlayersErrorState = false,
+                onAddPlayerClick = {},
+                onPlayerClick = {},
+                onViewScorecardClick = {},
+            )
+        }
     }
 }
 
-@Preview(
-    backgroundColor = 0xFF333333,
-    showBackground = true,
-    uiMode = Configuration.UI_MODE_NIGHT_YES
-)
+@Preview
 @Composable
-fun SingleMatchScreenPreview() {
+private fun PlayerSectionAboveMaxPlayersPreview() {
     MedianMeepleTheme {
-        SingleMatchScreen(
-            game = GameObjectsDefaultPreview[0],
-            match = MatchDataRelationModel(
-                entity = MatchEntitiesDefaultPreview[0],
-                players = PlayerEntitiesDefaultPreview.map { PlayerDataRelationModel(entity = it) }
-            ),
-            onAddPlayerClick = {},
-            onDeleteMatchClick = {},
-            onPlayerClick = {},
-            onViewDetailedScoresClick = {},
-            saveMatch = {}
-        )
+        Surface(color = MaterialTheme.colors.background) {
+            PlayersSection(
+                players = PreviewData.Players,
+                scoringMode = ScoringMode.Ascending,
+                isScorecardButtonEnabled = true,
+                showMaximumPlayersErrorState = true,
+                onAddPlayerClick = {},
+                onPlayerClick = {},
+                onViewScorecardClick = {},
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun OtherSectionPreview() {
+    MedianMeepleTheme {
+        Surface(color = MaterialTheme.colors.background) {
+            OtherSection(
+                notes = TextFieldValue("This match has some notes."),
+                onNotesChanged = {},
+                onSaveClick = {},
+            )
+        }
     }
 }

@@ -7,7 +7,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.waynebloom.scorekeeper.navigation.Destination
 
@@ -46,7 +45,7 @@ fun EditGameRoute(
         onDragEnd = viewModel::onDragEnd,
         onDragStart = viewModel::onDragStart,
         onEditButtonClick = viewModel::onEditButtonClick,
-        onHideCategoryInputField = viewModel::onHideCategoryInput,
+        onHideCategoryInputField = viewModel::onCategoryDoneClick,
         onNameChanged = viewModel::onNameChanged,
         onNewCategoryClick = viewModel::onNewCategoryClick,
         onScoringModeChanged = viewModel::onScoringModeChanged

@@ -44,6 +44,7 @@ import com.waynebloom.scorekeeper.components.GameListItemNew
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
 import com.waynebloom.scorekeeper.components.IconButton
+import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
@@ -64,16 +65,23 @@ fun LibraryScreen(
     modifier: Modifier = Modifier,
 ) {
 
-    LibraryScreen(
-        games = uiState.games,
-        lazyListState = uiState.lazyListState,
-        searchInput = uiState.searchInput,
-        ad = uiState.ad,
-        onGameClick = onGameClick,
-        onAddNewGameClick = onAddGameClick,
-        onSearchInputChanged = onSearchInputChanged,
-        modifier = modifier
-    )
+    when(uiState) {
+        is LibraryUiState.Loading -> {
+            Loading()
+        }
+        is LibraryUiState.Content -> {
+            LibraryScreen(
+                games = uiState.games,
+                lazyListState = uiState.lazyListState,
+                searchInput = uiState.searchInput,
+                ad = uiState.ad,
+                onGameClick = onGameClick,
+                onAddNewGameClick = onAddGameClick,
+                onSearchInputChanged = onSearchInputChanged,
+                modifier = modifier
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
@@ -197,13 +205,14 @@ fun LibraryScreen(
                             modifier = Modifier
                                 .padding(
                                     horizontal = Spacing.screenEdge,
-                                    vertical = Spacing.subSectionContent)
+                                    vertical = Spacing.subSectionContent
+                                )
                                 .fillMaxWidth()
                                 .animateItemPlacement()
                         )
                     }
 
-                    if (index != subListsBetweenAds.lastIndex) {
+                    if (index != subListsBetweenAds.lastIndex || subListsBetweenAds.size == 1) {
                         item {
                             Box(Modifier
                                 .padding(horizontal = Spacing.screenEdge, vertical = Spacing.sectionContent)

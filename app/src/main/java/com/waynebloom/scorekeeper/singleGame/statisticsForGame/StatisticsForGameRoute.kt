@@ -7,7 +7,6 @@ import androidx.navigation.NavHostController
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.navigation.Destination
 import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.ui.StatisticsForGameScreen
 import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
 
 @Composable

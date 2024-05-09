@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.singleGame.statisticsForGame.ui
+package com.waynebloom.scorekeeper.singleGame.statisticsForGame
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -503,7 +502,7 @@ private fun ScoringSection(
 
         if (isCategoryDataEmpty) {
             HelperBox(
-                message = "There is no data recorded for this category",
+                message = stringResource(R.string.no_data_for_category),
                 type = HelperBoxType.Missing,
                 modifier = Modifier.padding(horizontal = Spacing.screenEdge)
             )

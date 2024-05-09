@@ -48,6 +48,8 @@ import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
 import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescription
@@ -62,7 +64,7 @@ fun EditGameScreen(
     onConfirmClick: () -> Unit,
     onCategoryClick: (Int) -> Unit,
     onCategoryDialogDismiss: () -> Unit,
-    onCategoryInputChanged: (TextFieldValue) -> Unit,
+    onCategoryInputChanged: (TextFieldValue, Int) -> Unit,
     onColorClick: (String) -> Unit,
     onDeleteCategoryClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -126,7 +128,7 @@ fun EditGameScreen(
     onConfirmClick: () -> Unit,
     onCategoryClick: (Int) -> Unit,
     onCategoryDialogDismiss: () -> Unit,
-    onCategoryInputChanged: (TextFieldValue) -> Unit,
+    onCategoryInputChanged: (TextFieldValue, Int) -> Unit,
     onColorClick: (String) -> Unit,
     onDeleteCategoryClick: () -> Unit,
     onDeleteClick: () -> Unit,
@@ -200,43 +202,68 @@ fun EditGameScreen(
                             modifier = Modifier.padding(horizontal = Spacing.screenEdge),
                         )
                         Spacer(modifier = Modifier.height(Spacing.sectionContent))
-                        FlowRow(
-                            horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
-                            modifier = modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = Spacing.screenEdge)
-                        ) {
+                        if (categories.isNotEmpty()) {
+                            FlowRow(
+                                horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
+                                modifier = modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = Spacing.screenEdge)
+                            ) {
 
-                            categories.forEachIndexed { index, category ->
+                                categories.forEachIndexed { index, category ->
 
-                                Chip(
-                                    onClick = { onCategoryClick(index) },
-                                    shape = MaterialTheme.shapes.small,
-                                    content = { Text(text = category.name.text) },
-                                    border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(alpha = Alpha.disabled)),
-                                    colors = ChipDefaults.chipColors(
-                                        backgroundColor = Color.Transparent,
-                                        contentColor = MaterialTheme.colors.onBackground,
-                                    ),
-                                )
+                                    Chip(
+                                        onClick = { onCategoryClick(index) },
+                                        shape = MaterialTheme.shapes.small,
+                                        content = { Text(text = category.name.text) },
+                                        border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(alpha = Alpha.disabled)),
+                                        colors = ChipDefaults.chipColors(
+                                            backgroundColor = Color.Transparent,
+                                            contentColor = MaterialTheme.colors.onBackground,
+                                        ),
+                                    )
+                                }
                             }
-                        }
-                        Button(
-                            onClick = onEditButtonClick,
-                            modifier = Modifier
-                                .minimumInteractiveComponentSize()
-                                .padding(top = Spacing.sectionContent)
-                                .height(40.dp)
-                                .padding(horizontal = Spacing.screenEdge)
-                                .fillMaxWidth(),
-                            shape = CircleShape,
-                            colors = ButtonDefaults.buttonColors(
-                                contentColor = MaterialTheme.colors.primary,
-                                backgroundColor = MaterialTheme.colors.background,
-                            ),
-                            border = BorderStroke(1.dp, MaterialTheme.colors.primary),
-                        ) {
-                            Text(text = "Edit Categories")
+                            Button(
+                                onClick = onEditButtonClick,
+                                modifier = Modifier
+                                    .minimumInteractiveComponentSize()
+                                    .padding(top = Spacing.sectionContent)
+                                    .height(40.dp)
+                                    .padding(horizontal = Spacing.screenEdge)
+                                    .fillMaxWidth(),
+                                shape = CircleShape,
+                                colors = ButtonDefaults.buttonColors(
+                                    contentColor = MaterialTheme.colors.primary,
+                                    backgroundColor = MaterialTheme.colors.background,
+                                ),
+                                border = BorderStroke(1.dp, MaterialTheme.colors.primary),
+                            ) {
+                                Text(text = stringResource(id = R.string.button_edit_categories))
+                            }
+                        } else {
+                            HelperBox(
+                                message = stringResource(id = R.string.info_categories_section_helper),
+                                type = HelperBoxType.Info,
+                                modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+                            )
+                            Button(
+                                onClick = onNewCategoryClick,
+                                modifier = Modifier
+                                    .minimumInteractiveComponentSize()
+                                    .padding(top = Spacing.sectionContent)
+                                    .height(40.dp)
+                                    .padding(horizontal = Spacing.screenEdge)
+                                    .fillMaxWidth(),
+                                shape = CircleShape,
+                                colors = ButtonDefaults.buttonColors(
+                                    contentColor = MaterialTheme.colors.primary,
+                                    backgroundColor = MaterialTheme.colors.background,
+                                ),
+                                border = BorderStroke(1.dp, MaterialTheme.colors.primary),
+                            ) {
+                                Text(text = stringResource(id = R.string.button_add_a_category))
+                            }
                         }
                     }
                 }
@@ -381,7 +408,7 @@ private fun EditCategoriesBottomSheetContent(
     categories: List<CategoryDomainModel>,
     indexOfCategoryReceivingInput: Int?,
     onCategoryClick: (Int) -> Unit,
-    onInputChanged: (TextFieldValue) -> Unit,
+    onInputChanged: (TextFieldValue, Int) -> Unit,
     onDeleteCategoryClick: () -> Unit,
     onNewClick: () -> Unit,
     onDoneClick: () -> Unit,
@@ -405,7 +432,7 @@ private fun EditCategoriesBottomSheetContent(
     ) {
 
         Text(
-            text = stringResource(R.string.header_edit_categories),
+            text = stringResource(R.string.button_edit_categories),
             style = MaterialTheme.typography.h6,
             color = MaterialTheme.colors.onBackground,
             modifier = Modifier.padding(Spacing.screenEdge)
@@ -497,13 +524,13 @@ private fun EditCategoriesBottomSheetContent(
 
                         OutlinedTextFieldWithErrorDescription(
                             value = category.name,
-                            onValueChange = onInputChanged,
+                            onValueChange = { onInputChanged(it, index) },
                             modifier = Modifier
                                 .weight(weight = 1f, fill = false)
                                 .padding(start = 4.dp, end = Spacing.sectionContent)
                                 .focusRequester(focusRequester)
                                 .bringIntoViewRequester(bringIntoViewRequester),
-                            selectAllOnFocus = false, // TODO: fix this bug, selecting new category when the text from the other is selected
+                            selectAllOnFocus = true,
                             isError = category.name.text.isBlank(),
                             errorDescriptionResource = R.string.field_error_empty,
                             keyboardActions = KeyboardActions { onHideInputField() },
@@ -624,7 +651,7 @@ private fun EditCategoriesBottomSheet(
     onDragEnd: () -> Unit,
     onDragStart: (Int) -> Unit,
     onHideInputField: () -> Unit,
-    onInputChanged: (TextFieldValue) -> Unit,
+    onInputChanged: (TextFieldValue, Int) -> Unit,
     onNewClick: () -> Unit,
 ) {
 
@@ -749,7 +776,34 @@ fun EditGameScreenDefaultPreview() {
             onConfirmClick = {},
             onCategoryClick = {},
             onCategoryDialogDismiss = {},
-            onCategoryInputChanged = {},
+            onCategoryInputChanged = {_,_->},
+            onColorClick = {},
+            onDeleteCategoryClick = {},
+            onDeleteClick = {},
+            onDrag = {},
+            onDragEnd = {},
+            onDragStart = {},
+            onEditButtonClick = {},
+            onHideCategoryInputField = {},
+            onNameChanged = {},
+            onNewCategoryClick = {},
+            onScoringModeChanged = {},
+        )
+    }
+}
+
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Preview
+@Composable
+fun EditGameScreenNoCategoriesPreview() {
+
+    UserSelectedPrimaryColorTheme(primaryColor = EditGameSampleData.Default.getResolvedColor()) {
+        EditGameScreen(
+            uiState = EditGameSampleData.NoCategories,
+            onConfirmClick = {},
+            onCategoryClick = {},
+            onCategoryDialogDismiss = {},
+            onCategoryInputChanged = {_,_->},
             onColorClick = {},
             onDeleteCategoryClick = {},
             onDeleteClick = {},
@@ -784,7 +838,7 @@ fun EditGameScreenEditCategoriesPreview() {
             onDragEnd = {},
             onDragStart = {},
             onHideInputField = {},
-            onInputChanged = {},
+            onInputChanged = {_,_->},
             onNewClick = {}
         )
     }

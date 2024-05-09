@@ -14,6 +14,16 @@ object EditGameSampleData {
         scoringMode = game.scoringMode,
         showColorMenu = false
     )
+    val NoCategories = EditGameUiState.Content(
+        categories = listOf(),
+        color = game.color,
+        dragState = DragState(),
+        indexOfCategoryReceivingInput = null,
+        isCategoryDialogOpen = false,
+        nameInput = game.name,
+        scoringMode = game.scoringMode,
+        showColorMenu = false
+    )
     val CategoryDialog = Default.copy(
         categories = PreviewData.Categories,
         isCategoryDialogOpen = true,

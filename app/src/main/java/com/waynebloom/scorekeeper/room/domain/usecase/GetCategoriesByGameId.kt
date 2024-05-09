@@ -1,5 +1,6 @@
 package com.waynebloom.scorekeeper.room.domain.usecase
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.ext.toTextFieldInput
 import com.waynebloom.scorekeeper.ext.toTextFieldValue
 import com.waynebloom.scorekeeper.room.domain.repository.CategoryRepository
@@ -14,7 +15,7 @@ class GetCategoriesByGameId @Inject constructor(
         .map {
             CategoryDomainModel(
                 id = it.id,
-                name = it.name.toTextFieldValue(),
+                name = TextFieldValue(it.name),
                 position = it.position
             )
         }

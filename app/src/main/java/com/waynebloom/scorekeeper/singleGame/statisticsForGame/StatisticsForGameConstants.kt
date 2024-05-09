@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain
+package com.waynebloom.scorekeeper.singleGame.statisticsForGame
 
 object StatisticsForGameConstants {
 

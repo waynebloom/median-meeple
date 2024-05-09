@@ -18,45 +18,19 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MedianMeepleActivity : ComponentActivity() {
 
-    private lateinit var viewModel: MedianMeepleActivityViewModel
-
     @Inject
     lateinit var initializeAdFlowAndLoader: InitializeAdFlowAndLoader
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // remove this once rework complete
-        viewModel = ViewModelProvider(this)[MedianMeepleActivityViewModel::class.java]
-
-        // TODO: Both of these are here for now until the rework is complete
         initializeAdFlowAndLoader()
         MobileAds.initialize(this)
 
         setContent {
-            App(viewModel = viewModel)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        viewModel.adService.destroyAd()
-    }
-}
-
-@Composable
-private fun App(viewModel: MedianMeepleActivityViewModel) {
-    MedianMeepleTheme {
-
-        LaunchedEffect(true) {
-            while (true) {
-                viewModel.adService.loadAd()
-                delay(AdService.NewAdRequestDelayMs)
-                viewModel.adService.currentAd.value = null
-                delay(AdService.BetweenAdsDelayMs)
+            MedianMeepleTheme {
+                MedianMeepleApp()
             }
         }
-
-        MedianMeepleApp(viewModel)
     }
 }

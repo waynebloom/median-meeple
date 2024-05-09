@@ -276,7 +276,7 @@ fun MatchesForGameSortOptionsDialog(
                 .padding(Spacing.screenEdge)
         ) {
             Text(
-                text = "Sort by",
+                text = stringResource(id = R.string.sort_by),
                 style = MaterialTheme.typography.h6,
                 color = MaterialTheme.colors.onBackground,
             )
@@ -293,7 +293,7 @@ fun MatchesForGameSortOptionsDialog(
             }
             Spacer(Modifier.height(Spacing.betweenSections))
             Text(
-                text = "Sort direction",
+                text = stringResource(id = R.string.sort_direction),
                 style = MaterialTheme.typography.h6,
                 color = MaterialTheme.colors.onBackground,
             )
@@ -502,13 +502,5 @@ fun MatchesForGameSortDialogPreview() {
             onSortDirectionChanged = {},
             onDismiss = {}
         )
-    }
-}
-
-@Preview(uiMode = UI_MODE_NIGHT_YES)
-@Composable
-fun MatchesForGameScreenPreview() {
-    MedianMeepleTheme {
-        // TODO: add this back
     }
 }
