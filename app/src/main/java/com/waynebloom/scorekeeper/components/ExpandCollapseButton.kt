@@ -16,23 +16,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions
-import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
-import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.theme.Animation.sizeTransformWithDelay
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ExpandCollapseButton(
     text: String?,
     expanded: Boolean,
-    themeColor: Color,
-    onTap: () -> Unit,
+    onClick: () -> Unit,
 ) {
 
     Box(
@@ -43,7 +41,7 @@ fun ExpandCollapseButton(
                 minHeight = Dimensions.Size.minTappableSize)
             .clip(MaterialTheme.shapes.medium)
             .background(MaterialTheme.colors.surface)
-            .clickable { onTap() }
+            .clickable { onClick() }
     ) {
 
         AnimatedContent(
@@ -55,7 +53,7 @@ fun ExpandCollapseButton(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_chevron_up),
                     contentDescription = null,
-                    tint = themeColor,
+                    tint = MaterialTheme.colors.primary,
                     modifier = Modifier
                         .padding(12.dp)
                         .size(24.dp))
@@ -75,7 +73,7 @@ fun ExpandCollapseButton(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_chevron_down),
                         contentDescription = null,
-                        tint = themeColor,
+                        tint = MaterialTheme.colors.primary,
                         modifier = Modifier.size(24.dp))
                 }
             }

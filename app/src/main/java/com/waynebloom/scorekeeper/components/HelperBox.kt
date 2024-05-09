@@ -23,13 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-
-enum class HelperBoxType {
-    Info,
-    Error,
-    Missing;
-}
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun HelperBox(
@@ -61,8 +55,8 @@ fun HelperBox(
             .border(
                 width = 1.dp,
                 color = borderColor,
-                shape = MaterialTheme.shapes.small)
-            .clip(MaterialTheme.shapes.small)
+                shape = MaterialTheme.shapes.medium)
+            .clip(MaterialTheme.shapes.medium)
             .background(color = backgroundColor)
             .fillMaxWidth()
     ) {
@@ -88,6 +82,12 @@ fun HelperBox(
     }
 }
 
+enum class HelperBoxType {
+    Info,
+    Error,
+    Missing;
+}
+
 @Preview(uiMode = UI_MODE_NIGHT_YES, name = "Short")
 @Composable
 fun HelperBoxShortPreview() {
@@ -105,7 +105,10 @@ fun HelperBoxLongPreview() {
     MedianMeepleTheme {
 
         Surface(color = MaterialTheme.colors.background) {
-            HelperBox(message = "This is a long test message. It should span more than one line.", type = HelperBoxType.Info)
+            HelperBox(
+                message = "This is a long test message. It should span more than one line.",
+                type = HelperBoxType.Info
+            )
         }
     }
 }

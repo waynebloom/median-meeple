@@ -3,6 +3,7 @@ package com.waynebloom.scorekeeper.components
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.MaterialTheme
@@ -22,36 +23,71 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.waynebloom.scorekeeper.LocalGameColors
-import com.waynebloom.scorekeeper.data.PlayerEntitiesDefaultPreview
+import com.waynebloom.scorekeeper.PlayerEntitiesDefaultPreview
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.data.*
-import com.waynebloom.scorekeeper.data.model.game.GameEntity
-import com.waynebloom.scorekeeper.data.model.match.MatchObject
-import com.waynebloom.scorekeeper.data.model.player.PlayerObject
+import com.waynebloom.scorekeeper.room.data.model.GameDataModel
+import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
+import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.ext.convertToShortFormatScore
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
-import com.waynebloom.scorekeeper.ext.toShortScoreFormat
-import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.ext.toShortFormatString
+import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
+
+@Composable
+fun MatchListItem(
+    match: MatchDomainModel,
+    scoringMode: ScoringMode,
+    onClick: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+
+    Surface(
+        shape = MaterialTheme.shapes.large,
+        modifier = modifier.clickable { onClick(match.id) }
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(16.dp).fillMaxWidth()
+        ) {
+
+            if (match.players.isNotEmpty()) {
+                val winningPlayer = match.players.getWinningPlayer(scoringMode)
+
+                VictorCard(
+                    name = winningPlayer.name.text,
+                    score = winningPlayer.totalScore.toShortFormatString(),
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+            } else {
+                EmptyPlayersCard()
+            }
+
+            PlayerCountCard(count = match.players.size)
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun MatchListItem(
-    gameEntity: GameEntity,
-    match: MatchObject,
-    onSingleMatchTap: (Long) -> Unit,
+    gameEntity: GameDataModel,
+    match: MatchDataRelationModel,
+    onSingleMatchClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
     showGameIdentifier: Boolean = true
 ) {
     val gameInitial = if (gameEntity.name.isNotEmpty()) {
         gameEntity.name.first().uppercase()
     } else "?"
-    val gameColor = LocalGameColors.current.getColorByKey(gameEntity.color)
+    val gameColor = LocalCustomThemeColors.current.getColorByKey(gameEntity.color)
 
     Surface(
         shape = MaterialTheme.shapes.large,
-        onClick = { onSingleMatchTap(match.entity.id) },
+        onClick = { onSingleMatchClick(match.entity.id) },
         modifier = modifier
     ) {
         Row(
@@ -75,7 +111,7 @@ fun MatchListItem(
 
                 VictorCard(
                     name = winningPlayer.entity.name,
-                    score = winningPlayer.entity.score.toShortScoreFormat(),
+                    score = winningPlayer.entity.totalScore.convertToShortFormatScore(),
                     color = gameColor,
                     modifier = Modifier.weight(1f, fill = false)
                 )
@@ -150,8 +186,8 @@ fun EmptyPlayersCard() {
 fun VictorCard(
     name: String,
     score: String,
-    color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.primary
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,
@@ -203,8 +239,8 @@ fun VictorCard(
 @Composable
 fun PlayerCountCard(
     count: Int,
-    color: Color,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.primary
 ) {
     Surface(
         shape = MaterialTheme.shapes.small,
@@ -241,11 +277,11 @@ fun PlayerCountCard(
 fun ScoreCardPreview() {
     MedianMeepleTheme {
         MatchListItem(
-            gameEntity = GameEntity(name = "WWWW"),
-            match = MatchObject(
-                players = PlayerEntitiesDefaultPreview.map { PlayerObject(entity = it) }
+            gameEntity = GameDataModel(name = "WWWW"),
+            match = MatchDataRelationModel(
+                players = PlayerEntitiesDefaultPreview.map { PlayerDataRelationModel(entity = it) }
             ),
-            onSingleMatchTap = {}
+            onSingleMatchClick = {}
         )
     }
 }
@@ -255,9 +291,9 @@ fun ScoreCardPreview() {
 fun EmptyScoreCardPreview() {
     MedianMeepleTheme {
         MatchListItem(
-            gameEntity = GameEntity(name = "WWWW"),
-            match = MatchObject(),
-            onSingleMatchTap = {}
+            gameEntity = GameDataModel(name = "WWWW"),
+            match = MatchDataRelationModel(),
+            onSingleMatchClick = {}
         )
     }
 }

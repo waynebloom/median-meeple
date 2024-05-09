@@ -1,16 +1,19 @@
 package com.waynebloom.scorekeeper.ext
 
-import com.waynebloom.scorekeeper.enums.ScoreStringValidityState
+import androidx.compose.ui.text.input.TextFieldValue
+import com.waynebloom.scorekeeper.constants.Constants
+import com.waynebloom.scorekeeper.enums.ValidityState
+import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import java.math.RoundingMode
 
-fun String.getScoreValidityState(): ScoreStringValidityState {
-    val scoreBigDecimal = toBigDecimalOrNull()
+fun String.isValidBigDecimal(): ValidityState {
+    val bigDecimal = toBigDecimalOrNull()
 
-    return if (scoreBigDecimal == null) {
-        ScoreStringValidityState.InvalidNumber
-    } else if (scoreBigDecimal.scale() > 3) {
-        ScoreStringValidityState.ExcessiveDecimals
-    } else ScoreStringValidityState.Valid
+    return when {
+        bigDecimal == null -> ValidityState.InvalidNumber
+        bigDecimal.scale() > Constants.maximumDecimalPlaces -> ValidityState.ExcessiveDecimals
+        else -> ValidityState.Valid
+    }
 }
 
 fun String.sentenceCase(): String {
@@ -23,26 +26,40 @@ fun String.sentenceCase(): String {
     return result.toString()
 }
 
-fun String.toShortScoreFormat(): String {
-    if (count { it != '.' } <= 6) return this
-    val bigDecimal = toBigDecimal()
-    return if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Trillion)) {
-        "1000B+"
-    } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Billion)) {
-        bigDecimal
-            .scaleByPowerOfTen(-9)
-            .toTrimmedScoreString() + "B"
-    } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.Million)) {
-        bigDecimal
-            .scaleByPowerOfTen(-6)
-            .toTrimmedScoreString() + "M"
-    } else if (bigDecimal.greaterThanOrEqualTo(BigDecimalValues.TenThousand)) {
-        bigDecimal
-            .scaleByPowerOfTen(-3)
-            .toTrimmedScoreString() + "K"
-    } else {
-        bigDecimal
-            .setScale(0, RoundingMode.HALF_UP)
-            .toPlainString() + "*"
+fun String.convertToShortFormatScore(): String {
+    val maximumAcceptablePrecisionForDisplay = 6
+    val billionScale = -9
+    val billionMark = "B"
+    val millionScale = -6
+    val millionMark = "M"
+    val tenThousandScale = -3
+    val thousandMark = "K"
+
+    return with(toBigDecimal()) {
+        when {
+
+            // The precision is low enough to display without conversion
+            precision() <= maximumAcceptablePrecisionForDisplay -> toPlainString()
+
+            greaterThanOrEqualTo(BigDecimalValues.Trillion) -> "1000B+"
+
+            greaterThanOrEqualTo(BigDecimalValues.Billion) -> this
+                .scaleByPowerOfTen(billionScale)
+                .toStringForDisplay() + billionMark
+
+            greaterThanOrEqualTo(BigDecimalValues.Million) -> this
+                .scaleByPowerOfTen(millionScale)
+                .toStringForDisplay() + millionMark
+
+            greaterThanOrEqualTo(BigDecimalValues.TenThousand) -> this
+                .scaleByPowerOfTen(tenThousandScale)
+                .toStringForDisplay() + thousandMark
+
+            else -> setScale(0, RoundingMode.HALF_UP).toPlainString() + "*"
+        }
     }
 }
+
+fun String.toTextFieldValue() = TextFieldValue(this)
+
+fun String.toTextFieldInput() = TextFieldInput(value = this.toTextFieldValue())
