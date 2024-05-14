@@ -426,6 +426,24 @@ private fun RankedListItem(
 
 @Preview
 @Composable
+private fun SingleMatchScreenPreview() {
+    MedianMeepleTheme {
+        Surface {
+            SingleMatchScreen(
+                uiState = SingleMatchSampleData.Default,
+                onAddPlayerClick = {},
+                onDeleteClick = {},
+                onPlayerClick = {},
+                onViewDetailedScoresClick = {},
+                onNotesChanged = {},
+                onSaveClick = {}
+            )
+        }
+    }
+}
+
+@Preview
+@Composable
 private fun PlayerSectionBelowMaxPlayersPreview() {
     MedianMeepleTheme {
         Surface(color = MaterialTheme.colors.background) {

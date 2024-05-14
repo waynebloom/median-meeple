@@ -5,7 +5,9 @@ import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.toTextFieldInput
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 import java.math.BigDecimal
 
 object PreviewData {
@@ -64,6 +66,13 @@ object PreviewData {
             position = 2,
             useCategorizedScore = false,
             categoryScores = listOf()
+        )
+    )
+
+    val Matches = listOf(
+        MatchDomainModel(
+            players = Players,
+            notes = TextFieldInput(value = TextFieldValue("Sample notes"))
         )
     )
 }
