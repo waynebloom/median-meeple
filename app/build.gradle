@@ -83,7 +83,7 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:1.0.0"
 
     // Lifecycle
-    def lifecycle_version = "2.6.1"
+    def lifecycle_version = "2.7.0"
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
     implementation "androidx.lifecycle:lifecycle-runtime-compose:$lifecycle_version"
@@ -107,4 +107,5 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.7.2'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.compose.material3:material3:1.2.1'
 }

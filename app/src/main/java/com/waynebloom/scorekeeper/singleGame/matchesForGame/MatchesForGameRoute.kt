@@ -35,11 +35,11 @@ fun MatchesForGameRoute(
             },
             onSortButtonClick = viewModel::onSortButtonClick,
             onMatchClick = {
-                val route = "${Destination.SingleMatch.route}/${viewModel.gameId}/$it"
+                val route = "${Destination.ScoreCard.route}/${viewModel.gameId}/$it"
                 navController.navigate(route)
             },
             onAddMatchClick = {
-                val route = "${Destination.SingleMatch.route}/${viewModel.gameId}/-1"
+                val route = "${Destination.ScoreCard.route}/${viewModel.gameId}/-1"
                 navController.navigate(route)
             },
             onSortDialogDismiss = viewModel::onSortDialogDismiss,

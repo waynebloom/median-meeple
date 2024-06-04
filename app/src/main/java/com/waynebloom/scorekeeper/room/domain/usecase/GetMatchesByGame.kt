@@ -7,5 +7,5 @@ class GetMatchesByGame @Inject constructor(
     private val matchRepository: MatchRepository
 ) {
 
-    suspend operator fun invoke(gameId: Long) = matchRepository.getByGame(gameId)
+    suspend operator fun invoke(gameId: Long) = matchRepository.getByGameId(gameId)
 }

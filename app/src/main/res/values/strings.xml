@@ -22,6 +22,11 @@
     <string name="text_showing_search_results">Searching for \"%s\".</string>
     <string name="text_statistics">Stats</string>
     <string name="text_tied">Tied</string>
+    <string name="text_ok">OK</string>
+    <string name="text_cancel">Cancel</string>
+    <string name="text_delete">Delete</string>
+    <string name="text_match">Match</string>
+    <string name="text_at">at</string>
 
     <!-- endregion -->
 
@@ -136,8 +141,14 @@
     <!-- region SingleMatchScreen -->
 
     <string name="error_maximum_players_reached">You have reached the maximum supported number of players.</string>
+    <string name="field_location">Location</string>
+    <string name="location_hint">Add a Location</string>
     <string name="field_name">Name</string>
     <string name="field_notes">Notes</string>
+    <string name="notes_hint">Take some notes here</string>
+    <string name="text_new_player">New Player</string>
+    <string name="text_edit_player">Edit Player</string>
+    <string name="text_total">Total</string>
     <string name="header_other">Other</string>
     <string name="header_players">Players</string>
     <string name="info_empty_players">No players have been added.</string>

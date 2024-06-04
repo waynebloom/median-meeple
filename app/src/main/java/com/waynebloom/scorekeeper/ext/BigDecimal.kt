@@ -32,7 +32,7 @@ fun BigDecimal.toShortFormatString(): String {
             .scaleByPowerOfTen(tenThousandScale)
             .toStringForDisplay() + thousandMark
 
-        else -> setScale(0, RoundingMode.HALF_UP).toPlainString() + "*"
+        else -> "~" + setScale(0, RoundingMode.HALF_UP).toPlainString()
     }
 }
 

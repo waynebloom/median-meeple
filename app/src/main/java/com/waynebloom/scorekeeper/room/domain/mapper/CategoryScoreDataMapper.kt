@@ -1,5 +1,6 @@
 package com.waynebloom.scorekeeper.room.domain.mapper
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreDomainModel
@@ -12,13 +13,15 @@ class CategoryScoreDataMapper @Inject constructor() {
         categories: Map<Long, CategoryDomainModel>
     ) = CategoryScoreDomainModel(
         category = categories.getValue(categoryScoreData.categoryId),
-        score = categoryScoreData.value.toBigDecimal()
+        scoreAsBigDecimal = categoryScoreData.value.toBigDecimalOrNull(),
+        scoreAsTextFieldValue = TextFieldValue(categoryScoreData.value)
     )
 
     fun map(categoryScore: CategoryScoreDataModel) = CategoryScoreDomainModel(
         id = categoryScore.id,
         playerId = categoryScore.playerId,
         categoryId = categoryScore.categoryId,
-        score = categoryScore.value.toBigDecimal()
+        scoreAsBigDecimal = categoryScore.value.toBigDecimalOrNull(),
+        scoreAsTextFieldValue = TextFieldValue(categoryScore.value)
     )
 }

@@ -80,6 +80,6 @@ class SingleMatchViewModel @Inject constructor(
 data class SingleMatchUiState(
     val game: GameDomainModel = GameDomainModel(),
     val match: MatchDomainModel = MatchDomainModel(),
-    val notes: TextFieldValue = match.notes.value,
+    val notes: TextFieldValue = TextFieldValue(match.notes),
     val isNew: Boolean = false,
 )

@@ -23,8 +23,11 @@ interface MatchRepository {
     @Query("SELECT * FROM `match` WHERE id = :id")
     suspend fun getOneWithRelations(id: Long): MatchDataRelationModel
 
+    @Query("SELECT * FROM `Match` WHERE id = :id")
+    suspend fun getOne(id: Long): MatchDataModel
+
     @Query("SELECT * FROM `Match` WHERE game_owner_id = :id")
-    suspend fun getByGame(id: Long): MatchDataModel
+    suspend fun getByGameId(id: Long): List<MatchDataModel>
 
     @Insert
     suspend fun insert(match: MatchDataModel): Long

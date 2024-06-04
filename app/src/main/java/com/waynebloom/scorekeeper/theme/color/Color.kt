@@ -2,8 +2,11 @@ package com.waynebloom.scorekeeper.theme.color
 
 import androidx.compose.ui.graphics.Color
 
-val taupe100 = Color(0xFFF0EAE2)
-val taupe800 = Color(0xFF655454)
+val taupe50 = Color(0xFFF0EAE2)
+val taupe100 = Color(0xFFDFD3C9)
+val taupe700 = Color(0xFF655454)
+val charcoal700 = Color(0xFF4B4444)
+val charcoal800 = Color(0xFF383434)
 val rust300 = Color(0xFFE1AFAF)
 val rust600 = Color(0xFF886363)
 val gray400 = Color(0xFFDDDDDD)

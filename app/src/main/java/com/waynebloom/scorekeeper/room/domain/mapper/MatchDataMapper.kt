@@ -1,6 +1,6 @@
 package com.waynebloom.scorekeeper.room.domain.mapper
 
-import com.waynebloom.scorekeeper.ext.toTextFieldInput
+import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
@@ -9,6 +9,14 @@ import javax.inject.Inject
 class MatchDataMapper @Inject constructor(
     private val playerDataMapper: PlayerDataMapper
 ) {
+
+    fun map(matchData: MatchDataModel) = MatchDomainModel(
+        id = matchData.id,
+        notes = matchData.notes,
+        dateMillis = matchData.dateMillis,
+        location = matchData.location,
+        players = listOf()
+    )
 
     /**
      * Maps all relations recursively (players, player scores, etc).
@@ -22,7 +30,7 @@ class MatchDataMapper @Inject constructor(
         categories: Map<Long, CategoryDomainModel>
     ) = MatchDomainModel(
         id = matchData.entity.id,
-        notes = matchData.entity.notes.toTextFieldInput(),
+        notes = matchData.entity.notes,
         players = matchData.players.map {
             playerDataMapper.mapWithRelations(it, categories)
         }
@@ -36,7 +44,7 @@ class MatchDataMapper @Inject constructor(
     fun mapWithRelations(matchData: MatchDataRelationModel) = MatchDomainModel(
         id = matchData.entity.id,
         gameId = matchData.entity.gameId,
-        notes = matchData.entity.notes.toTextFieldInput(),
+        notes = matchData.entity.notes,
         players = matchData.players.map {
             playerDataMapper.map(it.entity)
         }

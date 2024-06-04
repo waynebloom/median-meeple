@@ -8,6 +8,7 @@ import androidx.compose.animation.core.Ease
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,7 +58,7 @@ import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
 import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.Loading
-import com.waynebloom.scorekeeper.components.MatchListItem
+import com.waynebloom.scorekeeper.components.MatchCard
 import com.waynebloom.scorekeeper.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.components.RadioButtonOption
 import com.waynebloom.scorekeeper.components.TopBarWithSearch
@@ -69,15 +70,18 @@ import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
+import com.waynebloom.scorekeeper.ext.toShortFormatString
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.singleGame.MatchesForGameUiState
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.sizeTransformWithDelay
-import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
 import com.waynebloom.scorekeeper.theme.color.deepOrange100
 import com.waynebloom.scorekeeper.theme.color.deepOrange500
+import java.math.BigDecimal
+import java.text.SimpleDateFormat
+import java.util.TimeZone
 
 @Composable
 fun MatchesForGameScreen(
@@ -198,7 +202,7 @@ fun MatchesForSingleGameDefaultActionBar(
 
         Text(
             text = title,
-            color = MaterialTheme.colors.primary,
+            color = MaterialTheme.colors.onBackground,
             style = MaterialTheme.typography.h5,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1
@@ -209,21 +213,21 @@ fun MatchesForSingleGameDefaultActionBar(
             IconButton(
                 imageVector = Icons.Rounded.Search,
                 backgroundColor = Color.Transparent,
-                foregroundColor = MaterialTheme.colors.primary,
+                foregroundColor = MaterialTheme.colors.onBackground,
                 onClick = onSearchClick
             )
 
             IconButton(
                 painter = painterResource(id = R.drawable.ic_sort),
                 backgroundColor = Color.Transparent,
-                foregroundColor = MaterialTheme.colors.primary,
+                foregroundColor = MaterialTheme.colors.onBackground,
                 onClick = onSortClick
             )
 
             IconButton(
                 imageVector = Icons.Rounded.Edit,
                 backgroundColor = Color.Transparent,
-                foregroundColor = MaterialTheme.colors.primary,
+                foregroundColor = MaterialTheme.colors.onBackground,
                 onClick = onEditGameClick
             )
         }
@@ -252,7 +256,7 @@ fun SingleGameTabBar(
                         modifier = Modifier.size(24.dp)
                     )
                 },
-                selectedContentColor = MaterialTheme.colors.primary,
+                selectedContentColor = MaterialTheme.colors.onBackground,
             )
         }
     }
@@ -384,7 +388,6 @@ fun MatchesForGameScreen(
             },
             floatingActionButton = {
                 MedianMeepleFab(
-                    // backgroundColor = MaterialTheme.colors.primary,
                     onClick = onAddMatchClick,
                 )
             }
@@ -443,25 +446,38 @@ fun MatchesForGameScreen(
                     verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
                 ) {
 
-                    val adSeparatedSubLists = matches.toAdSeparatedSubLists()
+                    val formatter = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).apply {
+                        timeZone = TimeZone.getTimeZone("UTC")
+                    }
 
+                    val adSeparatedSubLists = matches.toAdSeparatedSubLists()
                     adSeparatedSubLists.forEachIndexed { index, subList ->
 
-                        items(
-                            items = subList,
-                            key = { item -> item.id }
-                        ) { match ->
+                        items(items = subList, key = { item -> item.id }) { match ->
 
-                            MatchListItem(
-                                match,
-                                scoringMode,
-                                onClick = onMatchClick,
-                                modifier = Modifier.animateItemPlacement(
-                                    animationSpec = tween(
-                                        durationMillis = DurationMs.medium,
-                                        easing = Ease
+                            // TODO: need to fix so this show the real index, rather than the index in the current search results
+
+                            MatchCard(
+                                number = "${matches.indexOf(match) + 1}",
+                                date = formatter.format(match.dateMillis),
+                                location = match.location,
+                                players = match.players,
+                                totals = match.players.map {
+                                    it.categoryScores
+                                        .sumOf { score -> score.scoreAsBigDecimal ?: BigDecimal.ZERO }
+                                        .toShortFormatString()
+                                },
+                                modifier = Modifier
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .clickable {
+                                        onMatchClick(match.id)
+                                    }
+                                    .animateItemPlacement(
+                                        animationSpec = tween(
+                                            durationMillis = DurationMs.medium,
+                                            easing = Ease
+                                        )
                                     )
-                                )
                             )
                         }
 

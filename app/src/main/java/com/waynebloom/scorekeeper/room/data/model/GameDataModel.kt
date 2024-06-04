@@ -31,9 +31,4 @@ data class GameDataRelationModel(
 
     @Relation(parentColumn = "id", entityColumn = "game_id", entity = CategoryDataModel::class)
     var categories: List<CategoryDataModel> = listOf()
-) {
-
-    // TODO remove this
-    @Ignore
-    fun getScoringMode() = ScoringMode.getModeByOrdinal(entity.scoringMode)
-}
+)

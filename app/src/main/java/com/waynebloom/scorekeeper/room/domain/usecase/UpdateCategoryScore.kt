@@ -15,7 +15,7 @@ class UpdateCategoryScore @Inject constructor(
                 id = categoryScore.id,
                 playerId = categoryScore.playerId,
                 categoryId = categoryScore.categoryId,
-                value = categoryScore.score.toString()
+                value = categoryScore.scoreAsTextFieldValue.text
             )
         )
     }

@@ -15,7 +15,6 @@ import com.waynebloom.scorekeeper.room.domain.usecase.DeletePlayer
 import com.waynebloom.scorekeeper.room.domain.usecase.GetCategoriesByGameId
 import com.waynebloom.scorekeeper.room.domain.usecase.GetCategoryScoresByPlayerIdAsFlow
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
-import com.waynebloom.scorekeeper.room.domain.usecase.GetMatchWithRelations
 import com.waynebloom.scorekeeper.room.domain.usecase.GetPlayerWithRelationsAsFlow
 import com.waynebloom.scorekeeper.room.domain.usecase.GetPlayersByMatchId
 import com.waynebloom.scorekeeper.room.domain.usecase.InsertCategoryScore
@@ -78,7 +77,7 @@ class EditPlayerViewModel @Inject constructor(
                     playerId = insertPlayer(
                         PlayerDomainModel(
                             matchId = matchId,
-                            position = numberOfPlayers + 1,
+                            rank = numberOfPlayers + 1,
                         )
                     )
                 }
@@ -97,8 +96,8 @@ class EditPlayerViewModel @Inject constructor(
                             it.copy(
                                 game = getGame(gameId),
                                 numberOfPlayers = numberOfPlayers,
-                                name = player.name,
-                                rank = TextFieldValue(player.position.toString()),
+                                name = TextFieldValue(player.name),
+                                rank = TextFieldValue(player.rank.toString()),
                                 useCategorizedScore = player.useCategorizedScore,
                                 totalScore = TextFieldValue(player.totalScore.toString()),
                             )
@@ -114,7 +113,7 @@ class EditPlayerViewModel @Inject constructor(
                             categoryScores.find { it.categoryId == category.id }
                                 ?: CategoryScoreDomainModel(
                                     categoryId = category.id,
-                                    score = BigDecimal.ZERO
+                                    scoreAsBigDecimal = BigDecimal.ZERO
                                 )
                         }
 
@@ -123,7 +122,7 @@ class EditPlayerViewModel @Inject constructor(
                                 categories = categories,
                                 categoryScores = categoryScoresSorted,
                                 categoryScoresAsText = categoryScoresSorted.map { categoryScore ->
-                                    TextFieldValue(categoryScore.score.toString())
+                                    TextFieldValue(categoryScore.scoreAsBigDecimal.toString())
                                 },
                                 categoryScoreValidityStates = categoryScoresSorted.map {
                                     ValidityState.Valid
@@ -181,8 +180,8 @@ class EditPlayerViewModel @Inject constructor(
             val player = PlayerDomainModel(
                 id = playerId,
                 matchId = matchId,
-                name = name,
-                position = rank.text.toIntOrNull() ?: -1,
+                name = name.text,
+                rank = rank.text.toIntOrNull() ?: -1,
                 useCategorizedScore = useCategorizedScore,
                 totalScore = totalScore,
             )
@@ -190,7 +189,7 @@ class EditPlayerViewModel @Inject constructor(
             val categoryScores = categoryScores.mapIndexed { index, score ->
                 score.copy(
                     playerId = playerId,
-                    score = categoryScoresAsText[index].text.toBigDecimal()
+                    scoreAsBigDecimal = categoryScoresAsText[index].text.toBigDecimal()
                 )
             }
 

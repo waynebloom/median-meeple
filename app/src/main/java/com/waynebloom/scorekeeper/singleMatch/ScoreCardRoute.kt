@@ -8,49 +8,41 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.navigation.Destination
 import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
 
 @Composable
-fun SingleMatchRoute(
+fun ScoreCardRoute(
     navController: NavHostController,
-    viewModel: SingleMatchViewModel = hiltViewModel(),
+    viewModel: ScoreCardViewModel = hiltViewModel(),
 ) {
-
     val uiState by viewModel.uiState.collectAsState()
-
     val primaryColor = LocalCustomThemeColors.current.getColorByKey(uiState.game.color)
-    val gameId = navController.currentBackStackEntry?.arguments?.getLong("gameId")!!
 
     val deletedToast = Toast.makeText(LocalContext.current, "Match deleted.", Toast.LENGTH_SHORT)
     val savedToast = Toast.makeText(LocalContext.current, "Your changes have been saved.", Toast.LENGTH_SHORT)
 
     UserSelectedPrimaryColorTheme(primaryColor) {
-        SingleMatchScreen(
+        ScoreCardScreen(
             uiState = uiState,
-            onAddPlayerClick = {
-                val route = "${Destination.EditPlayer.route}/$gameId/${viewModel.matchId}/-1"
-                navController.navigate(route)
+            onPlayerClick = viewModel::onPlayerClick,
+            onSaveClick = {
+                viewModel.onSaveClick()
+                savedToast.show()
+                navController.popBackStack()
             },
             onDeleteClick = {
                 viewModel.onDeleteClick()
                 deletedToast.show()
                 navController.popBackStack()
             },
-            onPlayerClick = {
-                val route = "${Destination.EditPlayer.route}/$gameId/${viewModel.matchId}/$it"
-                navController.navigate(route)
-            },
-            onViewDetailedScoresClick = {
-                val route = "${Destination.NewSingleMatch.route}/${viewModel.gameId}/${viewModel.matchId}"
-                navController.navigate(route)
-            },
-            onNotesChanged = viewModel::onNotesChanged,
-            onSaveClick = {
-                viewModel.onSaveClick()
-                savedToast.show()
-                navController.popBackStack()
-            },
+            onAddPlayer = viewModel::onAddPlayer,
+            onDeletePlayerClick = viewModel::onDeletePlayerClick,
+            onCellChange = viewModel::onCellChange,
+            onDialogTextFieldChange = viewModel::onDialogTextFieldChange,
+            onDateChange = viewModel::onDateChange,
+            onLocationChange = viewModel::onLocationChange,
+            onNotesChange = viewModel::onNotesChange,
+            onPlayerChange = viewModel::onPlayerChange,
         )
     }
 }

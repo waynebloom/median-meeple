@@ -22,6 +22,10 @@ interface PlayerRepository {
     @Query("SELECT * FROM Player WHERE match_id = :id")
     suspend fun getByMatchId(id: Long): List<PlayerDataModel>
 
+    @Transaction
+    @Query("SELECT * FROM Player WHERE match_id = :id")
+    suspend fun getByMatchIdWithRelations(id: Long): List<PlayerDataRelationModel>
+
     @Insert
     suspend fun insert(player: PlayerDataModel): Long
 

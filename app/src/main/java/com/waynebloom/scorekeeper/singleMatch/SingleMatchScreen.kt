@@ -57,7 +57,7 @@ import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
-import com.waynebloom.scorekeeper.ui.PreviewData
+import com.waynebloom.scorekeeper.PreviewData
 
 @Composable
 fun SingleMatchScreen(
@@ -118,7 +118,7 @@ fun SingleMatchScreen(
                 PlayersSection(
                     players = match.players,
                     scoringMode = game.scoringMode,
-                    isScorecardButtonEnabled = false,
+                    isScorecardButtonEnabled = true,
                     showMaximumPlayersErrorState = match.players.size >= SingleMatchViewModel.MAXIMUM_PLAYERS,
                     onAddPlayerClick = onAddPlayerClick,
                     onPlayerClick = onPlayerClick,
@@ -236,14 +236,14 @@ private fun PlayersSection(
             val playersInRankOrder = when(scoringMode) {
                 ScoringMode.Ascending -> players.sortedBy(PlayerDomainModel::totalScore)
                 ScoringMode.Descending -> players.sortedBy(PlayerDomainModel::totalScore).reversed()
-                ScoringMode.Manual -> players.sortedBy(PlayerDomainModel::position)
+                ScoringMode.Manual -> players.sortedBy(PlayerDomainModel::rank)
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent)) {
 
                 playersInRankOrder.forEachIndexed { index, player ->
                     val displayedRank = if (scoringMode == ScoringMode.Manual) {
-                        player.position
+                        player.rank
                     } else index + 1
 
                     RankedListItem(
@@ -392,7 +392,7 @@ private fun RankedListItem(
                             .size(20.dp)
                     )
                     Text(
-                        text = player.name.text,
+                        text = player.name,
                         textAlign = TextAlign.Start,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,

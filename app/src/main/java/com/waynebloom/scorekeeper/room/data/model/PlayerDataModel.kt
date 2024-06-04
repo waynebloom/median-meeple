@@ -32,12 +32,6 @@ data class PlayerDataModel(
     var name: String = "",
 
     var position: Int = 0,
-
-    @ColumnInfo(name = "score")
-    var totalScore: String = "0",
-
-    @ColumnInfo(name = "show_detailed_score")
-    var showDetailedScore: Boolean = false
 )
 
 class PlayerDataRelationModel(
@@ -46,14 +40,4 @@ class PlayerDataRelationModel(
 
     @Relation(parentColumn = "id", entityColumn = "player_id", entity = CategoryScoreDataModel::class)
     var score: List<CategoryScoreDataModel> = listOf()
-) {
-
-
-    // TODO remove this, put in ui model
-    @Ignore
-    fun getUncategorizedScore(): BigDecimal {
-        val subscoreSum = score.sumOf { it.value.toBigDecimal() }
-        val totalScoreBigDecimal = entity.totalScore.toBigDecimal()
-        return totalScoreBigDecimal - subscoreSum
-    }
-}
+)

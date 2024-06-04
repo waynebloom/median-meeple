@@ -1,16 +1,22 @@
 package com.waynebloom.scorekeeper
 
+import androidx.compose.ui.text.input.TextFieldValue
+import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.toScoringMode
 import com.waynebloom.scorekeeper.ext.toTextFieldInput
+import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
+import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
-import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
-import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import java.math.BigDecimal
 
 val CategoryEntitiesDefaultPreview: List<CategoryDataModel> = listOf(
     CategoryDataModel(
@@ -91,26 +97,10 @@ val CategoryScoreEntitiesDefaultPreview: List<CategoryScoreDataModel> = listOf(
 )
 
 val PlayerEntitiesDefaultPreview: List<PlayerDataModel> = listOf(
-    PlayerDataModel(
-        id = 0,
-        name = "Wayne",
-        totalScore = "32"
-    ),
-    PlayerDataModel(
-        id = 1,
-        name = "Conor",
-        totalScore = "37"
-    ),
-    PlayerDataModel(
-        id = 2,
-        name = "Alyssa",
-        totalScore = "45"
-    ),
-    PlayerDataModel(
-        id = 3,
-        name = "Joseph",
-        totalScore = "22"
-    )
+    PlayerDataModel(id = 0, name = "Wayne"),
+    PlayerDataModel(id = 1, name = "Conor"),
+    PlayerDataModel(id = 2, name = "Alyssa"),
+    PlayerDataModel(id = 3, name = "Joseph"),
 )
 
 val PlayerObjectsDefaultPreview: List<PlayerDataRelationModel> = PlayerEntitiesDefaultPreview.map {
@@ -121,18 +111,9 @@ val PlayerObjectsDefaultPreview: List<PlayerDataRelationModel> = PlayerEntitiesD
 }
 
 val MatchEntitiesDefaultPreview: List<MatchDataModel> = listOf(
-    MatchDataModel(
-        id = 0,
-        notes = "Example notes 1"
-    ),
-    MatchDataModel(
-        id = 1,
-        notes = "Example notes 2"
-    ),
-    MatchDataModel(
-        id = 2,
-        notes = "Example notes 3"
-    ),
+    MatchDataModel(id = 0, notes = "Example notes 1"),
+    MatchDataModel(id = 1, notes = "Example notes 2"),
+    MatchDataModel(id = 2, notes = "Example notes 3"),
 )
 
 val MatchObjectsDefaultPreview = MatchEntitiesDefaultPreview.map {
@@ -235,11 +216,7 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
             ),
             players = listOf(
                 PlayerDataRelationModel(
-                    entity = PlayerDataModel(
-                        id = 0,
-                        name = "Wayne",
-                        totalScore = "32"
-                    ),
+                    entity = PlayerDataModel(id = 0, name = "Wayne"),
                     score = listOf(
                         CategoryScoreDataModel(
                             id = 0,
@@ -284,11 +261,7 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
                     )
                 ),
                 PlayerDataRelationModel(
-                    entity = PlayerDataModel(
-                        id = 0,
-                        name = "Alyssa",
-                        totalScore = "72"
-                    ),
+                    entity = PlayerDataModel(id = 0, name = "Alyssa"),
                     score = listOf(
                         CategoryScoreDataModel(
                             id = 0,
@@ -341,11 +314,7 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
             ),
             players = listOf(
                 PlayerDataRelationModel(
-                    entity = PlayerDataModel(
-                        id = 0,
-                        name = "Alyssa",
-                        totalScore = "88"
-                    ),
+                    entity = PlayerDataModel(id = 0, name = "Alyssa"),
                     score = listOf(
                         CategoryScoreDataModel(
                             id = 0,
@@ -390,11 +359,7 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
                     )
                 ),
                 PlayerDataRelationModel(
-                    entity = PlayerDataModel(
-                        id = 0,
-                        name = "Cassie",
-                        totalScore = "89"
-                    ),
+                    entity = PlayerDataModel(id = 0, name = "Cassie"),
                     score = listOf(
                         CategoryScoreDataModel(
                             id = 0,
@@ -442,3 +407,70 @@ val GameObjectStatisticsPreview: GameDataRelationModel = GameDataRelationModel(
         ),
     )
 )
+
+object PreviewData {
+
+    val Categories = listOf(
+        CategoryDomainModel(
+            name = TextFieldValue("Eggs"),
+            position = 0
+        ),
+        CategoryDomainModel(
+            name = TextFieldValue("Cached Food"),
+            position = 1
+        ),
+        CategoryDomainModel(
+            name = TextFieldValue("Tucked Cards"),
+            position = 2
+        )
+    )
+
+    val Games = listOf(
+        GameDomainModel(
+            name = "Wingspan".toTextFieldInput(),
+            color = "LIGHT_BLUE",
+            scoringMode = ScoringMode.Descending
+        ),
+        GameDomainModel(
+            name = "Splendor".toTextFieldInput(),
+            color = "YELLOW",
+            scoringMode = ScoringMode.Descending
+        ),
+        GameDomainModel(
+            name = "Catan".toTextFieldInput(),
+            color = "DEEP_ORANGE",
+            scoringMode = ScoringMode.Descending
+        )
+    )
+
+    val Players = listOf(
+        PlayerDomainModel(
+            name = "Alice",
+            totalScore = BigDecimal.TEN,
+            rank = 0,
+            useCategorizedScore = false,
+            categoryScores = listOf()
+        ),
+        PlayerDomainModel(
+            name = "Bob",
+            totalScore = BigDecimal("22"),
+            rank = 1,
+            useCategorizedScore = false,
+            categoryScores = listOf()
+        ),
+        PlayerDomainModel(
+            name = "Charlie",
+            totalScore = BigDecimal("15"),
+            rank = 2,
+            useCategorizedScore = false,
+            categoryScores = listOf()
+        )
+    )
+
+    val Matches = listOf(
+        MatchDomainModel(
+            players = Players,
+            notes = "Sample notes"
+        )
+    )
+}

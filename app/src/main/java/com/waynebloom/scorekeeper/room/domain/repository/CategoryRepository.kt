@@ -10,10 +10,10 @@ import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 @Dao
 interface CategoryRepository {
 
-    @Query("DELETE FROM SUBSCORETITLE WHERE id = :id")
+    @Query("DELETE FROM CATEGORY WHERE id = :id")
     suspend fun deleteById(id: Long)
 
-    @Query("SELECT * FROM SUBSCORETITLE WHERE game_id = :id")
+    @Query("SELECT * FROM CATEGORY WHERE game_id = :id")
     suspend fun getByGameId(id: Long): List<CategoryDataModel>
 
     @Insert

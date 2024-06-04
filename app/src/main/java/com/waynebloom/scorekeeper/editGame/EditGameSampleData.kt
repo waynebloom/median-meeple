@@ -1,6 +1,6 @@
 package com.waynebloom.scorekeeper.editGame
 
-import com.waynebloom.scorekeeper.ui.PreviewData
+import com.waynebloom.scorekeeper.PreviewData
 
 object EditGameSampleData {
     private val game = PreviewData.Games[0]

@@ -12,34 +12,33 @@ import androidx.compose.ui.graphics.Color
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.theme.color.DarkThemeGameColors
 import com.waynebloom.scorekeeper.theme.color.LightThemeGameColors
-import com.waynebloom.scorekeeper.theme.color.gray400
-import com.waynebloom.scorekeeper.theme.color.gray700
-import com.waynebloom.scorekeeper.theme.color.gray800
+import com.waynebloom.scorekeeper.theme.color.charcoal700
+import com.waynebloom.scorekeeper.theme.color.charcoal800
 import com.waynebloom.scorekeeper.theme.color.rust300
 import com.waynebloom.scorekeeper.theme.color.rust600
 import com.waynebloom.scorekeeper.theme.color.taupe100
-import com.waynebloom.scorekeeper.theme.color.taupe800
+import com.waynebloom.scorekeeper.theme.color.taupe50
 
 private val LightColorPalette = lightColors(
     primary = rust600,
-    secondary = gray800,
-    background = taupe100,
-    surface = gray400,
-    onPrimary = taupe100,
-    onSecondary = Color.White,
-    onBackground = taupe800,
-    onSurface = taupe800
+    secondary = rust600,
+    background = taupe50,
+    surface = taupe100,
+    onPrimary = taupe50,
+    onSecondary = taupe50,
+    onBackground = charcoal800,
+    onSurface = charcoal800
 )
 
 private val DarkColorPalette = darkColors(
     primary = rust300,
-    secondary = gray700,
-    background = gray800,
-    surface = gray700,
-    onPrimary = gray800,
-    onSecondary = Color.White,
+    secondary = rust300,
+    background = charcoal800,
+    surface = charcoal700,
+    onPrimary = charcoal800,
+    onSecondary = charcoal800,
     onBackground = taupe100,
-    onSurface = Color.White
+    onSurface = taupe100
 )
 
 @Composable

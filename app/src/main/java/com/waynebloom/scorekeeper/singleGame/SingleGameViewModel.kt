@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -179,7 +180,7 @@ private data class SingleGameViewModelState(
     // region Matches Filtering & Sort Logic
 
     private fun PlayerDomainModel.showWithFilter(filter: String): Boolean {
-        val nameMatches = name.text.lowercase().contains(filter.lowercase())
+        val nameMatches = name.lowercase().contains(filter.lowercase())
         val totalScoreMatches = filter.toBigDecimalOrNull()?.let {
             totalScore.isEqualTo(it)
         } ?: false
@@ -215,7 +216,7 @@ private data class SingleGameViewModelState(
         when (sortMode) {
             MatchSortMode.ByMatchAge -> filteredMatches.reverse()
             MatchSortMode.ByWinningPlayer -> filteredMatches.sortBy { match ->
-                match.players.getWinningPlayer(scoringMode).name.text
+                match.players.getWinningPlayer(scoringMode).name
             }
             MatchSortMode.ByWinningScore -> filteredMatches.sortBy { match ->
                 match.players.getWinningPlayer(scoringMode).totalScore
@@ -240,7 +241,7 @@ private data class SingleGameViewModelState(
         .flatMap { match ->
             match.players.map { player ->
                 ScoringPlayerDomainModel(
-                    name = player.name.text,
+                    name = player.name,
                     score = player.totalScore
                 )
             }
@@ -260,8 +261,8 @@ private data class SingleGameViewModelState(
         .filter { it.useCategorizedScore }
         .map { player ->
             ScoringPlayerDomainModel(
-                name = player.name.text,
-                score = player.categoryScores[category.position].score
+                name = player.name,
+                score = player.categoryScores[category.position].scoreAsBigDecimal ?: BigDecimal.ZERO
             )
         }
 
@@ -293,7 +294,7 @@ private data class SingleGameViewModelState(
 
     private fun getUniquePlayerCount(matches: List<MatchDomainModel>) = matches
         .flatMap { it.players }
-        .distinctBy { it.name.text }
+        .distinctBy { it.name }
         .count()
 
     private fun getWinnersOrderedByNumberOfWins(
@@ -304,7 +305,7 @@ private data class SingleGameViewModelState(
 
         matches.forEach {
             if (it.players.isEmpty()) return@forEach
-            val winnerName = it.players.getWinningPlayer(scoringMode).name.text
+            val winnerName = it.players.getWinningPlayer(scoringMode).name
             winners[winnerName] = winners[winnerName]?.plus(1) ?: 1
         }
 

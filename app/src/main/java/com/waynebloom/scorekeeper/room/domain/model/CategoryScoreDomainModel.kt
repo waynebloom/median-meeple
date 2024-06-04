@@ -1,5 +1,6 @@
 package com.waynebloom.scorekeeper.room.domain.model
 
+import androidx.compose.ui.text.input.TextFieldValue
 import java.math.BigDecimal
 
 data class CategoryScoreDomainModel(
@@ -7,5 +8,6 @@ data class CategoryScoreDomainModel(
     val playerId: Long = -1,
     val categoryId: Long = -1,
     val category: CategoryDomainModel? = null,
-    val score: BigDecimal,
+    val scoreAsBigDecimal: BigDecimal? = null,
+    val scoreAsTextFieldValue: TextFieldValue = TextFieldValue(),
 )
