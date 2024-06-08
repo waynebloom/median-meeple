@@ -3,7 +3,6 @@ package com.waynebloom.scorekeeper
 import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.toScoringMode
-import com.waynebloom.scorekeeper.ext.toTextFieldInput
 import com.waynebloom.scorekeeper.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.room.data.model.CategoryScoreDataModel
 import com.waynebloom.scorekeeper.room.data.model.GameDataModel
@@ -13,6 +12,7 @@ import com.waynebloom.scorekeeper.room.data.model.MatchDataRelationModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
@@ -177,7 +177,7 @@ val GameEntitiesDefaultPreview: List<GameDataModel> = listOf(
 val SampleGames: List<GameDomainModel> = GameEntitiesDefaultPreview.map {
     GameDomainModel(
         id = it.id,
-        name = it.name.toTextFieldInput(),
+        name = TextFieldValue(it.name),
         color = it.color,
         scoringMode = it.scoringMode.toScoringMode()
     )
@@ -427,50 +427,79 @@ object PreviewData {
 
     val Games = listOf(
         GameDomainModel(
-            name = "Wingspan".toTextFieldInput(),
+            name = TextFieldValue("Wingspan"),
             color = "LIGHT_BLUE",
             scoringMode = ScoringMode.Descending
         ),
         GameDomainModel(
-            name = "Splendor".toTextFieldInput(),
+            name = TextFieldValue("Splendor"),
             color = "YELLOW",
             scoringMode = ScoringMode.Descending
         ),
         GameDomainModel(
-            name = "Catan".toTextFieldInput(),
+            name = TextFieldValue("Catan"),
             color = "DEEP_ORANGE",
             scoringMode = ScoringMode.Descending
+        )
+    )
+
+    val CategoryScores = listOf(
+        CategoryScoreDomainModel(
+            category = Categories[0],
+            scoreAsBigDecimal = BigDecimal(20),
+            scoreAsTextFieldValue = TextFieldValue("20")
+        ),
+        CategoryScoreDomainModel(
+            category = Categories[1],
+            scoreAsBigDecimal = BigDecimal(30),
+            scoreAsTextFieldValue = TextFieldValue("30")
+        ),
+        CategoryScoreDomainModel(
+            category = Categories[2],
+            scoreAsBigDecimal = BigDecimal(40),
+            scoreAsTextFieldValue = TextFieldValue("40")
         )
     )
 
     val Players = listOf(
         PlayerDomainModel(
             name = "Alice",
-            totalScore = BigDecimal.TEN,
             rank = 0,
-            useCategorizedScore = false,
-            categoryScores = listOf()
+            categoryScores = CategoryScores
         ),
         PlayerDomainModel(
             name = "Bob",
-            totalScore = BigDecimal("22"),
             rank = 1,
-            useCategorizedScore = false,
-            categoryScores = listOf()
+            categoryScores = CategoryScores
         ),
         PlayerDomainModel(
             name = "Charlie",
-            totalScore = BigDecimal("15"),
             rank = 2,
-            useCategorizedScore = false,
-            categoryScores = listOf()
+            categoryScores = CategoryScores
         )
     )
 
     val Matches = listOf(
         MatchDomainModel(
+            id = 0,
             players = Players,
-            notes = "Sample notes"
+            notes = "Sample notes",
+            location = "Home",
+            dateMillis = 1630000000000,
+        ),
+        MatchDomainModel(
+            id = 1,
+            players = Players,
+            notes = "Sample notes",
+            location = "Conor's",
+            dateMillis = 1630000099999,
+        ),
+        MatchDomainModel(
+            id = 2,
+            players = Players,
+            notes = "Sample notes",
+            location = "Tim's",
+            dateMillis = 1630000999999,
         )
     )
 }

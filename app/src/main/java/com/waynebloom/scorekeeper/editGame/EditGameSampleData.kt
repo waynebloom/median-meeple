@@ -10,7 +10,7 @@ object EditGameSampleData {
         dragState = DragState(),
         indexOfCategoryReceivingInput = null,
         isCategoryDialogOpen = false,
-        nameInput = game.name,
+        name = game.name,
         scoringMode = game.scoringMode,
         showColorMenu = false
     )
@@ -20,14 +20,14 @@ object EditGameSampleData {
         dragState = DragState(),
         indexOfCategoryReceivingInput = null,
         isCategoryDialogOpen = false,
-        nameInput = game.name,
+        name = game.name,
         scoringMode = game.scoringMode,
         showColorMenu = false
     )
     val CategoryDialog = Default.copy(
         categories = PreviewData.Categories,
         isCategoryDialogOpen = true,
-        nameInput = game.name,
+        name = game.name,
         color = game.color,
         scoringMode = game.scoringMode
     )

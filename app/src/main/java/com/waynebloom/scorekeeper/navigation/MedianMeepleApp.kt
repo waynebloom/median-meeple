@@ -12,12 +12,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.waynebloom.scorekeeper.editGame.EditGameRoute
-import com.waynebloom.scorekeeper.editPlayer.EditPlayerRoute
 import com.waynebloom.scorekeeper.library.LibraryRoute
+import com.waynebloom.scorekeeper.scorecard.ScoreCardRoute
 import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
 import com.waynebloom.scorekeeper.singleGame.matchesForGame.MatchesForGameRoute
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameRoute
-import com.waynebloom.scorekeeper.singleMatch.ScoreCardRoute
 
 @SuppressWarnings("CyclomaticComplexMethod")
 @Composable
@@ -81,20 +80,6 @@ fun MedianMeepleApp() {
             )
         ) {
             ScoreCardRoute(navController)
-        }
-
-        // EditPlayer
-
-        composable(
-            route = "${Destination.EditPlayer.route}/{gameId}/{matchId}/{playerId}",
-            arguments = listOf(
-                navArgument(name = "gameId") { type = NavType.LongType },
-                navArgument(name = "matchId") { type = NavType.LongType },
-                navArgument(name = "playerId") { type = NavType.LongType },
-            )
-        ) {
-
-            EditPlayerRoute(navController = navController)
         }
     }
 }

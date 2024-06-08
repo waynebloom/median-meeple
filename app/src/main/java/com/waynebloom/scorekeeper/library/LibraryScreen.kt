@@ -3,24 +3,34 @@ package com.waynebloom.scorekeeper.library
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,7 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -40,10 +50,9 @@ import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.SampleGames
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.components.AdCard
-import com.waynebloom.scorekeeper.components.GameListItemNew
+import com.waynebloom.scorekeeper.components.GameCard
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.components.TopBarWithSearch
@@ -64,6 +73,9 @@ fun LibraryScreen(
     onGameClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+
+    // TODO: this screen needs some new life. Display some interesting data on game cards.
+    // TODO: Check up on search function after this ^^. Sometimes a card was showing underneath the ad...?
 
     when(uiState) {
         is LibraryUiState.Loading -> {
@@ -99,17 +111,21 @@ fun LibraryScreen(
 
     Scaffold(
         topBar = {
-            GamesTopBar(
+            LibraryTopBar(
                 title = stringResource(id = R.string.header_games),
                 searchInput = searchInput,
                 onSearchInputChanged = { onSearchInputChanged(it) },
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
             )
         },
-        floatingActionButton = { MedianMeepleFab(onClick = onAddNewGameClick) },
+        floatingActionButton = {
+            MedianMeepleFab(onClick = onAddNewGameClick)
+        },
+        contentWindowInsets = WindowInsets(0.dp),
         modifier = modifier,
-    ) { contentPadding ->
+    ) { innerPadding ->
 
-        Column(Modifier.padding(contentPadding)) {
+        Column(Modifier.padding(innerPadding)) {
 
             AnimatedContent(
                 targetState = games.isNotEmpty() to searchInput.text.isNotBlank(),
@@ -135,7 +151,7 @@ fun LibraryScreen(
                                 maxLines = 2
                             )
 
-                            Divider()
+                            HorizontalDivider()
                         }
                     }
 
@@ -160,7 +176,7 @@ fun LibraryScreen(
                                 maxLines = 2
                             )
 
-                            Divider()
+                            HorizontalDivider()
                         }
                     }
 
@@ -178,7 +194,7 @@ fun LibraryScreen(
                                 maxLines = 2
                             )
 
-                            Divider()
+                            HorizontalDivider()
                         }
                     }
                 }
@@ -189,7 +205,10 @@ fun LibraryScreen(
                 contentPadding = PaddingValues(bottom = Spacing.paddingForFab),
             ) {
 
-                val subListsBetweenAds = games.toAdSeparatedSubLists()
+                val subListsBetweenAds = games.toAdSeparatedSubLists(
+                    firstAdMaximumIndex = 5,
+                    itemsBetweenAds = 10
+                )
 
                 subListsBetweenAds.forEachIndexed { index, subList ->
 
@@ -198,15 +217,11 @@ fun LibraryScreen(
                         key = { it.id }
                     ) { game ->
 
-                        GameListItemNew(
-                            name = game.name.value.text,
-                            gameColor = LocalCustomThemeColors.current.getColorByKey(game.color),
+                        GameCard(
+                            name = game.name.text,
+                            color = LocalCustomThemeColors.current.getColorByKey(game.color),
                             onClick = { onGameClick(game.id) },
                             modifier = Modifier
-                                .padding(
-                                    horizontal = Spacing.screenEdge,
-                                    vertical = Spacing.subSectionContent
-                                )
                                 .fillMaxWidth()
                                 .animateItemPlacement()
                         )
@@ -214,13 +229,23 @@ fun LibraryScreen(
 
                     if (index != subListsBetweenAds.lastIndex || subListsBetweenAds.size == 1) {
                         item {
-                            Box(Modifier
-                                .padding(horizontal = Spacing.screenEdge, vertical = Spacing.sectionContent)
-                            ) {
-                                AdCard(ad = ad)
-                            }
+                            AdCard(
+                                ad = ad,
+                                modifier = Modifier.padding(
+                                    horizontal = Spacing.screenEdge,
+                                    vertical = Spacing.sectionContent
+                                )
+                            )
                         }
                     }
+                }
+
+                item {
+                    Spacer(
+                        Modifier
+                            .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                            .consumeWindowInsets(WindowInsets.navigationBars)
+                    )
                 }
             }
         }
@@ -228,7 +253,7 @@ fun LibraryScreen(
 }
 
 @Composable
-fun GamesDefaultActionBar(
+fun LibraryDefaultActionBar(
     title: String,
     onSearchClick: () -> Unit
 ) {
@@ -236,44 +261,43 @@ fun GamesDefaultActionBar(
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(Size.topBarHeight)
+        modifier = Modifier.fillMaxWidth()
     ) {
 
         Text(
             text = title,
-            color = MaterialTheme.colors.primary,
-            style = MaterialTheme.typography.h5,
+            style = MaterialTheme.typography.titleLarge,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1
         )
 
-        IconButton(
+        Icon(
             imageVector = Icons.Rounded.Search,
-            backgroundColor = Color.Transparent,
-            foregroundColor = MaterialTheme.colors.primary,
-            onClick = { onSearchClick() }
+            contentDescription = null,
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .clip(CircleShape)
+                .clickable(onClick = onSearchClick)
+                .padding(4.dp)
         )
     }
 }
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
 @Composable
-fun GamesTopBar(
+fun LibraryTopBar(
     title: String,
     searchInput: TextFieldValue,
     onSearchInputChanged: (TextFieldValue) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-
     var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
-
-    Column {
-
+    Surface {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier
-                .padding(start = Spacing.screenEdge, end = Spacing.screenEdge / 2)
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = modifier
+                .padding(start = Spacing.screenEdge, end = 4.dp)
                 .defaultMinSize(minHeight = Size.topBarHeight)
                 .fillMaxWidth()
         ) {
@@ -296,15 +320,13 @@ fun GamesTopBar(
                         }
                     )
                 } else {
-                    GamesDefaultActionBar(
+                    LibraryDefaultActionBar(
                         title = title,
                         onSearchClick = { isSearchBarVisible = true }
                     )
                 }
             }
         }
-
-        Divider()
     }
 }
 

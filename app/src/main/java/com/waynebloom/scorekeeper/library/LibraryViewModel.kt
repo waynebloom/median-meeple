@@ -99,7 +99,7 @@ data class LibraryViewModelState(
     }
 
     private fun filterGamesWithSearchInput() = games.filter {
-        it.name.value.text.lowercase().contains(searchInput.text.lowercase())
+        it.name.text.lowercase().contains(searchInput.text.lowercase())
     }
 }
 

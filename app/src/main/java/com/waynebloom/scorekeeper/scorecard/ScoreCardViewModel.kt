@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.singleMatch
+package com.waynebloom.scorekeeper.scorecard
 
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
@@ -54,8 +54,17 @@ class ScoreCardViewModel @Inject constructor(
     private val deleteMatch: DeleteMatch,
 ): ViewModel() {
 
-    private val viewModelState: MutableStateFlow<NewSingleMatchUiState>
-    val uiState: StateFlow<NewSingleMatchUiState>
+    // TODO: Fix the date picker problem
+    // ITS BECAUSE OF THE INITIAL DATEMILLIS OF 0
+    // TODO: Make the left side of the score card card shaped
+    // TODO: Highlight only the winning score(s)
+    // TODO: Clean up the fresh scorecard experience
+    // TODO: Make the save button prettier
+    // TODO: confirmation dialog for delete button
+    // TODO: sometimes some players get deleted when saving a freshly created match
+
+    private val viewModelState: MutableStateFlow<ScoreCardUiState>
+    val uiState: StateFlow<ScoreCardUiState>
 
     val gameId = savedStateHandle.get<Long>("gameId")!!
     var matchId = savedStateHandle.get<Long>("matchId")!!
@@ -68,8 +77,8 @@ class ScoreCardViewModel @Inject constructor(
     }
 
     init {
-        viewModelState = mutableStateFlowFactory.newInstance(NewSingleMatchUiState())
-        uiState = viewModelState.stateIn(viewModelScope, SharingStarted.Eagerly, NewSingleMatchUiState())
+        viewModelState = mutableStateFlowFactory.newInstance(ScoreCardUiState())
+        uiState = viewModelState.stateIn(viewModelScope, SharingStarted.Eagerly, ScoreCardUiState())
 
         viewModelScope.launch {
 
@@ -281,7 +290,7 @@ class ScoreCardViewModel @Inject constructor(
     }
 }
 
-data class NewSingleMatchUiState(
+data class ScoreCardUiState(
     val totals: List<BigDecimal> = listOf(),
     val game: GameDomainModel = GameDomainModel(),
     val indexOfMatch: Int = 0,

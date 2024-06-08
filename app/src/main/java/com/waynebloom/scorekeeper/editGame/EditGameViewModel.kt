@@ -7,10 +7,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.transformElement
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.DeleteCategory
 import com.waynebloom.scorekeeper.room.domain.usecase.DeleteGame
 import com.waynebloom.scorekeeper.room.domain.usecase.GetCategoriesByGameId
@@ -18,10 +21,6 @@ import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
 import com.waynebloom.scorekeeper.room.domain.usecase.InsertCategory
 import com.waynebloom.scorekeeper.room.domain.usecase.UpdateCategory
 import com.waynebloom.scorekeeper.room.domain.usecase.UpdateGame
-import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,7 +68,7 @@ class EditGameViewModel @Inject constructor(
                     loading = false,
                     categories = categories,
                     color = game.color,
-                    nameInput = game.name,
+                    name = game.name,
                     scoringMode = game.scoringMode
                 )
             }
@@ -82,7 +81,7 @@ class EditGameViewModel @Inject constructor(
                 updateGameUseCase(
                     GameDomainModel(
                         id = gameId,
-                        name = state.nameInput,
+                        name = state.name,
                         color = state.color,
                         scoringMode = state.scoringMode
                     )
@@ -107,12 +106,7 @@ class EditGameViewModel @Inject constructor(
     }
 
     fun onNameChanged(value: TextFieldValue) = viewModelState.update {
-        it.copy(
-            nameInput = it.nameInput.copy(
-                isValid = value.text.isNotBlank(),
-                value = value
-            )
-        )
+        it.copy(name = value)
     }
 
     fun onScoringModeChanged(value: ScoringMode) = viewModelState.update {
@@ -275,7 +269,7 @@ private data class EditGameViewModelState(
     val dragState: DragState = DragState(),
     val indexOfCategoryReceivingInput: Int? = null,
     val isCategoryDialogOpen: Boolean = false,
-    val nameInput: TextFieldInput = TextFieldInput(),
+    val name: TextFieldValue = TextFieldValue(),
     val scoringMode: ScoringMode = ScoringMode.Descending,
     val showColorMenu: Boolean = false,
 ) {
@@ -289,7 +283,7 @@ private data class EditGameViewModelState(
             dragState = dragState,
             indexOfCategoryReceivingInput = indexOfCategoryReceivingInput,
             isCategoryDialogOpen = isCategoryDialogOpen,
-            nameInput = nameInput,
+            name = name,
             scoringMode = scoringMode,
             showColorMenu = showColorMenu
         )
@@ -317,7 +311,7 @@ sealed interface EditGameUiState {
         val dragState: DragState,
         val indexOfCategoryReceivingInput: Int?,
         val isCategoryDialogOpen: Boolean,
-        val nameInput: TextFieldInput,
+        val name: TextFieldValue,
         val scoringMode: ScoringMode,
         val showColorMenu: Boolean,
     ): EditGameUiState {

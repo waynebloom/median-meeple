@@ -1,9 +1,11 @@
 package com.waynebloom.scorekeeper.components
 
+import android.content.res.ColorStateList
 import android.view.View
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
@@ -15,12 +17,21 @@ import com.waynebloom.scorekeeper.ext.sentenceCase
 
 @Composable
 fun AdCard(
+    modifier: Modifier = Modifier,
     ad: NativeAd? = null,
-    primaryColor: Int = MaterialTheme.colors.primary.toArgb(),
-    onPrimaryColor: Int = MaterialTheme.colors.onPrimary.toArgb(),
-    onSurface: Int = MaterialTheme.colors.onSurface.toArgb()
+    primaryColor: Int = MaterialTheme.colorScheme.primary.toArgb(),
+    onPrimaryColor: Int = MaterialTheme.colorScheme.onPrimary.toArgb(),
+    onSurface: Int = MaterialTheme.colorScheme.onSurface.toArgb(),
 ) {
-    Surface(shape = MaterialTheme.shapes.large) {
+    Surface(
+        shape = MaterialTheme.shapes.medium.copy(
+            bottomEnd = CornerSize(32.dp),
+            bottomStart = CornerSize(32.dp),
+        ),
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp,
+        modifier = modifier
+    ) {
         AndroidViewBinding(
             factory = AdCardBinding::inflate,
             modifier = Modifier.padding(16.dp, 16.dp, 16.dp, 12.dp)
@@ -41,7 +52,7 @@ fun AdCard(
                     }
                     callToActionView = adCtaButton.apply {
                         text = ad.callToAction?.sentenceCase() ?: "Learn More"
-                        setBackgroundColor(primaryColor)
+                        backgroundTintList = ColorStateList.valueOf(primaryColor)
                         setTextColor(onPrimaryColor)
                     }
                     headlineView = adHeadline.apply {

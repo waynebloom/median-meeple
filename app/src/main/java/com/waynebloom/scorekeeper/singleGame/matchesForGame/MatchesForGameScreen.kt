@@ -7,7 +7,6 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Ease
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,25 +14,35 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Tab
-import androidx.compose.material.TabRow
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.PrimaryTabRow
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
+import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +52,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
@@ -52,17 +60,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.google.android.gms.ads.nativead.NativeAd
+import com.waynebloom.scorekeeper.PreviewData
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.AdCard
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.components.MatchCard
 import com.waynebloom.scorekeeper.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.components.RadioButtonOption
 import com.waynebloom.scorekeeper.components.TopBarWithSearch
-import com.waynebloom.scorekeeper.constants.Dimensions
+import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.enums.MatchSortMode
@@ -76,9 +84,7 @@ import com.waynebloom.scorekeeper.singleGame.MatchesForGameUiState
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.sizeTransformWithDelay
-import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
-import com.waynebloom.scorekeeper.theme.color.deepOrange100
-import com.waynebloom.scorekeeper.theme.color.deepOrange500
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.TimeZone
@@ -97,6 +103,10 @@ fun MatchesForGameScreen(
     onSortDialogDismiss: () -> Unit,
 ) {
 
+    // TODO: fix the ordering of players in the match cards
+    // TODO: add an empty state for match cards
+    // TODO: The date and location are not displaying correctly
+
     when (uiState) {
 
         is MatchesForGameUiState.Content -> {
@@ -109,7 +119,6 @@ fun MatchesForGameScreen(
                 ad = uiState.ad,
                 matches = uiState.matches,
                 listState = rememberLazyListState(),
-                scoringMode = uiState.scoringMode,
                 onEditGameClick = onEditGameClick,
                 onSortButtonClick = onSortButtonClick,
                 onStatisticsTabClick = onStatisticsTabClick,
@@ -137,50 +146,51 @@ fun MatchesForSingleGameTopBar(
     onSortClick: () -> Unit,
     onEditGameClick: () -> Unit,
     onTabClick: (SingleGameScreen) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-
     var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
 
-    Column {
+    Surface {
+        Column(modifier) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(start = Spacing.screenEdge, end = 4.dp)
+                    .defaultMinSize(minHeight = Size.topBarHeight)
+                    .fillMaxWidth()
+            ) {
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(start = 16.dp, end = 8.dp)
-                .defaultMinSize(minHeight = Dimensions.Size.topBarHeight)
-                .fillMaxWidth()
-        ) {
+                AnimatedContent(
+                    targetState = isSearchBarVisible,
+                    transitionSpec = { fadeInWithFadeOut },
+                    label = "MatchesForGameTopBarTransition"
+                ) { visible ->
 
-            AnimatedContent(
-                targetState = isSearchBarVisible,
-                transitionSpec = { fadeInWithFadeOut },
-                label = "MatchesForGameTopBarTransition"
-            ) { visible ->
-
-                if (visible) {
-                    TopBarWithSearch(
-                        searchInput = searchInput,
-                        onSearchInputChanged = onSearchInputChanged,
-                        onCloseClick = {
-                            isSearchBarVisible = false
-                        },
-                        onClearClick = {
-                            onSearchInputChanged(TextFieldValue())
-                        },
-                    )
-                } else {
-                    MatchesForSingleGameDefaultActionBar(
-                        title = title,
-                        onSearchClick = { isSearchBarVisible = true },
-                        onSortClick = onSortClick,
-                        onEditGameClick = onEditGameClick,
-                    )
+                    if (visible) {
+                        TopBarWithSearch(
+                            searchInput = searchInput,
+                            onSearchInputChanged = onSearchInputChanged,
+                            onCloseClick = {
+                                isSearchBarVisible = false
+                            },
+                            onClearClick = {
+                                onSearchInputChanged(TextFieldValue())
+                            },
+                        )
+                    } else {
+                        MatchesForSingleGameDefaultActionBar(
+                            title = title,
+                            onSearchClick = { isSearchBarVisible = true },
+                            onSortClick = onSortClick,
+                            onEditGameClick = onEditGameClick,
+                        )
+                    }
                 }
             }
-        }
 
-        SingleGameTabBar(selectedTab, onTabClick)
+            SingleGameTabBar(selectedTab, onTabClick)
+        }
     }
 }
 
@@ -195,68 +205,73 @@ fun MatchesForSingleGameDefaultActionBar(
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(Dimensions.Size.topBarHeight)
+        modifier = Modifier.fillMaxWidth()
     ) {
 
         Text(
             text = title,
-            color = MaterialTheme.colors.onBackground,
-            style = MaterialTheme.typography.h5,
+            style = MaterialTheme.typography.titleLarge,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1
         )
 
         Row {
-
-            IconButton(
+            Icon(
                 imageVector = Icons.Rounded.Search,
-                backgroundColor = Color.Transparent,
-                foregroundColor = MaterialTheme.colors.onBackground,
-                onClick = onSearchClick
+                contentDescription = null,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .clip(CircleShape)
+                    .clickable(onClick = onSearchClick)
+                    .padding(4.dp)
             )
-
-            IconButton(
+            Icon(
                 painter = painterResource(id = R.drawable.ic_sort),
-                backgroundColor = Color.Transparent,
-                foregroundColor = MaterialTheme.colors.onBackground,
-                onClick = onSortClick
+                contentDescription = null,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .clip(CircleShape)
+                    .clickable(onClick = onSortClick)
+                    .padding(4.dp)
             )
-
-            IconButton(
+            Icon(
                 imageVector = Icons.Rounded.Edit,
-                backgroundColor = Color.Transparent,
-                foregroundColor = MaterialTheme.colors.onBackground,
-                onClick = onEditGameClick
+                contentDescription = null,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .clip(CircleShape)
+                    .clickable(onClick = onEditGameClick)
+                    .padding(4.dp)
             )
         }
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SingleGameTabBar(
     selectedTab: SingleGameScreen,
     onTabSelected: (SingleGameScreen) -> Unit
 ) {
 
-    TabRow(
-        selectedTabIndex = selectedTab.ordinal,
-        backgroundColor = MaterialTheme.colors.background,
-    ) {
+    PrimaryTabRow(selectedTabIndex = selectedTab.ordinal) {
         SingleGameScreen.entries.forEachIndexed { index, screen ->
             Tab(
                 selected = index == selectedTab.ordinal,
                 onClick = { onTabSelected(screen) },
-                text = { Text(text = stringResource(id = screen.titleResource)) },
+                text = {
+                    Text(
+                        text = stringResource(id = screen.titleResource),
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                },
                 icon = {
                     Icon(
                         painter = painterResource(id = screen.iconResource),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
                     )
                 },
-                selectedContentColor = MaterialTheme.colors.onBackground,
+                unselectedContentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -273,44 +288,44 @@ fun MatchesForGameSortOptionsDialog(
     onDismiss: () -> Unit
 ) {
     Dialog(onDismiss) {
-        Column(
-            Modifier
-                .clip(shape = MaterialTheme.shapes.large)
-                .background(MaterialTheme.colors.background)
-                .padding(Spacing.screenEdge)
+        Surface(
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = 2.dp
         ) {
-            Text(
-                text = stringResource(id = R.string.sort_by),
-                style = MaterialTheme.typography.h6,
-                color = MaterialTheme.colors.onBackground,
-            )
-            Spacer(modifier = Modifier.height(Spacing.subSectionContent))
-            MatchSortMode.entries.forEach { option ->
-                RadioButtonOption(
-                    menuOption = option,
-                    isSelected = sortMode == option,
-                    onSelected = {
-                        onSortModeChanged(option)
-                    },
-                    unselectedColor = MaterialTheme.colors.onBackground,
+            Column(Modifier.padding(Spacing.screenEdge)) {
+                Text(
+                    text = stringResource(id = R.string.sort_by),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
-            }
-            Spacer(Modifier.height(Spacing.betweenSections))
-            Text(
-                text = stringResource(id = R.string.sort_direction),
-                style = MaterialTheme.typography.h6,
-                color = MaterialTheme.colors.onBackground,
-            )
-            Spacer(modifier = Modifier.height(Spacing.subSectionContent))
-            SortDirection.entries.forEach { option ->
-                RadioButtonOption(
-                    menuOption = option,
-                    isSelected = sortDirection == option,
-                    onSelected = {
-                        onSortDirectionChanged(option)
-                    },
-                    unselectedColor = MaterialTheme.colors.onBackground,
+                Spacer(modifier = Modifier.height(Spacing.subSectionContent))
+                MatchSortMode.entries.forEach { option ->
+                    RadioButtonOption(
+                        menuOption = option,
+                        isSelected = sortMode == option,
+                        onSelected = {
+                            onSortModeChanged(option)
+                        },
+                        unselectedColor = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
+                Spacer(Modifier.height(Spacing.betweenSections))
+                Text(
+                    text = stringResource(id = R.string.sort_direction),
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
                 )
+                Spacer(modifier = Modifier.height(Spacing.subSectionContent))
+                SortDirection.entries.forEach { option ->
+                    RadioButtonOption(
+                        menuOption = option,
+                        isSelected = sortDirection == option,
+                        onSelected = {
+                            onSortDirectionChanged(option)
+                        },
+                        unselectedColor = MaterialTheme.colorScheme.onBackground,
+                    )
+                }
             }
         }
     }
@@ -326,7 +341,7 @@ private fun MatchesForGameHelperBoxListHeader(message: String, type: HelperBoxTy
             modifier = Modifier.padding(vertical = Spacing.sectionContent),
             maxLines = 2,
         )
-        Divider()
+        HorizontalDivider()
     }
 }
 
@@ -341,7 +356,6 @@ fun MatchesForGameScreen(
     ad: NativeAd?,
     matches: List<MatchDomainModel>,
     listState: LazyListState,
-    scoringMode: ScoringMode,
     onEditGameClick: () -> Unit,
     onSortButtonClick: () -> Unit,
     onStatisticsTabClick: () -> Unit,
@@ -384,18 +398,19 @@ fun MatchesForGameScreen(
                     },
                     onSortClick = onSortButtonClick,
                     onEditGameClick = onEditGameClick,
+                    modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
                 )
             },
             floatingActionButton = {
-                MedianMeepleFab(
-                    onClick = onAddMatchClick,
-                )
-            }
+                MedianMeepleFab(onClick = onAddMatchClick,)
+            },
+            contentWindowInsets = WindowInsets(0.dp)
         ) { innerPadding ->
 
             Column(modifier = Modifier
                 .padding(innerPadding)
                 .padding(horizontal = Spacing.screenEdge)
+                .imePadding()
             ) {
 
                 AnimatedContent(
@@ -481,11 +496,19 @@ fun MatchesForGameScreen(
                             )
                         }
 
-                        if (index == adSeparatedSubLists.lastIndex) {
+                        if (index != adSeparatedSubLists.lastIndex || adSeparatedSubLists.size == 1) {
                             item {
-                                AdCard(ad)
+                                AdCard(ad = ad)
                             }
                         }
+                    }
+
+                    item {
+                        Spacer(
+                            Modifier
+                                .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                                .consumeWindowInsets(WindowInsets.navigationBars)
+                        )
                     }
                 }
             }
@@ -493,10 +516,41 @@ fun MatchesForGameScreen(
     }
 }
 
+@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun MatchesForGameScreenPreview() {
+    MedianMeepleTheme {
+        MatchesForGameScreen(
+            uiState = MatchesForGameUiState.Content(
+                screenTitle = "Matches",
+                searchInput = TextFieldValue(),
+                isSortDialogShowing = false,
+                sortDirection = SortDirection.Ascending,
+                sortMode = MatchSortMode.ByMatchAge,
+                ad = null,
+                matchesLazyListState = LazyListState(),
+                matches = PreviewData.Matches,
+                scoringMode = ScoringMode.Descending,
+                primaryColorId = "DEEP_ORANGE"
+            ),
+            onSearchInputChanged = {},
+            onSortModeChanged = {},
+            onSortDirectionChanged = {},
+            onEditGameClick = {},
+            onStatisticsTabClick = {},
+            onSortButtonClick = {},
+            onMatchClick = {},
+            onAddMatchClick = {},
+            onSortDialogDismiss = {}
+        )
+    }
+}
+
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 fun MatchesForGameSortDialogPreviewDarkMode() {
-    UserSelectedPrimaryColorTheme(primaryColor = deepOrange100) {
+    MedianMeepleTheme {
         MatchesForGameSortOptionsDialog(
             sortMode = MatchSortMode.ByMatchAge,
             sortDirection = SortDirection.Descending,
@@ -510,7 +564,7 @@ fun MatchesForGameSortDialogPreviewDarkMode() {
 @Preview
 @Composable
 fun MatchesForGameSortDialogPreview() {
-    UserSelectedPrimaryColorTheme(primaryColor = deepOrange500) {
+    MedianMeepleTheme {
         MatchesForGameSortOptionsDialog(
             sortMode = MatchSortMode.ByMatchAge,
             sortDirection = SortDirection.Descending,

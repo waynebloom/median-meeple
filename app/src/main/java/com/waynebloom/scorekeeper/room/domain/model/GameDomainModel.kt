@@ -1,7 +1,7 @@
 package com.waynebloom.scorekeeper.room.domain.model
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
 
 
 data class GameDomainModel(
@@ -9,6 +9,6 @@ data class GameDomainModel(
     val categories: List<CategoryDomainModel> = listOf(),
     val color: String = "",
     val matches: List<MatchDomainModel> = listOf(),
-    val name: TextFieldInput = TextFieldInput(),
+    val name: TextFieldValue = TextFieldValue(),
     val scoringMode: ScoringMode = ScoringMode.Descending
 )

@@ -1,14 +1,7 @@
 package com.waynebloom.scorekeeper.ext
 
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.ext.AdSpacing.firstAdMaximumIndex
-import com.waynebloom.scorekeeper.ext.AdSpacing.itemsBetweenAds
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
-
-private object AdSpacing {
-    const val firstAdMaximumIndex = 5
-    const val itemsBetweenAds = 10
-}
 
 /**
  * Perform a transformation on the element at the specified index.
@@ -20,7 +13,10 @@ fun <T> MutableList<T>.transformElement(index: Int, transformation: (T) -> T) {
     this[index] = transformation(this[index])
 }
 
-fun <T> List<T>.toAdSeparatedSubLists(): List<List<T>> {
+fun <T> List<T>.toAdSeparatedSubLists(
+    firstAdMaximumIndex: Int = 2,
+    itemsBetweenAds: Int = 5
+): List<List<T>> {
     val result = mutableListOf<List<T>>()
 
     if (size <= firstAdMaximumIndex) {

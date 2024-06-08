@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.theme.color
+package com.waynebloom.scorekeeper.theme.gameColor
 
 import androidx.compose.ui.graphics.Color
 

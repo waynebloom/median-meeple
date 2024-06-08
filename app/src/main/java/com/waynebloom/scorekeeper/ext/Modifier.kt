@@ -31,11 +31,13 @@ fun Modifier.onFocusSelectAll(
                 }
             }
         }
-        Modifier.onFocusChanged { focusState ->
-            if (focusState.isFocused) {
-                triggerEffect = triggerEffect?.let { bool ->
-                    !bool
-                } ?: true
+        this.then(
+            Modifier.onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                    triggerEffect = triggerEffect?.let { bool ->
+                        !bool
+                    } ?: true
+                }
             }
-        }
+        )
     }

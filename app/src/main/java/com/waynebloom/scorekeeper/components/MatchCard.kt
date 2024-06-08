@@ -8,20 +8,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
-import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
-import com.waynebloom.scorekeeper.theme.color.deepOrange500
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun MatchCard(
@@ -38,12 +38,16 @@ fun MatchCard(
         date
     }
 
-    Card(modifier.fillMaxWidth()) {
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        tonalElevation = 2.dp,
+        modifier = modifier.fillMaxWidth()
+    ) {
         Column(Modifier.padding(Spacing.screenEdge)) {
-            Text(text = headline, style = MaterialTheme.typography.h6)
+            Text(text = headline, style = MaterialTheme.typography.titleLarge)
             Text(
                 text = "${stringResource(R.string.text_match)} #$number",
-                style = MaterialTheme.typography.subtitle1
+                style = MaterialTheme.typography.titleMedium
             )
             Spacer(Modifier.height(Spacing.sectionContent))
             Row(Modifier.height(IntrinsicSize.Max)) {
@@ -54,12 +58,12 @@ fun MatchCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             val textStyle = if (players[i].rank == 0) {
-                                MaterialTheme.typography.body1.copy(
-                                    color = MaterialTheme.colors.primary,
+                                MaterialTheme.typography.bodyLarge.copy(
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             } else {
-                                MaterialTheme.typography.body1
+                                MaterialTheme.typography.bodyLarge
                             }
                             Text(text = players[i].name, style = textStyle)
                             Text(text = totals[i], style = textStyle)
@@ -78,12 +82,12 @@ fun MatchCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             val textStyle = if (players[i].rank == 0) {
-                                MaterialTheme.typography.body1.copy(
-                                    color = MaterialTheme.colors.primary,
+                                MaterialTheme.typography.bodyLarge.copy(
+                                    color = MaterialTheme.colorScheme.primary,
                                     fontWeight = FontWeight.SemiBold
                                 )
                             } else {
-                                MaterialTheme.typography.body1
+                                MaterialTheme.typography.bodyLarge
                             }
                             Text(text = players[i].name, style = textStyle)
                             Text(text = totals[i], style = textStyle)
@@ -98,7 +102,7 @@ fun MatchCard(
 @Preview
 @Composable
 private fun MatchCardPreview() {
-    UserSelectedPrimaryColorTheme(primaryColor = deepOrange500) {
+    MedianMeepleTheme {
         MatchCard(
             number = "43",
             date = "4/17/24",

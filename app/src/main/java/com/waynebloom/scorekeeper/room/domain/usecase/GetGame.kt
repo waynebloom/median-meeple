@@ -1,9 +1,9 @@
 package com.waynebloom.scorekeeper.room.domain.usecase
 
+import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.ext.toScoringMode
-import com.waynebloom.scorekeeper.ext.toTextFieldInput
-import com.waynebloom.scorekeeper.room.domain.repository.GameRepository
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.repository.GameRepository
 import javax.inject.Inject
 
 class GetGame @Inject constructor(
@@ -15,7 +15,7 @@ class GetGame @Inject constructor(
             GameDomainModel(
                 id = id,
                 color = game.color,
-                name = game.name.toTextFieldInput(),
+                name = TextFieldValue(game.name),
                 scoringMode = game.scoringMode.toScoringMode()
             )
         }

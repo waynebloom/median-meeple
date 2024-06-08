@@ -20,8 +20,8 @@ import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGameWithRelationsAsFlow
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameConstants
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
+import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
@@ -44,6 +44,8 @@ class SingleGameViewModel @Inject constructor(
     getAdAsFlow: GetAdAsFlow,
     savedStateHandle: SavedStateHandle,
 ): ViewModel() {
+
+    // TODO: scoring section is bugged, no data shows
 
     private val viewModelState: MutableStateFlow<SingleGameViewModelState>
     val matchesForGameUiState: StateFlow<MatchesForGameUiState>
@@ -76,7 +78,7 @@ class SingleGameViewModel @Inject constructor(
                 viewModelState.update {
                     it.copy(
                         loading = false,
-                        nameOfGame = latest.name.value.text,
+                        nameOfGame = latest.name.text,
                         primaryColorId = latest.color,
                         matches = latest.matches,
                         categories = latest.categories,

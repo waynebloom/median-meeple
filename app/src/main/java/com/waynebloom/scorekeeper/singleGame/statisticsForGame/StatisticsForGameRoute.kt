@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.navigation.Destination
 import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
-import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun StatisticsForGameRoute(
@@ -18,7 +18,7 @@ fun StatisticsForGameRoute(
     val uiState by viewModel.statisticsForGameUiState.collectAsState()
     val primaryColor = LocalCustomThemeColors.current.getColorByKey(uiState.primaryColorId)
 
-    UserSelectedPrimaryColorTheme(primaryColor) {
+    MedianMeepleTheme {
         StatisticsForGameScreen(
             uiState = uiState,
             onEditGameClick = {

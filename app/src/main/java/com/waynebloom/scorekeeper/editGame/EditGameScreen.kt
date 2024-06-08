@@ -2,10 +2,40 @@ package com.waynebloom.scorekeeper.editGame
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import android.widget.Toast
-import androidx.compose.animation.*
-import androidx.compose.foundation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -17,10 +47,27 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Done
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -28,7 +75,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -42,20 +88,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
+import com.waynebloom.scorekeeper.components.HelperBox
+import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.Loading
+import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescription
+import com.waynebloom.scorekeeper.components.RadioButtonOption
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.components.HelperBox
-import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.components.IconButton
-import com.waynebloom.scorekeeper.components.Loading
-import com.waynebloom.scorekeeper.components.OutlinedTextFieldWithErrorDescription
-import com.waynebloom.scorekeeper.components.RadioButtonOption
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.theme.UserSelectedPrimaryColorTheme
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.util.SetDialogDestinationToEdgeToEdge
 
 @Composable
 fun EditGameScreen(
@@ -82,10 +127,10 @@ fun EditGameScreen(
         is EditGameUiState.Loading -> Loading()
         is EditGameUiState.Content -> {
 
-            UserSelectedPrimaryColorTheme(primaryColor = uiState.getResolvedColor()) {
+            MedianMeepleTheme {
 
                 EditGameScreen(
-                    nameInput = uiState.nameInput,
+                    name = uiState.name,
                     scoringMode = uiState.scoringMode,
                     categories = uiState.categories,
                     indexOfCategoryReceivingInput = uiState.indexOfCategoryReceivingInput,
@@ -114,10 +159,10 @@ fun EditGameScreen(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterialApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun EditGameScreen(
-    nameInput: TextFieldInput,
+    name: TextFieldValue,
     scoringMode: ScoringMode,
     categories: List<CategoryDomainModel>,
     indexOfCategoryReceivingInput: Int?,
@@ -142,164 +187,158 @@ fun EditGameScreen(
     onScoringModeChanged: (ScoringMode) -> Unit,
 ) {
 
-    Box {
+    if (isCategoryDialogOpen) {
+        EditCategoriesBottomSheet(
+            categories = categories,
+            indexOfCategoryReceivingInput = indexOfCategoryReceivingInput,
+            onCategoryClick = onCategoryClick,
+            onDismiss = onCategoryDialogDismiss,
+            onDeleteCategoryClick = onDeleteCategoryClick,
+            onDrag = onDrag,
+            onDragEnd = onDragEnd,
+            onDragStart = onDragStart,
+            onHideInputField = onHideCategoryInputField,
+            onInputChanged = onCategoryInputChanged,
+            onNewClick = onNewCategoryClick
+        )
+    }
 
-        if (isCategoryDialogOpen) {
-
-            EditCategoriesBottomSheet(
-                categories = categories,
-                indexOfCategoryReceivingInput = indexOfCategoryReceivingInput,
-                onCategoryClick = onCategoryClick,
-                onDismiss = onCategoryDialogDismiss,
-                onDeleteCategoryClick = onDeleteCategoryClick,
-                onDrag = onDrag,
-                onDragEnd = onDragEnd,
-                onDragStart = onDragStart,
-                onHideInputField = onHideCategoryInputField,
-                onInputChanged = onCategoryInputChanged,
-                onNewClick = onNewCategoryClick
+    Scaffold(
+        topBar = {
+            EditGameScreenTopBar(
+                title = name.text,
+                onConfirmClick = onConfirmClick,
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0.dp),
+    ) {
 
-        Scaffold(
-            topBar = {
-                EditGameScreenTopBar(
-                    title = nameInput.value.text,
-                    onConfirmClick = onConfirmClick,
-                )
-            }
+        LazyColumn(
+            contentPadding = PaddingValues(bottom = Spacing.screenEdge),
+            modifier = modifier
+                .padding(it)
+                .imePadding()
         ) {
 
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
-                contentPadding = PaddingValues(
-                    bottom = Spacing.screenEdge,
-                    top = Spacing.betweenSections
-                ),
-                modifier = modifier.padding(it)
-            ) {
+            item {
 
-                item {
+                GameDetailsSection(
+                    selectedMode = scoringMode,
+                    nameTextFieldValue = name,
+                    isNameValid = name.text.isNotBlank(),
+                    onNameChanged = onNameChanged,
+                    onScoringModeClick = onScoringModeChanged,
+                    modifier = Modifier
+                        .padding(horizontal = Spacing.screenEdge)
+                        .padding(bottom = Spacing.betweenSections)
+                )
+            }
 
-                    GameDetailsSection(
-                        selectedMode = scoringMode,
-                        nameTextFieldValue = nameInput.value,
-                        isNameValid = nameInput.isValid,
-                        onNameChanged = onNameChanged,
-                        onScoringModeClick = onScoringModeChanged,
-                        modifier = Modifier.padding(horizontal = Spacing.screenEdge)
+            item {
+
+                Column(modifier = modifier.padding(bottom = Spacing.betweenSections)) {
+
+                    Text(
+                        text = stringResource(id = R.string.header_scoring_categories),
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier
+                            .padding(horizontal = Spacing.screenEdge)
+                            .padding(bottom = Spacing.subSectionContent),
                     )
-                }
+                    if (categories.isNotEmpty()) {
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
+                            modifier = modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = Spacing.screenEdge)
+                        ) {
 
-                item {
-
-                    Column(modifier = modifier) {
-
-                        Text(
-                            text = stringResource(id = R.string.header_scoring_categories),
-                            style = MaterialTheme.typography.h6,
-                            fontWeight = FontWeight.SemiBold,
-                            modifier = Modifier.padding(horizontal = Spacing.screenEdge),
+                            categories.forEachIndexed { index, category ->
+                                InputChip(
+                                    selected = false,
+                                    onClick = { onCategoryClick(index) },
+                                    label = { Text(text = category.name.text) },
+                                )
+                            }
+                        }
+                        ElevatedButton(
+                            onClick = onEditButtonClick,
+                            modifier = Modifier
+                                .minimumInteractiveComponentSize()
+                                .padding(horizontal = Spacing.screenEdge)
+                                .fillMaxWidth(),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                        ) {
+                            Text(text = stringResource(id = R.string.button_edit_categories))
+                        }
+                    } else {
+                        HelperBox(
+                            message = stringResource(id = R.string.info_categories_section_helper),
+                            type = HelperBoxType.Info,
+                            modifier = Modifier.padding(horizontal = Spacing.screenEdge)
                         )
-                        Spacer(modifier = Modifier.height(Spacing.sectionContent))
-                        if (categories.isNotEmpty()) {
-                            FlowRow(
-                                horizontalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
-                                modifier = modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = Spacing.screenEdge)
-                            ) {
-
-                                categories.forEachIndexed { index, category ->
-
-                                    Chip(
-                                        onClick = { onCategoryClick(index) },
-                                        shape = MaterialTheme.shapes.small,
-                                        content = { Text(text = category.name.text) },
-                                        border = BorderStroke(1.dp, MaterialTheme.colors.onBackground.copy(alpha = Alpha.disabled)),
-                                        colors = ChipDefaults.chipColors(
-                                            backgroundColor = Color.Transparent,
-                                            contentColor = MaterialTheme.colors.onBackground,
-                                        ),
-                                    )
-                                }
-                            }
-                            Button(
-                                onClick = onEditButtonClick,
-                                modifier = Modifier
-                                    .minimumInteractiveComponentSize()
-                                    .padding(top = Spacing.sectionContent)
-                                    .height(40.dp)
-                                    .padding(horizontal = Spacing.screenEdge)
-                                    .fillMaxWidth(),
-                                shape = CircleShape,
-                                colors = ButtonDefaults.buttonColors(
-                                    contentColor = MaterialTheme.colors.primary,
-                                    backgroundColor = MaterialTheme.colors.background,
-                                ),
-                                border = BorderStroke(1.dp, MaterialTheme.colors.primary),
-                            ) {
-                                Text(text = stringResource(id = R.string.button_edit_categories))
-                            }
-                        } else {
-                            HelperBox(
-                                message = stringResource(id = R.string.info_categories_section_helper),
-                                type = HelperBoxType.Info,
-                                modifier = Modifier.padding(horizontal = Spacing.screenEdge)
-                            )
-                            Button(
-                                onClick = onNewCategoryClick,
-                                modifier = Modifier
-                                    .minimumInteractiveComponentSize()
-                                    .padding(top = Spacing.sectionContent)
-                                    .height(40.dp)
-                                    .padding(horizontal = Spacing.screenEdge)
-                                    .fillMaxWidth(),
-                                shape = CircleShape,
-                                colors = ButtonDefaults.buttonColors(
-                                    contentColor = MaterialTheme.colors.primary,
-                                    backgroundColor = MaterialTheme.colors.background,
-                                ),
-                                border = BorderStroke(1.dp, MaterialTheme.colors.primary),
-                            ) {
-                                Text(text = stringResource(id = R.string.button_add_a_category))
-                            }
+                        Button(
+                            onClick = onNewCategoryClick,
+                            modifier = Modifier
+                                .minimumInteractiveComponentSize()
+                                .padding(top = Spacing.sectionContent)
+                                .padding(horizontal = Spacing.screenEdge)
+                                .fillMaxWidth(),
+                            shape = CircleShape,
+                            colors = ButtonDefaults.buttonColors(
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            ),
+                        ) {
+                            Text(text = stringResource(id = R.string.button_add_a_category))
                         }
                     }
                 }
+            }
 
-                item {
+            item {
 
-                    CustomThemeSection(
-                        selectedColor = selectedColorId,
-                        colorOptions = colorOptions,
-                        onColorClick = onColorClick
-                    )
+                CustomThemeSection(
+                    selectedColor = selectedColorId,
+                    colorOptions = colorOptions,
+                    onColorClick = onColorClick,
+                    modifier = Modifier.padding(bottom = Spacing.betweenSections)
+                )
+            }
+
+            item {
+                HorizontalDivider()
+                Spacer(Modifier.height(Spacing.sectionContent))
+
+                // TODO: this needs a confirmation dialog before release
+                ElevatedButton(
+                    onClick = onDeleteClick,
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .padding(horizontal = Spacing.screenEdge)
+                        .fillMaxWidth(),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = MaterialTheme.colorScheme.onError,
+                        containerColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) {
+                    Text(text = "Delete")
                 }
+            }
 
-                item {
-                    Divider()
-                    Spacer(Modifier.height(Spacing.sectionContent))
-
-                    // TODO: this needs a confirmation dialog before release
-                    Button(
-                        onClick = onDeleteClick,
-                        modifier = Modifier
-                            .minimumInteractiveComponentSize()
-                            .padding(top = Spacing.subSectionContent, bottom = Spacing.screenEdge)
-                            .height(40.dp)
-                            .padding(horizontal = Spacing.screenEdge)
-                            .fillMaxWidth(),
-                        shape = CircleShape,
-                        colors = ButtonDefaults.buttonColors(
-                            contentColor = MaterialTheme.colors.error,
-                            backgroundColor = MaterialTheme.colors.background,
-                        ),
-                        border = BorderStroke(1.dp, MaterialTheme.colors.error),
-                    ) {
-                        Text(text = "Delete")
-                    }
-                }
+            item {
+                Spacer(
+                    Modifier
+                        .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                        .consumeWindowInsets(WindowInsets.navigationBars)
+                )
             }
         }
     }
@@ -309,41 +348,41 @@ fun EditGameScreen(
 private fun EditGameScreenTopBar(
     title: String,
     onConfirmClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
     val dataWasSavedToast = Toast.makeText(LocalContext.current, "Your changes have been saved.", Toast.LENGTH_SHORT)
 
-    Column {
-
+    Surface {
         Row(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(start = Spacing.screenEdge, end = 8.dp)
+            modifier = modifier
+                .padding(start = Spacing.screenEdge, end = 4.dp)
                 .defaultMinSize(minHeight = Size.topBarHeight)
                 .fillMaxWidth()
         ) {
 
             Text(
                 text = title,
-                color = MaterialTheme.colors.primary,
-                style = MaterialTheme.typography.h5,
+                style = MaterialTheme.typography.titleLarge,
                 overflow = TextOverflow.Ellipsis,
                 maxLines = 1,
             )
 
-            IconButton(
-                onClick = {
-                    onConfirmClick()
-                    dataWasSavedToast.show()
-                },
-                backgroundColor = Color.Transparent,
-                foregroundColor = MaterialTheme.colors.primary,
-                imageVector = Icons.Rounded.Check
+            Icon(
+                imageVector = Icons.Rounded.Check,
+                contentDescription = null,
+                modifier = Modifier
+                    .minimumInteractiveComponentSize()
+                    .clip(CircleShape)
+                    .clickable {
+                        onConfirmClick()
+                        dataWasSavedToast.show()
+                    }
+                    .padding(4.dp)
             )
         }
-
-        Divider()
     }
 }
 
@@ -363,12 +402,6 @@ private fun GameDetailsSection(
         verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
         modifier = modifier,
     ) {
-
-        Text(
-            text = stringResource(id = R.string.header_game_details),
-            style = MaterialTheme.typography.h6,
-            fontWeight = FontWeight.SemiBold,
-        )
 
         OutlinedTextFieldWithErrorDescription(
             value = nameTextFieldValue,
@@ -401,7 +434,7 @@ private fun GameDetailsSection(
 @OptIn(
     ExperimentalFoundationApi::class,
     ExperimentalComposeUiApi::class,
-    ExperimentalLayoutApi::class,
+    ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class,
 )
 @Composable
 private fun EditCategoriesBottomSheetContent(
@@ -418,222 +451,233 @@ private fun EditCategoriesBottomSheetContent(
     onDragEnd: () -> Unit,
 ) {
 
-    Column(
-        Modifier
-            .padding(top = 64.dp)
+    Surface(
+        tonalElevation = 2.dp,
+        shape = MaterialTheme.shapes.medium.copy(
+            bottomEnd = CornerSize(0.dp),
+            bottomStart = CornerSize(0.dp),
+        ),
+        modifier = Modifier.padding(top = 64.dp)
+    ) {
+        Column(Modifier
             .imePadding()
-            .clip(
-                MaterialTheme.shapes.medium.copy(
-                    bottomEnd = CornerSize(0.dp),
-                    bottomStart = CornerSize(0.dp),
+            .windowInsetsPadding(WindowInsets.navigationBars)
+        ) {
+
+            Text(
+                text = stringResource(R.string.button_edit_categories),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(
+                    top = Spacing.screenEdge,
+                    start = Spacing.screenEdge,
+                    end = Spacing.sectionContent
                 )
             )
-            .background(MaterialTheme.colors.background)
-    ) {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
+                contentPadding = PaddingValues(
+                    end = Spacing.screenEdge,
+                    top = Spacing.sectionContent,
+                ),
+                modifier = Modifier.weight(1f, fill = false)
+            ) {
 
-        Text(
-            text = stringResource(R.string.button_edit_categories),
-            style = MaterialTheme.typography.h6,
-            color = MaterialTheme.colors.onBackground,
-            modifier = Modifier.padding(Spacing.screenEdge)
-        )
-        Divider()
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
-            contentPadding = PaddingValues(
-                end = Spacing.screenEdge,
-                top = Spacing.sectionContent,
-            ),
-            modifier = Modifier.weight(1f, fill = false)
-        ) {
+                itemsIndexed(
+                    key = { index, _ -> index },
+                    items = categories,
+                ) { index, category ->
 
-            itemsIndexed(
-                key = { index, _ -> index },
-                items = categories,
-            ) { index, category ->
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.height(Size.minTappableSize)
-                ) {
-
-                    AnimatedContent(
-                        targetState = indexOfCategoryReceivingInput,
-                        transitionSpec = { scaleIn() togetherWith scaleOut() },
-                        label = EditGameConstants.AnimationLabel.CategoryIcon,
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.height(Size.minTappableSize)
                     ) {
 
-                        when (it) {
-
-                            index -> {  // confirm button
-                                IconButton(
-                                    painter = painterResource(id = R.drawable.ic_checkmark),
-                                    backgroundColor = Color.Transparent,
-                                    foregroundColor = MaterialTheme.colors.onBackground,
-                                    onClick = onHideInputField,
-                                    modifier = Modifier.padding(start = 4.dp)
-                                )
-                            }
-
-                            null -> {   // drag handle
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_drag_handle),
-                                    contentDescription = null,
-                                    modifier = Modifier
-                                        .padding(start = 4.dp)
-                                        .size(48.dp)
-                                        .padding(12.dp)
-                                        .pointerInput(Unit) {
-                                            detectDragGestures(
-                                                onDragStart = { onDragStart(index) },
-                                                onDragEnd = onDragEnd,
-                                                onDrag = { _, dragAmount ->
-                                                    onDrag(
-                                                        dragAmount
-                                                    )
-                                                }
-                                            )
-                                        },
-                                    tint = MaterialTheme.colors.onBackground,
-                                )
-                            }
-                            else -> {   // visual placeholder dot
-                                Box(
-                                    Modifier
-                                        .padding(start = 4.dp)
-                                        .size(48.dp)
-                                        .padding(20.dp)
-                                        .background(
-                                            color = MaterialTheme.colors.onBackground,
-                                            shape = CircleShape
-                                        )
-                                )
-                            }
-                        }
-                    }
-
-                    if (index == indexOfCategoryReceivingInput) {
-
-                        val focusRequester = remember { FocusRequester() }
-                        val bringIntoViewRequester = remember { BringIntoViewRequester() }
-
-                        LaunchedEffect(index) {
-                            bringIntoViewRequester.bringIntoView()
-                            focusRequester.requestFocus()
-                        }
-
-                        OutlinedTextFieldWithErrorDescription(
-                            value = category.name,
-                            onValueChange = { onInputChanged(it, index) },
-                            modifier = Modifier
-                                .weight(weight = 1f, fill = false)
-                                .padding(start = 4.dp, end = Spacing.sectionContent)
-                                .focusRequester(focusRequester)
-                                .bringIntoViewRequester(bringIntoViewRequester),
-                            selectAllOnFocus = true,
-                            isError = category.name.text.isBlank(),
-                            errorDescriptionResource = R.string.field_error_empty,
-                            keyboardActions = KeyboardActions { onHideInputField() },
-                            keyboardOptions = KeyboardOptions.Default.copy(
-                                imeAction = ImeAction.Done
-                            ),
-                            shape = MaterialTheme.shapes.medium,
-                            contentPadding = PaddingValues(Spacing.sectionContent),
-                            colors = TextFieldDefaults.outlinedTextFieldColors(
-                                textColor = MaterialTheme.colors.onBackground,
-                                focusedBorderColor = MaterialTheme.colors.onBackground.copy(
-                                    alpha = Alpha.disabled
-                                ),
-                            ),
-                        )
-
-                        IconButton(
-                            imageVector = Icons.Rounded.Delete,
-                            backgroundColor = Color.Transparent,
-                            foregroundColor = MaterialTheme.colors.error,
-                            onClick = onDeleteCategoryClick,
-                        )
-                    } else {
-
-                        Box(
-                            contentAlignment = Alignment.CenterStart,
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clip(shape = MaterialTheme.shapes.medium)
-                                .clickable {
-                                    onCategoryClick(index)
-                                }
-                                .padding(start = 4.dp, end = Spacing.sectionContent)
+                        AnimatedContent(
+                            targetState = indexOfCategoryReceivingInput,
+                            transitionSpec = { scaleIn() togetherWith scaleOut() },
+                            label = EditGameConstants.AnimationLabel.CategoryIcon,
                         ) {
 
-                            Text(
-                                text = category.name.text,
-                                color = MaterialTheme.colors.onBackground,
-                                style = MaterialTheme.typography.body1
+                            when (it) {
+
+                                index -> {  // confirm button
+
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_checkmark),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(start = 4.dp)
+                                            .minimumInteractiveComponentSize()
+                                            .clip(CircleShape)
+                                            .clickable(onClick = onHideInputField)
+                                            .padding(4.dp)
+                                    )
+                                }
+
+                                null -> {   // drag handle
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_drag_handle),
+                                        contentDescription = null,
+                                        modifier = Modifier
+                                            .padding(start = 4.dp)
+                                            .size(48.dp)
+                                            .padding(12.dp)
+                                            .pointerInput(Unit) {
+                                                detectDragGestures(
+                                                    onDragStart = { onDragStart(index) },
+                                                    onDragEnd = onDragEnd,
+                                                    onDrag = { _, dragAmount ->
+                                                        onDrag(
+                                                            dragAmount
+                                                        )
+                                                    }
+                                                )
+                                            },
+                                        tint = MaterialTheme.colorScheme.onBackground,
+                                    )
+                                }
+                                else -> {   // visual placeholder dot
+                                    Box(
+                                        Modifier
+                                            .padding(start = 4.dp)
+                                            .size(48.dp)
+                                            .padding(20.dp)
+                                            .background(
+                                                color = MaterialTheme.colorScheme.onBackground,
+                                                shape = CircleShape
+                                            )
+                                    )
+                                }
+                            }
+                        }
+
+                        if (index == indexOfCategoryReceivingInput) {
+
+                            val focusRequester = remember { FocusRequester() }
+                            val bringIntoViewRequester = remember { BringIntoViewRequester() }
+
+                            LaunchedEffect(index) {
+                                bringIntoViewRequester.bringIntoView()
+                                focusRequester.requestFocus()
+                            }
+
+                            OutlinedTextFieldWithErrorDescription(
+                                value = category.name,
+                                onValueChange = { onInputChanged(it, index) },
+                                modifier = Modifier
+                                    .weight(weight = 1f, fill = false)
+                                    .padding(start = 4.dp)
+                                    .focusRequester(focusRequester)
+                                    .bringIntoViewRequester(bringIntoViewRequester),
+                                selectAllOnFocus = true,
+                                isError = category.name.text.isBlank(),
+                                errorDescriptionResource = R.string.field_error_empty,
+                                keyboardActions = KeyboardActions { onHideInputField() },
+                                keyboardOptions = KeyboardOptions.Default.copy(
+                                    imeAction = ImeAction.Done
+                                ),
+                                shape = MaterialTheme.shapes.medium,
+                                contentPadding = PaddingValues(Spacing.sectionContent),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                                    focusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(
+                                        alpha = Alpha.disabled
+                                    ),
+                                ),
                             )
+                            Icon(
+                                imageVector = Icons.Rounded.Delete,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .minimumInteractiveComponentSize()
+                                    .clip(CircleShape)
+                                    .clickable(onClick = onDeleteCategoryClick)
+                                    .padding(4.dp)
+                            )
+                        } else {
+
+                            Box(
+                                contentAlignment = Alignment.CenterStart,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .clip(shape = MaterialTheme.shapes.medium)
+                                    .clickable {
+                                        onCategoryClick(index)
+                                    }
+                                    .padding(start = 4.dp, end = Spacing.sectionContent)
+                            ) {
+
+                                Text(
+                                    text = category.name.text,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
                         }
                     }
                 }
             }
-        }
-        Row(
-            horizontalArrangement = Arrangement.End,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = Spacing.screenEdge)
-        ) {
-            Button(
-                onClick = onNewClick,
+            Row(
+                horizontalArrangement = Arrangement.End,
                 modifier = Modifier
-                    .minimumInteractiveComponentSize()
-                    .padding(top = Spacing.subSectionContent, bottom = Spacing.screenEdge)
-                    .height(40.dp),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    contentColor = MaterialTheme.colors.onPrimary,
-                    backgroundColor = MaterialTheme.colors.primary,
-                ),
+                    .fillMaxWidth()
+                    .padding(horizontal = Spacing.screenEdge)
             ) {
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                Button(
+                    onClick = onNewClick,
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .padding(top = Spacing.subSectionContent, bottom = Spacing.screenEdge)
+                        .height(40.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ),
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .size(18.dp)
-                    )
-                    Text(text = "New")
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(18.dp)
+                        )
+                        Text(text = "New")
+                    }
                 }
-            }
-            Spacer(modifier = Modifier.width(Spacing.sectionContent))
-            Button(
-                onClick = onDoneClick,
-                modifier = Modifier
-                    .minimumInteractiveComponentSize()
-                    .padding(top = Spacing.subSectionContent, bottom = Spacing.screenEdge)
-                    .height(40.dp),
-                shape = CircleShape,
-                colors = ButtonDefaults.buttonColors(
-                    contentColor = MaterialTheme.colors.onPrimary,
-                    backgroundColor = MaterialTheme.colors.primary,
-                ),
-            ) {
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                Spacer(modifier = Modifier.width(Spacing.sectionContent))
+                Button(
+                    onClick = onDoneClick,
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .padding(top = Spacing.subSectionContent, bottom = Spacing.screenEdge)
+                        .height(40.dp),
+                    shape = CircleShape,
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        containerColor = MaterialTheme.colorScheme.primary,
+                    ),
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Done,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .size(18.dp)
-                    )
-                    Text(text = "Done")
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Done,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 8.dp)
+                                .size(18.dp)
+                        )
+                        Text(text = "Done")
+                    }
                 }
             }
         }
@@ -657,11 +701,9 @@ private fun EditCategoriesBottomSheet(
 
     Dialog(
         onDismissRequest = onDismiss,
-        properties = DialogProperties(
-            decorFitsSystemWindows = false,
-            usePlatformDefaultWidth = false,
-        ),
+        properties = DialogProperties(decorFitsSystemWindows = false),
     ) {
+        SetDialogDestinationToEdgeToEdge()
 
         Box(
             contentAlignment = Alignment.BottomStart,
@@ -699,13 +741,17 @@ fun CustomThemeSection(
     colorOptions: List<String>,
     selectedColor: String,
     onColorClick: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
 
-    Column(verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent)) {
+    Column(
+        verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+        modifier = modifier
+    ) {
 
         Text(
             text = stringResource(id = R.string.header_custom_theme),
-            style = MaterialTheme.typography.h6,
+            style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(horizontal = Spacing.screenEdge)
         )
@@ -756,7 +802,7 @@ fun ColorSelector(
                     Icon(
                         imageVector = Icons.Rounded.Check,
                         contentDescription = null,
-                        tint = MaterialTheme.colors.background,
+                        tint = MaterialTheme.colorScheme.background,
                         modifier = Modifier.size(32.dp)
                     )
                 }
@@ -765,12 +811,10 @@ fun ColorSelector(
     }
 }
 
-@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Preview
 @Composable
 fun EditGameScreenDefaultPreview() {
-
-    UserSelectedPrimaryColorTheme(primaryColor = EditGameSampleData.Default.getResolvedColor()) {
+    MedianMeepleTheme {
         EditGameScreen(
             uiState = EditGameSampleData.Default,
             onConfirmClick = {},
@@ -796,8 +840,7 @@ fun EditGameScreenDefaultPreview() {
 @Preview
 @Composable
 fun EditGameScreenNoCategoriesPreview() {
-
-    UserSelectedPrimaryColorTheme(primaryColor = EditGameSampleData.Default.getResolvedColor()) {
+    MedianMeepleTheme {
         EditGameScreen(
             uiState = EditGameSampleData.NoCategories,
             onConfirmClick = {},
@@ -823,11 +866,9 @@ fun EditGameScreenNoCategoriesPreview() {
 @Preview
 @Composable
 fun EditGameScreenEditCategoriesPreview() {
-
     val uiState = EditGameSampleData.CategoryDialog
 
-    UserSelectedPrimaryColorTheme(primaryColor = uiState.getResolvedColor()) {
-
+    MedianMeepleTheme {
         EditCategoriesBottomSheet(
             categories = uiState.categories,
             indexOfCategoryReceivingInput = uiState.indexOfCategoryReceivingInput,

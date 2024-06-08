@@ -2,7 +2,6 @@ package com.waynebloom.scorekeeper.room.domain.mapper
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.ext.toScoringMode
-import com.waynebloom.scorekeeper.ext.toTextFieldInput
 import com.waynebloom.scorekeeper.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
@@ -33,7 +32,7 @@ class GameDataMapper @Inject constructor(
             matches = gameData.matches.map {
                 matchDataMapper.mapWithRelations(it, categoryDomainModels)
             },
-            name = gameData.entity.name.toTextFieldInput(),
+            name = TextFieldValue(gameData.entity.name),
             scoringMode = gameData.entity.scoringMode.toScoringMode()
         )
     }

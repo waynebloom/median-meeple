@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.MedianMeeple" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.MedianMeeple" parent="Theme.Material3.DayNight">
         <item name="android:fontFamily">@font/dmsans_regular</item>
         <item name="fontFamily">@font/dmsans_regular</item>
         <item name="android:textViewStyle">@style/MedianMeeple.TextView</item>

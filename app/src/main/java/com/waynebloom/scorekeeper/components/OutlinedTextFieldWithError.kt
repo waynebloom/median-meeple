@@ -13,12 +13,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.LocalTextStyle
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextFieldColors
-import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -34,7 +35,7 @@ import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.ext.onFocusSelectAll
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @SuppressLint("ModifierParameter")
 fun OutlinedTextFieldWithErrorDescription(
@@ -58,9 +59,9 @@ fun OutlinedTextFieldWithErrorDescription(
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     minLines: Int = 1,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    shape: Shape = TextFieldDefaults.OutlinedTextFieldShape,
+    shape: Shape = OutlinedTextFieldDefaults.shape,
     contentPadding: PaddingValues = PaddingValues(Dimensions.Spacing.screenEdge),
-    colors: TextFieldColors = TextFieldDefaults.outlinedTextFieldColors(),
+    colors: TextFieldColors = OutlinedTextFieldDefaults.colors(),
 ) {
 
     val textFieldModifier = if (selectAllOnFocus) {
@@ -73,7 +74,7 @@ fun OutlinedTextFieldWithErrorDescription(
     } else Modifier
 
     val textColor = textStyle.color.takeOrElse {
-        colors.textColor(enabled).value
+        colors.focusedTextColor
     }
     val mergedTextStyle = textStyle.merge(TextStyle(color = textColor))
 
@@ -93,7 +94,7 @@ fun OutlinedTextFieldWithErrorDescription(
             } else {
                 textFieldModifier
             }
-                .background(colors.backgroundColor(enabled).value, shape)
+                .background(colors.focusedContainerColor, shape)
                 .defaultMinSize(
                     minWidth = TextFieldDefaults.MinWidth,
                     minHeight = TextFieldDefaults.MinHeight
@@ -102,7 +103,11 @@ fun OutlinedTextFieldWithErrorDescription(
             enabled = enabled,
             readOnly = readOnly,
             textStyle = mergedTextStyle,
-            cursorBrush = SolidColor(colors.cursorColor(isError).value),
+            cursorBrush = if (isError) {
+                SolidColor(colors.cursorColor)
+            } else {
+                SolidColor(colors.errorCursorColor)
+            },
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
             keyboardActions = keyboardActions,
@@ -111,7 +116,7 @@ fun OutlinedTextFieldWithErrorDescription(
             maxLines = maxLines,
             minLines = minLines,
             decorationBox = @Composable { innerTextField ->
-                TextFieldDefaults.OutlinedTextFieldDecorationBox(
+                OutlinedTextFieldDefaults.DecorationBox(
                     value = value.text,
                     visualTransformation = visualTransformation,
                     innerTextField = innerTextField,
@@ -125,8 +130,8 @@ fun OutlinedTextFieldWithErrorDescription(
                     interactionSource = interactionSource,
                     colors = colors,
                     contentPadding = contentPadding,
-                    border = {
-                        TextFieldDefaults.BorderBox(
+                    container = {
+                        OutlinedTextFieldDefaults.ContainerBox(
                             enabled,
                             isError,
                             interactionSource,
@@ -141,8 +146,8 @@ fun OutlinedTextFieldWithErrorDescription(
         if (isError && errorDescriptionResource != null) {
             Text(
                 text = stringResource(id = errorDescriptionResource),
-                color = MaterialTheme.colors.error,
-                style = MaterialTheme.typography.body2,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(start = Dimensions.Spacing.betweenSections)
             )
         }

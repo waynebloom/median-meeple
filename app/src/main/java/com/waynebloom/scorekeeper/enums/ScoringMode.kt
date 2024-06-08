@@ -9,6 +9,6 @@ enum class ScoringMode(@StringRes override val label: Int): MenuOption {
     Manual(R.string.scoring_option_manual);
 
     companion object {
-        fun getModeByOrdinal(ordinal: Int) = values()[ordinal]
+        fun getModeByOrdinal(ordinal: Int) = entries[ordinal]
     }
 }
