@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -32,11 +33,13 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.rounded.Add
@@ -630,10 +633,15 @@ private fun ScoreCardScreen(
                     }
                 }
             }
-        }
+        },
+        contentWindowInsets = WindowInsets(0.dp)
     ) { innerPadding ->
 
-        Column(Modifier.padding(innerPadding)) {
+        Column(Modifier
+            .padding(innerPadding)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+        ) {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -715,7 +723,10 @@ private fun ScoreCardScreen(
                 )
             }
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .padding(bottom = Dimensions.Spacing.sectionContent)
+                    .windowInsetsPadding(WindowInsets.navigationBars)
             ) {
                 val buttonModifier = if (players.isEmpty()) {
                     Modifier.fillMaxWidth()
@@ -917,22 +928,26 @@ private fun ScoreColumn(
             )
         }
 
-        Surface(
-            shape = CircleShape,
-            color = totalScoreBackground,
-            modifier = Modifier
-                .padding(Dimensions.Spacing.sectionContent / 2)
-                .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Text(
-                    text = total,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.SemiBold,
-                    fontStyle = FontStyle.Italic,
-                    modifier = Modifier
-                        .padding(Dimensions.Spacing.sectionContent)
-                )
+        // TODO: implement a winner indicator for when there is only 1 category
+
+        if (scores.size > 1) {
+            Surface(
+                shape = CircleShape,
+                color = totalScoreBackground,
+                modifier = Modifier
+                    .padding(Dimensions.Spacing.sectionContent / 2)
+                    .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Text(
+                        text = total,
+                        style = MaterialTheme.typography.bodyLarge,
+                        fontWeight = FontWeight.SemiBold,
+                        fontStyle = FontStyle.Italic,
+                        modifier = Modifier
+                            .padding(Dimensions.Spacing.sectionContent)
+                    )
+                }
             }
         }
     }

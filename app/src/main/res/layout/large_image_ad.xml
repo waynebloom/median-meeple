@@ -48,7 +48,7 @@
             android:textSize="14sp"
             android:textStyle="bold"
             app:layout_constraintTop_toTopOf="@id/ad_app_icon"
-            app:layout_constraintBottom_toTopOf="@id/ad_stars"
+            app:layout_constraintBottom_toBottomOf="@id/ad_app_icon"
             app:layout_constraintStart_toEndOf="@id/ad_app_icon"
             app:layout_constraintEnd_toStartOf="@id/ad_cta_button"
             tools:text="Test Ad : Google Ads" />

@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.singleGame.matchesForGame
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.Ease
@@ -61,7 +60,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.PreviewData
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
@@ -74,12 +72,12 @@ import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.enums.MatchSortMode
-import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.toShortFormatString
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.singleGame.MatchesForGameUiState
+import com.waynebloom.scorekeeper.singleGame.SingleGameSampleData
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.sizeTransformWithDelay
@@ -208,7 +206,8 @@ fun MatchesForSingleGameDefaultActionBar(
             text = title,
             style = MaterialTheme.typography.titleLarge,
             overflow = TextOverflow.Ellipsis,
-            maxLines = 1
+            maxLines = 1,
+            modifier = Modifier.weight(1f, fill = false)
         )
 
         Row {
@@ -367,10 +366,6 @@ fun MatchesForGameScreen(
     Box {
 
         if (isSortDialogShowing) {
-            BackHandler {
-                onSortDialogDismiss()
-            }
-
             MatchesForGameSortOptionsDialog(
                 sortMode,
                 sortDirection,
@@ -420,7 +415,7 @@ fun MatchesForGameScreen(
             ) {
 
                 AnimatedContent(
-                    targetState = matches.isNotEmpty() to searchInput.text.isNotBlank(),
+                    targetState = filteredIndices.isNotEmpty() to searchInput.text.isNotBlank(),
                     transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
                     label = MatchesForGameConstants.AnimationLabel.HelperBox
                 ) {
@@ -429,12 +424,21 @@ fun MatchesForGameScreen(
 
                         // There are matches and there is search input
                         true to true -> {
-                            MatchesForGameHelperBoxListHeader(
-                                message = stringResource(
-                                    id = R.string.text_showing_search_results,
-                                    searchInput.text),
-                                type = HelperBoxType.Info
-                            )
+
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                                modifier = Modifier.padding(top = Spacing.sectionContent)
+                            ) {
+                                HelperBox(
+                                    message = stringResource(
+                                        id = R.string.text_showing_search_results,
+                                        searchInput.text
+                                    ),
+                                    type = HelperBoxType.Info,
+                                    maxLines = 2,
+                                )
+                                HorizontalDivider()
+                            }
                         }
 
                         // There are matches and there is no search input
@@ -442,20 +446,37 @@ fun MatchesForGameScreen(
 
                         // There are no matches and there is search input
                         false to true -> {
-                            MatchesForGameHelperBoxListHeader(
-                                message = stringResource(
-                                    id = R.string.text_empty_match_search_results,
-                                    searchInput.text),
-                                type = HelperBoxType.Missing
-                            )
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                                modifier = Modifier.padding(top = Spacing.sectionContent)
+                            ) {
+                                HelperBox(
+                                    message = stringResource(
+                                        id = R.string.text_empty_match_search_results,
+                                        searchInput.text
+                                    ),
+                                    type = HelperBoxType.Missing,
+                                    maxLines = 2,
+                                )
+                                HorizontalDivider()
+                                LargeImageAdCard(ad = ads.firstOrNull())
+                            }
                         }
 
                         // There are no matches and no search input
                         false to false -> {
-                            MatchesForGameHelperBoxListHeader(
-                                message = stringResource(R.string.text_empty_matches),
-                                type = HelperBoxType.Missing
-                            )
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                                modifier = Modifier.padding(top = Spacing.sectionContent)
+                            ) {
+                                HelperBox(
+                                    message = stringResource(R.string.text_empty_matches),
+                                    type = HelperBoxType.Missing,
+                                    maxLines = 2,
+                                )
+                                HorizontalDivider()
+                                LargeImageAdCard(ad = ads.firstOrNull())
+                            }
                         }
                     }
                 }
@@ -536,21 +557,70 @@ fun MatchesForGameScreen(
 @Preview
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
-private fun MatchesForGameScreenPreview() {
+private fun Normal() {
     MedianMeepleTheme {
         MatchesForGameScreen(
-            uiState = MatchesForGameUiState.Content(
-                screenTitle = "Matches",
-                searchInput = TextFieldValue(),
-                isSortDialogShowing = false,
-                sortDirection = SortDirection.Ascending,
-                sortMode = MatchSortMode.ByMatchAge,
-                ads = emptyList(),
-                matchesLazyListState = LazyListState(),
-                matches = PreviewData.Matches,
-                filteredIndices = emptyList(),
-                scoringMode = ScoringMode.Descending,
-            ),
+            uiState = SingleGameSampleData.Normal.toMatchesForGameUiState(),
+            onSearchInputChanged = {},
+            onSortModeChanged = {},
+            onSortDirectionChanged = {},
+            onEditGameClick = {},
+            onStatisticsTabClick = {},
+            onSortButtonClick = {},
+            onMatchClick = {},
+            onAddMatchClick = {},
+            onSortDialogDismiss = {}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun LongGameName() {
+    MedianMeepleTheme {
+        MatchesForGameScreen(
+            uiState = SingleGameSampleData.LongGameName.toMatchesForGameUiState(),
+            onSearchInputChanged = {},
+            onSortModeChanged = {},
+            onSortDirectionChanged = {},
+            onEditGameClick = {},
+            onStatisticsTabClick = {},
+            onSortButtonClick = {},
+            onMatchClick = {},
+            onAddMatchClick = {},
+            onSortDialogDismiss = {}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun NoMatches() {
+    MedianMeepleTheme {
+        MatchesForGameScreen(
+            uiState = SingleGameSampleData.NoMatches.toMatchesForGameUiState(),
+            onSearchInputChanged = {},
+            onSortModeChanged = {},
+            onSortDirectionChanged = {},
+            onEditGameClick = {},
+            onStatisticsTabClick = {},
+            onSortButtonClick = {},
+            onMatchClick = {},
+            onAddMatchClick = {},
+            onSortDialogDismiss = {}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun EmptySearch() {
+    MedianMeepleTheme {
+        MatchesForGameScreen(
+            uiState = SingleGameSampleData.EmptySearch.toMatchesForGameUiState(),
             onSearchInputChanged = {},
             onSortModeChanged = {},
             onSortDirectionChanged = {},

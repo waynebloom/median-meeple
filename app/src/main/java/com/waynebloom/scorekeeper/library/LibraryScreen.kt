@@ -135,6 +135,8 @@ fun LibraryScreen(
             ) {
 
                 when(it) {
+
+                    // There are games and there is search input
                     true to true -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
@@ -146,14 +148,13 @@ fun LibraryScreen(
                                 maxLines = 2
                             )
                             HorizontalDivider()
-                            LargeImageAdCard(ad = ads.firstOrNull())
                         }
                     }
 
-                    true to false -> {
+                    // There are games and there is no search input
+                    true to false -> {}
 
-                    }
-
+                    // There are no games and there is search input
                     false to true -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
@@ -172,6 +173,7 @@ fun LibraryScreen(
                         }
                     }
 
+                    // There are no games and no search input
                     false to false -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),

@@ -21,10 +21,10 @@
       </SelectionState>
       <SelectionState runConfigName="median-meeple.Median_Meeple.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-06-12T02:32:16.061947Z">
+        <DropdownSelection timestamp="2024-06-12T18:38:23.014210400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=37260DLJG0019S" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\gigab\.android\avd\Pixel_5_API_34.avd" />
             </handle>
           </Target>
         </DropdownSelection>

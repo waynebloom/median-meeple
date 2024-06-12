@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper
+package com.waynebloom.scorekeeper.singleGame
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
@@ -7,7 +7,7 @@ import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import java.math.BigDecimal
 
-object PreviewData {
+object SingleGameSampleData {
 
     val Categories = listOf(
         CategoryDomainModel(
@@ -82,5 +82,28 @@ object PreviewData {
             location = "Tim's",
             dateMillis = 1630000999999,
         )
+    )
+
+    val Normal = SingleGameViewModelState(
+        loading = false,
+        nameOfGame = "Wingspan",
+        matches = Matches,
+    )
+    val Loading = SingleGameViewModelState()
+    val LongGameName = SingleGameViewModelState(
+        loading = false,
+        nameOfGame = "Ticket to Ride: Rails & Sails",
+        matches = Matches,
+    )
+    val NoMatches = SingleGameViewModelState(
+        loading = false,
+        nameOfGame = "Catan",
+        matches = emptyList(),
+    )
+    val EmptySearch = SingleGameViewModelState(
+        loading = false,
+        nameOfGame = "Catan",
+        matches = Matches,
+        searchValue = TextFieldValue("searching"),
     )
 }

@@ -146,7 +146,7 @@ class SingleGameViewModel @Inject constructor(
     // endregion
 }
 
-private data class SingleGameViewModelState(
+data class SingleGameViewModelState(
     // region Shared
     val loading: Boolean = true,
     val nameOfGame: String = "",
