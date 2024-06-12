@@ -4,7 +4,6 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.admob.data.datasource.AdRemoteDataSource
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -22,23 +21,10 @@ class AdRepository @Inject constructor(
     private lateinit var adLoaderJob: Job
     private val loadedAds = mutableListOf<NativeAd>()
     val adFlow: MutableStateFlow<List<NativeAd>> = MutableStateFlow(emptyList())
-    private val adChannel: Channel<NativeAd> = Channel(capacity = 5)
 
     companion object {
-        const val NewAdRequestDelaySeconds = 25L
-        // TODO: remove?
-        const val BetweenAdsDelayMs = 500L
+        const val NewAdRequestDelaySeconds = 5L
     }
-
-    // TODO: maybe remove this if the policy question is answered
-
-    suspend fun receiveAd(): NativeAd {
-        return adChannel.receive().also {
-            adRemoteDataSource.loadAd()
-        }
-    }
-
-    // TODO: keep this?
 
     fun setUpAdLoader() {
         adRemoteDataSource.initializeLoader { nativeAd ->
@@ -47,7 +33,10 @@ class AdRepository @Inject constructor(
             }
             loadedAds += nativeAd
             if (loadedAds.size == 5) {
-                adFlow.tryEmit(loadedAds.toList())
+                coroutineScope.launch {
+                    delay(1000)
+                    adFlow.emit(loadedAds.toList())
+                }
             }
         }
         adLoaderJob = launchAdLoader()
@@ -58,7 +47,9 @@ class AdRepository @Inject constructor(
 
     private fun purgeAds(emitEmptyState: Boolean = false) {
         if (emitEmptyState) {
-            adFlow.tryEmit(emptyList())
+            coroutineScope.launch {
+                adFlow.emit(emptyList())
+            }
         }
         loadedAds.forEach { it.destroy() }
         loadedAds.clear()
@@ -68,8 +59,6 @@ class AdRepository @Inject constructor(
         while (true) {
             adRemoteDataSource.loadAds(5)
             delay(NewAdRequestDelaySeconds.toDuration(DurationUnit.SECONDS))
-            // TODO: remove?
-//            delay(BetweenAdsDelayMs.toDuration(DurationUnit.MILLISECONDS))
         }
     }
 }

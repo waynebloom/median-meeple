@@ -8,7 +8,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.admob.domain.usecase.GetMultipleAdsAsFlow
-import com.waynebloom.scorekeeper.admob.domain.usecase.ReceiveAd
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.ext.toShortFormatString
 import com.waynebloom.scorekeeper.navigation.Destination
@@ -32,7 +31,6 @@ class LibraryViewModel @Inject constructor(
     getGamesWithRelationsAsFlow: GetGamesWithRelationsAsFlow,
     private val insertEmptyGame: InsertEmptyGame,
     mutableStateFlowFactory: MutableStateFlowFactory,
-    private val receiveAdUseCase: ReceiveAd,
     getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
 ): ViewModel() {
 
@@ -80,14 +78,6 @@ class LibraryViewModel @Inject constructor(
             }
         }
     }
-
-    // TODO: ? remove this and all "channel" related ad implementation
-    /*suspend fun receiveAd() = receiveAdUseCase()
-        .also {
-            addCloseable {
-                it.destroy()
-            }
-        }*/
 
     fun addEmptyGame(navController: NavHostController) = viewModelScope.launch {
         val id = insertEmptyGame()

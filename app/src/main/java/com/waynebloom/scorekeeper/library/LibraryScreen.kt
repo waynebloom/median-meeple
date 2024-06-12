@@ -68,8 +68,6 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 @Composable
 fun LibraryScreen(
     uiState: LibraryUiState,
-    // TODO: remove this and the whole chain
-    // receiveAd: suspend () -> NativeAd,
     onSearchInputChanged: (TextFieldValue) -> Unit,
     onAddGameClick: () -> Unit,
     onGameClick: (Long) -> Unit,
@@ -85,7 +83,6 @@ fun LibraryScreen(
                 gameCards = uiState.gameCards,
                 searchInput = uiState.searchInput,
                 ads = uiState.ads,
-//                receiveAd = receiveAd,
                 onGameClick = onGameClick,
                 onAddNewGameClick = onAddGameClick,
                 onSearchInputChanged = onSearchInputChanged,
@@ -230,17 +227,13 @@ fun LibraryScreen(
 
                     if (showAd) {
                         item(key = "ad$i") {
-                            /*var collectedAd by remember { mutableStateOf<NativeAd?>(null) }
-                            LaunchedEffect(true) {
-                                collectedAd = receiveAd()
-                            }*/
-
                             val ad = if (ads.isNotEmpty()) {
                                 val previousAdCount = (i - 3) / 13
-                                ads[previousAdCount % ads.lastIndex]
+                                ads[previousAdCount % ads.size]
                             } else {
                                 null
                             }
+
                             SmallImageAdCard(
                                 ad = ad,
                                 modifier = Modifier.animateItemPlacement()

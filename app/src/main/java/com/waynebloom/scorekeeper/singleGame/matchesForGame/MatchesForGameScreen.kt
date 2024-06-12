@@ -507,7 +507,7 @@ fun MatchesForGameScreen(
                                 item(key = "ad$i") {
                                     val ad = if (ads.isNotEmpty()) {
                                         val previousAdCount = (i - 1) / 6
-                                        ads[previousAdCount % ads.lastIndex]
+                                        ads[previousAdCount % ads.size]
                                     } else {
                                         null
                                     }

@@ -4,17 +4,34 @@ import android.content.res.ColorStateList
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.compose.foundation.layout.height
+import androidx.compose.animation.core.EaseInOut
+import androidx.compose.animation.core.InfiniteTransition
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidViewBinding
 import com.google.android.gms.ads.nativead.NativeAd
-import com.valentinilk.shimmer.shimmer
 import com.waynebloom.scorekeeper.databinding.LargeImageAdBinding
 import com.waynebloom.scorekeeper.databinding.SmallImageAdBinding
 import com.waynebloom.scorekeeper.ext.sentenceCase
@@ -27,14 +44,15 @@ fun LargeImageAdCard(
     onPrimaryColor: Int = MaterialTheme.colorScheme.onPrimary.toArgb(),
     onSurface: Int = MaterialTheme.colorScheme.onSurface.toArgb(),
 ) {
+
     Surface(
         shape = MaterialTheme.shapes.medium.copy(bottomEnd = CornerSize(32.dp)),
         tonalElevation = 2.dp,
         modifier = modifier
+            .heightIn(min = 300.dp)
+            .fillMaxWidth()
     ) {
-        if (ad == null) {
-            // TODO: Loading state
-        } else {
+        if (ad != null) {
             AndroidViewBinding(LargeImageAdBinding::inflate) {
                 adView.apply {
                     adTag.apply {
@@ -65,13 +83,11 @@ fun LargeImageAdCard(
                     iconView = adAppIcon.apply {
                         setImageDrawable(ad.icon?.drawable)
                     }
-                    starRatingView = adStars.apply {
-                        rating = ad.starRating?.toFloat() ?: 0f
-                        progressDrawable.setTint(primaryColor)
-                    }
                     setNativeAd(ad)
                 }
             }
+        } else {
+            AdLoadingIndicator(96.dp)
         }
     }
 }
@@ -84,18 +100,14 @@ fun SmallImageAdCard(
     onPrimaryColor: Int = MaterialTheme.colorScheme.onPrimary.toArgb(),
     onSurface: Int = MaterialTheme.colorScheme.onSurface.toArgb(),
 ) {
-    val surfaceModifier = if (ad == null) {
-        modifier.shimmer().height(200.dp)
-    } else {
-        modifier
-    }
+
     Surface(
         shape = MaterialTheme.shapes.medium.copy(
             bottomEnd = CornerSize(32.dp),
             bottomStart = CornerSize(32.dp),
         ),
         tonalElevation = 2.dp,
-        modifier = surfaceModifier
+        modifier = modifier.heightIn(min = 230.dp)
     ) {
         if (ad != null)  {
             AndroidViewBinding(SmallImageAdBinding::inflate) {
@@ -131,6 +143,48 @@ fun SmallImageAdCard(
                     setNativeAd(ad)
                 }
             }
+        } else {
+            AdLoadingIndicator(48.dp)
+        }
+    }
+}
+
+@Composable
+fun AdLoadingIndicator(
+    size: Dp,
+    modifier: Modifier = Modifier,
+    transition: InfiniteTransition = rememberInfiniteTransition(label = ""),
+) {
+    val alpha by transition.animateFloat(
+        initialValue = 0.1f,
+        targetValue = 1f,
+        label = "",
+        animationSpec = infiniteRepeatable(
+            animation = tween(
+                durationMillis = 1500,
+                easing = EaseInOut
+            ),
+            repeatMode = RepeatMode.Reverse
+        )
+    )
+    Box(modifier, contentAlignment = Alignment.Center) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(size)
+                .background(
+                    MaterialTheme.colorScheme.primary.copy(alpha = alpha),
+                    CircleShape
+                )
+        ) {
+            Text(
+                text = "Ad",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.surface
+                    .copy(alpha = alpha)
+                    .compositeOver(MaterialTheme.colorScheme.primary),
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }

@@ -35,9 +35,4 @@ class AdRemoteDataSource @Inject constructor(
             loader.loadAd(request)
         }
     }
-
-    fun loadAd() {
-        val request = googleAdsWrapper.getAdRequestBuilder().build()
-        loader.loadAd(request)
-    }
 }
