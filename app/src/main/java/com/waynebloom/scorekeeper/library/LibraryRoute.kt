@@ -17,6 +17,7 @@ fun LibraryRoute(
 
     LibraryScreen(
         uiState = uiState,
+//        receiveAd = { viewModel.receiveAd() },
         onSearchInputChanged = { viewModel.onSearchInputChanged(it) },
         onAddGameClick = { viewModel.addEmptyGame(navController) },
         onGameClick = { id ->

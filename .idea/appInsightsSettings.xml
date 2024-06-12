@@ -8,10 +8,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.waynebloom.scorekeeper.debug" />
+                  <option name="mobileSdkAppId" value="1:235515163726:android:22fb0f8746b8f928d3bf1f" />
+                  <option name="projectId" value="medianmeeple" />
+                  <option name="projectNumber" value="235515163726" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

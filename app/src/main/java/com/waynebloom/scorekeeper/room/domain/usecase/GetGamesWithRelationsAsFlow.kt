@@ -5,7 +5,7 @@ import com.waynebloom.scorekeeper.room.domain.repository.GameRepository
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-class GetGamesAsFlow @Inject constructor(
+class GetGamesWithRelationsAsFlow @Inject constructor(
     private val gameRepository: GameRepository,
     private val gameDataMapper: GameDataMapper
 ) {

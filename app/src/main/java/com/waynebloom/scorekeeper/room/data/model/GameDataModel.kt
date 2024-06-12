@@ -3,7 +3,6 @@ package com.waynebloom.scorekeeper.room.data.model
 import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
-import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.waynebloom.scorekeeper.enums.ScoringMode
@@ -14,7 +13,7 @@ data class GameDataModel(
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0,
 
-    var color: String = "ORANGE",
+    var color: Int = 0,
 
     var name: String = "",
 

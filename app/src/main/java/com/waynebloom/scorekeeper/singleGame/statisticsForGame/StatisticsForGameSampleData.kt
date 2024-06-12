@@ -8,7 +8,7 @@ import java.math.BigDecimal
 object StatisticsForGameSampleData {
     val DefaultState = StatisticsForGameUiState.Content(
         screenTitle = "Settlers of Catan",
-        primaryColorId = "BLUE",
+        ads = emptyList(),
         matchCount = 100,
         playCount = 200,
         uniquePlayerCount = 10,

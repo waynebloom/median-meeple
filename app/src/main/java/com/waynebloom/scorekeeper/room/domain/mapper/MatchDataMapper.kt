@@ -31,22 +31,10 @@ class MatchDataMapper @Inject constructor(
     ) = MatchDomainModel(
         id = matchData.entity.id,
         notes = matchData.entity.notes,
+        location = matchData.entity.location,
+        dateMillis = matchData.entity.dateMillis,
         players = matchData.players.map {
             playerDataMapper.mapWithRelations(it, categories)
-        }
-    )
-
-    /**
-     * Only map the first-level relations.
-     *
-     * @param matchData The match data from db.
-     */
-    fun mapWithRelations(matchData: MatchDataRelationModel) = MatchDomainModel(
-        id = matchData.entity.id,
-        gameId = matchData.entity.gameId,
-        notes = matchData.entity.notes,
-        players = matchData.players.map {
-            playerDataMapper.map(it.entity)
         }
     )
 }

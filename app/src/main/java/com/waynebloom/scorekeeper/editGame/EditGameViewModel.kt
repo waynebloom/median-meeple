@@ -7,7 +7,6 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.ScoringMode
@@ -67,7 +66,7 @@ class EditGameViewModel @Inject constructor(
                 it.copy(
                     loading = false,
                     categories = categories,
-                    color = game.color,
+                    colorIndex = game.displayColorIndex,
                     name = game.name,
                     scoringMode = game.scoringMode
                 )
@@ -75,14 +74,14 @@ class EditGameViewModel @Inject constructor(
         }
     }
 
-    fun onConfirmClick() {
+    fun onSaveClick(onFinish: () -> Unit) {
         viewModelScope.launch {
             viewModelState.value.let { state ->
                 updateGameUseCase(
                     GameDomainModel(
                         id = gameId,
                         name = state.name,
-                        color = state.color,
+                        displayColorIndex = state.colorIndex,
                         scoringMode = state.scoringMode
                     )
                 )
@@ -91,18 +90,19 @@ class EditGameViewModel @Inject constructor(
                     updateCategoryUseCase(it, gameId)
                 }
             }
+            onFinish()
         }
     }
 
     // region Game Details
 
-    fun onColorClick(value: String) = viewModelState.update {
-        it.copy(color = value, showColorMenu = false)
+    fun onColorClick(index: Int) = viewModelState.update {
+        it.copy(colorIndex = index, showColorMenu = false)
     }
 
-    // TODO: make this better. Animation, confirmation state
-    fun onDeleteClick() = viewModelScope.launch {
+    fun onDeleteClick(onFinish: () -> Unit) = viewModelScope.launch {
         deleteGame(gameId)
+        onFinish()
     }
 
     fun onNameChanged(value: TextFieldValue) = viewModelState.update {
@@ -265,7 +265,7 @@ class EditGameViewModel @Inject constructor(
 private data class EditGameViewModelState(
     val loading: Boolean = true,
     val categories: List<CategoryDomainModel> = emptyList(),
-    val color: String = "",
+    val colorIndex: Int = 0,
     val dragState: DragState = DragState(),
     val indexOfCategoryReceivingInput: Int? = null,
     val isCategoryDialogOpen: Boolean = false,
@@ -279,7 +279,7 @@ private data class EditGameViewModelState(
     } else {
         EditGameUiState.Content(
             categories = getCategoriesAdjustedForActiveDragAction(),
-            color = color,
+            colorIndex = colorIndex,
             dragState = dragState,
             indexOfCategoryReceivingInput = indexOfCategoryReceivingInput,
             isCategoryDialogOpen = isCategoryDialogOpen,
@@ -307,18 +307,14 @@ sealed interface EditGameUiState {
 
     data class Content(
         val categories: List<CategoryDomainModel>,
-        val color: String,
+        val colorIndex: Int,
         val dragState: DragState,
         val indexOfCategoryReceivingInput: Int?,
         val isCategoryDialogOpen: Boolean,
         val name: TextFieldValue,
         val scoringMode: ScoringMode,
         val showColorMenu: Boolean,
-    ): EditGameUiState {
-
-        @Composable
-        fun getResolvedColor() = LocalCustomThemeColors.current.getColorByKey(color)
-    }
+    ): EditGameUiState
 }
 
 data class DragState(

@@ -24,14 +24,16 @@ fun ScoreCardRoute(
             uiState = uiState,
             onPlayerClick = viewModel::onPlayerClick,
             onSaveClick = {
-                viewModel.onSaveClick()
-                savedToast.show()
-                navController.popBackStack()
+                viewModel.onSaveClick {
+                    navController.popBackStack()
+                    savedToast.show()
+                }
             },
             onDeleteClick = {
-                viewModel.onDeleteClick()
-                deletedToast.show()
-                navController.popBackStack()
+                viewModel.onDeleteClick {
+                    navController.popBackStack()
+                    deletedToast.show()
+                }
             },
             onAddPlayer = viewModel::onAddPlayer,
             onDeletePlayerClick = viewModel::onDeletePlayerClick,

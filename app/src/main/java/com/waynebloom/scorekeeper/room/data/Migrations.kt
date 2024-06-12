@@ -1,5 +1,5 @@
 @file:SuppressWarnings("MaxLineLength")
-package com.waynebloom.scorekeeper.room
+package com.waynebloom.scorekeeper.room.data
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
@@ -190,5 +190,56 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
         database.execSQL("CREATE INDEX IF NOT EXISTS `index_Subscore_subscore_title_id` ON `Subscore` (`subscore_title_id`)")
 
         // endregion
+    }
+}
+
+val MIGRATION_13_14 = object : Migration(13, 14) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("""
+            CREATE TABLE IF NOT EXISTS `GAME_BKP` (
+                ID INTEGER,
+                COLOR INTEGER,
+                NAME TEXT,
+                SCORING_MODE INTEGER
+            );
+        """.trimIndent())
+        database.execSQL("""
+            INSERT INTO `GAME_BKP` (
+                ID, COLOR, NAME, SCORING_MODE
+            ) SELECT
+                ID,
+                CASE color
+                    WHEN 'DEEP_ORANGE' THEN 3
+                    WHEN 'ORANGE' THEN 6
+                    WHEN 'AMBER' THEN 7
+                    WHEN 'YELLOW' THEN 8
+                    WHEN 'LIME' THEN 10
+                    WHEN 'LIGHT_GREEN' THEN 11
+                    WHEN 'GREEN' THEN 12
+                    WHEN 'TEAL' THEN 13
+                    WHEN 'CYAN' THEN 14
+                    WHEN 'LIGHT_BLUE' THEN 15
+                    WHEN 'BLUE' THEN 16
+                    WHEN 'INDIGO' THEN 17
+                    WHEN 'DEEP_PURPLE' THEN 18
+                    WHEN 'PURPLE' THEN 20
+                    WHEN 'PINK' THEN 0
+                    ELSE 0
+                END,
+                NAME,
+                SCORING_MODE
+            FROM Game;
+        """.trimIndent())
+        database.execSQL("DROP TABLE Game;")
+        database.execSQL("""
+            CREATE TABLE Game (
+                id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0,
+                color INTEGER NOT NULL,
+                name TEXT NOT NULL,
+                scoring_mode INTEGER NOT NULL DEFAULT 1
+            );
+        """.trimIndent())
+        database.execSQL("INSERT INTO Game SELECT ID, COLOR, NAME, SCORING_MODE FROM GAME_BKP;")
+        database.execSQL("DROP TABLE GAME_BKP;")
     }
 }

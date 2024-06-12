@@ -14,7 +14,7 @@ class UpdateGame @Inject constructor(
 
     private fun GameDomainModel.toDataModel() = GameDataModel(
         id = id,
-        color = color,
+        color = displayColorIndex,
         name = name.text,
         scoringMode = scoringMode.ordinal
     )

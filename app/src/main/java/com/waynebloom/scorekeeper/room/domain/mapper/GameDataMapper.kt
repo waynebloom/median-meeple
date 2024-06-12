@@ -28,7 +28,7 @@ class GameDataMapper @Inject constructor(
         return GameDomainModel(
             id = gameData.entity.id,
             categories = categoryDomainModels.values.toList(),
-            color = gameData.entity.color,
+            displayColorIndex = gameData.entity.color,
             matches = gameData.matches.map {
                 matchDataMapper.mapWithRelations(it, categoryDomainModels)
             },

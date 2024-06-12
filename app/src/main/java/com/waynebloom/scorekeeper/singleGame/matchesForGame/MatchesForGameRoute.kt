@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
 import com.waynebloom.scorekeeper.navigation.Destination
 import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
@@ -16,7 +15,6 @@ fun MatchesForGameRoute(
 ) {
 
     val uiState by viewModel.matchesForGameUiState.collectAsState()
-    val primaryColor = LocalCustomThemeColors.current.getColorByKey(uiState.primaryColorId)
 
     MedianMeepleTheme {
         MatchesForGameScreen(

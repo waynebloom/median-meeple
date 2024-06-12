@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.scorecard
 
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
@@ -52,31 +51,30 @@ object ScoreCardSampleData {
             )
         }
     }
-    val Default = ScoreCardUiState(
+    val Default = ScoreCardUiState.Content(
         totals = shortTotals,
         game = GameDomainModel(name = TextFieldValue("Wingspan")),
-        categoryNames = listOf("Red", "Orange", "Yellow", "Green", "Blue"),
-        players = listOf("Wayne", "Conor", "Alyssa", "Brock", "Tim", "Benjamin").map {
-            PlayerDomainModel(name = it)
-        },
-        scoreCard = shortScoreCard,
-        dateMillis = 1620000000000L,
         indexOfMatch = 43,
+        dateMillis = 1620000000000L,
+        location = "Wayne's House",
+        notes = TextFieldValue("This was a fun game."),
+        players = listOf("Wayne", "Conor", "Alyssa", "Brock", "Tim", "Benjamin").mapIndexed { index, it ->
+            PlayerDomainModel(name = it, rank = index)
+        },
+        categoryNames = listOf("Red", "Orange", "Yellow", "Green", "Blue"),
+        scoreCard = shortScoreCard,
+        playerIndexToChange = 0,
+        manualRanks = false,
+        dialogTextFieldValue = TextFieldValue(""),
     )
     val LongValues = Default.copy(
         totals = longTotals,
         game = GameDomainModel(name = TextFieldValue("Ticket to Ride: Rails and Sails")),
         categoryNames = listOf("Very Long Name", "Even Longer Name Somehow", "Tickets", "Trains", "Ships"),
-        players = listOf("Benjamin", "Mr. Long Name Person", "Jaina Proudmoore", "Anduin Wrynn").map {
-            PlayerDomainModel(name = it)
+        players = listOf("Benjamin", "Mr. Long Name Person", "Jaina Proudmoore", "Anduin Wrynn").mapIndexed { index, it ->
+            PlayerDomainModel(name = it, rank = index)
         },
         scoreCard = longScoreCard,
     )
-}
-
-class ScoreCardPreviewParameterProvider : PreviewParameterProvider<ScoreCardUiState> {
-    override val values = sequenceOf(
-        ScoreCardSampleData.Default,
-        ScoreCardSampleData.LongValues,
-    )
+    val NoPlayers = Default.copy(players = emptyList(), scoreCard = emptyList())
 }

@@ -2,10 +2,10 @@ package com.waynebloom.scorekeeper.admob.data.datasource
 
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.waynebloom.scorekeeper.BuildConfig
-import com.waynebloom.scorekeeper.dagger.wrapper.GoogleAdsWrapper
 import com.waynebloom.scorekeeper.admob.AdmobID
-import kotlinx.coroutines.flow.MutableStateFlow
+import com.waynebloom.scorekeeper.dagger.wrapper.GoogleAdsWrapper
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,23 +14,26 @@ class AdRemoteDataSource @Inject constructor(
     private val googleAdsWrapper: GoogleAdsWrapper,
 ) {
 
-    var adFlow: MutableStateFlow<NativeAd?>
-        private set
-    private val loader: AdLoader
+    private lateinit var loader: AdLoader
 
-    init {
+    internal fun initializeLoader(onNativeAdLoaded: (NativeAd) -> Unit) {
         val adUnitId = if (BuildConfig.DEBUG) AdmobID.DEBUG.id else AdmobID.RELEASE.id
+        val options = googleAdsWrapper.getNativeAdOptionsBuilder()
+            .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_BOTTOM_LEFT)
+            .build()
 
-        adFlow = MutableStateFlow(null)
         loader = googleAdsWrapper
             .getAdLoaderBuilder(adUnitId)
-            .forNativeAd { adFlow.tryEmit(it) }
+            .withNativeAdOptions(options)
+            .forNativeAd { onNativeAdLoaded(it) }
             .build()
     }
 
-    fun destroyAd() {
-        adFlow.value?.destroy()
-        adFlow.tryEmit(null)
+    fun loadAds(count: Int) {
+        repeat(count) {
+            val request = googleAdsWrapper.getAdRequestBuilder().build()
+            loader.loadAd(request)
+        }
     }
 
     fun loadAd() {

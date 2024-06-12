@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "235515163726",
+    "project_id": "medianmeeple",
+    "storage_bucket": "medianmeeple.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:235515163726:android:22fb0f8746b8f928d3bf1f",
+        "android_client_info": {
+          "package_name": "com.waynebloom.scorekeeper.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAL0gv-ruLnIqO-tZPcp7xAT9BBd_6PYgM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

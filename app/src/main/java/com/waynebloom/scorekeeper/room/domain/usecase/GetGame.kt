@@ -14,7 +14,7 @@ class GetGame @Inject constructor(
         .let { game ->
             GameDomainModel(
                 id = id,
-                color = game.color,
+                displayColorIndex = game.color,
                 name = TextFieldValue(game.name),
                 scoringMode = game.scoringMode.toScoringMode()
             )

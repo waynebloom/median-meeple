@@ -1,5 +1,6 @@
 package com.waynebloom.scorekeeper.library
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -18,12 +19,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +33,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.minimumInteractiveComponentSize
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
@@ -47,19 +51,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.SampleGames
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.components.AdCard
-import com.waynebloom.scorekeeper.components.GameCard
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.LargeImageAdCard
 import com.waynebloom.scorekeeper.components.Loading
-import com.waynebloom.scorekeeper.components.MedianMeepleFab
+import com.waynebloom.scorekeeper.components.NewGameCard
+import com.waynebloom.scorekeeper.components.SmallImageAdCard
 import com.waynebloom.scorekeeper.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.theme.Animation.sizeTransformWithDelay
@@ -68,14 +68,13 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 @Composable
 fun LibraryScreen(
     uiState: LibraryUiState,
+    // TODO: remove this and the whole chain
+    // receiveAd: suspend () -> NativeAd,
     onSearchInputChanged: (TextFieldValue) -> Unit,
     onAddGameClick: () -> Unit,
     onGameClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
-    // TODO: this screen needs some new life. Display some interesting data on game cards.
-    // TODO: Check up on search function after this ^^. Sometimes a card was showing underneath the ad...?
 
     when(uiState) {
         is LibraryUiState.Loading -> {
@@ -83,10 +82,10 @@ fun LibraryScreen(
         }
         is LibraryUiState.Content -> {
             LibraryScreen(
-                games = uiState.games,
-                lazyListState = uiState.lazyListState,
+                gameCards = uiState.gameCards,
                 searchInput = uiState.searchInput,
-                ad = uiState.ad,
+                ads = uiState.ads,
+//                receiveAd = receiveAd,
                 onGameClick = onGameClick,
                 onAddNewGameClick = onAddGameClick,
                 onSearchInputChanged = onSearchInputChanged,
@@ -99,10 +98,9 @@ fun LibraryScreen(
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun LibraryScreen(
-    games: List<GameDomainModel>,
-    lazyListState: LazyListState,
+    gameCards: List<LibraryGameCard>,
     searchInput: TextFieldValue,
-    ad: NativeAd?,
+    ads: List<NativeAd>,
     onGameClick: (Long) -> Unit,
     onAddNewGameClick: () -> Unit,
     onSearchInputChanged: (TextFieldValue) -> Unit,
@@ -114,12 +112,18 @@ fun LibraryScreen(
             LibraryTopBar(
                 title = stringResource(id = R.string.header_games),
                 searchInput = searchInput,
-                onSearchInputChanged = { onSearchInputChanged(it) },
+                onSearchInputChanged = onSearchInputChanged,
                 modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
             )
         },
         floatingActionButton = {
-            MedianMeepleFab(onClick = onAddNewGameClick)
+            FloatingActionButton(
+                onClick = onAddNewGameClick,
+                content = {
+                    Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
+                },
+                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+            )
         },
         contentWindowInsets = WindowInsets(0.dp),
         modifier = modifier,
@@ -128,30 +132,24 @@ fun LibraryScreen(
         Column(Modifier.padding(innerPadding)) {
 
             AnimatedContent(
-                targetState = games.isNotEmpty() to searchInput.text.isNotBlank(),
+                targetState = gameCards.isNotEmpty() to searchInput.text.isNotBlank(),
                 transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
                 label = LibraryConstants.ListAnimationTag,
             ) {
 
                 when(it) {
-
                     true to true -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(top = Spacing.sectionContent)
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         ) {
-
                             HelperBox(
-                                message = stringResource(
-                                    id = R.string.text_showing_search_results,
-                                    searchInput.text),
+                                message = stringResource(id = R.string.text_showing_search_results, searchInput.text),
                                 type = HelperBoxType.Info,
                                 maxLines = 2
                             )
-
                             HorizontalDivider()
+                            LargeImageAdCard(ad = ads.firstOrNull())
                         }
                     }
 
@@ -162,11 +160,8 @@ fun LibraryScreen(
                     false to true -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(top = Spacing.sectionContent)
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         ) {
-
                             HelperBox(
                                 message = stringResource(
                                     id = R.string.text_empty_game_search_results,
@@ -175,66 +170,80 @@ fun LibraryScreen(
                                 type = HelperBoxType.Missing,
                                 maxLines = 2
                             )
-
                             HorizontalDivider()
+                            LargeImageAdCard(ad = ads.firstOrNull())
                         }
                     }
 
                     false to false -> {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier
-                                .padding(horizontal = 16.dp)
-                                .padding(top = Spacing.sectionContent)
+                            modifier = Modifier.padding(horizontal = 16.dp)
                         ) {
-
                             HelperBox(
                                 message = stringResource(R.string.text_empty_games),
                                 type = HelperBoxType.Missing,
                                 maxLines = 2
                             )
-
                             HorizontalDivider()
+                            LargeImageAdCard(ad = ads.firstOrNull())
                         }
                     }
                 }
             }
 
-            LazyColumn(
-                state = lazyListState,
-                contentPadding = PaddingValues(bottom = Spacing.paddingForFab),
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Adaptive(160.dp),
+                verticalItemSpacing = Spacing.sectionContent,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+                contentPadding = PaddingValues(
+                    start = Spacing.screenEdge,
+                    end = Spacing.screenEdge,
+                    top = if (searchInput.text.isBlank()) {
+                        0.dp
+                    } else {
+                        Spacing.sectionContent
+                    },
+                    bottom = Spacing.paddingForFab
+                ),
             ) {
+                gameCards.forEachIndexed { i, card ->
+                    val showAd = (gameCards.size < 4 && i == gameCards.lastIndex)
+                        || ((i - 3) % 13 == 0 && i != gameCards.lastIndex)
 
-                val subListsBetweenAds = games.toAdSeparatedSubLists(
-                    firstAdMaximumIndex = 5,
-                    itemsBetweenAds = 10
-                )
-
-                subListsBetweenAds.forEachIndexed { index, subList ->
-
-                    items(
-                        items = subList,
-                        key = { it.id }
-                    ) { game ->
-
-                        GameCard(
-                            name = game.name.text,
-                            color = LocalCustomThemeColors.current.getColorByKey(game.color),
-                            onClick = { onGameClick(game.id) },
+                    item(key = card.id) {
+                        NewGameCard(
+                            name = card.name,
+                            color = card.color
+                                .copy(alpha = 0.2f)
+                                .compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)),
+                            highScore = card.highScore,
+                            noOfMatches = card.noOfMatches,
                             modifier = Modifier
-                                .fillMaxWidth()
+                                .clip(MaterialTheme.shapes.medium)
+                                .clickable {
+                                    onGameClick(card.id)
+                                }
                                 .animateItemPlacement()
                         )
                     }
 
-                    if (index != subListsBetweenAds.lastIndex || subListsBetweenAds.size == 1) {
-                        item {
-                            AdCard(
+                    if (showAd) {
+                        item(key = "ad$i") {
+                            /*var collectedAd by remember { mutableStateOf<NativeAd?>(null) }
+                            LaunchedEffect(true) {
+                                collectedAd = receiveAd()
+                            }*/
+
+                            val ad = if (ads.isNotEmpty()) {
+                                val previousAdCount = (i - 3) / 13
+                                ads[previousAdCount % ads.lastIndex]
+                            } else {
+                                null
+                            }
+                            SmallImageAdCard(
                                 ad = ad,
-                                modifier = Modifier.padding(
-                                    horizontal = Spacing.screenEdge,
-                                    vertical = Spacing.sectionContent
-                                )
+                                modifier = Modifier.animateItemPlacement()
                             )
                         }
                     }
@@ -331,18 +340,61 @@ fun LibraryTopBar(
 }
 
 @Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
-fun GamesScreenPreview() {
+private fun Normal() {
     MedianMeepleTheme {
-
         LibraryScreen(
-            games = SampleGames,
-            lazyListState = LazyListState(),
-            searchInput = TextFieldValue(),
-            ad = null,
-            onGameClick = {},
-            onAddNewGameClick = {},
-            onSearchInputChanged = {}
+            uiState = LibrarySampleData.Default,
+//            receiveAd = { emptyFlow<NativeAd>().single() },
+            onSearchInputChanged = {},
+            onAddGameClick = {},
+            onGameClick = {}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun NoGames() {
+    MedianMeepleTheme {
+        LibraryScreen(
+            uiState = LibrarySampleData.NoGames,
+//            receiveAd = { emptyFlow<NativeAd>().single() },
+            onSearchInputChanged = {},
+            onAddGameClick = {},
+            onGameClick = {}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun ActiveSearch() {
+    MedianMeepleTheme {
+        LibraryScreen(
+            uiState = LibrarySampleData.ActiveSearch,
+//            receiveAd = { emptyFlow<NativeAd>().single() },
+            onSearchInputChanged = {},
+            onAddGameClick = {},
+            onGameClick = {}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = UI_MODE_NIGHT_YES)
+@Composable
+private fun EmptySearch() {
+    MedianMeepleTheme {
+        LibraryScreen(
+            uiState = LibrarySampleData.EmptySearch,
+//            receiveAd = { emptyFlow<NativeAd>().single() },
+            onSearchInputChanged = {},
+            onAddGameClick = {},
+            onGameClick = {}
         )
     }
 }

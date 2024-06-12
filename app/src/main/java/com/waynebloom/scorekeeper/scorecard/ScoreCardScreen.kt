@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,7 +34,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -41,16 +41,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Place
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
-import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -75,6 +76,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -82,14 +84,15 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.ext.onFocusSelectAll
@@ -119,31 +122,38 @@ fun ScoreCardScreen(
     onPlayerChange: (String, Int) -> Unit,
 ) {
 
-    ScoreCardScreen(
-        gameName = uiState.game.name.text,
-        matchNumber = uiState.indexOfMatch,
-        categoryNames = uiState.categoryNames,
-        players = uiState.players,
-        scoreCard = uiState.scoreCard,
-        totals = uiState.totals,
-        dateMillis = uiState.dateMillis,
-        location = uiState.location,
-        notes = uiState.notes,
-        playerIndexToChange = uiState.playerIndexToChange,
-        manualRanks = uiState.manualRanks,
-        dialogTextFieldValue = uiState.dialogTextFieldValue,
-        onPlayerClick,
-        onSaveClick,
-        onDeleteClick,
-        onAddPlayer,
-        onDeletePlayerClick,
-        onCellChange,
-        onDialogTextFieldChange,
-        onDateChange,
-        onLocationChange,
-        onNotesChange,
-        onPlayerChange,
-    )
+    when(uiState) {
+        is ScoreCardUiState.Loading -> {
+            Loading()
+        }
+        is ScoreCardUiState.Content -> {
+            ScoreCardScreen(
+                gameName = uiState.game.name.text,
+                matchNumber = uiState.indexOfMatch,
+                categoryNames = uiState.categoryNames,
+                players = uiState.players,
+                scoreCard = uiState.scoreCard,
+                totals = uiState.totals,
+                dateMillis = uiState.dateMillis,
+                location = uiState.location,
+                notes = uiState.notes,
+                playerIndexToChange = uiState.playerIndexToChange,
+                manualRanks = uiState.manualRanks,
+                dialogTextFieldValue = uiState.dialogTextFieldValue,
+                onPlayerClick,
+                onSaveClick,
+                onDeleteClick,
+                onAddPlayer,
+                onDeletePlayerClick,
+                onCellChange,
+                onDialogTextFieldChange,
+                onDateChange,
+                onLocationChange,
+                onNotesChange,
+                onPlayerChange,
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class,
@@ -181,6 +191,7 @@ private fun ScoreCardScreen(
     var showMoreDialog by remember { mutableStateOf(false) }
     var showEditPlayerDialog by remember { mutableStateOf(false) }
     var showNewPlayerDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState(initialSelectedDateMillis = dateMillis)
 
     if (showDatePickerDialog) {
@@ -192,11 +203,12 @@ private fun ScoreCardScreen(
                 showDatePickerDialog = false
             },
             confirmButton = {
-                TextButton(
+                Button(
                     onClick = {
                         showDatePickerDialog = false
                         onDateChange(datePickerState.selectedDateMillis ?: 0)
                     },
+                    modifier = Modifier.padding(end = 12.dp, bottom = 12.dp)
                 ) {
                     Text(stringResource(R.string.text_ok), style = MaterialTheme.typography.labelLarge)
                 }
@@ -205,7 +217,8 @@ private fun ScoreCardScreen(
                 TextButton(
                     onClick = {
                         showDatePickerDialog = false
-                    }
+                    },
+                    modifier = Modifier.padding(bottom = 12.dp)
                 ) {
                     Text(stringResource(R.string.text_cancel), style = MaterialTheme.typography.labelLarge)
                 }
@@ -238,15 +251,19 @@ private fun ScoreCardScreen(
                         bottomStart = CornerSize(0.dp)
                     )
                 ) {
-                    Column(Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = Dimensions.Spacing.screenEdge)
-                        .windowInsetsPadding(WindowInsets.navigationBars)
+                    Column(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = Dimensions.Spacing.screenEdge)
+                            .windowInsetsPadding(WindowInsets.navigationBars)
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
-                                .clickable(onClick = onDeleteClick)
+                                .clickable {
+                                    showDeleteConfirmDialog = true
+                                    showMoreDialog = false
+                                }
                                 .padding(
                                     horizontal = Dimensions.Spacing.screenEdge,
                                     vertical = Dimensions.Spacing.sectionContent
@@ -268,7 +285,10 @@ private fun ScoreCardScreen(
                 shape = MaterialTheme.shapes.large,
                 tonalElevation = 2.dp
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(Dimensions.Spacing.dialogPadding)
+                ) {
                     val focusRequester = remember { FocusRequester() }
                     LaunchedEffect(true) {
                         focusRequester.requestFocus()
@@ -278,17 +298,12 @@ private fun ScoreCardScreen(
                         text = stringResource(R.string.field_location),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(
-                            start = Dimensions.Spacing.screenEdge,
-                            top = Dimensions.Spacing.screenEdge
-                        )
                     )
                     OutlinedTextField(
                         value = dialogTextFieldValue,
                         onValueChange = onDialogTextFieldChange,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = Dimensions.Spacing.screenEdge)
                             .focusRequester(focusRequester)
                             .onFocusSelectAll(dialogTextFieldValue, onDialogTextFieldChange),
                         maxLines = 1,
@@ -307,19 +322,13 @@ private fun ScoreCardScreen(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(
-                                end = Dimensions.Spacing.screenEdge,
-                                bottom = Dimensions.Spacing.screenEdge
-                            )
+                            .padding(top = Dimensions.Spacing.sectionContent)
                     ) {
-                        TextButton(
-                            onClick = {
-                                showLocationDialog = false
-                            }
-                        ) {
+                        TextButton({ showLocationDialog = false }) {
                             Text(text = stringResource(R.string.text_cancel), style = MaterialTheme.typography.labelLarge)
                         }
-                        TextButton(
+                        Spacer(Modifier.width(8.dp))
+                        Button(
                             onClick = {
                                 showLocationDialog = false
                                 onLocationChange(dialogTextFieldValue.text)
@@ -333,7 +342,6 @@ private fun ScoreCardScreen(
         }
     }
     if (showEditPlayerDialog) {
-
         Dialog(onDismissRequest = { showEditPlayerDialog = false }) {
             var nameValue by remember {
                 mutableStateOf(TextFieldValue(players[playerIndexToChange].name))
@@ -365,7 +373,7 @@ private fun ScoreCardScreen(
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(Dimensions.Spacing.screenEdge)
+                    modifier = Modifier.padding(Dimensions.Spacing.dialogPadding)
                 ) {
                     val focusRequester = remember { FocusRequester() }
                     LaunchedEffect(true) {
@@ -379,15 +387,14 @@ private fun ScoreCardScreen(
                     )
                     OutlinedTextField(
                         value = nameValue,
-                        onValueChange = { nameValue = it},
+                        onValueChange = { nameValue = it },
                         modifier = Modifier
                             .fillMaxWidth()
                             .focusRequester(focusRequester)
-                            .onFocusSelectAll(
-                                textFieldValueState = nameValue,
-                                onTextFieldValueChanged = { nameValue = it }
-                            ),
-                        label = { Text(stringResource(R.string.field_name)) },
+                            .onFocusSelectAll(nameValue) { nameValue = it },
+                        label = {
+                            Text(stringResource(R.string.field_name))
+                        },
                         maxLines = 1,
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Words,
@@ -409,32 +416,33 @@ private fun ScoreCardScreen(
                                     MaterialTheme.typography.bodyLarge
                                 }
                                 val backgroundColor = if (it == rank) {
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                    MaterialTheme.colorScheme.secondaryContainer
                                 } else {
                                     Color.Transparent
                                 }
-                                Text(
-                                    text = (it + 1).toRank(),
-                                    style = style,
-                                    modifier = Modifier
-                                        .background(
-                                            backgroundColor,
-                                            MaterialTheme.shapes.medium
-                                        )
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .clickable { rank = it }
-                                        .minimumInteractiveComponentSize()
-                                        .padding(Dimensions.Spacing.sectionContent / 2)
-                                )
+                                Surface(color = backgroundColor) {
+                                    Text(
+                                        text = (it + 1).toRank(),
+                                        style = style,
+                                        modifier = Modifier
+                                            .clip(MaterialTheme.shapes.medium)
+                                            .clickable { rank = it }
+                                            .minimumInteractiveComponentSize()
+                                            .padding(Dimensions.Spacing.sectionContent / 2)
+                                    )
+                                }
                             }
                         }
                     }
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = Dimensions.Spacing.sectionContent)
                     ) {
                         TextButton(
                             onClick = {
+                                showEditPlayerDialog = false
                                 onDeletePlayerClick(playerIndexToChange)
                             }
                         ) {
@@ -448,9 +456,11 @@ private fun ScoreCardScreen(
                             TextButton(onDismiss) {
                                 Text(text = stringResource(R.string.text_cancel), style = MaterialTheme.typography.labelLarge)
                             }
-                            TextButton(
+                            Spacer(Modifier.width(8.dp))
+                            Button(
                                 onClick = onPositiveAction,
                                 enabled = nameValue.text.isNotBlank(),
+
                             ) {
                                 Text(text = stringResource(R.string.text_ok), style = MaterialTheme.typography.labelLarge)
                             }
@@ -461,7 +471,6 @@ private fun ScoreCardScreen(
         }
     }
     if (showNewPlayerDialog) {
-
         val focusRequester = remember { FocusRequester() }
         LaunchedEffect(true) {
             focusRequester.requestFocus()
@@ -472,24 +481,25 @@ private fun ScoreCardScreen(
                 shape = MaterialTheme.shapes.large,
                 tonalElevation = 2.dp,
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(Dimensions.Spacing.dialogPadding)
+                ) {
                     Text(
                         text = stringResource(R.string.text_new_player),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(
-                            start = Dimensions.Spacing.screenEdge,
-                            top = Dimensions.Spacing.screenEdge
-                        )
                     )
                     OutlinedTextField(
                         value = dialogTextFieldValue,
                         onValueChange = onDialogTextFieldChange,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = Dimensions.Spacing.screenEdge)
                             .focusRequester(focusRequester)
                             .onFocusSelectAll(dialogTextFieldValue, onDialogTextFieldChange),
+                        label = {
+                            Text(stringResource(R.string.field_name))
+                        },
                         maxLines = 1,
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Words,
@@ -502,33 +512,71 @@ private fun ScoreCardScreen(
                             }
                         )
                     )
-
                     Row(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(
-                                start = Dimensions.Spacing.screenEdge,
-                                end = Dimensions.Spacing.screenEdge,
-                                bottom = Dimensions.Spacing.screenEdge
-                            )
+                            .padding(top = Dimensions.Spacing.sectionContent)
                     ) {
                         TextButton(onClick = { showNewPlayerDialog = false }) {
                             Text(text = stringResource(R.string.text_cancel), style = MaterialTheme.typography.labelLarge)
                         }
-                        TextButton(
+                        Spacer(Modifier.width(8.dp))
+                        Button(
                             onClick = {
                                 showNewPlayerDialog = false
                                 onAddPlayer(dialogTextFieldValue.text)
                             },
                             enabled = dialogTextFieldValue.text.isNotBlank(),
                         ) {
-                            Text(text = stringResource(R.string.text_ok), style = MaterialTheme.typography.labelLarge)
+                            Text(
+                                text = stringResource(R.string.text_add),
+                                style = MaterialTheme.typography.labelLarge
+                            )
                         }
                     }
                 }
             }
         }
+    }
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteConfirmDialog = false
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteConfirmDialog = false
+                        onDeleteClick()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    ),
+                ) {
+                    Text(
+                        text = stringResource(R.string.text_delete),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton({ showDeleteConfirmDialog = false }) {
+                    Text(
+                        text = stringResource(R.string.text_cancel),
+                        style = MaterialTheme.typography.labelLarge
+                    )
+                }
+            },
+            text = {
+                Text(
+                    text = stringResource(R.string.text_delete_match_confirm),
+                    style = MaterialTheme.typography.bodyLarge,
+                )
+            },
+            tonalElevation = 2.dp,
+        )
     }
 
     Scaffold(
@@ -546,7 +594,7 @@ private fun ScoreCardScreen(
                     Row(
                         modifier = Modifier
                             .weight(1f, fill = false)
-                            .padding(end = 4.dp)
+                            .padding(end = 12.dp)
                     ) {
                         Text(
                             text = gameName,
@@ -561,15 +609,15 @@ private fun ScoreCardScreen(
                         )
                     }
                     Row {
-                        Icon(
-                            imageVector = Icons.Rounded.Done,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .minimumInteractiveComponentSize()
-                                .clip(CircleShape)
-                                .clickable(onClick = onSaveClick)
-                                .padding(4.dp)
-                        )
+                        Button(
+                            onClick = onSaveClick,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                        ) {
+                            Text(text = stringResource(R.string.text_save))
+                        }
                         Icon(
                             imageVector = Icons.Rounded.MoreVert,
                             contentDescription = null,
@@ -586,9 +634,10 @@ private fun ScoreCardScreen(
     ) { innerPadding ->
 
         Column(Modifier.padding(innerPadding)) {
-            Column(Modifier
-                .fillMaxWidth()
-                .padding(start = Dimensions.Spacing.screenEdge)
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(start = Dimensions.Spacing.screenEdge)
             ) {
                 FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(Dimensions.Spacing.subSectionContent),
@@ -637,8 +686,8 @@ private fun ScoreCardScreen(
                         .fillMaxWidth()
                         .minimumInteractiveComponentSize()
                         .padding(
-                            bottom = Dimensions.Spacing.sectionContent,
-                            end = Dimensions.Spacing.screenEdge
+                            end = Dimensions.Spacing.screenEdge,
+                            bottom = Dimensions.Spacing.sectionContent
                         )
                         .onFocusChanged { hasFocus = it.hasFocus },
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -665,116 +714,143 @@ private fun ScoreCardScreen(
                     }
                 )
             }
-            Surface(
-                shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp),
-                modifier = Modifier.padding(start = Dimensions.Spacing.screenEdge),
-                tonalElevation = 2.dp
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-                LazyRow(Modifier.fillMaxWidth()) {
-                    stickyHeader {
-                        Column(
-                            horizontalAlignment = Alignment.End,
-                            modifier = Modifier
-                                .width(intrinsicSize = IntrinsicSize.Max)
-                                .background(
-                                    color = MaterialTheme.colorScheme.secondaryContainer,
-                                    shape = RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                val buttonModifier = if (players.isEmpty()) {
+                    Modifier.fillMaxWidth()
+                } else {
+                    Modifier
+                }
+                if (players.isNotEmpty()) {
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = Dimensions.Spacing.screenEdge),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    ) {
+                        stickyHeader {
+                            Surface(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                shape = MaterialTheme.shapes.medium.copy(
+                                    topEnd = CornerSize(0.dp),
+                                    bottomEnd = CornerSize(0.dp)
                                 )
-                        ) {
-
-                            // Blank space in the corner
-                            Box(
-                                contentAlignment = Alignment.CenterEnd,
-                                modifier = Modifier.size(60.dp)
                             ) {
-                                VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
-                            }
-
-                            categoryNames.forEach {
-                                Row(
-                                    horizontalArrangement = Arrangement.End,
-                                    modifier = Modifier
-                                        .height(IntrinsicSize.Max)
-                                        .fillMaxWidth()
+                                Column(
+                                    horizontalAlignment = Alignment.End,
+                                    modifier = Modifier.width(intrinsicSize = IntrinsicSize.Max)
                                 ) {
+
+                                    // Blank space in the corner
                                     Box(
                                         contentAlignment = Alignment.CenterEnd,
-                                        modifier = Modifier
-                                            .padding(
-                                                top = Dimensions.Spacing.sectionContent / 2,
-                                                start = Dimensions.Spacing.screenEdge,
-                                                bottom = Dimensions.Spacing.sectionContent / 2,
-                                                end = Dimensions.Spacing.sectionContent / 2
-                                            )
-                                            .heightIn(min = 48.dp)
-                                            .widthIn(min = 48.dp, max = 96.dp),
+                                        modifier = Modifier.size(60.dp)
                                     ) {
-                                        Text(
-                                            text = it,
-                                            style = MaterialTheme.typography.bodyLarge,
-                                            fontWeight = FontWeight.SemiBold,
-                                            overflow = TextOverflow.Ellipsis,
-                                            maxLines = 1,
-                                        )
+                                        VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
                                     }
-                                    VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
+
+                                    categoryNames.forEach {
+                                        Row(
+                                            horizontalArrangement = Arrangement.End,
+                                            modifier = Modifier
+                                                .height(IntrinsicSize.Max)
+                                                .fillMaxWidth()
+                                        ) {
+                                            Box(
+                                                contentAlignment = Alignment.CenterEnd,
+                                                modifier = Modifier
+                                                    .padding(
+                                                        top = Dimensions.Spacing.sectionContent / 2,
+                                                        start = Dimensions.Spacing.screenEdge,
+                                                        bottom = Dimensions.Spacing.sectionContent / 2,
+                                                        end = Dimensions.Spacing.sectionContent / 2
+                                                    )
+                                                    .heightIn(min = 48.dp)
+                                                    .widthIn(min = 48.dp, max = 96.dp),
+                                            ) {
+                                                Text(
+                                                    text = it,
+                                                    style = MaterialTheme.typography.bodyLarge,
+                                                    fontWeight = FontWeight.SemiBold,
+                                                    overflow = TextOverflow.Ellipsis,
+                                                    maxLines = 1,
+                                                )
+                                            }
+                                            VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
+                                        }
+                                    }
+
+                                    Row(
+                                        horizontalArrangement = Arrangement.End,
+                                        modifier = Modifier
+                                            .height(IntrinsicSize.Max)
+                                            .fillMaxWidth()
+                                    ) {
+                                        Box(
+                                            contentAlignment = Alignment.CenterEnd,
+                                            modifier = Modifier
+                                                .padding(
+                                                    top = Dimensions.Spacing.sectionContent / 2,
+                                                    start = Dimensions.Spacing.screenEdge,
+                                                    bottom = Dimensions.Spacing.sectionContent / 2,
+                                                    end = Dimensions.Spacing.sectionContent / 2
+                                                )
+                                                .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp),
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.text_total),
+                                                style = MaterialTheme.typography.bodyLarge,
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontStyle = FontStyle.Italic
+                                            )
+                                        }
+                                        VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
+                                    }
                                 }
                             }
+                        }
 
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier
-                                    .height(IntrinsicSize.Max)
-                                    .fillMaxWidth()
+                        itemsIndexed(players) { index, player ->
+                            val shape = if (index != players.lastIndex) {
+                                RectangleShape
+                            } else {
+                                MaterialTheme.shapes.medium.copy(
+                                    topStart = CornerSize(0.dp),
+                                    bottomStart = CornerSize(0.dp)
+                                )
+                            }
+                            Surface(
+                                shape = shape,
+                                tonalElevation = 2.dp
                             ) {
-                                Box(
-                                    contentAlignment = Alignment.CenterEnd,
-                                    modifier = Modifier
-                                        .padding(
-                                            top = Dimensions.Spacing.sectionContent / 2,
-                                            start = Dimensions.Spacing.screenEdge,
-                                            bottom = Dimensions.Spacing.sectionContent / 2,
-                                            end = Dimensions.Spacing.sectionContent / 2
-                                        )
-                                        .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp),
-                                ) {
-                                    Text(
-                                        text = stringResource(R.string.text_total),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontStyle = FontStyle.Italic
-                                    )
-                                }
-                                VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
+                                ScoreColumn(
+                                    playerName = player.name,
+                                    playerRank = player.rank,
+                                    scores = scoreCard[index],
+                                    total = totals[index].toShortFormatString(),
+                                    modifier = Modifier.animateItemPlacement(),
+                                    onPlayerClick = {
+                                        showEditPlayerDialog = true
+                                        onPlayerClick(index)
+                                    },
+                                    onCellChange = { value, col -> onCellChange(value, col, index) },
+                                )
                             }
                         }
                     }
-
-                    itemsIndexed(players) { index, player ->
-                        ScoreColumn(
-                            playerName = player.name,
-                            playerRank = player.rank,
-                            scores = scoreCard[index],
-                            total = totals[index].toShortFormatString(),
-                            modifier = Modifier.animateItemPlacement(),
-                            onPlayerClick = {
-                                showEditPlayerDialog = true
-                                onPlayerClick(index)
-                            },
-                            onCellChange = { value, col -> onCellChange(value, col, index) },
-                        )
-                    }
-
-                    item {
-                        IconButton(
-                            onClick = {
-                                onDialogTextFieldChange(TextFieldValue())
-                                showNewPlayerDialog = true
-                            },
-                        ) {
-                            Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
-                        }
+                }
+                Button(
+                    onClick = {
+                        onDialogTextFieldChange(TextFieldValue())
+                        showNewPlayerDialog = true
+                    },
+                    modifier = buttonModifier
+                        .align(Alignment.CenterHorizontally)
+                        .padding(horizontal = Dimensions.Spacing.screenEdge)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(text = stringResource(R.string.text_new_player))
                     }
                 }
             }
@@ -792,6 +868,11 @@ private fun ScoreColumn(
     onPlayerClick: () -> Unit,
     onCellChange: (TextFieldValue, col: Int) -> Unit
 ) {
+    val totalScoreBackground = if (playerRank == 0) {
+        MaterialTheme.colorScheme.secondaryContainer
+    } else {
+        Color.Transparent
+    }
     Column(
         modifier
             .width(intrinsicSize = IntrinsicSize.Max)
@@ -806,11 +887,10 @@ private fun ScoreColumn(
                 .heightIn(min = 60.dp),
         ) {
             Column(
-                modifier = Modifier
-                    .padding(
-                        horizontal = Dimensions.Spacing.sectionContent,
-                        vertical = Dimensions.Spacing.sectionContent
-                    )
+                modifier = Modifier.padding(
+                    horizontal = Dimensions.Spacing.sectionContent,
+                    vertical = Dimensions.Spacing.sectionContent / 2
+                )
             ) {
                 Text(
                     text = playerName,
@@ -837,23 +917,23 @@ private fun ScoreColumn(
             )
         }
 
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = modifier
+        Surface(
+            shape = CircleShape,
+            color = totalScoreBackground,
+            modifier = Modifier
                 .padding(Dimensions.Spacing.sectionContent / 2)
-                .background(
-                    color = MaterialTheme.colorScheme.secondaryContainer,
-                    shape = CircleShape
-                )
-                .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp),
+                .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp)
         ) {
-            Text(
-                text = total,
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold,
-                fontStyle = FontStyle.Italic,
-                modifier = Modifier.padding(horizontal = Dimensions.Spacing.sectionContent)
-            )
+            Box(contentAlignment = Alignment.Center) {
+                Text(
+                    text = total,
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    fontStyle = FontStyle.Italic,
+                    modifier = Modifier
+                        .padding(Dimensions.Spacing.sectionContent)
+                )
+            }
         }
     }
 }
@@ -904,7 +984,11 @@ fun TextFieldCell(
                 .onFocusChanged { hasFocus = it.hasFocus }
                 .padding(horizontal = Dimensions.Spacing.sectionContent),
             textStyle = textStyle,
-            maxLines = 1,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Next,
+                keyboardType = KeyboardType.Decimal,
+            ),
+            singleLine = true,
             cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
         )
     }
@@ -913,12 +997,54 @@ fun TextFieldCell(
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun SingleMatchScreenPreview(
-    @PreviewParameter(ScoreCardPreviewParameterProvider::class) uiState: ScoreCardUiState
-) {
+private fun Normal() {
     MedianMeepleTheme {
         ScoreCardScreen(
-            uiState = uiState,
+            uiState = ScoreCardSampleData.Default,
+            onPlayerClick = {},
+            onSaveClick = {},
+            onDeleteClick = {},
+            onAddPlayer = {},
+            onDeletePlayerClick = {},
+            onCellChange = {_,_,_->},
+            onDialogTextFieldChange = {},
+            onDateChange = {},
+            onLocationChange = {},
+            onNotesChange = {},
+            onPlayerChange = {_,_->}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun LongData() {
+    MedianMeepleTheme {
+        ScoreCardScreen(
+            uiState = ScoreCardSampleData.LongValues,
+            onPlayerClick = {},
+            onSaveClick = {},
+            onDeleteClick = {},
+            onAddPlayer = {},
+            onDeletePlayerClick = {},
+            onCellChange = {_,_,_->},
+            onDialogTextFieldChange = {},
+            onDateChange = {},
+            onLocationChange = {},
+            onNotesChange = {},
+            onPlayerChange = {_,_->}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun NoPlayers() {
+    MedianMeepleTheme {
+        ScoreCardScreen(
+            uiState = ScoreCardSampleData.NoPlayers,
             onPlayerClick = {},
             onSaveClick = {},
             onDeleteClick = {},

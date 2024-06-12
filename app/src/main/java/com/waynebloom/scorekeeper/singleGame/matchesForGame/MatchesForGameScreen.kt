@@ -27,13 +27,14 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -62,12 +63,11 @@ import androidx.compose.ui.window.Dialog
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.PreviewData
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.components.AdCard
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
+import com.waynebloom.scorekeeper.components.LargeImageAdCard
 import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.components.MatchCard
-import com.waynebloom.scorekeeper.components.MedianMeepleFab
 import com.waynebloom.scorekeeper.components.RadioButtonOption
 import com.waynebloom.scorekeeper.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
@@ -77,7 +77,6 @@ import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
-import com.waynebloom.scorekeeper.ext.toAdSeparatedSubLists
 import com.waynebloom.scorekeeper.ext.toShortFormatString
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.singleGame.MatchesForGameUiState
@@ -103,10 +102,6 @@ fun MatchesForGameScreen(
     onSortDialogDismiss: () -> Unit,
 ) {
 
-    // TODO: fix the ordering of players in the match cards
-    // TODO: add an empty state for match cards
-    // TODO: The date and location are not displaying correctly
-
     when (uiState) {
 
         is MatchesForGameUiState.Content -> {
@@ -116,9 +111,10 @@ fun MatchesForGameScreen(
                 isSortDialogShowing = uiState.isSortDialogShowing,
                 sortDirection = uiState.sortDirection,
                 sortMode = uiState.sortMode,
-                ad = uiState.ad,
                 matches = uiState.matches,
+                filteredIndices = uiState.filteredIndices,
                 listState = rememberLazyListState(),
+                ads = uiState.ads,
                 onEditGameClick = onEditGameClick,
                 onSortButtonClick = onSortButtonClick,
                 onStatisticsTabClick = onStatisticsTabClick,
@@ -353,9 +349,10 @@ fun MatchesForGameScreen(
     isSortDialogShowing: Boolean,
     sortDirection: SortDirection,
     sortMode: MatchSortMode,
-    ad: NativeAd?,
     matches: List<MatchDomainModel>,
+    filteredIndices: List<Int>,
     listState: LazyListState,
+    ads: List<NativeAd>,
     onEditGameClick: () -> Unit,
     onSortButtonClick: () -> Unit,
     onStatisticsTabClick: () -> Unit,
@@ -402,7 +399,16 @@ fun MatchesForGameScreen(
                 )
             },
             floatingActionButton = {
-                MedianMeepleFab(onClick = onAddMatchClick,)
+                ExtendedFloatingActionButton(
+                    text = {
+                        Text(text = stringResource(id = R.string.text_new_match))
+                    },
+                    icon = {
+                        Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
+                    },
+                    onClick = onAddMatchClick,
+                    modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+                )
             },
             contentWindowInsets = WindowInsets(0.dp)
         ) { innerPadding ->
@@ -460,47 +466,58 @@ fun MatchesForGameScreen(
                         top = Spacing.sectionContent, bottom = Spacing.paddingForFab),
                     verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
                 ) {
-
                     val formatter = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).apply {
                         timeZone = TimeZone.getTimeZone("UTC")
                     }
 
-                    val adSeparatedSubLists = matches.toAdSeparatedSubLists()
-                    adSeparatedSubLists.forEachIndexed { index, subList ->
+                    matches
+                        .filterIndexed { index, _ ->
+                            filteredIndices.isEmpty() || filteredIndices.contains(index)
+                        }
+                        .forEachIndexed { i, match ->
+                            val showAd = (matches.size < 2 && i == matches.lastIndex)
+                                || ((i - 1) % 6 == 0 && i != matches.lastIndex)
 
-                        items(items = subList, key = { item -> item.id }) { match ->
-
-                            // TODO: need to fix so this show the real index, rather than the index in the current search results
-
-                            MatchCard(
-                                number = "${matches.indexOf(match) + 1}",
-                                date = formatter.format(match.dateMillis),
-                                location = match.location,
-                                players = match.players,
-                                totals = match.players.map {
-                                    it.categoryScores
-                                        .sumOf { score -> score.scoreAsBigDecimal ?: BigDecimal.ZERO }
-                                        .toShortFormatString()
-                                },
-                                modifier = Modifier
-                                    .clip(MaterialTheme.shapes.medium)
-                                    .clickable {
-                                        onMatchClick(match.id)
-                                    }
-                                    .animateItemPlacement(
-                                        animationSpec = tween(
-                                            durationMillis = DurationMs.medium,
-                                            easing = Ease
+                            item(key = match.id) {
+                                MatchCard(
+                                    number = "${matches.indexOf(match) + 1}",
+                                    date = formatter.format(match.dateMillis),
+                                    location = match.location,
+                                    players = match.players,
+                                    totals = match.players.map {
+                                        it.categoryScores
+                                            .sumOf { score -> score.scoreAsBigDecimal ?: BigDecimal.ZERO }
+                                            .toShortFormatString()
+                                    },
+                                    modifier = Modifier
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .clickable {
+                                            onMatchClick(match.id)
+                                        }
+                                        .animateItemPlacement(
+                                            animationSpec = tween(
+                                                durationMillis = DurationMs.medium,
+                                                easing = Ease
+                                            )
                                         )
-                                    )
-                            )
-                        }
-
-                        if (index != adSeparatedSubLists.lastIndex || adSeparatedSubLists.size == 1) {
-                            item {
-                                AdCard(ad = ad)
+                                )
                             }
-                        }
+
+                            if (showAd) {
+                                item(key = "ad$i") {
+                                    val ad = if (ads.isNotEmpty()) {
+                                        val previousAdCount = (i - 1) / 6
+                                        ads[previousAdCount % ads.lastIndex]
+                                    } else {
+                                        null
+                                    }
+
+                                    LargeImageAdCard(
+                                        ad = ad,
+                                        modifier = Modifier.animateItemPlacement()
+                                    )
+                                }
+                            }
                     }
 
                     item {
@@ -528,11 +545,11 @@ private fun MatchesForGameScreenPreview() {
                 isSortDialogShowing = false,
                 sortDirection = SortDirection.Ascending,
                 sortMode = MatchSortMode.ByMatchAge,
-                ad = null,
+                ads = emptyList(),
                 matchesLazyListState = LazyListState(),
                 matches = PreviewData.Matches,
+                filteredIndices = emptyList(),
                 scoringMode = ScoringMode.Descending,
-                primaryColorId = "DEEP_ORANGE"
             ),
             onSearchInputChanged = {},
             onSortModeChanged = {},

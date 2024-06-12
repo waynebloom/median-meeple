@@ -1,6 +1,9 @@
 package com.waynebloom.scorekeeper.theme
 
 import android.os.Build
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -9,9 +12,12 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.theme.gameColor.LightThemeGameColors
+import com.valentinilk.shimmer.LocalShimmerTheme
+import com.valentinilk.shimmer.defaultShimmerTheme
+import com.valentinilk.shimmer.shimmerSpec
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -248,19 +254,36 @@ fun MedianMeepleTheme(
     dynamicColor: Boolean = false,
     content: @Composable() () -> Unit
 ) {
-    val customThemeColors = /*if (isSystemInDarkTheme()) DarkThemeGameColors() else*/ LightThemeGameColors()
-    CompositionLocalProvider(LocalCustomThemeColors provides customThemeColors) {
-
-        val colorScheme = when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-
-            darkTheme -> darkScheme
-            else -> lightScheme
+    val colorScheme = when {
+        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+            val context = LocalContext.current
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
+        darkTheme -> darkScheme
+        else -> lightScheme
+    }
+    val shimmerTheme = defaultShimmerTheme.copy(
+        animationSpec = infiniteRepeatable(
+            animation = shimmerSpec(
+                durationMillis = 500,
+                easing = LinearEasing,
+                delayMillis = 800,
+            ),
+            repeatMode = RepeatMode.Restart,
+        ),
+        blendMode = BlendMode.SrcAtop,
+        shaderColors = listOf(
+            Color.Transparent,
+            colorScheme.primary.copy(alpha = 0.1f),
+            colorScheme.primary.copy(alpha = 0.3f),
+            colorScheme.primary.copy(alpha = 0.1f),
+            Color.Transparent,
+        ),
+        shaderColorStops = listOf(0.0f, 0.35f, 0.6f, 0.85f, 1.0f),
+    )
+
+    CompositionLocalProvider(LocalShimmerTheme provides shimmerTheme) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = MedianMeepleTypography,

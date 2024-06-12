@@ -28,6 +28,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -54,31 +55,23 @@ class ScoreCardViewModel @Inject constructor(
     private val deleteMatch: DeleteMatch,
 ): ViewModel() {
 
-    // TODO: Fix the date picker problem
-    // ITS BECAUSE OF THE INITIAL DATEMILLIS OF 0
-    // TODO: Make the left side of the score card card shaped
-    // TODO: Highlight only the winning score(s)
-    // TODO: Clean up the fresh scorecard experience
-    // TODO: Make the save button prettier
-    // TODO: confirmation dialog for delete button
-    // TODO: sometimes some players get deleted when saving a freshly created match
-
-    private val viewModelState: MutableStateFlow<ScoreCardUiState>
+    private val viewModelState: MutableStateFlow<ScoreCardViewModelState>
     val uiState: StateFlow<ScoreCardUiState>
 
     val gameId = savedStateHandle.get<Long>("gameId")!!
-    var matchId = savedStateHandle.get<Long>("matchId")!!
+    private var matchId = savedStateHandle.get<Long>("matchId")!!
     private lateinit var dbPlayers: List<PlayerDomainModel>
     private lateinit var dbMatch: MatchDomainModel
     private lateinit var dbCategories: List<CategoryDomainModel>
 
-    companion object {
-        const val MAXIMUM_PLAYERS = 100
-    }
-
     init {
-        viewModelState = mutableStateFlowFactory.newInstance(ScoreCardUiState())
-        uiState = viewModelState.stateIn(viewModelScope, SharingStarted.Eagerly, ScoreCardUiState())
+        viewModelState = mutableStateFlowFactory.newInstance(ScoreCardViewModelState())
+        uiState = viewModelState
+            .map(ScoreCardViewModelState::toUiState)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.Eagerly,
+                initialValue = viewModelState.value.toUiState())
 
         viewModelScope.launch {
 
@@ -114,6 +107,7 @@ class ScoreCardViewModel @Inject constructor(
 
             viewModelState.update {
                 it.copy(
+                    loading = false,
                     totals = totals,
                     game = game,
                     indexOfMatch = getIndexOfMatch(gameId, matchId) + 1,
@@ -245,7 +239,7 @@ class ScoreCardViewModel @Inject constructor(
         }
     }
 
-    fun onSaveClick() = viewModelScope.launch {
+    fun onSaveClick(onFinish: () -> Unit) = viewModelScope.launch {
         viewModelState.value.let { state ->
             updateMatch(match = MatchDomainModel(
                 id = matchId,
@@ -283,14 +277,17 @@ class ScoreCardViewModel @Inject constructor(
                 }
             }
         }
+        onFinish()
     }
 
-    fun onDeleteClick() = viewModelScope.launch {
+    fun onDeleteClick(onFinish: () -> Unit) = viewModelScope.launch {
         deleteMatch(matchId)
+        onFinish()
     }
 }
 
-data class ScoreCardUiState(
+private data class ScoreCardViewModelState(
+    val loading: Boolean = true,
     val totals: List<BigDecimal> = listOf(),
     val game: GameDomainModel = GameDomainModel(),
     val indexOfMatch: Int = 0,
@@ -303,4 +300,44 @@ data class ScoreCardUiState(
     val playerIndexToChange: Int = 0,
     val manualRanks: Boolean = false,
     val dialogTextFieldValue: TextFieldValue = TextFieldValue(),
-)
+) {
+
+    fun toUiState() = if (loading) {
+        ScoreCardUiState.Loading
+    } else {
+        ScoreCardUiState.Content(
+            totals = totals,
+            game = game,
+            indexOfMatch = indexOfMatch,
+            dateMillis = dateMillis,
+            location = location,
+            notes = notes,
+            players = players,
+            categoryNames = categoryNames,
+            scoreCard = scoreCard,
+            playerIndexToChange = playerIndexToChange,
+            manualRanks = manualRanks,
+            dialogTextFieldValue = dialogTextFieldValue,
+        )
+    }
+}
+
+sealed interface ScoreCardUiState {
+
+    data object Loading: ScoreCardUiState
+
+    data class Content(
+        val totals: List<BigDecimal>,
+        val game: GameDomainModel,
+        val indexOfMatch: Int,
+        val dateMillis: Long,
+        val location: String,
+        val notes: TextFieldValue,
+        val players: List<PlayerDomainModel>,
+        val categoryNames: List<String>,
+        val scoreCard: List<List<CategoryScoreDomainModel>>,
+        val playerIndexToChange: Int,
+        val manualRanks: Boolean,
+        val dialogTextFieldValue: TextFieldValue,
+    ): ScoreCardUiState
+}
