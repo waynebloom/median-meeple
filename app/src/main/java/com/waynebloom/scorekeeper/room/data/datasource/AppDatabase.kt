@@ -8,7 +8,7 @@ import androidx.room.RenameTable
 import androidx.room.RoomDatabase
 import androidx.room.migration.AutoMigrationSpec
 import com.waynebloom.scorekeeper.room.data.MIGRATION_10_11
-import com.waynebloom.scorekeeper.room.data.MIGRATION_13_14
+import com.waynebloom.scorekeeper.room.data.MIGRATION_12_13
 import com.waynebloom.scorekeeper.room.data.MIGRATION_7_8
 import com.waynebloom.scorekeeper.room.data.MIGRATION_8_9
 import com.waynebloom.scorekeeper.room.data.MIGRATION_9_10
@@ -40,7 +40,7 @@ import com.waynebloom.scorekeeper.room.domain.repository.PlayerRepository
         AutoMigration (from = 5, to = 6),
         AutoMigration (from = 6, to = 7),
         AutoMigration (from = 11, to = 12),
-        AutoMigration (from = 12, to = 13, spec = AppDatabase.AutoMigration12to13::class)
+        AutoMigration (from = 13, to = 14, spec = AppDatabase.AutoMigration13to14::class)
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -60,7 +60,7 @@ abstract class AppDatabase : RoomDatabase() {
     @RenameColumn(tableName = "Match", toColumnName = "date_millis", fromColumnName = "time_modified")
     @DeleteColumn(tableName = "Player", columnName = "show_detailed_score")
     @DeleteColumn(tableName = "Player", columnName = "score")
-    class AutoMigration12to13 : AutoMigrationSpec
+    class AutoMigration13to14 : AutoMigrationSpec
 
     companion object {
         val manualMigrations = arrayOf(
@@ -68,7 +68,7 @@ abstract class AppDatabase : RoomDatabase() {
             MIGRATION_8_9,
             MIGRATION_9_10,
             MIGRATION_10_11,
-            MIGRATION_13_14
+            MIGRATION_12_13
         )
     }
 }

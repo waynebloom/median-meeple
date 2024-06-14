@@ -17,7 +17,7 @@
           {
             "fieldPath": "color",
             "columnName": "color",
-            "affinity": "TEXT",
+            "affinity": "INTEGER",
             "notNull": true
           },
           {
@@ -112,7 +112,7 @@
       },
       {
         "tableName": "Player",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `match_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, FOREIGN KEY(`match_id`) REFERENCES `Match`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `match_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, `score` TEXT NOT NULL, `show_detailed_score` INTEGER NOT NULL, FOREIGN KEY(`match_id`) REFERENCES `Match`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -136,6 +136,18 @@
           {
             "fieldPath": "position",
             "columnName": "position",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "totalScore",
+            "columnName": "score",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "showDetailedScore",
+            "columnName": "show_detailed_score",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -172,7 +184,7 @@
         ]
       },
       {
-        "tableName": "Category",
+        "tableName": "SubscoreTitle",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
@@ -189,7 +201,7 @@
           },
           {
             "fieldPath": "name",
-            "columnName": "name",
+            "columnName": "title",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -208,13 +220,13 @@
         },
         "indices": [
           {
-            "name": "index_Category_game_id",
+            "name": "index_SubscoreTitle_game_id",
             "unique": false,
             "columnNames": [
               "game_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_Category_game_id` ON `${TABLE_NAME}` (`game_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_SubscoreTitle_game_id` ON `${TABLE_NAME}` (`game_id`)"
           }
         ],
         "foreignKeys": [
@@ -232,8 +244,8 @@
         ]
       },
       {
-        "tableName": "CategoryScore",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `subscore_title_id` INTEGER NOT NULL, `player_id` INTEGER NOT NULL, `value` TEXT NOT NULL, FOREIGN KEY(`subscore_title_id`) REFERENCES `Category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`player_id`) REFERENCES `Player`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "tableName": "Subscore",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `subscore_title_id` INTEGER NOT NULL, `player_id` INTEGER NOT NULL, `value` TEXT NOT NULL, FOREIGN KEY(`subscore_title_id`) REFERENCES `SubscoreTitle`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`player_id`) REFERENCES `Player`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -268,27 +280,27 @@
         },
         "indices": [
           {
-            "name": "index_CategoryScore_player_id",
+            "name": "index_Subscore_player_id",
             "unique": false,
             "columnNames": [
               "player_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CategoryScore_player_id` ON `${TABLE_NAME}` (`player_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Subscore_player_id` ON `${TABLE_NAME}` (`player_id`)"
           },
           {
-            "name": "index_CategoryScore_subscore_title_id",
+            "name": "index_Subscore_subscore_title_id",
             "unique": false,
             "columnNames": [
               "subscore_title_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_CategoryScore_subscore_title_id` ON `${TABLE_NAME}` (`subscore_title_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Subscore_subscore_title_id` ON `${TABLE_NAME}` (`subscore_title_id`)"
           }
         ],
         "foreignKeys": [
           {
-            "table": "Category",
+            "table": "SubscoreTitle",
             "onDelete": "CASCADE",
             "onUpdate": "CASCADE",
             "columns": [

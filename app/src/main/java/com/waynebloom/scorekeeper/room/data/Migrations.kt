@@ -193,8 +193,40 @@ val MIGRATION_10_11 = object : Migration(10, 11) {
     }
 }
 
-val MIGRATION_13_14 = object : Migration(13, 14) {
+val MIGRATION_12_13 = object : Migration(12, 13) {
     override fun migrate(database: SupportSQLiteDatabase) {
+
+        // migrate Player.totalScore to the Subscore table
+        database.execSQL("""
+            INSERT INTO SubscoreTitle (game_id, title, position)
+            SELECT id, 'defaultMiscCategory', -1 FROM Game;
+        """.trimIndent())
+        database.execSQL("DROP TABLE IF EXISTS Temp;")
+        database.execSQL("""
+            CREATE TABLE Temp(
+                id INTEGER PRIMARY KEY,
+                player_id INTEGER,
+                subscore_title_id INTEGER,
+                total_score REAL,
+                category_sum REAL
+            );
+        """.trimIndent())
+        database.execSQL("""
+            INSERT INTO Temp (subscore_title_id, player_id, total_score, category_sum)
+            SELECT
+                (SELECT id FROM SubscoreTitle WHERE title = 'defaultMiscCategory'),
+                Player.id,
+                CAST(Player.score AS REAL),
+                SUM(CAST(Subscore.value AS REAL))
+            FROM Player JOIN Subscore ON Player.id = Subscore.player_id GROUP BY Player.id;
+        """.trimIndent())
+        database.execSQL("""
+            INSERT INTO Subscore (player_id, subscore_title_id, value)
+            SELECT player_id, subscore_title_id, CAST((total_score - category_sum) AS TEXT) FROM Temp;
+        """.trimIndent())
+        database.execSQL("DROP TABLE Temp;")
+
+        // new colors migration
         database.execSQL("""
             CREATE TABLE IF NOT EXISTS `GAME_BKP` (
                 ID INTEGER,
