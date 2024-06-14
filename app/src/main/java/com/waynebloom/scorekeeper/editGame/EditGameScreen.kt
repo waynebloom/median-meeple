@@ -81,10 +81,14 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -113,7 +117,7 @@ fun EditGameScreen(
     onCategoryDialogDismiss: () -> Unit,
     onCategoryInputChanged: (TextFieldValue, Int) -> Unit,
     onColorClick: (Int) -> Unit,
-    onDeleteCategoryClick: () -> Unit,
+    onDeleteCategoryClick: (Int) -> Unit,
     onDeleteClick: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
@@ -135,7 +139,7 @@ fun EditGameScreen(
                     name = uiState.name,
                     scoringMode = uiState.scoringMode,
                     categories = uiState.categories,
-                    indexOfCategoryReceivingInput = uiState.indexOfCategoryReceivingInput,
+                    indexOfSelectedCategory = uiState.indexOfSelectedCategory,
                     isCategoryDialogOpen = uiState.isCategoryDialogOpen,
                     colorIndex = uiState.colorIndex,
                     modifier = modifier,
@@ -166,7 +170,7 @@ fun EditGameScreen(
     name: TextFieldValue,
     scoringMode: ScoringMode,
     categories: List<CategoryDomainModel>,
-    indexOfCategoryReceivingInput: Int?,
+    indexOfSelectedCategory: Int,
     isCategoryDialogOpen: Boolean,
     colorIndex: Int,
     modifier: Modifier = Modifier,
@@ -175,7 +179,7 @@ fun EditGameScreen(
     onCategoryDialogDismiss: () -> Unit,
     onCategoryInputChanged: (TextFieldValue, Int) -> Unit,
     onColorClick: (Int) -> Unit,
-    onDeleteCategoryClick: () -> Unit,
+    onDeleteCategoryClick: (Int) -> Unit,
     onDeleteClick: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
@@ -285,7 +289,7 @@ fun EditGameScreen(
     if (isCategoryDialogOpen) {
         EditCategoriesBottomSheet(
             categories = categories,
-            indexOfCategoryReceivingInput = indexOfCategoryReceivingInput,
+            indexOfSelectedCategory = indexOfSelectedCategory,
             onCategoryClick = onCategoryClick,
             onDismiss = onCategoryDialogDismiss,
             onDeleteCategoryClick = onDeleteCategoryClick,
@@ -388,21 +392,11 @@ fun EditGameScreen(
 
                             categories.forEachIndexed { index, category ->
                                 InputChip(
-                                    selected = false,
+                                    selected = true,
                                     onClick = { onCategoryClick(index) },
                                     label = { Text(text = category.name.text) },
                                 )
                             }
-                        }
-                        Button(
-                            onClick = onEditButtonClick,
-                            modifier = Modifier
-                                .minimumInteractiveComponentSize()
-                                .padding(horizontal = Spacing.screenEdge)
-                                .fillMaxWidth(),
-                            shape = CircleShape,
-                        ) {
-                            Text(text = stringResource(id = R.string.button_edit_categories))
                         }
                     } else {
                         HelperBox(
@@ -410,17 +404,16 @@ fun EditGameScreen(
                             type = HelperBoxType.Info,
                             modifier = Modifier.padding(horizontal = Spacing.screenEdge)
                         )
-                        Button(
-                            onClick = onNewCategoryClick,
-                            modifier = Modifier
-                                .minimumInteractiveComponentSize()
-                                .padding(top = Spacing.sectionContent)
-                                .padding(horizontal = Spacing.screenEdge)
-                                .fillMaxWidth(),
-                            shape = CircleShape,
-                        ) {
-                            Text(text = stringResource(id = R.string.button_add_a_category))
-                        }
+                    }
+                    Button(
+                        onClick = onEditButtonClick,
+                        modifier = Modifier
+                            .minimumInteractiveComponentSize()
+                            .padding(top = Spacing.sectionContent)
+                            .padding(horizontal = Spacing.screenEdge)
+                            .fillMaxWidth(),
+                    ) {
+                        Text(text = stringResource(id = R.string.text_manage_categories))
                     }
                 }
             }
@@ -498,17 +491,18 @@ private fun GameDetailsSection(
 @Composable
 private fun EditCategoriesBottomSheetContent(
     categories: List<CategoryDomainModel>,
-    indexOfCategoryReceivingInput: Int?,
+    indexOfSelectedCategory: Int,
     onCategoryClick: (Int) -> Unit,
     onInputChanged: (TextFieldValue, Int) -> Unit,
-    onDeleteCategoryClick: () -> Unit,
+    onDeleteCategoryClick: (Int) -> Unit,
     onNewClick: () -> Unit,
     onDoneClick: () -> Unit,
-    onHideInputField: () -> Unit,
+    onCategoryDoneClick: () -> Unit,
     onDrag: (Offset) -> Unit,
     onDragStart: (Int) -> Unit,
     onDragEnd: () -> Unit,
 ) {
+    var showDeleteConfirmState by remember { mutableStateOf(false) }
 
     Surface(
         tonalElevation = 2.dp,
@@ -520,223 +514,254 @@ private fun EditCategoriesBottomSheetContent(
     ) {
         Column(
             Modifier
+                .padding(Spacing.dialogPadding)
                 .imePadding()
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
 
-            Text(
-                text = stringResource(R.string.button_edit_categories),
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(
-                    top = Spacing.screenEdge,
-                    start = Spacing.screenEdge,
-                    end = Spacing.sectionContent
-                )
-            )
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
-                contentPadding = PaddingValues(
-                    end = Spacing.screenEdge,
-                    top = Spacing.sectionContent,
-                ),
-                modifier = Modifier.weight(1f, fill = false)
-            ) {
-
-                itemsIndexed(
-                    key = { index, _ -> index },
-                    items = categories,
-                ) { index, category ->
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.height(Size.minTappableSize)
-                    ) {
-
-                        AnimatedContent(
-                            targetState = indexOfCategoryReceivingInput,
-                            transitionSpec = { scaleIn() togetherWith scaleOut() },
-                            label = EditGameConstants.AnimationLabel.CategoryIcon,
-                        ) {
-
-                            when (it) {
-
-                                index -> {  // confirm button
-
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_checkmark),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(start = 4.dp)
-                                            .minimumInteractiveComponentSize()
-                                            .clip(CircleShape)
-                                            .clickable(onClick = onHideInputField)
-                                            .padding(4.dp)
-                                    )
-                                }
-
-                                null -> {   // drag handle
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.ic_drag_handle),
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .padding(start = 4.dp)
-                                            .size(48.dp)
-                                            .padding(12.dp)
-                                            .pointerInput(Unit) {
-                                                detectDragGestures(
-                                                    onDragStart = { onDragStart(index) },
-                                                    onDragEnd = onDragEnd,
-                                                    onDrag = { _, dragAmount ->
-                                                        onDrag(
-                                                            dragAmount
-                                                        )
-                                                    }
-                                                )
-                                            },
-                                        tint = MaterialTheme.colorScheme.onBackground,
-                                    )
-                                }
-                                else -> {   // visual placeholder dot
-                                    Box(
-                                        Modifier
-                                            .padding(start = 4.dp)
-                                            .size(48.dp)
-                                            .padding(20.dp)
-                                            .background(
-                                                color = MaterialTheme.colorScheme.onBackground,
-                                                shape = CircleShape
-                                            )
-                                    )
-                                }
-                            }
-                        }
-
-                        if (index == indexOfCategoryReceivingInput) {
-
-                            val focusRequester = remember { FocusRequester() }
-                            val bringIntoViewRequester = remember { BringIntoViewRequester() }
-
-                            LaunchedEffect(index) {
-                                bringIntoViewRequester.bringIntoView()
-                                focusRequester.requestFocus()
-                            }
-
-                            OutlinedTextFieldWithErrorDescription(
-                                value = category.name,
-                                onValueChange = { onInputChanged(it, index) },
-                                modifier = Modifier
-                                    .weight(weight = 1f, fill = false)
-                                    .padding(start = 4.dp)
-                                    .focusRequester(focusRequester)
-                                    .bringIntoViewRequester(bringIntoViewRequester),
-                                selectAllOnFocus = true,
-                                isError = category.name.text.isBlank(),
-                                errorDescriptionResource = R.string.field_error_empty,
-                                keyboardActions = KeyboardActions { onHideInputField() },
-                                keyboardOptions = KeyboardOptions.Default.copy(
-                                    imeAction = ImeAction.Done
-                                ),
-                                shape = MaterialTheme.shapes.medium,
-                                contentPadding = PaddingValues(Spacing.sectionContent),
-                                colors = OutlinedTextFieldDefaults.colors(
-                                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                                    unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                                    focusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(
-                                        alpha = Alpha.disabled
-                                    ),
-                                ),
+            if (showDeleteConfirmState && indexOfSelectedCategory != -1) {
+                Row {
+                    val dialogTitle = buildAnnotatedString {
+                        pushStyle(
+                            style = MaterialTheme.typography.titleMedium.toSpanStyle().copy(
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.error
                             )
+                        )
+                        append("Delete ")
+                        withStyle(SpanStyle(fontStyle = FontStyle.Italic)) {
+                            append(categories[indexOfSelectedCategory].name.text)
+                        }
+                        append("?")
+                    }
+                    Icon(
+                        painter = painterResource(R.drawable.ic_error_circle),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = dialogTitle,
+                        modifier = Modifier.padding(bottom = Spacing.sectionContent)
+                    )
+                }
+                Text(
+                    text = "Any match with scores recorded in this category will be affected irreversibly.",
+                    modifier = Modifier.padding(bottom = Spacing.sectionContent)
+                )
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    TextButton(onCategoryDoneClick) {
+                        Text(text = "Cancel")
+                    }
+                    Spacer(modifier = Modifier.width(Spacing.subSectionContent))
+                    Button(
+                        onClick = { onDeleteCategoryClick(indexOfSelectedCategory) },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Rounded.Delete,
                                 contentDescription = null,
                                 modifier = Modifier
-                                    .minimumInteractiveComponentSize()
-                                    .clip(CircleShape)
-                                    .clickable(onClick = onDeleteCategoryClick)
-                                    .padding(4.dp)
+                                    .padding(end = 8.dp)
+                                    .size(18.dp)
                             )
-                        } else {
+                            Text(text = "Delete Forever")
+                        }
+                    }
+                }
+            } else {
+                Text(
+                    text = stringResource(R.string.text_manage_categories),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = Spacing.sectionContent)
+                )
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(Spacing.subSectionContent),
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .padding(bottom = Spacing.sectionContent)
+                ) {
 
-                            Box(
-                                contentAlignment = Alignment.CenterStart,
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .clip(shape = MaterialTheme.shapes.medium)
-                                    .clickable {
-                                        onCategoryClick(index)
-                                    }
-                                    .padding(start = 4.dp, end = Spacing.sectionContent)
+                    itemsIndexed(key = { index, _ -> index }, items = categories) { index, category ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.height(Size.minTappableSize)
+                        ) {
+
+                            AnimatedContent(
+                                targetState = indexOfSelectedCategory,
+                                transitionSpec = { scaleIn() togetherWith scaleOut() },
+                                label = EditGameConstants.AnimationLabel.CategoryIcon,
                             ) {
 
-                                Text(
-                                    text = category.name.text,
-                                    color = MaterialTheme.colorScheme.onBackground,
-                                    style = MaterialTheme.typography.bodyLarge
+                                when (it) {
+
+                                    index -> {  // confirm button
+
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_checkmark),
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .minimumInteractiveComponentSize()
+                                                .clip(CircleShape)
+                                                .clickable(onClick = onCategoryDoneClick)
+                                                .padding(4.dp)
+                                        )
+                                    }
+
+                                    -1 -> {   // drag handle
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.ic_drag_handle),
+                                            contentDescription = null,
+                                            modifier = Modifier
+                                                .size(48.dp)
+                                                .padding(12.dp)
+                                                .pointerInput(Unit) {
+                                                    detectDragGestures(
+                                                        onDragStart = { onDragStart(index) },
+                                                        onDragEnd = onDragEnd,
+                                                        onDrag = { _, dragAmount ->
+                                                            onDrag(
+                                                                dragAmount
+                                                            )
+                                                        }
+                                                    )
+                                                },
+                                            tint = MaterialTheme.colorScheme.onBackground,
+                                        )
+                                    }
+                                    else -> {   // visual placeholder dot
+                                        Box(
+                                            Modifier
+                                                .size(48.dp)
+                                                .padding(20.dp)
+                                                .background(
+                                                    color = MaterialTheme.colorScheme.onBackground,
+                                                    shape = CircleShape
+                                                )
+                                        )
+                                    }
+                                }
+                            }
+
+                            if (index == indexOfSelectedCategory) {
+
+                                val focusRequester = remember { FocusRequester() }
+                                val bringIntoViewRequester = remember { BringIntoViewRequester() }
+
+                                LaunchedEffect(index) {
+                                    bringIntoViewRequester.bringIntoView()
+                                    focusRequester.requestFocus()
+                                }
+
+                                OutlinedTextFieldWithErrorDescription(
+                                    value = category.name,
+                                    onValueChange = { onInputChanged(it, index) },
+                                    modifier = Modifier
+                                        .weight(weight = 1f, fill = false)
+                                        .padding(start = 4.dp)
+                                        .focusRequester(focusRequester)
+                                        .bringIntoViewRequester(bringIntoViewRequester),
+                                    selectAllOnFocus = true,
+                                    isError = category.name.text.isBlank(),
+                                    errorDescriptionResource = R.string.field_error_empty,
+                                    keyboardActions = KeyboardActions { onCategoryDoneClick() },
+                                    keyboardOptions = KeyboardOptions.Default.copy(
+                                        imeAction = ImeAction.Done
+                                    ),
+                                    shape = MaterialTheme.shapes.medium,
+                                    contentPadding = PaddingValues(Spacing.sectionContent),
+                                    colors = OutlinedTextFieldDefaults.colors(
+                                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                                        focusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(
+                                            alpha = Alpha.disabled
+                                        ),
+                                    ),
                                 )
+                                Icon(
+                                    imageVector = Icons.Rounded.Delete,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .minimumInteractiveComponentSize()
+                                        .clip(CircleShape)
+                                        .clickable {
+                                            if (category.id != -1L) {
+                                                showDeleteConfirmState = true
+                                            } else {
+                                                onDeleteCategoryClick(indexOfSelectedCategory)
+                                            }
+                                        }
+                                        .padding(4.dp)
+                                )
+                            } else {
+
+                                Box(
+                                    contentAlignment = Alignment.CenterStart,
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .clip(shape = MaterialTheme.shapes.medium)
+                                        .clickable {
+                                            onCategoryClick(index)
+                                        }
+                                        .padding(start = 4.dp, end = Spacing.sectionContent)
+                                ) {
+
+                                    Text(
+                                        text = category.name.text,
+                                        color = MaterialTheme.colorScheme.onBackground,
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                }
                             }
                         }
                     }
                 }
-            }
-            Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = Spacing.screenEdge)
-            ) {
-                Button(
-                    onClick = onNewClick,
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
-                        .padding(top = Spacing.subSectionContent, bottom = Spacing.screenEdge)
-                        .height(40.dp),
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        containerColor = MaterialTheme.colorScheme.primary,
-                    ),
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Button(
+                        onClick = onNewClick,
+                        modifier = Modifier
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .size(18.dp)
-                        )
-                        Text(text = "New")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .size(18.dp)
+                            )
+                            Text(text = "New")
+                        }
                     }
-                }
-                Spacer(modifier = Modifier.width(Spacing.sectionContent))
-                Button(
-                    onClick = onDoneClick,
-                    modifier = Modifier
-                        .minimumInteractiveComponentSize()
-                        .padding(top = Spacing.subSectionContent, bottom = Spacing.screenEdge)
-                        .height(40.dp),
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(
-                        contentColor = MaterialTheme.colorScheme.onPrimary,
-                        containerColor = MaterialTheme.colorScheme.primary,
-                    ),
-                ) {
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Spacer(modifier = Modifier.width(Spacing.sectionContent))
+                    Button(
+                        onClick = onDoneClick,
+                        modifier = Modifier
                     ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Done,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .padding(end = 8.dp)
-                                .size(18.dp)
-                        )
-                        Text(text = "Done")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Done,
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .padding(end = 8.dp)
+                                    .size(18.dp)
+                            )
+                            Text(text = "Done")
+                        }
                     }
                 }
             }
@@ -747,10 +772,10 @@ private fun EditCategoriesBottomSheetContent(
 @Composable
 private fun EditCategoriesBottomSheet(
     categories: List<CategoryDomainModel>,
-    indexOfCategoryReceivingInput: Int?,
+    indexOfSelectedCategory: Int,
     onCategoryClick: (Int) -> Unit,
     onDismiss: () -> Unit,
-    onDeleteCategoryClick: () -> Unit,
+    onDeleteCategoryClick: (Int) -> Unit,
     onDrag: (Offset) -> Unit,
     onDragEnd: () -> Unit,
     onDragStart: (Int) -> Unit,
@@ -779,7 +804,7 @@ private fun EditCategoriesBottomSheet(
 
             EditCategoriesBottomSheetContent(
                 categories,
-                indexOfCategoryReceivingInput,
+                indexOfSelectedCategory,
                 onCategoryClick,
                 onInputChanged,
                 onDeleteCategoryClick,
@@ -917,7 +942,7 @@ private fun EditingCategories() {
     MedianMeepleTheme {
         EditCategoriesBottomSheet(
             categories = uiState.categories,
-            indexOfCategoryReceivingInput = uiState.indexOfCategoryReceivingInput,
+            indexOfSelectedCategory = uiState.indexOfSelectedCategory,
             onCategoryClick = {},
             onDismiss = {},
             onDeleteCategoryClick = {},

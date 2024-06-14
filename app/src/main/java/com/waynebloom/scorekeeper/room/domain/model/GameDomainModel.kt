@@ -5,7 +5,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.enums.ScoringMode
 
 data class GameDomainModel(
-    val id: Long = 0,
+    val id: Long = -1,
     val categories: List<CategoryDomainModel> = listOf(),
     val displayColorIndex: Int = 0,
     val matches: List<MatchDomainModel> = listOf(),

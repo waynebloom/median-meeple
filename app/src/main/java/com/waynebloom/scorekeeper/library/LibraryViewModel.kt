@@ -5,15 +5,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.admob.domain.usecase.GetMultipleAdsAsFlow
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.ext.toShortFormatString
-import com.waynebloom.scorekeeper.navigation.Destination
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGamesWithRelationsAsFlow
-import com.waynebloom.scorekeeper.room.domain.usecase.InsertEmptyGame
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,7 +26,6 @@ import javax.inject.Inject
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
     getGamesWithRelationsAsFlow: GetGamesWithRelationsAsFlow,
-    private val insertEmptyGame: InsertEmptyGame,
     mutableStateFlowFactory: MutableStateFlowFactory,
     getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
 ): ViewModel() {
@@ -77,11 +73,6 @@ class LibraryViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    fun addEmptyGame(navController: NavHostController) = viewModelScope.launch {
-        val id = insertEmptyGame()
-        navController.navigate("${Destination.EditGame.route}/$id")
     }
 
     fun onSearchInputChanged(value: TextFieldValue) = viewModelState.update {

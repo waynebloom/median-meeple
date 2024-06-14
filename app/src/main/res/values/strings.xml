@@ -65,8 +65,7 @@
     <!-- region EditGameScreen -->
 
     <string name="a11y_categories_close_button">Close scoring categories editor screen</string>
-    <string name="button_edit_categories">Edit Categories</string>
-    <string name="button_add_a_category">Add a Category</string>
+    <string name="text_manage_categories">Manage Categories</string>
     <string name="header_scoring_categories">Scoring Categories</string>
     <string name="header_game_details">Game Details</string>
     <string name="header_display_color">Display Color</string>

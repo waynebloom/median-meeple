@@ -1,7 +1,7 @@
 package com.waynebloom.scorekeeper.room.domain.model
 
 data class MatchDomainModel(
-    val id: Long = 0,
+    val id: Long = -1,
     val gameId: Long = -1,
     val notes: String = "",
     val location: String = "",

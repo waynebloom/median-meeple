@@ -12,7 +12,6 @@ class InsertCategory @Inject constructor(
     suspend operator fun invoke(category: CategoryDomainModel, gameId: Long) =
         categoryRepository.insert(
             CategoryDataModel(
-                id = category.id,
                 gameId = gameId,
                 name = category.name.text,
                 position = category.position

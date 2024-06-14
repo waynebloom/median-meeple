@@ -43,6 +43,10 @@ class SingleGameViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
+    // TODO: FOR RELEASE
+    //  - Scoring section data is not displayed
+    //  - Do a deep check to confirm that all data is being calculated correctly
+
     private val viewModelState: MutableStateFlow<SingleGameViewModelState>
     val matchesForGameUiState: StateFlow<MatchesForGameUiState>
     val statisticsForGameUiState: StateFlow<StatisticsForGameUiState>
@@ -71,12 +75,25 @@ class SingleGameViewModel @Inject constructor(
                     return@collectLatest
                 }
 
+                val categories = latest.categories.map { category ->
+                    if (category.position == -1) {
+                        val name = if (latest.categories.size > 1) {
+                            "Misc"
+                        } else {
+                            "Total"
+                        }
+                        category.copy(name = TextFieldValue(name))
+                    } else {
+                        category
+                    }
+                }
+
                 viewModelState.update {
                     it.copy(
                         loading = false,
                         nameOfGame = latest.name.text,
                         matches = latest.matches,
-                        categories = latest.categories,
+                        categories = categories,
                         scoringMode = latest.scoringMode,
                     )
                 }
@@ -239,7 +256,11 @@ data class SingleGameViewModelState(
         .map { player ->
             ScoringPlayerDomainModel(
                 name = player.name,
-                score = player.categoryScores[category.position].scoreAsBigDecimal ?: BigDecimal.ZERO
+                score = player
+                    .categoryScores
+                    .find { it.categoryId == category.id }
+                    ?.scoreAsBigDecimal
+                    ?: BigDecimal.ZERO
             )
         }
 

@@ -32,8 +32,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.math.BigDecimal
+import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -55,13 +55,15 @@ class ScoreCardViewModel @Inject constructor(
     private val deleteMatch: DeleteMatch,
 ): ViewModel() {
 
+    // TODO: POST-RELEASE
+    //  - Allow a user to hide one or more categories.
+    //  - Allow a user to un-hide the misc category.
+
     private val viewModelState: MutableStateFlow<ScoreCardViewModelState>
     val uiState: StateFlow<ScoreCardUiState>
 
     val gameId = savedStateHandle.get<Long>("gameId")!!
     private var matchId = savedStateHandle.get<Long>("matchId")!!
-    private lateinit var dbPlayers: List<PlayerDomainModel>
-    private lateinit var dbMatch: MatchDomainModel
     private lateinit var dbCategories: List<CategoryDomainModel>
 
     init {
@@ -74,51 +76,104 @@ class ScoreCardViewModel @Inject constructor(
                 initialValue = viewModelState.value.toUiState())
 
         viewModelScope.launch {
+            val game = getGame(gameId)
+            dbCategories = getCategoriesByGameId(gameId)
+            dbCategories = dbCategories
 
-            if (matchId == -1L) {
-                matchId = insertMatch(MatchDomainModel(gameId = gameId))
-            }
-
-            dbPlayers = getPlayersByMatchIdWithRelations(matchId)
-            dbMatch = getMatch(matchId)
-            dbCategories = getCategoriesByGameId(gameId).sortedBy { it.position }
-            val scoreMatrix = dbPlayers.map { player ->
-                dbCategories.map { category ->
-                    val existingScore = player.categoryScores.find {
-                        it.categoryId == category.id
+                // Display a readable name for the default category.
+                .map { category ->
+                    if (category.position == -1) {
+                        val name = if (dbCategories.size > 1) {
+                            "Misc"
+                        } else {
+                            "Total"
+                        }
+                        category.copy(name = TextFieldValue(name))
+                    } else {
+                        category
                     }
-                    existingScore ?: CategoryScoreDomainModel(
-                        categoryId = category.id,
-                        playerId = player.id
+                }
+
+                // Moving the default category to the end of the list.
+                .sortedBy {
+                    if (it.position > -1) {
+                        it.position
+                    } else {
+                        Int.MAX_VALUE
+                    }
+                }
+
+            if (matchId != -1L) {
+                var players = getPlayersByMatchIdWithRelations(matchId)
+                val match = getMatch(matchId)
+                val scoreCard = players.map { player ->
+                    dbCategories.map { category ->
+                        val existingScore = player.categoryScores.find {
+                            it.categoryId == category.id
+                        }
+                        existingScore ?: CategoryScoreDomainModel(
+                            categoryId = category.id,
+                            playerId = player.id
+                        )
+                    }
+                }
+                val totals = players.map { player ->
+                    player.categoryScores.sumOf { score ->
+                        score.scoreAsBigDecimal ?: BigDecimal.ZERO
+                    }
+                }
+
+                val miscDataExists = players.flatMap { it.categoryScores }
+                    .filter { categoryScore ->
+                        // The default category is forced to be the last in the list.
+                        categoryScore.categoryId == dbCategories.last().id
+                    }
+                    .any {
+                        (it.scoreAsBigDecimal ?: BigDecimal.ZERO) != BigDecimal.ZERO
+                    }
+
+                // The default category should be hidden by default for games with custom categories.
+                // If it is the only category, it should be shown.
+                val hiddenCategories = if (miscDataExists || dbCategories.size == 1) {
+                    listOf()
+                } else {
+                    listOf(dbCategories.lastIndex)
+                }
+                players = if (game.scoringMode == ScoringMode.Manual) {
+                    players
+                } else {
+                    assignRanksByTotalScore(players, totals)
+                }
+
+                viewModelState.update {
+                    it.copy(
+                        loading = false,
+                        totals = totals,
+                        game = game,
+                        indexOfMatch = getIndexOfMatch(gameId, matchId) + 1,
+                        dateMillis = match.dateMillis,
+                        location = match.location,
+                        notes = TextFieldValue(match.notes),
+                        players = players,
+                        categoryNames = dbCategories.map { category -> category.name.text },
+                        hiddenCategories = hiddenCategories,
+                        scoreCard = scoreCard,
+                        manualRanks = game.scoringMode == ScoringMode.Manual
                     )
                 }
-            }
-            val game = getGame(gameId)
-            val totals = dbPlayers.map { player ->
-                player.categoryScores.sumOf { score ->
-                    score.scoreAsBigDecimal ?: BigDecimal.ZERO
-                }
-            }
-            val players = if (game.scoringMode == ScoringMode.Manual) {
-                dbPlayers
             } else {
-                assignRanksByTotalScore(dbPlayers, totals)
-            }
-
-            viewModelState.update {
-                it.copy(
-                    loading = false,
-                    totals = totals,
-                    game = game,
-                    indexOfMatch = getIndexOfMatch(gameId, matchId) + 1,
-                    dateMillis = dbMatch.dateMillis,
-                    location = dbMatch.location,
-                    notes = TextFieldValue(dbMatch.notes),
-                    players = players,
-                    categoryNames = dbCategories.map { category -> category.name.text },
-                    scoreCard = scoreMatrix,
-                    manualRanks = game.scoringMode == ScoringMode.Manual
-                )
+                viewModelState.update { state ->
+                    state.copy(
+                        loading = false,
+                        game = game,
+                        indexOfMatch = getIndexOfMatch(gameId, matchId) + 1,
+                        dateMillis = Date().time,
+                        categoryNames = dbCategories.map { category ->
+                            category.name.text
+                        },
+                        manualRanks = game.scoringMode == ScoringMode.Manual
+                    )
+                }
             }
         }
     }
@@ -154,7 +209,7 @@ class ScoreCardViewModel @Inject constructor(
             )
         }
         val newPlayers = it.players.plus(
-            PlayerDomainModel(matchId = matchId, name = name)
+            PlayerDomainModel(name = name)
         )
         it.copy(totals = newTotals, players = newPlayers, scoreCard = newScoreCard)
     }
@@ -241,19 +296,30 @@ class ScoreCardViewModel @Inject constructor(
 
     fun onSaveClick(onFinish: () -> Unit) = viewModelScope.launch {
         viewModelState.value.let { state ->
-            updateMatch(match = MatchDomainModel(
-                id = matchId,
-                gameId = gameId,
-                notes = state.notes.text,
-                location = state.location,
-                dateMillis = state.dateMillis,
-            ))
+            if (matchId == -1L) {
+                matchId = insertMatch(
+                    MatchDomainModel(
+                        gameId = gameId,
+                        notes = state.notes.text,
+                        location = state.location,
+                        dateMillis = state.dateMillis,
+                    )
+                )
+            } else {
+                updateMatch(
+                    MatchDomainModel(
+                        id = matchId,
+                        gameId = gameId,
+                        notes = state.notes.text,
+                        location = state.location,
+                        dateMillis = state.dateMillis,
+                    )
+                )
+            }
 
             state.players.forEachIndexed { colIndex, player ->
                 if (player.id == -1L) {
-                    val playerId = runBlocking {
-                        insertPlayer(player)
-                    }
+                    val playerId = insertPlayer(player.copy(matchId = matchId))
 
                     state.scoreCard[colIndex].forEachIndexed { rowIndex, score ->
                         insertCategoryScore(score.copy(
@@ -288,6 +354,8 @@ class ScoreCardViewModel @Inject constructor(
 
 private data class ScoreCardViewModelState(
     val loading: Boolean = true,
+    val hiddenCategories: List<Int> = listOf(),
+
     val totals: List<BigDecimal> = listOf(),
     val game: GameDomainModel = GameDomainModel(),
     val indexOfMatch: Int = 0,
@@ -314,6 +382,7 @@ private data class ScoreCardViewModelState(
             notes = notes,
             players = players,
             categoryNames = categoryNames,
+            hiddenCategories = hiddenCategories,
             scoreCard = scoreCard,
             playerIndexToChange = playerIndexToChange,
             manualRanks = manualRanks,
@@ -335,6 +404,7 @@ sealed interface ScoreCardUiState {
         val notes: TextFieldValue,
         val players: List<PlayerDomainModel>,
         val categoryNames: List<String>,
+        val hiddenCategories: List<Int>,
         val scoreCard: List<List<CategoryScoreDomainModel>>,
         val playerIndexToChange: Int,
         val manualRanks: Boolean,

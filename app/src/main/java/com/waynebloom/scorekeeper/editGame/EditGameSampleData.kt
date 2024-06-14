@@ -42,7 +42,7 @@ object EditGameSampleData {
         categories = Categories,
         colorIndex = game.displayColorIndex,
         dragState = DragState(),
-        indexOfCategoryReceivingInput = null,
+        indexOfSelectedCategory = -1,
         isCategoryDialogOpen = false,
         name = game.name,
         scoringMode = game.scoringMode,
@@ -52,7 +52,7 @@ object EditGameSampleData {
         categories = listOf(),
         colorIndex = game.displayColorIndex,
         dragState = DragState(),
-        indexOfCategoryReceivingInput = null,
+        indexOfSelectedCategory = -1,
         isCategoryDialogOpen = false,
         name = game.name,
         scoringMode = game.scoringMode,
@@ -60,7 +60,7 @@ object EditGameSampleData {
     )
     val CategoryDialog = Default.copy(
         colorIndex = game.displayColorIndex,
-        indexOfCategoryReceivingInput = 1,
+        indexOfSelectedCategory = 1,
         isCategoryDialogOpen = true,
         name = game.name,
         scoringMode = game.scoringMode

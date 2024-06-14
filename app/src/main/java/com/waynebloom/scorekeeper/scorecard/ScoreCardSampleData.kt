@@ -62,6 +62,7 @@ object ScoreCardSampleData {
             PlayerDomainModel(name = it, rank = index)
         },
         categoryNames = listOf("Red", "Orange", "Yellow", "Green", "Blue"),
+        hiddenCategories = listOf(),
         scoreCard = shortScoreCard,
         playerIndexToChange = 0,
         manualRanks = false,

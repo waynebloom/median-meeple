@@ -134,6 +134,7 @@ fun ScoreCardScreen(
                 gameName = uiState.game.name.text,
                 matchNumber = uiState.indexOfMatch,
                 categoryNames = uiState.categoryNames,
+                hiddenCategories = uiState.hiddenCategories,
                 players = uiState.players,
                 scoreCard = uiState.scoreCard,
                 totals = uiState.totals,
@@ -167,6 +168,7 @@ private fun ScoreCardScreen(
     gameName: String,
     matchNumber: Int,
     categoryNames: List<String>,
+    hiddenCategories: List<Int>,
     players: List<PlayerDomainModel>,
     scoreCard: List<List<CategoryScoreDomainModel>>,
     totals: List<BigDecimal>,
@@ -759,7 +761,40 @@ private fun ScoreCardScreen(
                                         VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
                                     }
 
-                                    categoryNames.forEach {
+                                    categoryNames
+                                        .filterIndexed { i, _ -> !hiddenCategories.contains(i) }
+                                        .forEach {
+                                            Row(
+                                                horizontalArrangement = Arrangement.End,
+                                                modifier = Modifier
+                                                    .height(IntrinsicSize.Max)
+                                                    .fillMaxWidth()
+                                            ) {
+                                                Box(
+                                                    contentAlignment = Alignment.CenterEnd,
+                                                    modifier = Modifier
+                                                        .padding(
+                                                            top = Dimensions.Spacing.sectionContent / 2,
+                                                            start = Dimensions.Spacing.screenEdge,
+                                                            bottom = Dimensions.Spacing.sectionContent / 2,
+                                                            end = Dimensions.Spacing.sectionContent / 2
+                                                        )
+                                                        .heightIn(min = 48.dp)
+                                                        .widthIn(min = 48.dp, max = 96.dp),
+                                                ) {
+                                                    Text(
+                                                        text = it,
+                                                        style = MaterialTheme.typography.bodyLarge,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        overflow = TextOverflow.Ellipsis,
+                                                        maxLines = 1,
+                                                    )
+                                                }
+                                                VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
+                                            }
+                                        }
+
+                                    if (categoryNames.size > 1) {
                                         Row(
                                             horizontalArrangement = Arrangement.End,
                                             modifier = Modifier
@@ -775,46 +810,17 @@ private fun ScoreCardScreen(
                                                         bottom = Dimensions.Spacing.sectionContent / 2,
                                                         end = Dimensions.Spacing.sectionContent / 2
                                                     )
-                                                    .heightIn(min = 48.dp)
-                                                    .widthIn(min = 48.dp, max = 96.dp),
+                                                    .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp),
                                             ) {
                                                 Text(
-                                                    text = it,
+                                                    text = stringResource(R.string.text_total),
                                                     style = MaterialTheme.typography.bodyLarge,
                                                     fontWeight = FontWeight.SemiBold,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    maxLines = 1,
+                                                    fontStyle = FontStyle.Italic
                                                 )
                                             }
                                             VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
                                         }
-                                    }
-
-                                    Row(
-                                        horizontalArrangement = Arrangement.End,
-                                        modifier = Modifier
-                                            .height(IntrinsicSize.Max)
-                                            .fillMaxWidth()
-                                    ) {
-                                        Box(
-                                            contentAlignment = Alignment.CenterEnd,
-                                            modifier = Modifier
-                                                .padding(
-                                                    top = Dimensions.Spacing.sectionContent / 2,
-                                                    start = Dimensions.Spacing.screenEdge,
-                                                    bottom = Dimensions.Spacing.sectionContent / 2,
-                                                    end = Dimensions.Spacing.sectionContent / 2
-                                                )
-                                                .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp),
-                                        ) {
-                                            Text(
-                                                text = stringResource(R.string.text_total),
-                                                style = MaterialTheme.typography.bodyLarge,
-                                                fontWeight = FontWeight.SemiBold,
-                                                fontStyle = FontStyle.Italic
-                                            )
-                                        }
-                                        VerticalDivider(color = MaterialTheme.colorScheme.onSurface)
                                     }
                                 }
                             }
@@ -836,7 +842,8 @@ private fun ScoreCardScreen(
                                 ScoreColumn(
                                     playerName = player.name,
                                     playerRank = player.rank,
-                                    scores = scoreCard[index],
+                                    scores = scoreCard[index]
+                                        .filterIndexed { i, _ -> !hiddenCategories.contains(i) },
                                     total = totals[index].toShortFormatString(),
                                     modifier = Modifier.animateItemPlacement(),
                                     onPlayerClick = {
@@ -879,7 +886,7 @@ private fun ScoreColumn(
     onPlayerClick: () -> Unit,
     onCellChange: (TextFieldValue, col: Int) -> Unit
 ) {
-    val totalScoreBackground = if (playerRank == 0) {
+    val totalScoreHighlightColor = if (playerRank == 0) {
         MaterialTheme.colorScheme.secondaryContainer
     } else {
         Color.Transparent
@@ -920,12 +927,22 @@ private fun ScoreColumn(
         }
 
         scores.forEachIndexed { index, score ->
-            TextFieldCell(
-                value = score.scoreAsTextFieldValue,
-                onValueChange = { onCellChange(it, index) },
-                isError = score.scoreAsTextFieldValue.text.isNotBlank() && score.scoreAsBigDecimal == null,
-                modifier = Modifier.padding(Dimensions.Spacing.sectionContent / 2),
-            )
+            if (scores.size <= 1) {
+                TextFieldCell(
+                    value = score.scoreAsTextFieldValue,
+                    onValueChange = { onCellChange(it, index) },
+                    modifier = Modifier.padding(Dimensions.Spacing.sectionContent / 2),
+                    unfocusedBackgroundColor = totalScoreHighlightColor,
+                    isError = score.scoreAsTextFieldValue.text.isNotBlank() && score.scoreAsBigDecimal == null,
+                )
+            } else {
+                TextFieldCell(
+                    value = score.scoreAsTextFieldValue,
+                    onValueChange = { onCellChange(it, index) },
+                    modifier = Modifier.padding(Dimensions.Spacing.sectionContent / 2),
+                    isError = score.scoreAsTextFieldValue.text.isNotBlank() && score.scoreAsBigDecimal == null,
+                )
+            }
         }
 
         // TODO: implement a winner indicator for when there is only 1 category
@@ -933,7 +950,7 @@ private fun ScoreColumn(
         if (scores.size > 1) {
             Surface(
                 shape = CircleShape,
-                color = totalScoreBackground,
+                color = totalScoreHighlightColor,
                 modifier = Modifier
                     .padding(Dimensions.Spacing.sectionContent / 2)
                     .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp)
@@ -958,6 +975,7 @@ fun TextFieldCell(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     modifier: Modifier = Modifier,
+    unfocusedBackgroundColor: Color = Color.Transparent,
     isError: Boolean = false,
 ) {
 
@@ -965,7 +983,7 @@ fun TextFieldCell(
     val backgroundColor = when {
         hasFocus -> MaterialTheme.colorScheme.background
         isError -> MaterialTheme.colorScheme.error.copy(alpha = 0.2f)
-        else -> Color.Transparent
+        else -> unfocusedBackgroundColor
     }
     val textStyle = if (isError) {
         MaterialTheme.typography.bodyLarge.copy(
