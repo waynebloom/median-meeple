@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 13,
-    "identityHash": "646e25570027b0b95e7522129092fd1e",
+    "version": 14,
+    "identityHash": "6989b53415ad769ee428935369e48620",
     "entities": [
       {
         "tableName": "Game",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `color` TEXT NOT NULL, `name` TEXT NOT NULL, `scoring_mode` INTEGER NOT NULL DEFAULT 1)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `color` INTEGER NOT NULL, `name` TEXT NOT NULL, `scoring_mode` INTEGER NOT NULL DEFAULT 1)",
         "fields": [
           {
             "fieldPath": "id",
@@ -45,7 +45,7 @@
       },
       {
         "tableName": "Match",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_owner_id` INTEGER NOT NULL, `match_notes` TEXT NOT NULL, `time_modified` INTEGER NOT NULL, FOREIGN KEY(`game_owner_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_owner_id` INTEGER NOT NULL, `match_notes` TEXT NOT NULL, `date_millis` INTEGER NOT NULL, `location` TEXT NOT NULL DEFAULT '', FOREIGN KEY(`game_owner_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -66,10 +66,17 @@
             "notNull": true
           },
           {
-            "fieldPath": "timeModified",
-            "columnName": "time_modified",
+            "fieldPath": "dateMillis",
+            "columnName": "date_millis",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "location",
+            "columnName": "location",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
           }
         ],
         "primaryKey": {
@@ -105,7 +112,7 @@
       },
       {
         "tableName": "Player",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `match_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, `score` TEXT NOT NULL, `show_detailed_score` INTEGER NOT NULL, FOREIGN KEY(`match_id`) REFERENCES `Match`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL DEFAULT 0, `match_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, FOREIGN KEY(`match_id`) REFERENCES `Match`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -129,18 +136,6 @@
           {
             "fieldPath": "position",
             "columnName": "position",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "totalScore",
-            "columnName": "score",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "showDetailedScore",
-            "columnName": "show_detailed_score",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -177,7 +172,7 @@
         ]
       },
       {
-        "tableName": "SubscoreTitle",
+        "tableName": "Category",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `game_id` INTEGER NOT NULL, `name` TEXT NOT NULL, `position` INTEGER NOT NULL, FOREIGN KEY(`game_id`) REFERENCES `Game`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
@@ -194,7 +189,7 @@
           },
           {
             "fieldPath": "name",
-            "columnName": "title",
+            "columnName": "name",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -213,13 +208,13 @@
         },
         "indices": [
           {
-            "name": "index_SubscoreTitle_game_id",
+            "name": "index_Category_game_id",
             "unique": false,
             "columnNames": [
               "game_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_SubscoreTitle_game_id` ON `${TABLE_NAME}` (`game_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_Category_game_id` ON `${TABLE_NAME}` (`game_id`)"
           }
         ],
         "foreignKeys": [
@@ -237,8 +232,8 @@
         ]
       },
       {
-        "tableName": "Subscore",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `subscore_title_id` INTEGER NOT NULL, `player_id` INTEGER NOT NULL, `value` TEXT NOT NULL, FOREIGN KEY(`subscore_title_id`) REFERENCES `SubscoreTitle`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`player_id`) REFERENCES `Player`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
+        "tableName": "CategoryScore",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `subscore_title_id` INTEGER NOT NULL, `player_id` INTEGER NOT NULL, `value` TEXT NOT NULL, FOREIGN KEY(`subscore_title_id`) REFERENCES `Category`(`id`) ON UPDATE CASCADE ON DELETE CASCADE , FOREIGN KEY(`player_id`) REFERENCES `Player`(`id`) ON UPDATE CASCADE ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "id",
@@ -273,27 +268,27 @@
         },
         "indices": [
           {
-            "name": "index_Subscore_player_id",
+            "name": "index_CategoryScore_player_id",
             "unique": false,
             "columnNames": [
               "player_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_Subscore_player_id` ON `${TABLE_NAME}` (`player_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CategoryScore_player_id` ON `${TABLE_NAME}` (`player_id`)"
           },
           {
-            "name": "index_Subscore_subscore_title_id",
+            "name": "index_CategoryScore_subscore_title_id",
             "unique": false,
             "columnNames": [
               "subscore_title_id"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_Subscore_subscore_title_id` ON `${TABLE_NAME}` (`subscore_title_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_CategoryScore_subscore_title_id` ON `${TABLE_NAME}` (`subscore_title_id`)"
           }
         ],
         "foreignKeys": [
           {
-            "table": "SubscoreTitle",
+            "table": "Category",
             "onDelete": "CASCADE",
             "onUpdate": "CASCADE",
             "columns": [
@@ -320,7 +315,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '646e25570027b0b95e7522129092fd1e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6989b53415ad769ee428935369e48620')"
     ]
   }
 }
