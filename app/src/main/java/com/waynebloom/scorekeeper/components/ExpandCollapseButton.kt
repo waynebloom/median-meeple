@@ -2,81 +2,77 @@ package com.waynebloom.scorekeeper.components
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions
-import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
-import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
-import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
+import com.waynebloom.scorekeeper.theme.Animation.sizeTransformWithDelay
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ExpandCollapseButton(
     text: String?,
     expanded: Boolean,
-    themeColor: Color,
-    onTap: () -> Unit,
+    onClick: () -> Unit,
 ) {
 
-    Box(
-        contentAlignment = Alignment.Center,
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = CircleShape,
         modifier = Modifier
-            .defaultMinSize(
-                minWidth = Dimensions.Size.minTappableSize,
-                minHeight = Dimensions.Size.minTappableSize)
-            .clip(MaterialTheme.shapes.medium)
-            .background(MaterialTheme.colors.surface)
-            .clickable { onTap() }
+            .minimumInteractiveComponentSize()
+            .clip(CircleShape)
+            .clickable(onClick = onClick)
     ) {
 
-        AnimatedContent(
-            targetState = expanded,
-            transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
-        ) {
+        Box(contentAlignment = Alignment.Center) {
+            AnimatedContent(
+                targetState = expanded,
+                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+                label = "",
+            ) { buttonIsExpanded ->
+                if (buttonIsExpanded) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_chevron_up),
+                        contentDescription = null,
+                        modifier = Modifier.padding(Dimensions.Spacing.sectionContent).size(20.dp)
+                    )
+                } else {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = Dimensions.Spacing.sectionContent, vertical = 8.dp)
+                    ) {
+                        if (text != null) {
+                            Text(
+                                text = text,
+                                modifier = Modifier.padding(end = 4.dp)
+                            )
+                        }
 
-            if (it) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_chevron_up),
-                    contentDescription = null,
-                    tint = themeColor,
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .size(24.dp))
-            } else {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                ) {
-                    if (text != null) {
-
-                        Text(
-                            text = text,
-                            modifier = Modifier.padding(end = 4.dp)
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_chevron_down),
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
-
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_chevron_down),
-                        contentDescription = null,
-                        tint = themeColor,
-                        modifier = Modifier.size(24.dp))
                 }
             }
         }
@@ -87,6 +83,10 @@ fun ExpandCollapseButton(
 @Composable
 fun ExpandCollapseButtonPreview() {
     MedianMeepleTheme {
-        ExpandCollapseButtonPreview()
+        ExpandCollapseButton(
+            text = "Expand",
+            expanded = false,
+            onClick = {}
+        )
     }
 }

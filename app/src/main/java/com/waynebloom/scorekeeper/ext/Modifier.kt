@@ -1,6 +1,10 @@
 package com.waynebloom.scorekeeper.ext
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.focus.onFocusChanged
@@ -27,11 +31,13 @@ fun Modifier.onFocusSelectAll(
                 }
             }
         }
-        Modifier.onFocusChanged { focusState ->
-            if (focusState.isFocused) {
-                triggerEffect = triggerEffect?.let { bool ->
-                    !bool
-                } ?: true
+        this.then(
+            Modifier.onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                    triggerEffect = triggerEffect?.let { bool ->
+                        !bool
+                    } ?: true
+                }
             }
-        }
+        )
     }

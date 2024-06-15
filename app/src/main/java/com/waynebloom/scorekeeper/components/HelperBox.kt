@@ -1,35 +1,25 @@
 package com.waynebloom.scorekeeper.components
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
-
-enum class HelperBoxType {
-    Info,
-    Error,
-    Missing;
-}
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun HelperBox(
@@ -43,26 +33,47 @@ fun HelperBox(
         HelperBoxType.Error -> painterResource(id = R.drawable.ic_error_circle)
         HelperBoxType.Missing -> painterResource(id = R.drawable.ic_help_circle)
     }
-    val backgroundColor = when(type) {
-        HelperBoxType.Error -> MaterialTheme.colors.error
-        HelperBoxType.Missing -> MaterialTheme.colors.surface
-        else -> Color.Transparent
+    val cardColors = when(type) {
+        HelperBoxType.Error -> CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer
+        )
+        HelperBoxType.Missing -> CardDefaults.cardColors()
+        else -> CardDefaults.cardColors()
     }
-    val foregroundColor = when(type) {
-        HelperBoxType.Error -> MaterialTheme.colors.onError
-        HelperBoxType.Missing -> MaterialTheme.colors.onSurface
-        else -> MaterialTheme.colors.onBackground
-    }
-    val borderColor = if (type != HelperBoxType.Info) backgroundColor else foregroundColor
 
-    Box(
+    Card(
+        colors = cardColors,
+        modifier = modifier.fillMaxWidth()
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+            modifier = Modifier.padding(Spacing.sectionContent),
+        ) {
+
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                modifier = Modifier.align(Alignment.Top)
+            )
+
+            Text(
+                text = message,
+                maxLines = maxLines,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
+        }
+    }
+    /*Box(
         contentAlignment = Alignment.CenterStart,
         modifier = modifier
             .border(
                 width = 1.dp,
                 color = borderColor,
-                shape = MaterialTheme.shapes.small)
-            .clip(MaterialTheme.shapes.small)
+                shape = MaterialTheme.shapes.medium
+            )
+            .clip(MaterialTheme.shapes.medium)
             .background(color = backgroundColor)
             .fillMaxWidth()
     ) {
@@ -85,48 +96,61 @@ fun HelperBox(
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.CenterVertically))
         }
-    }
+    }*/
 }
 
-@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Short")
+enum class HelperBoxType {
+    Info,
+    Error,
+    Missing;
+}
+
+@Preview(name = "Short, Light")
+@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Short, Dark")
 @Composable
 fun HelperBoxShortPreview() {
     MedianMeepleTheme {
         
-        Surface(color = MaterialTheme.colors.background) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             HelperBox(message = "This is a test message.", type = HelperBoxType.Info)
         }
     }
 }
 
-@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Long")
+@Preview(name = "Long, Light")
+@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Long, Dark")
 @Composable
 fun HelperBoxLongPreview() {
     MedianMeepleTheme {
 
-        Surface(color = MaterialTheme.colors.background) {
-            HelperBox(message = "This is a long test message. It should span more than one line.", type = HelperBoxType.Info)
+        Surface(color = MaterialTheme.colorScheme.background) {
+            HelperBox(
+                message = "This is a long test message. It should span more than one line.",
+                type = HelperBoxType.Info
+            )
         }
     }
 }
 
-@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Missing")
+@Preview(name = "Missing, Light")
+@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Missing, Dark")
 @Composable
 fun HelperBoxMissingPreview() {
     MedianMeepleTheme {
 
-        Surface(color = MaterialTheme.colors.background) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             HelperBox(message = "This is a test message.", type = HelperBoxType.Missing)
         }
     }
 }
 
-@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Error")
+@Preview(name = "Error, Light")
+@Preview(uiMode = UI_MODE_NIGHT_YES, name = "Error, Dark")
 @Composable
 fun HelperBoxErrorPreview() {
     MedianMeepleTheme {
 
-        Surface(color = MaterialTheme.colors.background) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             HelperBox(message = "This is a test message.", type = HelperBoxType.Error)
         }
     }

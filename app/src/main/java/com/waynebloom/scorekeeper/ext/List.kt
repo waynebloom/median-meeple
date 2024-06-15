@@ -1,39 +1,32 @@
 package com.waynebloom.scorekeeper.ext
 
-import com.waynebloom.scorekeeper.data.model.player.PlayerObject
 import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import java.math.BigDecimal
 
-fun <T> List<T>.statefulUpdateElement(predicate: (T) -> Boolean, update: (T) -> Unit): List<T> {
-    return map {
-        if (predicate(it)) {
-            update(it)
-            it
-        } else it
-    }
+/**
+ * Perform a transformation on the element at the specified index.
+ *
+ * @param index the index of the element being transformed
+ * @param transformation the transformation to perform
+ */
+fun <T> MutableList<T>.transformElement(index: Int, transformation: (T) -> T) {
+    this[index] = transformation(this[index])
 }
 
-fun <T> List<T>.toAdSeparatedListlets(): List<List<T>> {
-    val result = mutableListOf<List<T>>()
-
-    if (size <= 5) {
-        return listOf(this)
-    }
-
-    result.add(subList(0, 5))
-    for (i in 5..size step 10) {
-        if (i + 10 > lastIndex) {
-            result.add(subList(i, size))
-        } else {
-            result.add(subList(i, i + 10))
-        }
-    }
-
-    return result
-}
-
-fun List<PlayerObject>.getWinningPlayer(scoringMode: ScoringMode) =
+fun List<PlayerDomainModel>.getWinningPlayer(scoringMode: ScoringMode) =
     when(scoringMode) {
-        ScoringMode.Ascending -> minBy { it.entity.score.toBigDecimal() }
-        ScoringMode.Descending -> maxBy { it.entity.score.toBigDecimal() }
-        ScoringMode.Manual -> minBy { it.entity.position }
+        ScoringMode.Ascending -> minBy { player ->
+            player.categoryScores.sumOf {
+                it.scoreAsBigDecimal ?: BigDecimal.ZERO
+            }
+        }
+        ScoringMode.Descending -> maxBy { player ->
+            player.categoryScores.sumOf {
+                it.scoreAsBigDecimal ?: BigDecimal.ZERO
+            }
+        }
+        ScoringMode.Manual -> minBy {
+            it.rank
+        }
     }
