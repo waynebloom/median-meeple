@@ -30,6 +30,7 @@ class MatchDataMapper @Inject constructor(
         categories: Map<Long, CategoryDomainModel>
     ) = MatchDomainModel(
         id = matchData.entity.id,
+        gameId = matchData.entity.gameId,
         notes = matchData.entity.notes,
         location = matchData.entity.location,
         dateMillis = matchData.entity.dateMillis,

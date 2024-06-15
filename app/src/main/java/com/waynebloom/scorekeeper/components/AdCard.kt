@@ -49,7 +49,7 @@ fun LargeImageAdCard(
         shape = MaterialTheme.shapes.medium.copy(bottomEnd = CornerSize(32.dp)),
         tonalElevation = 2.dp,
         modifier = modifier
-            .heightIn(min = 300.dp)
+            .heightIn(min = 280.dp)
             .fillMaxWidth()
     ) {
         if (ad != null) {
@@ -73,8 +73,7 @@ fun LargeImageAdCard(
                         setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
                             override fun onChildViewAdded(parent: View?, child: View?) {
                                 if (child is ImageView) {
-                                    child.adjustViewBounds = true
-                                    child.scaleType = ImageView.ScaleType.FIT_CENTER
+                                    child.scaleType = ImageView.ScaleType.CENTER_CROP
                                 }
                             }
                             override fun onChildViewRemoved(parent: View?, child: View?) {}
@@ -130,7 +129,6 @@ fun SmallImageAdCard(
                         setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
                             override fun onChildViewAdded(parent: View?, child: View?) {
                                 if (child is ImageView) {
-                                    child.adjustViewBounds = true
                                     child.scaleType = ImageView.ScaleType.CENTER_CROP
                                 }
                             }

@@ -58,6 +58,7 @@ class ScoreCardViewModel @Inject constructor(
     // TODO: POST-RELEASE
     //  - Allow a user to hide one or more categories.
     //  - Allow a user to un-hide the misc category.
+    //  - ? Display a meeple instead of the boring circle to highlight the winner
 
     private val viewModelState: MutableStateFlow<ScoreCardViewModelState>
     val uiState: StateFlow<ScoreCardUiState>
@@ -162,6 +163,11 @@ class ScoreCardViewModel @Inject constructor(
                     )
                 }
             } else {
+                val hiddenCategories = if (dbCategories.size == 1) {
+                    listOf()
+                } else {
+                    listOf(dbCategories.lastIndex)
+                }
                 viewModelState.update { state ->
                     state.copy(
                         loading = false,
@@ -171,6 +177,7 @@ class ScoreCardViewModel @Inject constructor(
                         categoryNames = dbCategories.map { category ->
                             category.name.text
                         },
+                        hiddenCategories = hiddenCategories,
                         manualRanks = game.scoringMode == ScoringMode.Manual
                     )
                 }
@@ -197,7 +204,7 @@ class ScoreCardViewModel @Inject constructor(
         )
     }
 
-    fun onAddPlayer(name: String) = viewModelState.update {
+    fun onAddPlayer(name: String, manualRank: Int) = viewModelState.update {
         val newTotals = it.totals.plus(BigDecimal.ZERO)
         val newScoreCard = it.scoreCard.toMutableList().apply {
             add(
@@ -209,7 +216,11 @@ class ScoreCardViewModel @Inject constructor(
             )
         }
         val newPlayers = it.players.plus(
-            PlayerDomainModel(name = name)
+            if (manualRank != -1) {
+                PlayerDomainModel(name = name, rank = manualRank)
+            } else {
+                PlayerDomainModel(name = name)
+            }
         )
         it.copy(totals = newTotals, players = newPlayers, scoreCard = newScoreCard)
     }

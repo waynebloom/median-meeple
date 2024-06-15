@@ -21,10 +21,6 @@ import androidx.room.Relation
 )
 data class PlayerDataModel(
 
-    // TODO: FOR RELEASE
-    //  - Migrate data from the old "totalScore" field to the default category. The sum of custom
-    //    categories must be subtracted.
-
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(defaultValue = "0")
     var id: Long = 0,

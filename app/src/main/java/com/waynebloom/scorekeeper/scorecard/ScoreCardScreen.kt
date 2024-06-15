@@ -115,14 +115,14 @@ fun ScoreCardScreen(
     onPlayerClick: (Int) -> Unit,
     onSaveClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    onAddPlayer: (String) -> Unit,
+    onAddPlayer: (String, Int) -> Unit,
     onDeletePlayerClick: (Int) -> Unit,
     onCellChange: (TextFieldValue, col: Int, row: Int) -> Unit,
     onDialogTextFieldChange: (TextFieldValue) -> Unit,
     onDateChange: (Long) -> Unit,
     onLocationChange: (String) -> Unit,
     onNotesChange: (TextFieldValue) -> Unit,
-    onPlayerChange: (String, Int) -> Unit,
+    onPlayerChange: (String, Int) -> Unit
 ) {
 
     when(uiState) {
@@ -181,7 +181,7 @@ private fun ScoreCardScreen(
     onPlayerClick: (Int) -> Unit,
     onSaveClick: () -> Unit,
     onDeleteClick: () -> Unit,
-    onAddPlayer: (String) -> Unit,
+    onAddPlayer: (String, Int) -> Unit,
     onDeletePlayerClick: (Int) -> Unit,
     onCellChange: (TextFieldValue, col: Int, row: Int) -> Unit,
     onDialogTextFieldChange: (TextFieldValue) -> Unit,
@@ -233,118 +233,28 @@ private fun ScoreCardScreen(
         }
     }
     if (showMoreDialog) {
-        Dialog(
+        MoreDialog(
             onDismissRequest = {
                 showMoreDialog = false
             },
-            properties = DialogProperties(decorFitsSystemWindows = false)
-        ) {
-            SetDialogDestinationToEdgeToEdge()
-
-            Box(
-                contentAlignment = Alignment.BottomStart,
-                modifier = Modifier.fillMaxHeight()
-            ) {
-                Box(
-                    Modifier
-                        .fillMaxSize()
-                        .clickable { showMoreDialog = false })
-                Surface(
-                    tonalElevation = 2.dp,
-                    shape = MaterialTheme.shapes.medium.copy(
-                        bottomEnd = CornerSize(0.dp),
-                        bottomStart = CornerSize(0.dp)
-                    )
-                ) {
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = Dimensions.Spacing.screenEdge)
-                            .windowInsetsPadding(WindowInsets.navigationBars)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clickable {
-                                    showDeleteConfirmDialog = true
-                                    showMoreDialog = false
-                                }
-                                .padding(
-                                    horizontal = Dimensions.Spacing.screenEdge,
-                                    vertical = Dimensions.Spacing.sectionContent
-                                )
-                                .fillMaxWidth()
-                        ) {
-                            Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
-                            Spacer(Modifier.width(8.dp))
-                            Text(text = stringResource(R.string.text_delete))
-                        }
-                    }
-                }
+            onDeleteClick = {
+                showDeleteConfirmDialog = true
+                showMoreDialog = false
             }
-        }
+        )
     }
     if (showLocationDialog) {
-        Dialog(onDismissRequest = { showLocationDialog = false }) {
-            Surface(
-                shape = MaterialTheme.shapes.large,
-                tonalElevation = 2.dp
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(Dimensions.Spacing.dialogPadding)
-                ) {
-                    val focusRequester = remember { FocusRequester() }
-                    LaunchedEffect(true) {
-                        focusRequester.requestFocus()
-                    }
-
-                    Text(
-                        text = stringResource(R.string.field_location),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    OutlinedTextField(
-                        value = dialogTextFieldValue,
-                        onValueChange = onDialogTextFieldChange,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .focusRequester(focusRequester)
-                            .onFocusSelectAll(dialogTextFieldValue, onDialogTextFieldChange),
-                        maxLines = 1,
-                        keyboardOptions = KeyboardOptions(
-                            capitalization = KeyboardCapitalization.Words,
-                            imeAction = ImeAction.Done
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                showLocationDialog = false
-                                onLocationChange(dialogTextFieldValue.text)
-                            }
-                        )
-                    )
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = Dimensions.Spacing.sectionContent)
-                    ) {
-                        TextButton({ showLocationDialog = false }) {
-                            Text(text = stringResource(R.string.text_cancel), style = MaterialTheme.typography.labelLarge)
-                        }
-                        Spacer(Modifier.width(8.dp))
-                        Button(
-                            onClick = {
-                                showLocationDialog = false
-                                onLocationChange(dialogTextFieldValue.text)
-                            }
-                        ) {
-                            Text(text = stringResource(R.string.text_ok), style = MaterialTheme.typography.labelLarge)
-                        }
-                    }
-                }
+        LocationDialog(
+            value = dialogTextFieldValue,
+            onValueChange = onDialogTextFieldChange,
+            onDismissRequest = {
+                showLocationDialog = false
+            },
+            onDone = {
+                showLocationDialog = false
+                onLocationChange(it)
             }
-        }
+        )
     }
     if (showEditPlayerDialog) {
         Dialog(onDismissRequest = { showEditPlayerDialog = false }) {
@@ -425,12 +335,14 @@ private fun ScoreCardScreen(
                                 } else {
                                     Color.Transparent
                                 }
-                                Surface(color = backgroundColor) {
+                                Surface(
+                                    color = backgroundColor,
+                                    shape = CircleShape,
+                                ) {
                                     Text(
                                         text = (it + 1).toRank(),
                                         style = style,
                                         modifier = Modifier
-                                            .clip(MaterialTheme.shapes.medium)
                                             .clickable { rank = it }
                                             .minimumInteractiveComponentSize()
                                             .padding(Dimensions.Spacing.sectionContent / 2)
@@ -441,9 +353,7 @@ private fun ScoreCardScreen(
                     }
                     Row(
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = Dimensions.Spacing.sectionContent)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         TextButton(
                             onClick = {
@@ -480,6 +390,11 @@ private fun ScoreCardScreen(
         LaunchedEffect(true) {
             focusRequester.requestFocus()
         }
+        var rank by remember { mutableIntStateOf(players.size) }
+        val onPositiveAction = {
+            showNewPlayerDialog = false
+            onAddPlayer(dialogTextFieldValue.text, rank)
+        }
 
         Dialog(onDismissRequest = { showEditPlayerDialog = false }) {
             Surface(
@@ -511,27 +426,49 @@ private fun ScoreCardScreen(
                             imeAction = ImeAction.Done
                         ),
                         keyboardActions = KeyboardActions(
-                            onDone = {
-                                showNewPlayerDialog = false
-                                onAddPlayer(dialogTextFieldValue.text)
-                            }
+                            onDone = { onPositiveAction() }
                         )
                     )
+                    if (manualRanks) {
+                        FlowRow {
+                            repeat(players.size + 1) {
+                                val fontWeight = if (it == rank) {
+                                    FontWeight.SemiBold
+                                } else {
+                                    FontWeight.Normal
+                                }
+                                val backgroundColor = if (it == rank) {
+                                    MaterialTheme.colorScheme.secondaryContainer
+                                } else {
+                                    Color.Transparent
+                                }
+                                Surface(
+                                    color = backgroundColor,
+                                    shape = CircleShape,
+                                ) {
+                                    Text(
+                                        text = (it + 1).toRank(),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        fontWeight = fontWeight,
+                                        modifier = Modifier
+                                            .clickable { rank = it }
+                                            .minimumInteractiveComponentSize()
+                                            .padding(Dimensions.Spacing.sectionContent / 2)
+                                    )
+                                }
+                            }
+                        }
+                    }
                     Row(
                         horizontalArrangement = Arrangement.End,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = Dimensions.Spacing.sectionContent)
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         TextButton(onClick = { showNewPlayerDialog = false }) {
                             Text(text = stringResource(R.string.text_cancel), style = MaterialTheme.typography.labelLarge)
                         }
                         Spacer(Modifier.width(8.dp))
                         Button(
-                            onClick = {
-                                showNewPlayerDialog = false
-                                onAddPlayer(dialogTextFieldValue.text)
-                            },
+                            onClick = onPositiveAction,
                             enabled = dialogTextFieldValue.text.isNotBlank(),
                         ) {
                             Text(
@@ -639,10 +576,11 @@ private fun ScoreCardScreen(
         contentWindowInsets = WindowInsets(0.dp)
     ) { innerPadding ->
 
-        Column(Modifier
-            .padding(innerPadding)
-            .imePadding()
-            .verticalScroll(rememberScrollState())
+        Column(
+            Modifier
+                .padding(innerPadding)
+                .imePadding()
+                .verticalScroll(rememberScrollState())
         ) {
             Column(
                 Modifier
@@ -794,7 +732,7 @@ private fun ScoreCardScreen(
                                             }
                                         }
 
-                                    if (categoryNames.size > 1) {
+                                    if (categoryNames.size - hiddenCategories.size > 1) {
                                         Row(
                                             horizontalArrangement = Arrangement.End,
                                             modifier = Modifier
@@ -810,7 +748,10 @@ private fun ScoreCardScreen(
                                                         bottom = Dimensions.Spacing.sectionContent / 2,
                                                         end = Dimensions.Spacing.sectionContent / 2
                                                     )
-                                                    .defaultMinSize(minHeight = 48.dp, minWidth = 48.dp),
+                                                    .defaultMinSize(
+                                                        minHeight = 48.dp,
+                                                        minWidth = 48.dp
+                                                    ),
                                             ) {
                                                 Text(
                                                     text = stringResource(R.string.text_total),
@@ -927,7 +868,7 @@ private fun ScoreColumn(
         }
 
         scores.forEachIndexed { index, score ->
-            if (scores.size <= 1) {
+            if (scores.size <= 1 && score.scoreAsTextFieldValue.text.isNotBlank()) {
                 TextFieldCell(
                     value = score.scoreAsTextFieldValue,
                     onValueChange = { onCellChange(it, index) },
@@ -944,8 +885,6 @@ private fun ScoreColumn(
                 )
             }
         }
-
-        // TODO: implement a winner indicator for when there is only 1 category
 
         if (scores.size > 1) {
             Surface(
@@ -1027,6 +966,121 @@ fun TextFieldCell(
     }
 }
 
+@Composable
+fun MoreDialog(
+    onDismissRequest: () -> Unit,
+    onDeleteClick: () -> Unit,
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = DialogProperties(decorFitsSystemWindows = false)
+    ) {
+        SetDialogDestinationToEdgeToEdge()
+
+        Box(
+            contentAlignment = Alignment.BottomStart,
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .clickable(onClick = onDismissRequest))
+            Surface(
+                tonalElevation = 2.dp,
+                shape = MaterialTheme.shapes.medium.copy(
+                    bottomEnd = CornerSize(0.dp),
+                    bottomStart = CornerSize(0.dp)
+                )
+            ) {
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = Dimensions.Spacing.screenEdge)
+                        .windowInsetsPadding(WindowInsets.navigationBars)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable(onClick = onDeleteClick)
+                            .padding(
+                                horizontal = Dimensions.Spacing.screenEdge,
+                                vertical = Dimensions.Spacing.sectionContent
+                            )
+                            .fillMaxWidth()
+                    ) {
+                        Icon(imageVector = Icons.Rounded.Delete, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(text = stringResource(R.string.text_delete))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LocationDialog(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    onDismissRequest: () -> Unit,
+    onDone: (String) -> Unit
+) {
+    Dialog(onDismissRequest) {
+        Surface(
+            shape = MaterialTheme.shapes.large,
+            tonalElevation = 2.dp
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(Dimensions.Spacing.dialogPadding)
+            ) {
+                val focusRequester = remember { FocusRequester() }
+                LaunchedEffect(true) {
+                    focusRequester.requestFocus()
+                }
+
+                Text(
+                    text = stringResource(R.string.field_location),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                )
+                OutlinedTextField(
+                    value = value,
+                    onValueChange = onValueChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .focusRequester(focusRequester)
+                        .onFocusSelectAll(value, onValueChange),
+                    maxLines = 1,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            onDone(value.text)
+                        }
+                    )
+                )
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = Dimensions.Spacing.sectionContent)
+                ) {
+                    TextButton(onDismissRequest) {
+                        Text(text = stringResource(R.string.text_cancel), style = MaterialTheme.typography.labelLarge)
+                    }
+                    Spacer(Modifier.width(8.dp))
+                    Button({ onDone(value.text) }) {
+                        Text(text = stringResource(R.string.text_ok), style = MaterialTheme.typography.labelLarge)
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Preview
 @Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
@@ -1037,7 +1091,7 @@ private fun Normal() {
             onPlayerClick = {},
             onSaveClick = {},
             onDeleteClick = {},
-            onAddPlayer = {},
+            onAddPlayer = {_,_->},
             onDeletePlayerClick = {},
             onCellChange = {_,_,_->},
             onDialogTextFieldChange = {},
@@ -1059,7 +1113,7 @@ private fun LongData() {
             onPlayerClick = {},
             onSaveClick = {},
             onDeleteClick = {},
-            onAddPlayer = {},
+            onAddPlayer = {_,_->},
             onDeletePlayerClick = {},
             onCellChange = {_,_,_->},
             onDialogTextFieldChange = {},
@@ -1081,7 +1135,7 @@ private fun NoPlayers() {
             onPlayerClick = {},
             onSaveClick = {},
             onDeleteClick = {},
-            onAddPlayer = {},
+            onAddPlayer = {_,_->},
             onDeletePlayerClick = {},
             onCellChange = {_,_,_->},
             onDialogTextFieldChange = {},

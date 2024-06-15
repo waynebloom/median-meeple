@@ -207,7 +207,7 @@ fun LibraryScreen(
                 ),
             ) {
                 gameCards.forEachIndexed { i, card ->
-                    val showAd = (gameCards.size < 4 && i == gameCards.lastIndex)
+                    val showAd = (gameCards.size < 5 && i == gameCards.lastIndex)
                         || ((i - 3) % 13 == 0 && i != gameCards.lastIndex)
 
                     item(key = card.id) {

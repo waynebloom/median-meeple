@@ -23,7 +23,7 @@ class AdRepository @Inject constructor(
     val adFlow: MutableStateFlow<List<NativeAd>> = MutableStateFlow(emptyList())
 
     companion object {
-        const val NewAdRequestDelaySeconds = 5L
+        const val NewAdRequestDelaySeconds = 10L
     }
 
     fun setUpAdLoader() {

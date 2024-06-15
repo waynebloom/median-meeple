@@ -3,7 +3,6 @@ package com.waynebloom.scorekeeper.singleGame.statisticsForGame
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,9 +28,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -60,7 +57,6 @@ import com.waynebloom.scorekeeper.components.ExpandCollapseButton
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
 import com.waynebloom.scorekeeper.components.Loading
-import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
@@ -502,11 +498,35 @@ private fun ScoringSection(
         )
 
         if (categories.isNotEmpty()) {
-            CategoryChips(
-                categories = categories,
-                currentCategoryIndex = indexOfSelectedCategory,
-                onClick = onCategoryClick,
-            )
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = modifier
+            ) {
+
+                itemsIndexed(items = listOf("Total") + categories) { i, category ->
+                    val isSelected = i == indexOfSelectedCategory
+
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onCategoryClick(i) },
+                        label = {
+                            Text(text = category)
+                        },
+                        leadingIcon = {
+                            if (isSelected) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_checkmark),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .padding(start = 4.dp)
+                                        .size(18.dp)
+                                )
+                            }
+                        },
+                    )
+                }
+            }
         }
 
         if (isCategoryDataEmpty) {
@@ -523,58 +543,6 @@ private fun ScoringSection(
                 range = range,
                 topScorers = topScorers,
                 modifier = Modifier.padding(horizontal = Spacing.screenEdge)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CategoryChips(
-    categories: List<String>,
-    currentCategoryIndex: Int,
-    onClick: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-
-    val chipColors = FilterChipDefaults.filterChipColors(
-        containerColor = MaterialTheme.colorScheme.background,
-        labelColor = MaterialTheme.colorScheme.onBackground,
-        iconColor = MaterialTheme.colorScheme.onBackground,
-        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.25f),
-    )
-
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-    ) {
-
-        itemsIndexed(categories) { index, category ->
-
-            val isSelected = index == currentCategoryIndex
-            val chipBorderStroke = if (!isSelected) {
-                BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(Alpha.disabled)
-                )
-            } else null
-
-            FilterChip(
-                selected = isSelected,
-                onClick = { onClick(index) },
-                label = { Text(text = category) },
-                leadingIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_checkmark),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(start = 4.dp)
-                            .size(18.dp)
-                    )
-                },
-                border = chipBorderStroke,
-                colors = chipColors,
             )
         }
     }
@@ -799,8 +767,8 @@ fun SingleLineExpandableListItem(
     }
 }
 
-@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun StatisticsForGameScreenPreview() {
     MedianMeepleTheme {

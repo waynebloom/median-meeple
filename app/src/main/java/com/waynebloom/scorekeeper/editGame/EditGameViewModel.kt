@@ -46,11 +46,6 @@ class EditGameViewModel @Inject constructor(
     private val updateGameUseCase: UpdateGame,
 ): ViewModel() {
 
-    // TODO: FOR RELEASE
-    //  - The cancel button does not stop the delete state from appearing again when you select the
-    //    same category again.
-    //  - Add a toast for when an existing category is deleted.
-
     private val viewModelState: MutableStateFlow<EditGameViewModelState>
     val uiState: StateFlow<EditGameUiState>
 
@@ -68,7 +63,7 @@ class EditGameViewModel @Inject constructor(
             if (gameId != -1L) {
                 val game = getGame(gameId)
                 val categories = getCategoriesByGameId(gameId)
-                    .dropWhile { it.name.text == "defaultMiscCategory" }
+                    .filterNot { it.name.text == "defaultMiscCategory" }
                     .sortedBy { it.position }
 
                 viewModelState.update {

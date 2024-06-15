@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.editGame
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -79,6 +80,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -553,12 +555,22 @@ private fun EditCategoriesBottomSheetContent(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    TextButton(onCategoryDoneClick) {
+                    val deletedToast = Toast.makeText(LocalContext.current, "Category deleted.", Toast.LENGTH_SHORT)
+
+                    TextButton(
+                        onClick = {
+                            onCategoryDoneClick()
+                            showDeleteConfirmState = false
+                        }
+                    ) {
                         Text(text = "Cancel")
                     }
                     Spacer(modifier = Modifier.width(Spacing.subSectionContent))
                     Button(
-                        onClick = { onDeleteCategoryClick(indexOfSelectedCategory) },
+                        onClick = {
+                            onDeleteCategoryClick(indexOfSelectedCategory)
+                            deletedToast.show()
+                        },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.error,
                             contentColor = MaterialTheme.colorScheme.onError

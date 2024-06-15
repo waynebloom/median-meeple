@@ -18,14 +18,14 @@ object StatisticsForGameSampleData {
             WinningPlayerDomainModel("Player 2", 8),
         ),
         playersWithMostWinsOverflow = 2,
-        isHighScoreExpanded = true,
+        isHighScoreExpanded = false,
         playersWithHighScore = listOf(
             ScoringPlayerDomainModel("Player 1", BigDecimal(10)),
             ScoringPlayerDomainModel("Player 2", BigDecimal(10)),
             ScoringPlayerDomainModel("Player 3", BigDecimal(10))
         ),
         playersWithHighScoreOverflow = 2,
-        isUniqueWinnersExpanded = true,
+        isUniqueWinnersExpanded = false,
         winners = listOf(
             WinningPlayerDomainModel("Player 1", 7),
             WinningPlayerDomainModel("Player 2", 7),

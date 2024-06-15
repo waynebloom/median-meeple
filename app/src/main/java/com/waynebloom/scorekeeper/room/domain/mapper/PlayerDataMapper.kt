@@ -29,6 +29,7 @@ class PlayerDataMapper @Inject constructor(
         categories: Map<Long, CategoryDomainModel>
     ) = PlayerDomainModel(
         id = playerData.entity.id,
+        matchId = playerData.entity.matchId,
         categoryScores = playerData.score.map {
             categoryScoreDataMapper.mapWithRelations(it, categories)
         },

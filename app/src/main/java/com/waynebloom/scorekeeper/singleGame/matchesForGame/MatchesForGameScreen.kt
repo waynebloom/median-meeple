@@ -496,7 +496,7 @@ fun MatchesForGameScreen(
                             filteredIndices.isEmpty() || filteredIndices.contains(index)
                         }
                         .forEachIndexed { i, match ->
-                            val showAd = (matches.size < 2 && i == matches.lastIndex)
+                            val showAd = (matches.size < 3 && i == matches.lastIndex)
                                 || ((i - 1) % 6 == 0 && i != matches.lastIndex)
 
                             item(key = match.id) {
