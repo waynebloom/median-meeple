@@ -16,7 +16,7 @@ fun BigDecimal.toShortFormatString(): String {
     return when {
 
         // The precision is low enough to display without conversion
-        precision() <= maximumAcceptablePrecisionForDisplay -> toPlainString()
+        precision() <= maximumAcceptablePrecisionForDisplay -> stripTrailingZeros().toPlainString()
 
         greaterThanOrEqualTo(BigDecimalValues.Trillion) -> "1000B+"
 
@@ -32,7 +32,7 @@ fun BigDecimal.toShortFormatString(): String {
             .scaleByPowerOfTen(tenThousandScale)
             .toStringForDisplay() + thousandMark
 
-        else -> setScale(0, RoundingMode.HALF_UP).toPlainString() + "*"
+        else -> "~" + setScale(0, RoundingMode.HALF_UP).toPlainString()
     }
 }
 

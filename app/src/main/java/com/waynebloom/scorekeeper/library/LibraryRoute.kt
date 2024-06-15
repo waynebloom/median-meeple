@@ -18,7 +18,10 @@ fun LibraryRoute(
     LibraryScreen(
         uiState = uiState,
         onSearchInputChanged = { viewModel.onSearchInputChanged(it) },
-        onAddGameClick = { viewModel.addEmptyGame(navController) },
+        onAddGameClick = {
+            val route = "${Destination.EditGame.route}/-1"
+            navController.navigate(route)
+        },
         onGameClick = { id ->
             navController.navigate("${Destination.MatchesForGame.route}/$id")
         },

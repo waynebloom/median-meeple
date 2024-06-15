@@ -1,6 +1,5 @@
 package com.waynebloom.scorekeeper.room.domain.mapper
 
-import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
@@ -14,10 +13,8 @@ class PlayerDataMapper @Inject constructor(
     fun map(playerData: PlayerDataModel) = PlayerDomainModel(
         id = playerData.id,
         categoryScores = listOf(),
-        name = TextFieldValue(playerData.name),
-        position = playerData.position,
-        useCategorizedScore = playerData.showDetailedScore,
-        totalScore = playerData.totalScore.toBigDecimal()
+        name = playerData.name,
+        rank = playerData.position,
     )
 
     /**
@@ -32,13 +29,12 @@ class PlayerDataMapper @Inject constructor(
         categories: Map<Long, CategoryDomainModel>
     ) = PlayerDomainModel(
         id = playerData.entity.id,
+        matchId = playerData.entity.matchId,
         categoryScores = playerData.score.map {
             categoryScoreDataMapper.mapWithRelations(it, categories)
         },
-        name = TextFieldValue(playerData.entity.name),
-        position = playerData.entity.position,
-        useCategorizedScore = playerData.entity.showDetailedScore,
-        totalScore = playerData.entity.totalScore.toBigDecimal()
+        name = playerData.entity.name,
+        rank = playerData.entity.position,
     )
 
     /**
@@ -48,12 +44,11 @@ class PlayerDataMapper @Inject constructor(
      */
     fun mapWithRelations(playerData: PlayerDataRelationModel) = PlayerDomainModel(
         id = playerData.entity.id,
+        matchId = playerData.entity.matchId,
         categoryScores = playerData.score.map {
             categoryScoreDataMapper.map(it)
         },
-        name = TextFieldValue(playerData.entity.name),
-        position = playerData.entity.position,
-        useCategorizedScore = playerData.entity.showDetailedScore,
-        totalScore = playerData.entity.totalScore.toBigDecimal()
+        name = playerData.entity.name,
+        rank = playerData.entity.position,
     )
 }

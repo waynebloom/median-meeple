@@ -7,7 +7,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "SubscoreTitle",
+    tableName = "Category",
     foreignKeys = [ForeignKey(
         entity = GameDataModel::class,
         parentColumns = arrayOf("id"),
@@ -25,8 +25,8 @@ data class CategoryDataModel(
     @ColumnInfo(name = "game_id")
     var gameId: Long = 0,
 
-    @ColumnInfo(name = "title")
+    @ColumnInfo(name = "name")
     var name: String = "",
 
-    var position: Int = 0
+    var position: Int = 0,
 )

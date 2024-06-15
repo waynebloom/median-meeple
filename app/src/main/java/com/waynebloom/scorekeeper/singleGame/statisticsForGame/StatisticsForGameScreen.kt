@@ -3,33 +3,39 @@ package com.waynebloom.scorekeeper.singleGame.statisticsForGame
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.ChipDefaults
-import androidx.compose.material.Divider
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.FilterChip
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Surface
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,7 +45,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -48,15 +53,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.constants.Alpha
-import com.waynebloom.scorekeeper.constants.Dimensions.Size
-import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.components.ExpandCollapseButton
 import com.waynebloom.scorekeeper.components.HelperBox
 import com.waynebloom.scorekeeper.components.HelperBoxType
-import com.waynebloom.scorekeeper.components.IconButton
 import com.waynebloom.scorekeeper.components.Loading
+import com.waynebloom.scorekeeper.constants.Dimensions.Size
+import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
+import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.ext.toStringForDisplay
 import com.waynebloom.scorekeeper.singleGame.StatisticsForGameUiState
 import com.waynebloom.scorekeeper.singleGame.matchesForGame.SingleGameTabBar
@@ -89,14 +92,14 @@ fun StatisticsForGameScreen(
                         SingleGameScreen.MatchesForGame -> onMatchesTabClick()
                     }
                 },
+                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
             )
-        }
+        },
+        contentWindowInsets = WindowInsets(0.dp),
     ) { innerPadding ->
 
         when(uiState) {
-
             is StatisticsForGameUiState.Loading -> Loading()
-
             is StatisticsForGameUiState.Empty -> {
                 HelperBox(
                     message = stringResource(R.string.helper_empty_data),
@@ -107,7 +110,6 @@ fun StatisticsForGameScreen(
                         .padding(top = Spacing.sectionContent)
                 )
             }
-
             is StatisticsForGameUiState.Content -> {
                 StatisticsForGameScreen(
                     matchCount = uiState.matchCount.toString(),
@@ -167,15 +169,12 @@ fun StatisticsForGameScreen(
     onCategoryClick: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     LazyColumn(
-        contentPadding = PaddingValues(bottom = Spacing.betweenSections),
+        contentPadding = PaddingValues(bottom = Spacing.screenEdge),
         verticalArrangement = Arrangement.spacedBy(Spacing.betweenSections),
         modifier = modifier,
     ) {
-
         item {
-
             PlaysSection(
                 matchCount = matchCount,
                 playerCount = uniquePlayerCount,
@@ -183,8 +182,7 @@ fun StatisticsForGameScreen(
                     .padding(horizontal = Spacing.screenEdge)
                     .padding(top = Spacing.betweenSections)
             )
-
-            Divider()
+            HorizontalDivider()
         }
 
         item {
@@ -205,7 +203,7 @@ fun StatisticsForGameScreen(
                 modifier = Modifier.padding(horizontal = Spacing.screenEdge)
             )
 
-            Divider()
+            HorizontalDivider()
         }
 
         item {
@@ -221,6 +219,14 @@ fun StatisticsForGameScreen(
                 onCategoryClick = onCategoryClick
             )
         }
+
+        item {
+            Spacer(
+                Modifier
+                    .windowInsetsBottomHeight(WindowInsets.navigationBars)
+                    .consumeWindowInsets(WindowInsets.navigationBars)
+            )
+        }
     }
 }
 
@@ -230,39 +236,41 @@ fun StatisticsForGameTopBar(
     selectedTab: SingleGameScreen,
     onEditGameClick: () -> Unit,
     onTabClick: (SingleGameScreen) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
 
-    Column {
+    Surface {
+        Column(modifier) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .padding(start = Spacing.screenEdge, end = 4.dp)
+                    .defaultMinSize(minHeight = Size.topBarHeight)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
+                )
+                Icon(
+                    imageVector = Icons.Rounded.Edit,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .minimumInteractiveComponentSize()
+                        .clip(CircleShape)
+                        .clickable(onClick = onEditGameClick)
+                        .padding(4.dp)
+                )
+            }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .padding(start = 16.dp, end = 8.dp)
-                .defaultMinSize(minHeight = Size.topBarHeight)
-                .fillMaxWidth()
-        ) {
-
-            Text(
-                text = title,
-                color = MaterialTheme.colors.primary,
-                style = MaterialTheme.typography.h5,
-                overflow = TextOverflow.Ellipsis,
-                maxLines = 1
-            )
-
-            IconButton(
-                imageVector = Icons.Rounded.Edit,
-                backgroundColor = Color.Transparent,
-                foregroundColor = MaterialTheme.colors.primary,
-                onClick = onEditGameClick
+            SingleGameTabBar(
+                selectedTab = selectedTab,
+                onTabSelected = onTabClick
             )
         }
-
-        SingleGameTabBar(
-            selectedTab = selectedTab,
-            onTabSelected = onTabClick
-        )
     }
 }
 
@@ -280,8 +288,7 @@ private fun PlaysSection(
 
         Text(
             text = stringResource(id = R.string.header_plays),
-            style = MaterialTheme.typography.h6,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleLarge,
         )
 
         TwoLineListItem(
@@ -290,7 +297,7 @@ private fun PlaysSection(
             endText = matchCount,
         )
 
-        Divider()
+        HorizontalDivider()
 
         TwoLineListItem(
             startHeadline = stringResource(R.string.headline_players),
@@ -331,7 +338,7 @@ private fun WinsSection(
         Icon(
             painter = painterResource(id = R.drawable.ic_person),
             contentDescription = null,
-            tint = MaterialTheme.colors.primary,
+            tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier
                 .padding(end = 4.dp)
                 .size(16.dp)
@@ -345,8 +352,7 @@ private fun WinsSection(
 
         Text(
             text = stringResource(id = R.string.header_wins),
-            style = MaterialTheme.typography.h6,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleLarge,
         )
 
         // Best Winner
@@ -387,7 +393,7 @@ private fun WinsSection(
             }
         }
 
-        Divider()
+        HorizontalDivider()
 
         // High Score
 
@@ -423,7 +429,7 @@ private fun WinsSection(
             }
         }
 
-        Divider()
+        HorizontalDivider()
 
         // Unique Winners
 
@@ -487,17 +493,40 @@ private fun ScoringSection(
 
         Text(
             text = stringResource(id = R.string.header_scoring),
-            style = MaterialTheme.typography.h6,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.titleLarge,
             modifier = Modifier.padding(horizontal = Spacing.screenEdge)
         )
 
         if (categories.isNotEmpty()) {
-            CategoryChips(
-                categories = categories,
-                currentCategoryIndex = indexOfSelectedCategory,
-                onClick = onCategoryClick,
-            )
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = modifier
+            ) {
+
+                itemsIndexed(items = listOf("Total") + categories) { i, category ->
+                    val isSelected = i == indexOfSelectedCategory
+
+                    FilterChip(
+                        selected = isSelected,
+                        onClick = { onCategoryClick(i) },
+                        label = {
+                            Text(text = category)
+                        },
+                        leadingIcon = {
+                            if (isSelected) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_checkmark),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .padding(start = 4.dp)
+                                        .size(18.dp)
+                                )
+                            }
+                        },
+                    )
+                }
+            }
         }
 
         if (isCategoryDataEmpty) {
@@ -514,59 +543,6 @@ private fun ScoringSection(
                 range = range,
                 topScorers = topScorers,
                 modifier = Modifier.padding(horizontal = Spacing.screenEdge)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterialApi::class)
-@Composable
-private fun CategoryChips(
-    categories: List<String>,
-    currentCategoryIndex: Int,
-    onClick: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-
-    val chipColors = ChipDefaults.outlinedFilterChipColors(
-        backgroundColor = MaterialTheme.colors.background,
-        contentColor = MaterialTheme.colors.onBackground,
-        leadingIconColor = MaterialTheme.colors.onBackground,
-        selectedBackgroundColor = MaterialTheme.colors.primary.copy(alpha = 0.25f),
-    )
-
-    LazyRow(
-        contentPadding = PaddingValues(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-    ) {
-
-        itemsIndexed(categories) { index, category ->
-
-            val isSelected = index == currentCategoryIndex
-            val chipBorderStroke = if (!isSelected) {
-                BorderStroke(
-                    width = 1.dp,
-                    color = MaterialTheme.colors.onBackground.copy(Alpha.disabled)
-                )
-            } else null
-
-            FilterChip(
-                selected = isSelected,
-                onClick = { onClick(index) },
-                shape = MaterialTheme.shapes.small,
-                border = chipBorderStroke,
-                colors = chipColors,
-                selectedIcon = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_checkmark),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(start = 4.dp)
-                            .size(18.dp)
-                    )
-                },
-                content = { Text(text = category) }
             )
         }
     }
@@ -610,7 +586,7 @@ private fun ScoringStatisticsColumn(
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_person),
                                 contentDescription = null,
-                                tint = MaterialTheme.colors.primary,
+                                tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier
                                     .padding(end = 4.dp)
                                     .size(16.dp)
@@ -623,21 +599,21 @@ private fun ScoringStatisticsColumn(
             }
         }
 
-        Divider()
+        HorizontalDivider()
 
         SingleLineListItem(
             startText = stringResource(R.string.headline_low),
             endText = low,
         )
 
-        Divider()
+        HorizontalDivider()
 
         SingleLineListItem(
             startText = stringResource(R.string.headline_mean),
             endText = mean,
         )
 
-        Divider()
+        HorizontalDivider()
 
         SingleLineListItem(
             startText = stringResource(R.string.headline_range),
@@ -678,7 +654,7 @@ fun TwoLineExpandableListItem(
                     if (startSupportingText != null) {
                         Text(
                             text = startSupportingText,
-                            style = MaterialTheme.typography.body2,
+                            style = MaterialTheme.typography.bodyMedium,
                         )
                     }
                 }
@@ -712,38 +688,34 @@ fun TwoLineListItem(
     startSupportingText: String? = null,
     endText: String? = null,
 ) {
-
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-
         Column(modifier = Modifier.weight(1f)) {
-
             if (startHeadline != null) {
                 Text(text = startHeadline)
             }
-
             if (startSupportingText != null) {
                 Text(
                     text = startSupportingText,
-                    style = MaterialTheme.typography.body2,
+                    style = MaterialTheme.typography.bodyMedium,
                 )
             }
         }
 
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .defaultMinSize(minWidth = Size.minTappableSize, minHeight = Size.minTappableSize)
-                .clip(MaterialTheme.shapes.medium)
-                .background(MaterialTheme.colors.surface)
-                .padding(horizontal = 12.dp, vertical = 4.dp)
-        ) {
-
-            if (endText != null)
-                Text(text = endText)
+        if (endText != null) {
+            Surface(
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                shape = CircleShape
+            ) {
+                Text(
+                    text = endText,
+                    modifier = Modifier
+                        .padding(horizontal = Spacing.sectionContent, vertical = 4.dp)
+                )
+            }
         }
     }
 }
@@ -795,6 +767,23 @@ fun SingleLineExpandableListItem(
     }
 }
 
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun StatisticsForGameScreenPreview() {
+    MedianMeepleTheme {
+        StatisticsForGameScreen(
+            uiState = StatisticsForGameSampleData.DefaultState,
+            onEditGameClick = {},
+            onMatchesTabClick = {},
+            onBestWinnerButtonClick = {},
+            onHighScoreButtonClick = {},
+            onUniqueWinnersButtonClick = {},
+            onCategoryClick = {}
+        )
+    }
+}
+
 @Composable
 fun SingleLineListItem(
     startText: String? = null,
@@ -825,8 +814,8 @@ fun SingleLineListItem(
                             minHeight = Size.minTappableSize
                         )
                         .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colors.surface)
-                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(horizontal = Spacing.sectionContent, vertical = 4.dp),
                     content = { Text(text = endText) }
                 )
             } else {
@@ -841,7 +830,7 @@ fun SingleLineListItem(
 @Composable
 fun StatisticsForGameTopBarPreview() {
     MedianMeepleTheme {
-        Box(Modifier.background(MaterialTheme.colors.background)) {
+        Box(Modifier.background(MaterialTheme.colorScheme.background)) {
             StatisticsForGameTopBar(
                 title = "Wingspan",
                 selectedTab = SingleGameScreen.StatisticsForGame,
@@ -860,7 +849,7 @@ fun StatisticsForGameTopBarPreview() {
 @Composable
 fun SingleLineExpandableListItemPreview() {
     MedianMeepleTheme {
-        Surface(color = MaterialTheme.colors.background) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             var expanded by remember { mutableStateOf(false) }
 
             SingleLineExpandableListItem(
@@ -896,7 +885,7 @@ fun SingleLineExpandableListItemPreview() {
 @Composable
 fun TwoLineExpandableListItemPreview() {
     MedianMeepleTheme {
-        Surface(color = MaterialTheme.colors.background) {
+        Surface(color = MaterialTheme.colorScheme.background) {
             var expanded by remember { mutableStateOf(false) }
 
             TwoLineExpandableListItem(

@@ -26,10 +26,11 @@ fun EditGameRoute(
 
     EditGameScreen(
         uiState = uiState,
-        onConfirmClick = {
-            viewModel.onConfirmClick()
-            savedToast.show()
-            navController.popBackStack()
+        onSaveClick = {
+            viewModel.onSaveClick {
+                savedToast.show()
+                navController.popBackStack()
+            }
         },
         onCategoryClick = viewModel::onCategoryClick,
         onCategoryDialogDismiss = viewModel::onCategoryDialogDismiss,
@@ -37,9 +38,10 @@ fun EditGameRoute(
         onColorClick = viewModel::onColorClick,
         onDeleteCategoryClick = viewModel::onDeleteCategoryClick,
         onDeleteClick = {
-            viewModel.onDeleteClick()
-            deletedToast.show()
-            navController.popBackStack(route = Destination.Library.route, inclusive = false)
+            viewModel.onDeleteClick {
+                deletedToast.show()
+                navController.popBackStack(route = Destination.Library.route, inclusive = false)
+            }
         },
         onDrag = { viewModel.onDrag(it, rowHeightForDrag) },
         onDragEnd = viewModel::onDragEnd,

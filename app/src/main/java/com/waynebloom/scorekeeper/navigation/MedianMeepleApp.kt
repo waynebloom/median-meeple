@@ -2,7 +2,6 @@ package com.waynebloom.scorekeeper.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavBackStackEntry
@@ -12,20 +11,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.enums.TopLevelScreen
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.base.MedianMeepleActivityViewModel
-import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.editGame.EditGameRoute
-import com.waynebloom.scorekeeper.editPlayer.EditPlayerRoute
 import com.waynebloom.scorekeeper.library.LibraryRoute
-import com.waynebloom.scorekeeper.singleGame.matchesForGame.MatchesForGameRoute
-import com.waynebloom.scorekeeper.playerScore.PlayerScoreScreen
-import com.waynebloom.scorekeeper.ui.screens.DetailedPlayerScoresScreen
+import com.waynebloom.scorekeeper.scorecard.ScoreCardRoute
 import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
+import com.waynebloom.scorekeeper.singleGame.matchesForGame.MatchesForGameRoute
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameRoute
-import com.waynebloom.scorekeeper.singleMatch.SingleMatchRoute
 
 @SuppressWarnings("CyclomaticComplexMethod")
 @Composable
@@ -79,30 +70,16 @@ fun MedianMeepleApp() {
             EditGameRoute(navController)
         }
 
-        // SingleMatch
+        // ScoreCard
 
         composable(
-            route = "${Destination.SingleMatch.route}/{gameId}/{matchId}",
+            route = "${Destination.ScoreCard.route}/{gameId}/{matchId}",
             arguments = listOf(
                 navArgument(name = "gameId") { type = NavType.LongType },
                 navArgument(name = "matchId") { type = NavType.LongType },
             )
         ) {
-            SingleMatchRoute(navController)
-        }
-
-        // EditPlayer
-
-        composable(
-            route = "${Destination.EditPlayer.route}/{gameId}/{matchId}/{playerId}",
-            arguments = listOf(
-                navArgument(name = "gameId") { type = NavType.LongType },
-                navArgument(name = "matchId") { type = NavType.LongType },
-                navArgument(name = "playerId") { type = NavType.LongType },
-            )
-        ) {
-
-            EditPlayerRoute(navController = navController)
+            ScoreCardRoute(navController)
         }
     }
 }

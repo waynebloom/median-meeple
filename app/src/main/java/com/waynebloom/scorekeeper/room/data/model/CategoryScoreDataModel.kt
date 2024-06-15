@@ -7,7 +7,7 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "Subscore",
+    tableName = "CategoryScore",
     foreignKeys = [
         ForeignKey(
             entity = CategoryDataModel::class,

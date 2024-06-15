@@ -8,8 +8,9 @@ object Dimensions {
         val subSectionContent = 8.dp
         val sectionContent = 12.dp
         val screenEdge = 16.dp
+        val dialogPadding = 24.dp
         val betweenSections = 24.dp
-        val paddingForFab = 96.dp
+        val paddingForFab = 84.dp
     }
 
     object Size {

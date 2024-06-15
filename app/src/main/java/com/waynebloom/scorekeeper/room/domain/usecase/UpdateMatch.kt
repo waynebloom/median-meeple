@@ -3,7 +3,6 @@ package com.waynebloom.scorekeeper.room.domain.usecase
 import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.room.domain.repository.MatchRepository
-import java.util.Date
 import javax.inject.Inject
 
 class UpdateMatch @Inject constructor(
@@ -14,7 +13,9 @@ class UpdateMatch @Inject constructor(
         matchRepository.update(MatchDataModel(
             id = match.id,
             gameId = match.gameId,
-            notes = match.notes.value.text,
+            notes = match.notes,
+            dateMillis = match.dateMillis,
+            location = match.location
         ))
     }
 }

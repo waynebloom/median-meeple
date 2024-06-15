@@ -13,7 +13,9 @@ class InsertMatch @Inject constructor(
         return matchRepository.insert(
             MatchDataModel(
                 gameId = match.gameId,
-                notes = match.notes.value.text
+                notes = match.notes,
+                dateMillis = match.dateMillis,
+                location = match.location
             )
         )
     }

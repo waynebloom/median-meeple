@@ -4,11 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import java.math.BigDecimal
 
 @Entity(
     tableName = "Player",
@@ -22,6 +20,7 @@ import java.math.BigDecimal
     indices = [Index(value = ["match_id"])]
 )
 data class PlayerDataModel(
+
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(defaultValue = "0")
     var id: Long = 0,
@@ -32,12 +31,6 @@ data class PlayerDataModel(
     var name: String = "",
 
     var position: Int = 0,
-
-    @ColumnInfo(name = "score")
-    var totalScore: String = "0",
-
-    @ColumnInfo(name = "show_detailed_score")
-    var showDetailedScore: Boolean = false
 )
 
 class PlayerDataRelationModel(
@@ -46,14 +39,4 @@ class PlayerDataRelationModel(
 
     @Relation(parentColumn = "id", entityColumn = "player_id", entity = CategoryScoreDataModel::class)
     var score: List<CategoryScoreDataModel> = listOf()
-) {
-
-
-    // TODO remove this, put in ui model
-    @Ignore
-    fun getUncategorizedScore(): BigDecimal {
-        val subscoreSum = score.sumOf { it.value.toBigDecimal() }
-        val totalScoreBigDecimal = entity.totalScore.toBigDecimal()
-        return totalScoreBigDecimal - subscoreSum
-    }
-}
+)

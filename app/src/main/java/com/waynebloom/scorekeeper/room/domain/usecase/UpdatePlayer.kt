@@ -14,10 +14,8 @@ class UpdatePlayer @Inject constructor(
             PlayerDataModel(
                 id = player.id,
                 matchId = player.matchId,
-                name = player.name.text,
-                position = player.position,
-                showDetailedScore = player.useCategorizedScore,
-                totalScore = player.totalScore.toString()
+                name = player.name,
+                position = player.rank,
             )
         )
     }

@@ -22,13 +22,21 @@
     <string name="text_showing_search_results">Searching for \"%s\".</string>
     <string name="text_statistics">Stats</string>
     <string name="text_tied">Tied</string>
+    <string name="text_ok">OK</string>
+    <string name="text_add">Add</string>
+    <string name="text_add_another">Add Another</string>
+    <string name="text_cancel">Cancel</string>
+    <string name="text_delete">Delete</string>
+    <string name="text_match">Match</string>
+    <string name="text_at">at</string>
+    <string name="text_save">Save</string>
+    <string name="ad_attribution_content_desc">this image is part of an ad</string>
 
     <!-- endregion -->
 
     <!-- region DB Entity Defaults -->
 
     <string name="default_new_game_name">New Game</string>
-    <string name="default_new_player_name">New Player</string>
 
     <!-- endregion -->
 
@@ -47,27 +55,6 @@
 
     <!-- endregion -->
 
-    <!-- region DetailedPlayerScoresScreen -->
-
-    <string name="header_simple_scores">Simple Scores</string>
-
-    <!-- endregion -->
-
-    <!-- region EditPlayerScoreScreen -->
-
-    <string name="error_invalid_rank">This is not a valid rank. Please enter a positive integer less than 101.</string>
-    <string name="field_detailed_view">Detailed Mode</string>
-    <string name="field_rank">Rank</string>
-    <string name="field_total_score">Total Score</string>
-    <string name="field_uncategorized">Uncategorized</string>
-    <string name="header_player_info">Player Information</string>
-    <string name="header_player_ranking">Player Ranking</string>
-    <string name="header_player_scores">Player Score</string>
-    <string name="helper_player_score_screen_rank">Manual ranking is enabled for this game. Enter the player\'s rank here.</string>
-    <string name="helper_player_score_screen_detailed_mode">Detailed mode is on, but no scoring categories have been added. To add some, edit your game.</string>
-
-    <!-- endregion -->
-
     <!-- region LibraryScreen -->
 
     <string name="text_empty_game_search_results">No games found containing \"%s\"</string>
@@ -78,15 +65,15 @@
     <!-- region EditGameScreen -->
 
     <string name="a11y_categories_close_button">Close scoring categories editor screen</string>
-    <string name="button_edit_categories">Edit Categories</string>
-    <string name="button_add_a_category">Add a Category</string>
+    <string name="text_manage_categories">Manage Categories</string>
     <string name="header_scoring_categories">Scoring Categories</string>
     <string name="header_game_details">Game Details</string>
-    <string name="header_custom_theme">Custom Theme</string>
+    <string name="header_display_color">Display Color</string>
     <string name="info_categories_section_helper">Add scoring categories to your game. For example, in \'Settlers of Catan\' a player scores points for buildings, development cards, and the competitive objectives.</string>
     <string name="scoring_option_ascending">Lowest Score Wins</string>
     <string name="scoring_option_descending">Highest Score Wins</string>
     <string name="scoring_option_manual">Decide Your Own Ranks</string>
+    <string name="text_delete_game_confirm">Are you sure you want to permanently delete this game?</string>
 
     <!-- endregion -->
 
@@ -128,29 +115,29 @@
     <string name="sort_option_name">Winning Player</string>
     <string name="sort_option_score">Winning Score</string>
     <string name="sort_option_players">Player Count</string>
-    <string name="text_empty_match_players">No Players Added</string>
+    <string name="text_empty_match_players">No players were recorded for this match.</string>
     <string name="text_empty_match_search_results">No matches found containing \"%s\".</string>
+    <string name="text_new_match">New Match</string>
 
     <!-- endregion -->
 
     <!-- region SingleMatchScreen -->
 
     <string name="error_maximum_players_reached">You have reached the maximum supported number of players.</string>
+    <string name="field_location">Location</string>
+    <string name="location_hint">Add a Location</string>
     <string name="field_name">Name</string>
     <string name="field_notes">Notes</string>
+    <string name="notes_hint">Take some notes here</string>
+    <string name="text_new_player">Add a Player</string>
+    <string name="text_edit_player">Edit Player</string>
+    <string name="text_total">Total</string>
     <string name="header_other">Other</string>
     <string name="header_players">Players</string>
     <string name="info_empty_players">No players have been added.</string>
     <string name="search_placeholder_match">Search matches</string>
     <string name="text_no_detailed_scores">No players have detailed scores. Add some by tapping a player and switching on \"Detailed Score.\"</string>
-
-    <!-- endregion -->
-
-    <!-- region ScoreStringValidityState descriptions -->
-
-    <string name="validity_state_invalid_number">This is not a valid number.</string>
-    <string name="validity_state_excessive_decimals">Use a maximum of 3 decimal places.</string>
-    <string name="validity_state_no_error">No error.</string>
+    <string name="text_delete_match_confirm">Are you sure you want to permanently delete this match?</string>
 
     <!-- endregion -->
 </resources>

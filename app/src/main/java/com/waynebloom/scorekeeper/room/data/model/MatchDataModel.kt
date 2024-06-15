@@ -31,8 +31,11 @@ data class MatchDataModel(
     @ColumnInfo(name = "match_notes")
     var notes: String = "",
 
-    @ColumnInfo(name = "time_modified")
-    var timeModified: Long = Date().time
+    @ColumnInfo(name = "date_millis")
+    var dateMillis: Long = Date().time,
+
+    @ColumnInfo(defaultValue = "")
+    var location: String = "",
 )
 
 data class MatchDataRelationModel(

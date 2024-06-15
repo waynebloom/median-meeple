@@ -1,18 +1,20 @@
 package com.waynebloom.scorekeeper.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,10 +24,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -50,30 +52,27 @@ fun TopBarWithSearch(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(Dimensions.Size.topBarHeight),
+        modifier = Modifier.fillMaxWidth()
     ) {
 
         Icon(
             imageVector = Icons.Rounded.Search,
             contentDescription = null,
-            tint = MaterialTheme.colors.primary,
-            modifier = Modifier.padding(end = 16.dp),
+            modifier = Modifier.padding(end = Dimensions.Spacing.screenEdge),
         )
 
         Box(Modifier.weight(1f)) {
             BasicTextField(
                 value = searchInput,
-                textStyle = MaterialTheme.typography.body1.copy(
-                    color = MaterialTheme.colors.onBackground,
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
                 ),
-                cursorBrush = SolidColor(MaterialTheme.colors.onBackground),
                 singleLine = true,
-                onValueChange = { onSearchInputChanged(it) },
+                onValueChange = onSearchInputChanged,
                 keyboardActions = KeyboardActions(
                     onDone = { onCloseClick() }
                 ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusRequester(focusRequester)
@@ -85,18 +84,24 @@ fun TopBarWithSearch(
             }
         }
 
-        IconButton(
+        Icon(
             painter = painterResource(id = R.drawable.ic_search_off),
-            backgroundColor = Color.Transparent,
-            foregroundColor = MaterialTheme.colors.primary,
-            onClick = onClearClick
+            contentDescription = null,
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .clip(CircleShape)
+                .clickable(onClick = onClearClick)
+                .padding(4.dp)
         )
 
-        IconButton(
+        Icon(
             imageVector = Icons.Rounded.Close,
-            backgroundColor = Color.Transparent,
-            foregroundColor = MaterialTheme.colors.primary,
-            onClick = onCloseClick
+            contentDescription = null,
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .clip(CircleShape)
+                .clickable(onClick = onCloseClick)
+                .padding(4.dp)
         )
     }
 }

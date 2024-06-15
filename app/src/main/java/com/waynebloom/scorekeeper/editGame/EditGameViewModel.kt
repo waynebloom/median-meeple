@@ -11,17 +11,16 @@ import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.transformElement
+import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.DeleteCategory
 import com.waynebloom.scorekeeper.room.domain.usecase.DeleteGame
 import com.waynebloom.scorekeeper.room.domain.usecase.GetCategoriesByGameId
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
 import com.waynebloom.scorekeeper.room.domain.usecase.InsertCategory
+import com.waynebloom.scorekeeper.room.domain.usecase.InsertGame
 import com.waynebloom.scorekeeper.room.domain.usecase.UpdateCategory
 import com.waynebloom.scorekeeper.room.domain.usecase.UpdateGame
-import com.waynebloom.scorekeeper.shared.domain.model.TextFieldInput
-import com.waynebloom.scorekeeper.base.LocalCustomThemeColors
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,6 +39,7 @@ class EditGameViewModel @Inject constructor(
     getCategoriesByGameId: GetCategoriesByGameId,
     getGame: GetGame,
     private val insertCategory: InsertCategory,
+    private val insertGame: InsertGame,
     mutableStateFlowFactory: MutableStateFlowFactory,
     savedStateHandle: SavedStateHandle,
     private val updateCategoryUseCase: UpdateCategory,
@@ -49,7 +49,7 @@ class EditGameViewModel @Inject constructor(
     private val viewModelState: MutableStateFlow<EditGameViewModelState>
     val uiState: StateFlow<EditGameUiState>
 
-    private val gameId = savedStateHandle.get<Long>("gameId")!!
+    private var gameId = savedStateHandle.get<Long>("gameId")!!
     lateinit var composableCoroutineScope: CoroutineScope
 
     init {
@@ -60,59 +60,83 @@ class EditGameViewModel @Inject constructor(
 
         viewModelScope.launch {
 
-            val game = getGame(gameId)
-            val categories = getCategoriesByGameId(gameId).sortedBy { it.position }
+            if (gameId != -1L) {
+                val game = getGame(gameId)
+                val categories = getCategoriesByGameId(gameId)
+                    .filterNot { it.name.text == "defaultMiscCategory" }
+                    .sortedBy { it.position }
 
-            viewModelState.update {
-
-                it.copy(
-                    loading = false,
-                    categories = categories,
-                    color = game.color,
-                    nameInput = game.name,
-                    scoringMode = game.scoringMode
-                )
-            }
-        }
-    }
-
-    fun onConfirmClick() {
-        viewModelScope.launch {
-            viewModelState.value.let { state ->
-                updateGameUseCase(
-                    GameDomainModel(
-                        id = gameId,
-                        name = state.nameInput,
-                        color = state.color,
-                        scoringMode = state.scoringMode
+                viewModelState.update {
+                    it.copy(
+                        loading = false,
+                        categories = categories,
+                        colorIndex = game.displayColorIndex,
+                        name = game.name,
+                        scoringMode = game.scoringMode
                     )
-                )
-
-                state.categories.forEach {
-                    updateCategoryUseCase(it, gameId)
+                }
+            } else {
+                viewModelState.update {
+                    it.copy(
+                        loading = false,
+                        scoringMode = ScoringMode.Descending
+                    )
                 }
             }
         }
     }
 
-    // region Game Details
-
-    fun onColorClick(value: String) = viewModelState.update {
-        it.copy(color = value, showColorMenu = false)
+    fun onSaveClick(onFinish: () -> Unit) = viewModelScope.launch {
+        viewModelState.value.let { state ->
+            if (gameId == -1L) {
+                gameId = insertGame(
+                    GameDomainModel(
+                        name = state.name,
+                        displayColorIndex = state.colorIndex,
+                        scoringMode = state.scoringMode
+                    )
+                )
+                insertCategory(
+                    category = CategoryDomainModel(
+                        name = TextFieldValue("defaultMiscCategory"),
+                        position = -1
+                    ),
+                    gameId = gameId
+                )
+            } else {
+                updateGameUseCase(
+                    GameDomainModel(
+                        id = gameId,
+                        name = state.name,
+                        displayColorIndex = state.colorIndex,
+                        scoringMode = state.scoringMode
+                    )
+                )
+            }
+            state.categories.forEach { category ->
+                if (category.id == -1L) {
+                    insertCategory(category, gameId)
+                } else {
+                    updateCategoryUseCase(category, gameId)
+                }
+            }
+        }
+        onFinish()
     }
 
-    // TODO: make this better. Animation, confirmation state
-    fun onDeleteClick() = viewModelScope.launch {
+    // region Game Details
+
+    fun onColorClick(index: Int) = viewModelState.update {
+        it.copy(colorIndex = index, showColorMenu = false)
+    }
+
+    fun onDeleteClick(onFinish: () -> Unit) = viewModelScope.launch {
         deleteGame(gameId)
+        onFinish()
     }
 
     fun onNameChanged(value: TextFieldValue) = viewModelState.update {
-        it.copy(
-            nameInput = it.nameInput.copy(
-                isValid = value.text.isNotBlank(),
-                value = value
-            )
-        )
+        it.copy(name = value)
     }
 
     fun onScoringModeChanged(value: ScoringMode) = viewModelState.update {
@@ -133,7 +157,7 @@ class EditGameViewModel @Inject constructor(
     fun onCategoryClick(index: Int) {
         viewModelState.update {
             it.copy(
-                indexOfCategoryReceivingInput = index,
+                indexOfSelectedCategory = index,
                 isCategoryDialogOpen = true
             )
         }
@@ -144,7 +168,7 @@ class EditGameViewModel @Inject constructor(
     }
 
     fun onCategoryInputChanged(input: TextFieldValue, index: Int) = viewModelState.update {
-        val category = it.categories[index]
+        val category = it.categories.getOrNull(index) ?: return@update it
         val updatedCategories = it.categories.toMutableList().apply {
             this[index] = category.copy(name = input)
         }
@@ -157,18 +181,14 @@ class EditGameViewModel @Inject constructor(
             name = TextFieldValue(),
             position = newCategoryPosition
         )
-        val newId = insertCategory(
-            category = newCategory,
-            gameId = gameId
-        )
 
         viewModelState.update {
-            val updatedCategories = it.categories.plus(newCategory.copy(id = newId))
+            val updatedCategories = it.categories.plus(newCategory)
 
             it.copy(
                 isCategoryDialogOpen = true,
                 categories = updatedCategories,
-                indexOfCategoryReceivingInput = updatedCategories.lastIndex,
+                indexOfSelectedCategory = updatedCategories.lastIndex,
             )
         }
     }
@@ -224,43 +244,40 @@ class EditGameViewModel @Inject constructor(
     }
 
     fun onCategoryDoneClick() = viewModelState.update {
-        it.copy(indexOfCategoryReceivingInput = null)
+        it.copy(indexOfSelectedCategory = -1)
     }
 
-    fun onDeleteCategoryClick() {
-
-        val index = viewModelState.value.indexOfCategoryReceivingInput!!
-        val idOfDeletedCategory = viewModelState.value.categories[index].id
-
-        viewModelState.update { state ->
-            val updatedCategories = state.categories.toMutableList()
-            updatedCategories.listIterator(index).apply {
-
-                // remove the element that is being deleted
-                next(); remove()
-
-                // adjust the position property of the remaining elements
-                while(hasNext()) {
-                    val category = next()
-                    val adjustedPosition = category.position - 1
-                    set(category.copy(position = adjustedPosition))
-                }
+    fun onDeleteCategoryClick(index: Int) = viewModelState.update { state ->
+        val deletedCategory = state.categories[index]
+        if (deletedCategory.id != -1L) {
+            viewModelScope.launch {
+                deleteCategory(deletedCategory.id)
             }
-
-            state.copy(
-                categories = updatedCategories,
-                indexOfCategoryReceivingInput = null,
-            )
         }
 
-        viewModelScope.launch {
-            deleteCategory(idOfDeletedCategory)
+        val newCategories = state.categories.toMutableList()
+        newCategories.listIterator(index).apply {
+
+            // remove the element that is being deleted
+            next(); remove()
+
+            // adjust the position property of the remaining elements
+            while(hasNext()) {
+                val category = next()
+                val adjustedPosition = category.position - 1
+                set(category.copy(position = adjustedPosition))
+            }
         }
+
+        state.copy(
+            categories = newCategories,
+            indexOfSelectedCategory = -1,
+        )
     }
 
     fun onCategoryDialogDismiss() = viewModelState.update {
         it.copy(
-            indexOfCategoryReceivingInput = null,
+            indexOfSelectedCategory = -1,
             isCategoryDialogOpen = false
         )
     }
@@ -271,11 +288,11 @@ class EditGameViewModel @Inject constructor(
 private data class EditGameViewModelState(
     val loading: Boolean = true,
     val categories: List<CategoryDomainModel> = emptyList(),
-    val color: String = "",
+    val colorIndex: Int = 0,
     val dragState: DragState = DragState(),
-    val indexOfCategoryReceivingInput: Int? = null,
+    val indexOfSelectedCategory: Int = -1,
     val isCategoryDialogOpen: Boolean = false,
-    val nameInput: TextFieldInput = TextFieldInput(),
+    val name: TextFieldValue = TextFieldValue(),
     val scoringMode: ScoringMode = ScoringMode.Descending,
     val showColorMenu: Boolean = false,
 ) {
@@ -285,11 +302,11 @@ private data class EditGameViewModelState(
     } else {
         EditGameUiState.Content(
             categories = getCategoriesAdjustedForActiveDragAction(),
-            color = color,
+            colorIndex = colorIndex,
             dragState = dragState,
-            indexOfCategoryReceivingInput = indexOfCategoryReceivingInput,
+            indexOfSelectedCategory = indexOfSelectedCategory,
             isCategoryDialogOpen = isCategoryDialogOpen,
-            nameInput = nameInput,
+            name = name,
             scoringMode = scoringMode,
             showColorMenu = showColorMenu
         )
@@ -313,18 +330,14 @@ sealed interface EditGameUiState {
 
     data class Content(
         val categories: List<CategoryDomainModel>,
-        val color: String,
+        val colorIndex: Int,
         val dragState: DragState,
-        val indexOfCategoryReceivingInput: Int?,
+        val indexOfSelectedCategory: Int,
         val isCategoryDialogOpen: Boolean,
-        val nameInput: TextFieldInput,
+        val name: TextFieldValue,
         val scoringMode: ScoringMode,
         val showColorMenu: Boolean,
-    ): EditGameUiState {
-
-        @Composable
-        fun getResolvedColor() = LocalCustomThemeColors.current.getColorByKey(color)
-    }
+    ): EditGameUiState
 }
 
 data class DragState(

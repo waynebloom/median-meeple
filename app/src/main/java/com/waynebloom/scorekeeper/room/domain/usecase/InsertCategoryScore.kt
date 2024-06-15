@@ -13,7 +13,7 @@ class InsertCategoryScore @Inject constructor(
             CategoryScoreDataModel(
                 categoryId = categoryScore.categoryId,
                 playerId = categoryScore.playerId,
-                value = categoryScore.score.toString()
+                value = categoryScore.scoreAsTextFieldValue.text
             )
         )
     }

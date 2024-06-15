@@ -9,10 +9,10 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CategoryScoreRepository {
-    @Query("DELETE FROM SUBSCORE WHERE id = :id")
+    @Query("DELETE FROM CATEGORYSCORE WHERE id = :id")
     suspend fun deleteById(id: Long)
 
-    @Query("SELECT * FROM SUBSCORE WHERE player_id = :id")
+    @Query("SELECT * FROM CATEGORYSCORE WHERE player_id = :id")
     fun getByPlayerIdAsFlow(id: Long): Flow<List<CategoryScoreDataModel>>
 
     @Insert

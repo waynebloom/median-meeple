@@ -6,22 +6,20 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.ads.nativead.NativeAd
-import com.waynebloom.scorekeeper.admob.domain.usecase.GetAdAsFlow
+import com.waynebloom.scorekeeper.admob.domain.usecase.GetMultipleAdsAsFlow
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
-import com.waynebloom.scorekeeper.ext.isEqualTo
 import com.waynebloom.scorekeeper.ext.toStringForDisplay
 import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGameWithRelationsAsFlow
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameConstants
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
+import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.cancel
@@ -34,13 +32,14 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
 class SingleGameViewModel @Inject constructor(
     getGameWithRelationsAsFlow: GetGameWithRelationsAsFlow,
     mutableStateFlowFactory: MutableStateFlowFactory,
-    getAdAsFlow: GetAdAsFlow,
+    getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
     savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
@@ -72,22 +71,25 @@ class SingleGameViewModel @Inject constructor(
                     return@collectLatest
                 }
 
+                val categories = latest.categories
+                    .filterNot { it.name.text == "defaultMiscCategory" }
+                    .sortedBy { it.position }
+
                 viewModelState.update {
                     it.copy(
                         loading = false,
-                        nameOfGame = latest.name.value.text,
-                        primaryColorId = latest.color,
+                        nameOfGame = latest.name.text,
                         matches = latest.matches,
-                        categories = latest.categories,
+                        categories = categories,
                         scoringMode = latest.scoringMode,
                     )
                 }
             }
         }
         viewModelScope.launch {
-            getAdAsFlow().collectLatest { latestAd ->
+            getMultipleAdsAsFlow().collectLatest { ads ->
                 viewModelState.update {
-                    it.copy(ad = latestAd)
+                    it.copy(ads = ads)
                 }
             }
         }
@@ -104,7 +106,7 @@ class SingleGameViewModel @Inject constructor(
 
     fun onSearchInputChanged(value: TextFieldValue) = viewModelState.update {
         scrollToTop()
-        it.copy(searchInput = value)
+        it.copy(searchValue = value)
     }
 
     fun onSortButtonClick() = viewModelState.update {
@@ -148,19 +150,18 @@ class SingleGameViewModel @Inject constructor(
     // endregion
 }
 
-private data class SingleGameViewModelState(
+data class SingleGameViewModelState(
     // region Shared
     val loading: Boolean = true,
     val nameOfGame: String = "",
-    val primaryColorId: String = "",
+    val ads: List<NativeAd> = emptyList(),
     // endregion
 
     // region Matches
-    val searchInput: TextFieldValue = TextFieldValue(),
+    val searchValue: TextFieldValue = TextFieldValue(),
     val isSortDialogShowing: Boolean = false,
     val sortDirection: SortDirection = SortDirection.Descending,
     val sortMode: MatchSortMode = MatchSortMode.ByMatchAge,
-    val ad: NativeAd? = null,
     val matchesLazyListState: LazyListState = LazyListState(),
     val matches: List<MatchDomainModel> = listOf(),
     val scoringMode: ScoringMode = ScoringMode.Descending,
@@ -170,121 +171,100 @@ private data class SingleGameViewModelState(
     val isBestWinnerExpanded: Boolean = false,
     val isHighScoreExpanded: Boolean = false,
     val isUniqueWinnersExpanded: Boolean = false,
-    val categoryNames: List<String> = listOf(),
     val categories: List<CategoryDomainModel> = listOf(),
     val indexOfSelectedCategory: Int = 0,
     // endregion
 ) {
 
-    // region Matches Filtering & Sort Logic
+    private fun getFilteredIndices(): List<Int> {
+        val filteredMatches: MutableList<Pair<Int, MatchDomainModel>> = mutableListOf()
 
-    private fun PlayerDomainModel.showWithFilter(filter: String): Boolean {
-        val nameMatches = name.text.lowercase().contains(filter.lowercase())
-        val totalScoreMatches = filter.toBigDecimalOrNull()?.let {
-            totalScore.isEqualTo(it)
-        } ?: false
+        matches.forEachIndexed { index, match ->
+            val shouldShow = if (searchValue.text.isNotEmpty()) {
+                match.players.any { it.name.lowercase().contains(searchValue.text.lowercase()) }
+            } else {
+                true
+            }
 
-        return nameMatches || totalScoreMatches
-    }
-
-    private fun MatchDomainModel.atLeastOnePlayerMatchesFilter(filter: String) =
-        players.any { it.showWithFilter(filter) }
-
-    private fun matchMatchesFilters(match: MatchDomainModel): Boolean {
-        return if (searchInput.text.isNotEmpty()) {
-            match.atLeastOnePlayerMatchesFilter(filter = searchInput.text)
-        } else {
-            true
-        }
-    }
-
-    private fun getFilteredMatches(): List<MatchDomainModel> {
-        val filteredMatches: MutableList<MatchDomainModel> = mutableListOf()
-        val matchesWithNoPlayers: MutableList<MatchDomainModel> = mutableListOf()
-
-        matches.forEach {
-            if (matchMatchesFilters(it)) {
-                if (it.players.isEmpty()) {
-                    matchesWithNoPlayers.add(it)
-                } else {
-                    filteredMatches.add(it)
-                }
+            if (shouldShow) {
+                filteredMatches.add(index to match)
             }
         }
 
         when (sortMode) {
-            MatchSortMode.ByMatchAge -> filteredMatches.reverse()
+            MatchSortMode.ByMatchAge -> filteredMatches.sortBy { match ->
+                match.second.dateMillis
+            }
             MatchSortMode.ByWinningPlayer -> filteredMatches.sortBy { match ->
-                match.players.getWinningPlayer(scoringMode).name.text
+                match.second.players.getWinningPlayer(scoringMode).name
             }
             MatchSortMode.ByWinningScore -> filteredMatches.sortBy { match ->
-                match.players.getWinningPlayer(scoringMode).totalScore
+                match.second.players
+                    .maxOfOrNull { player ->
+                        player.categoryScores.sumOf {
+                            it.scoreAsBigDecimal ?: BigDecimal.ZERO
+                        }
+                    }
+                    ?: BigDecimal.ZERO
             }
-            MatchSortMode.ByPlayerCount -> filteredMatches.sortBy { it.players.size }
+            MatchSortMode.ByPlayerCount -> filteredMatches.sortBy { match ->
+                match.second.players.size
+            }
         }
 
-        if (sortDirection == SortDirection.Descending)
-            filteredMatches.reverse()
-
-        filteredMatches.addAll(matchesWithNoPlayers)
-
-        return filteredMatches
+        return if (sortDirection == SortDirection.Descending) {
+            filteredMatches.map { it.first }.reversed()
+        } else {
+            filteredMatches.map { it.first }
+        }
     }
-
-    // endregion
 
     // region Statistics Generation
 
-    private fun
-            getTotalScoreData(matches: List<MatchDomainModel>) = matches
-        .flatMap { match ->
-            match.players.map { player ->
-                ScoringPlayerDomainModel(
-                    name = player.name.text,
-                    score = player.totalScore
-                )
-            }
-        }
-
-    private fun generateTotalScoreStatistics(
-        matches: List<MatchDomainModel>
-    ) = StatisticsForCategory(
+    private fun generateTotalScoreStatistics(matches: List<MatchDomainModel>) = StatisticsForCategory(
         category = CategoryDomainModel(
             name = TextFieldValue(""),
             position = 0
         ),
-        data = getTotalScoreData(matches)
+        data = matches
+            .flatMap { match ->
+                match.players.map { player ->
+                    ScoringPlayerDomainModel(
+                        name = player.name,
+                        score = player.categoryScores.sumOf { it.scoreAsBigDecimal ?: BigDecimal.ZERO }
+                    )
+                }
+            }
     )
-
-    private fun MatchDomainModel.getDataForCategory(category: CategoryDomainModel) = players
-        .filter { it.useCategorizedScore }
-        .map { player ->
-            ScoringPlayerDomainModel(
-                name = player.name.text,
-                score = player.categoryScores[category.position].score
-            )
-        }
-
-    private fun CategoryDomainModel.getData(matches: List<MatchDomainModel>) = matches
-        .flatMap { it.getDataForCategory(this) }
 
     private fun generateCategoryStatistics(
         categories: List<CategoryDomainModel>,
         matches: List<MatchDomainModel>
-    ) = categories
-        .map {
-
-            val categoryData = it.getData(matches)
+    ): List<StatisticsForCategory?> {
+        return categories.map { category ->
+            val categoryData = matches.flatMap { match ->
+                match.players.map { player ->
+                    ScoringPlayerDomainModel(
+                        name = player.name,
+                        score = player
+                            .categoryScores
+                            .find { it.categoryId == category.id }
+                            ?.scoreAsBigDecimal
+                            ?: BigDecimal.ZERO
+                    )
+                }
+            }
 
             if (categoryData.isNotEmpty()) {
                 StatisticsForCategory(
-                    category = it,
-                    data = it.getData(matches)
+                    category = category,
+                    data = categoryData
                 )
             } else {
                 null
             }
         }
+    }
 
     private fun getPlayCount(matches: List<MatchDomainModel>) = matches
         .foldRight(initial = 0) { element, sum ->
@@ -293,7 +273,7 @@ private data class SingleGameViewModelState(
 
     private fun getUniquePlayerCount(matches: List<MatchDomainModel>) = matches
         .flatMap { it.players }
-        .distinctBy { it.name.text }
+        .distinctBy { it.name }
         .count()
 
     private fun getWinnersOrderedByNumberOfWins(
@@ -304,7 +284,7 @@ private data class SingleGameViewModelState(
 
         matches.forEach {
             if (it.players.isEmpty()) return@forEach
-            val winnerName = it.players.getWinningPlayer(scoringMode).name.text
+            val winnerName = it.players.getWinningPlayer(scoringMode).name
             winners[winnerName] = winners[winnerName]?.plus(1) ?: 1
         }
 
@@ -326,21 +306,20 @@ private data class SingleGameViewModelState(
             MatchesForGameUiState.Loading(
                 loading = true,
                 screenTitle = nameOfGame,
-                primaryColorId = primaryColorId
             )
         }
         else -> {
             MatchesForGameUiState.Content(
+                ads = ads,
                 screenTitle = nameOfGame,
-                primaryColorId = primaryColorId,
-                searchInput = searchInput,
+                searchInput = searchValue,
                 isSortDialogShowing = isSortDialogShowing,
                 sortDirection = sortDirection,
                 sortMode = sortMode,
-                ad = ad,
                 scoringMode = scoringMode,
                 matchesLazyListState = matchesLazyListState,
-                matches = getFilteredMatches()
+                matches = matches,
+                filteredIndices = getFilteredIndices()
             )
         }
     }
@@ -350,14 +329,12 @@ private data class SingleGameViewModelState(
             StatisticsForGameUiState.Loading(
                 loading = true,
                 screenTitle = "",
-                primaryColorId = primaryColorId
             )
         }
 
         matches.isEmpty() || matches.all { it.players.isEmpty() } -> {
             StatisticsForGameUiState.Empty(
                 screenTitle = nameOfGame,
-                primaryColorId = primaryColorId
             )
         }
 
@@ -374,7 +351,11 @@ private data class SingleGameViewModelState(
                 .takeWhile {
                     it.numberOfWins == winners.first().numberOfWins
                 }
-            val selectedCategory = categoryStatistics[indexOfSelectedCategory]
+            val selectedCategory = if (indexOfSelectedCategory == 0) {
+                totalScoreStatistics
+            } else {
+                categoryStatistics[indexOfSelectedCategory - 1]
+            }
             val playersWithMostWinsOverflow =
                 playersWithMostWins.size - StatisticsForGameConstants.numberOfRowsToShowExpanded
             val playersWithHighScoreOverflow =
@@ -383,8 +364,8 @@ private data class SingleGameViewModelState(
                 winners.size - StatisticsForGameConstants.numberOfRowsToShowExpanded
 
             StatisticsForGameUiState.Content(
+                ads = ads,
                 screenTitle = nameOfGame,
-                primaryColorId = primaryColorId,
                 matchCount = matches.count(),
                 playCount = getPlayCount(matches),
                 uniquePlayerCount = getUniquePlayerCount(matches),
@@ -397,7 +378,7 @@ private data class SingleGameViewModelState(
                 isUniqueWinnersExpanded = isUniqueWinnersExpanded,
                 winners = winners,
                 winnersOverflow = winnersOverflow,
-                categoryNames = categoryNames,
+                categoryNames = categories.map { it.name.text },
                 indexOfSelectedCategory = indexOfSelectedCategory,
                 isCategoryDataEmpty = selectedCategory == null,
                 categoryTopScorers = selectedCategory?.topScorers ?: listOf(),
@@ -412,47 +393,42 @@ private data class SingleGameViewModelState(
 sealed interface MatchesForGameUiState {
 
     val screenTitle: String
-    val primaryColorId: String
 
     data class Content(
         override val screenTitle: String,
-        override val primaryColorId: String,
+        val ads: List<NativeAd>,
         val searchInput: TextFieldValue,
         val isSortDialogShowing: Boolean,
         val sortDirection: SortDirection,
         val sortMode: MatchSortMode,
-        val ad: NativeAd?,
         val matchesLazyListState: LazyListState,
         val matches: List<MatchDomainModel>,
+        val filteredIndices: List<Int>,
         val scoringMode: ScoringMode,
     ): MatchesForGameUiState
 
     data class Loading(
         val loading: Boolean,
         override val screenTitle: String,
-        override val primaryColorId: String,
     ): MatchesForGameUiState
 }
 
 sealed interface StatisticsForGameUiState {
 
     val screenTitle: String
-    val primaryColorId: String
 
     data class Loading(
         val loading: Boolean,
         override val screenTitle: String,
-        override val primaryColorId: String,
     ): StatisticsForGameUiState
 
     data class Empty(
         override val screenTitle: String,
-        override val primaryColorId: String,
     ): StatisticsForGameUiState
 
     data class Content(
         override val screenTitle: String,
-        override val primaryColorId: String,
+        val ads: List<NativeAd>,
         val matchCount: Int,
         val playCount: Int,
         val uniquePlayerCount: Int,
