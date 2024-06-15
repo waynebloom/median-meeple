@@ -214,11 +214,14 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
         database.execSQL("""
             INSERT INTO Temp (subscore_title_id, player_id, total_score, category_sum)
             SELECT
-                (SELECT id FROM SubscoreTitle WHERE title = 'defaultMiscCategory'),
+                (SELECT id FROM SubscoreTitle WHERE game_id = Match.game_owner_id AND title = 'defaultMiscCategory'),
                 Player.id,
                 CAST(Player.score AS REAL),
                 SUM(CAST(Subscore.value AS REAL))
-            FROM Player JOIN Subscore ON Player.id = Subscore.player_id GROUP BY Player.id;
+            FROM Player
+            JOIN Subscore ON Player.id = Subscore.player_id 
+            JOIN Match ON Match.id = Player.match_id
+            GROUP BY Player.id;
         """.trimIndent())
         database.execSQL("""
             INSERT INTO Subscore (player_id, subscore_title_id, value)

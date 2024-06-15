@@ -34,13 +34,14 @@ import com.waynebloom.scorekeeper.room.domain.repository.PlayerRepository
     ],
     exportSchema = true,
     autoMigrations = [
-        AutoMigration (from = 1, to = 2),
-        AutoMigration (from = 2, to = 3, spec = AppDatabase.DeleteGameImage::class),
-        AutoMigration (from = 4, to = 5),
-        AutoMigration (from = 5, to = 6),
-        AutoMigration (from = 6, to = 7),
-        AutoMigration (from = 11, to = 12),
-        AutoMigration (from = 13, to = 14, spec = AppDatabase.AutoMigration13to14::class)
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3, spec = AppDatabase.DeleteGameImage::class),
+        AutoMigration(from = 3, to = 4),
+        AutoMigration(from = 4, to = 5),
+        AutoMigration(from = 5, to = 6),
+        AutoMigration(from = 6, to = 7),
+        AutoMigration(from = 11, to = 12),
+        AutoMigration(from = 13, to = 14, spec = AppDatabase.AutoMigration13to14::class)
     ]
 )
 abstract class AppDatabase : RoomDatabase() {
