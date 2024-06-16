@@ -217,9 +217,9 @@ val MIGRATION_12_13 = object : Migration(12, 13) {
                 (SELECT id FROM SubscoreTitle WHERE game_id = Match.game_owner_id AND title = 'defaultMiscCategory'),
                 Player.id,
                 CAST(Player.score AS REAL),
-                SUM(CAST(Subscore.value AS REAL))
+                COALESCE(SUM(CAST(Subscore.value AS REAL)), 0)
             FROM Player
-            JOIN Subscore ON Player.id = Subscore.player_id 
+            LEFT JOIN Subscore ON Player.id = Subscore.player_id 
             JOIN Match ON Match.id = Player.match_id
             GROUP BY Player.id;
         """.trimIndent())
