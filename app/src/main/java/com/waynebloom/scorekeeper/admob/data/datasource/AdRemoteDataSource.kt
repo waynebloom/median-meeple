@@ -19,7 +19,7 @@ class AdRemoteDataSource @Inject constructor(
     internal fun initializeLoader(onNativeAdLoaded: (NativeAd) -> Unit) {
         val adUnitId = if (BuildConfig.DEBUG) AdmobID.DEBUG.id else AdmobID.RELEASE.id
         val options = googleAdsWrapper.getNativeAdOptionsBuilder()
-            .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_BOTTOM_LEFT)
+            .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_LEFT)
             .build()
 
         loader = googleAdsWrapper
