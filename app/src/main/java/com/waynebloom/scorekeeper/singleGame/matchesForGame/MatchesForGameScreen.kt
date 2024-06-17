@@ -326,20 +326,6 @@ fun MatchesForGameSortOptionsDialog(
     }
 }
 
-@Composable
-private fun MatchesForGameHelperBoxListHeader(message: String, type: HelperBoxType) {
-    Column {
-
-        HelperBox(
-            message = message,
-            type = type,
-            modifier = Modifier.padding(vertical = Spacing.sectionContent),
-            maxLines = 2,
-        )
-        HorizontalDivider()
-    }
-}
-
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MatchesForGameScreen(
@@ -490,55 +476,56 @@ fun MatchesForGameScreen(
                     val formatter = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).apply {
                         timeZone = TimeZone.getTimeZone("UTC")
                     }
+                    val items = if (searchInput.text.isBlank()) {
+                        matches
+                    } else {
+                        matches.filterIndexed { index, _ -> filteredIndices.contains(index) }
+                    }
 
-                    matches
-                        .filterIndexed { index, _ ->
-                            filteredIndices.isEmpty() || filteredIndices.contains(index)
-                        }
-                        .forEachIndexed { i, match ->
-                            val showAd = (matches.size < 3 && i == matches.lastIndex)
-                                || ((i - 1) % 6 == 0 && i != matches.lastIndex)
+                    items.forEachIndexed { i, match ->
+                        val showAd = (matches.size < 3 && i == matches.lastIndex)
+                            || ((i - 1) % 6 == 0 && i != matches.lastIndex)
 
-                            item(key = match.id) {
-                                MatchCard(
-                                    number = "${matches.indexOf(match) + 1}",
-                                    date = formatter.format(match.dateMillis),
-                                    location = match.location,
-                                    players = match.players,
-                                    totals = match.players.map {
-                                        it.categoryScores
-                                            .sumOf { score -> score.scoreAsBigDecimal ?: BigDecimal.ZERO }
-                                            .toShortFormatString()
-                                    },
-                                    modifier = Modifier
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .clickable {
-                                            onMatchClick(match.id)
-                                        }
-                                        .animateItemPlacement(
-                                            animationSpec = tween(
-                                                durationMillis = DurationMs.medium,
-                                                easing = Ease
-                                            )
+                        item(key = match.id) {
+                            MatchCard(
+                                number = "${matches.indexOf(match) + 1}",
+                                date = formatter.format(match.dateMillis),
+                                location = match.location,
+                                players = match.players,
+                                totals = match.players.map {
+                                    it.categoryScores
+                                        .sumOf { score -> score.scoreAsBigDecimal ?: BigDecimal.ZERO }
+                                        .toShortFormatString()
+                                },
+                                modifier = Modifier
+                                    .clip(MaterialTheme.shapes.medium)
+                                    .clickable {
+                                        onMatchClick(match.id)
+                                    }
+                                    .animateItemPlacement(
+                                        animationSpec = tween(
+                                            durationMillis = DurationMs.medium,
+                                            easing = Ease
                                         )
+                                    )
+                            )
+                        }
+
+                        if (showAd) {
+                            item(key = "ad$i") {
+                                val ad = if (ads.isNotEmpty()) {
+                                    val previousAdCount = (i - 1) / 6
+                                    ads[previousAdCount % ads.size]
+                                } else {
+                                    null
+                                }
+
+                                LargeImageAdCard(
+                                    ad = ad,
+                                    modifier = Modifier.animateItemPlacement()
                                 )
                             }
-
-                            if (showAd) {
-                                item(key = "ad$i") {
-                                    val ad = if (ads.isNotEmpty()) {
-                                        val previousAdCount = (i - 1) / 6
-                                        ads[previousAdCount % ads.size]
-                                    } else {
-                                        null
-                                    }
-
-                                    LargeImageAdCard(
-                                        ad = ad,
-                                        modifier = Modifier.animateItemPlacement()
-                                    )
-                                }
-                            }
+                        }
                     }
 
                     item {
