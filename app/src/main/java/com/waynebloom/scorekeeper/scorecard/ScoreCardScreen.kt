@@ -868,22 +868,18 @@ private fun ScoreColumn(
         }
 
         scores.forEachIndexed { index, score ->
-            if (scores.size <= 1 && score.scoreAsTextFieldValue.text.isNotBlank()) {
-                TextFieldCell(
-                    value = score.scoreAsTextFieldValue,
-                    onValueChange = { onCellChange(it, index) },
-                    modifier = Modifier.padding(Dimensions.Spacing.sectionContent / 2),
-                    unfocusedBackgroundColor = totalScoreHighlightColor,
-                    isError = score.scoreAsTextFieldValue.text.isNotBlank() && score.scoreAsBigDecimal == null,
-                )
+            val highlight = if (scores.size <= 1 && score.scoreAsTextFieldValue.text.isNotBlank()) {
+                totalScoreHighlightColor
             } else {
-                TextFieldCell(
-                    value = score.scoreAsTextFieldValue,
-                    onValueChange = { onCellChange(it, index) },
-                    modifier = Modifier.padding(Dimensions.Spacing.sectionContent / 2),
-                    isError = score.scoreAsTextFieldValue.text.isNotBlank() && score.scoreAsBigDecimal == null,
-                )
+                Color.Transparent
             }
+            TextFieldCell(
+                value = score.scoreAsTextFieldValue,
+                onValueChange = { onCellChange(it, index) },
+                modifier = Modifier.padding(Dimensions.Spacing.sectionContent / 2),
+                unfocusedBackgroundColor = highlight,
+                isError = score.scoreAsTextFieldValue.text.isNotBlank() && score.scoreAsBigDecimal == null,
+            )
         }
 
         if (scores.size > 1) {
@@ -1132,6 +1128,28 @@ private fun NoPlayers() {
     MedianMeepleTheme {
         ScoreCardScreen(
             uiState = ScoreCardSampleData.NoPlayers,
+            onPlayerClick = {},
+            onSaveClick = {},
+            onDeleteClick = {},
+            onAddPlayer = {_,_->},
+            onDeletePlayerClick = {},
+            onCellChange = {_,_,_->},
+            onDialogTextFieldChange = {},
+            onDateChange = {},
+            onLocationChange = {},
+            onNotesChange = {},
+            onPlayerChange = {_,_->}
+        )
+    }
+}
+
+@Preview
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun OneCategory() {
+    MedianMeepleTheme {
+        ScoreCardScreen(
+            uiState = ScoreCardSampleData.OneCategory,
             onPlayerClick = {},
             onSaveClick = {},
             onDeleteClick = {},

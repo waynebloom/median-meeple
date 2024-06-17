@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- region Ads -->
 
@@ -102,7 +102,7 @@
         <item quantity="one">%d win</item>
         <item quantity="other">%d wins</item>
     </plurals>
-    <string name="number_list_overflow">…and %1$d more</string>
+    <string name="number_list_overflow" tools:ignore="PluralsCandidate">…and %1$d more</string>
     <string name="no_data_for_category">There is no data recorded for this category</string>
 
     <!-- endregion -->

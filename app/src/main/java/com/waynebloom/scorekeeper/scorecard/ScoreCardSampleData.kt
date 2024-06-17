@@ -78,4 +78,5 @@ object ScoreCardSampleData {
         scoreCard = longScoreCard,
     )
     val NoPlayers = Default.copy(players = emptyList(), scoreCard = emptyList())
+    val OneCategory = Default.copy(scoreCard = shortScoreCard.map { it.take(1) }, categoryNames = listOf("Red"))
 }
