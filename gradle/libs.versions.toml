@@ -9,8 +9,10 @@ junitKtx = "1.1.5"
 lifecycle = "2.8.2"
 material = "1.12.0"
 material3 = "1.2.1"
+moshi = "1.15.2"
 navigationCompose = "2.7.7"
 playServicesAds = "23.1.0"
+retrofit = "2.11.0"
 room = "2.6.1"
 runner = "1.5.2"
 
@@ -47,8 +49,12 @@ lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx
 # XML ad views still need material for the button
 # TODO LOW PRIO: look into replacing with normal button to reduce size
 material = { module = "com.google.android.material:material", version.ref = "material" }
+moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
+retrofit-converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
+moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
+retrofit = { module = 'com.squareup.retrofit2:retrofit', version.ref = "retrofit"}
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }

@@ -90,8 +90,12 @@ dependencies {
     implementation libs.lifecycle.viewmodel.compose
     implementation libs.lifecycle.viewmodel.ktx
     implementation libs.material
+    implementation libs.moshi
+    implementation libs.moshi.kotlin
     implementation libs.navigation.compose
     implementation libs.play.services.ads
+    implementation libs.retrofit
+    implementation libs.retrofit.converter.moshi
     implementation libs.room.runtime
     implementation libs.room.ktx
     implementation platform(libs.firebase.bom)
