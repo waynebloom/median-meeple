@@ -18,7 +18,7 @@ android {
 
     defaultConfig {
         applicationId "com.waynebloom.scorekeeper"
-        minSdk 21
+        minSdk 26
         targetSdk 34
         versionCode 15
         versionName "2024.1.2"

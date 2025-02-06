@@ -13,7 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.waynebloom.scorekeeper.editGame.EditGameRoute
 import com.waynebloom.scorekeeper.library.LibraryRoute
-import com.waynebloom.scorekeeper.meepleBase.MeepleBaseRoute
+import com.waynebloom.scorekeeper.login.LoginRoute
 import com.waynebloom.scorekeeper.scorecard.ScoreCardRoute
 import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
 import com.waynebloom.scorekeeper.singleGame.matchesForGame.MatchesForGameRoute
@@ -26,13 +26,13 @@ fun MedianMeepleApp() {
 
     NavHost(
         navController = navController,
-        startDestination = Destination.MeepleBase.route,
+        startDestination = Destination.Login.route,
     ) {
 
-        // Meeple Base
+        // Login
 
-        composable(Destination.MeepleBase.route) {
-            MeepleBaseRoute(navController)
+        composable(Destination.Login.route) {
+            LoginRoute(navController)
         }
 
         // Library

@@ -2,11 +2,14 @@ package com.waynebloom.scorekeeper.dagger.module
 
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.waynebloom.scorekeeper.auth.CredentialManager
+import com.waynebloom.scorekeeper.auth.data.source.AuthApi
 import com.waynebloom.scorekeeper.network.data.datasource.MeepleBaseApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
@@ -24,12 +27,28 @@ object NetworkModule {
         .build()
 
     @Provides
-    fun providesRetrofit(moshi: Moshi): Retrofit = Retrofit.Builder()
+    fun providesMeepleBaseApi(moshi: Moshi, cm: CredentialManager): MeepleBaseApi {
+        val client = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val transformed = chain.request().newBuilder()
+                    .addHeader("Authorization", "Bearer ${cm.get().token}")
+                    .build()
+                chain.proceed(transformed)
+            }.build()
+
+        val retrofitAuth = Retrofit.Builder()
+            .baseUrl(baseURL)
+            .client(client)
+            .addConverterFactory(MoshiConverterFactory.create(moshi))
+            .build()
+
+        return retrofitAuth.create(MeepleBaseApi::class.java)
+    }
+
+    @Provides
+    fun providesAuthApi(moshi: Moshi): AuthApi = Retrofit.Builder()
         .baseUrl(baseURL)
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
-
-    @Provides
-    fun providesMeepleBaseApi(retrofit: Retrofit): MeepleBaseApi = retrofit
-        .create(MeepleBaseApi::class.java)
+        .create(AuthApi::class.java)
 }

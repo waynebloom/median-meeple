@@ -5,7 +5,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.waynebloom.scorekeeper.navigation.Destination
 
 @Composable
 fun MeepleBaseRoute(
@@ -15,5 +14,11 @@ fun MeepleBaseRoute(
 
     val uiState by viewModel.uiState.collectAsState()
 
-    MeepleBaseScreen(uiState = uiState)
+    MeepleBaseScreen(
+        uiState = uiState,
+        onEmailChange = viewModel::onEmailChange,
+        onPwChange = viewModel::onPwChange,
+        onLoginClick = viewModel::onLoginClick,
+        onRequestGames = viewModel::onRequestGames,
+    )
 }

@@ -9,18 +9,24 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.components.Loading
@@ -32,6 +38,10 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 fun MeepleBaseScreen(
     uiState: MeepleBaseUiState,
     modifier: Modifier = Modifier,
+    onEmailChange: (TextFieldValue) -> Unit,
+    onPwChange: (TextFieldValue) -> Unit,
+    onLoginClick: () -> Unit,
+    onRequestGames: () -> Unit,
 ) {
 
     when(uiState) {
@@ -40,8 +50,14 @@ fun MeepleBaseScreen(
         }
         is MeepleBaseUiState.Content -> {
             MeepleBaseScreen(
+                email = uiState.email,
+                pw = uiState.pw,
                 gameCards = uiState.gameCards,
                 modifier = modifier,
+                onEmailChange,
+                onPwChange,
+                onLoginClick,
+                onRequestGames,
             )
         }
     }
@@ -50,8 +66,14 @@ fun MeepleBaseScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MeepleBaseScreen(
+    email: TextFieldValue,
+    pw: TextFieldValue,
     gameCards: List<LibraryGameCard>,
     modifier: Modifier = Modifier,
+    onEmailChange: (TextFieldValue) -> Unit,
+    onPwChange: (TextFieldValue) -> Unit,
+    onLoginClick: () -> Unit,
+    onRequestGames: () -> Unit,
 ) {
 
     Scaffold(
@@ -69,10 +91,37 @@ fun MeepleBaseScreen(
                 horizontalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent),
                 contentPadding = PaddingValues(Dimensions.Spacing.screenEdge),
             ) {
-                gameCards.forEachIndexed { i, card ->
-                    val showAd = (gameCards.size < 5 && i == gameCards.lastIndex)
-                            || ((i - 3) % 13 == 0 && i != gameCards.lastIndex)
+                item {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent)
+                    ) {
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = onEmailChange,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        OutlinedTextField(
+                            value = pw,
+                            onValueChange = onPwChange,
+                            modifier = Modifier.fillMaxWidth(),
+                            visualTransformation = PasswordVisualTransformation()
+                        )
+                        Button(
+                            onClick = onLoginClick,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("Login")
+                        }
+                        Button(
+                            onClick = onRequestGames,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("Request Games")
+                        }
+                    }
+                }
 
+                gameCards.forEach { card ->
                     item(key = card.id) {
                         NewGameCard(
                             name = card.name,
