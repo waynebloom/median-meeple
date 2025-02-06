@@ -3,7 +3,6 @@ plugins {
     alias libs.plugins.compose.compiler
     alias libs.plugins.dagger.hilt
     alias libs.plugins.detekt
-    alias libs.plugins.google.services
     alias libs.plugins.kotlin
     alias libs.plugins.ksp
     alias libs.plugins.room
