@@ -25,5 +25,8 @@ fun LibraryRoute(
         onGameClick = { id ->
             navController.navigate("${Destination.MatchesForGame.route}/$id")
         },
+        onLoginClick = {
+            navController.navigate(Destination.Login.route)
+        },
     )
 }

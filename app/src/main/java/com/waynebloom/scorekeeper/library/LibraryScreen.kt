@@ -67,329 +67,346 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun LibraryScreen(
-    uiState: LibraryUiState,
-    onSearchInputChanged: (TextFieldValue) -> Unit,
-    onAddGameClick: () -> Unit,
-    onGameClick: (Long) -> Unit,
-    modifier: Modifier = Modifier,
+	uiState: LibraryUiState,
+	onSearchInputChanged: (TextFieldValue) -> Unit,
+	onAddGameClick: () -> Unit,
+	onGameClick: (Long) -> Unit,
+	onLoginClick: () -> Unit,
+	modifier: Modifier = Modifier,
 ) {
 
-    when(uiState) {
-        is LibraryUiState.Loading -> {
-            Loading()
-        }
-        is LibraryUiState.Content -> {
-            LibraryScreen(
-                gameCards = uiState.gameCards,
-                searchInput = uiState.searchInput,
-                ads = uiState.ads,
-                onGameClick = onGameClick,
-                onAddNewGameClick = onAddGameClick,
-                onSearchInputChanged = onSearchInputChanged,
-                modifier = modifier
-            )
-        }
-    }
+	when(uiState) {
+		is LibraryUiState.Loading -> {
+			Loading()
+		}
+		is LibraryUiState.Content -> {
+			LibraryScreen(
+				gameCards = uiState.gameCards,
+				searchInput = uiState.searchInput,
+				ads = uiState.ads,
+				onGameClick = onGameClick,
+				onAddNewGameClick = onAddGameClick,
+				onLoginClick = onLoginClick,
+				onSearchInputChanged = onSearchInputChanged,
+				modifier = modifier
+			)
+		}
+	}
 }
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun LibraryScreen(
-    gameCards: List<LibraryGameCard>,
-    searchInput: TextFieldValue,
-    ads: List<NativeAd>,
-    onGameClick: (Long) -> Unit,
-    onAddNewGameClick: () -> Unit,
-    onSearchInputChanged: (TextFieldValue) -> Unit,
-    modifier: Modifier = Modifier,
+	gameCards: List<LibraryGameCard>,
+	searchInput: TextFieldValue,
+	ads: List<NativeAd>,
+	onGameClick: (Long) -> Unit,
+	onAddNewGameClick: () -> Unit,
+	onLoginClick: () -> Unit,
+	onSearchInputChanged: (TextFieldValue) -> Unit,
+	modifier: Modifier = Modifier,
 ) {
 
-    Scaffold(
-        topBar = {
-            LibraryTopBar(
-                title = stringResource(id = R.string.header_games),
-                searchInput = searchInput,
-                onSearchInputChanged = onSearchInputChanged,
-                modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddNewGameClick,
-                content = {
-                    Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
-                },
-                modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
-            )
-        },
-        contentWindowInsets = WindowInsets(0.dp),
-        modifier = modifier,
-    ) { innerPadding ->
+	Scaffold(
+		topBar = {
+			LibraryTopBar(
+				title = stringResource(id = R.string.header_games),
+				searchInput = searchInput,
+				onSearchInputChanged = onSearchInputChanged,
+				onLoginClick = onLoginClick,
+				modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
+			)
+		},
+		floatingActionButton = {
+			FloatingActionButton(
+				onClick = onAddNewGameClick,
+				content = {
+					Icon(imageVector = Icons.Rounded.Add, contentDescription = null)
+				},
+				modifier = Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+			)
+		},
+		contentWindowInsets = WindowInsets(0.dp),
+		modifier = modifier,
+	) { innerPadding ->
 
-        Column(Modifier.padding(innerPadding)) {
+		Column(Modifier.padding(innerPadding)) {
 
-            AnimatedContent(
-                targetState = gameCards.isNotEmpty() to searchInput.text.isNotBlank(),
-                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
-                label = LibraryConstants.ListAnimationTag,
-            ) {
+			AnimatedContent(
+				targetState = gameCards.isNotEmpty() to searchInput.text.isNotBlank(),
+				transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+				label = LibraryConstants.ListAnimationTag,
+			) {
 
-                when(it) {
+				when(it) {
 
-                    // There are games and there is search input
-                    true to true -> {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        ) {
-                            HelperBox(
-                                message = stringResource(id = R.string.text_showing_search_results, searchInput.text),
-                                type = HelperBoxType.Info,
-                                maxLines = 2
-                            )
-                            HorizontalDivider()
-                        }
-                    }
+					// There are games and there is search input
+					true to true -> {
+						Column(
+							verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+							modifier = Modifier.padding(horizontal = 16.dp)
+						) {
+							HelperBox(
+								message = stringResource(id = R.string.text_showing_search_results, searchInput.text),
+								type = HelperBoxType.Info,
+								maxLines = 2
+							)
+							HorizontalDivider()
+						}
+					}
 
-                    // There are games and there is no search input
-                    true to false -> {}
+					// There are games and there is no search input
+					true to false -> {}
 
-                    // There are no games and there is search input
-                    false to true -> {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        ) {
-                            HelperBox(
-                                message = stringResource(
-                                    id = R.string.text_empty_game_search_results,
-                                    searchInput.text
-                                ),
-                                type = HelperBoxType.Missing,
-                                maxLines = 2
-                            )
-                            HorizontalDivider()
-                            LargeImageAdCard(ad = ads.firstOrNull())
-                        }
-                    }
+					// There are no games and there is search input
+					false to true -> {
+						Column(
+							verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+							modifier = Modifier.padding(horizontal = 16.dp)
+						) {
+							HelperBox(
+								message = stringResource(
+									id = R.string.text_empty_game_search_results,
+									searchInput.text
+								),
+								type = HelperBoxType.Missing,
+								maxLines = 2
+							)
+							HorizontalDivider()
+							LargeImageAdCard(ad = ads.firstOrNull())
+						}
+					}
 
-                    // There are no games and no search input
-                    false to false -> {
-                        Column(
-                            verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                            modifier = Modifier.padding(horizontal = 16.dp)
-                        ) {
-                            HelperBox(
-                                message = stringResource(R.string.text_empty_games),
-                                type = HelperBoxType.Missing,
-                                maxLines = 2
-                            )
-                            HorizontalDivider()
-                            LargeImageAdCard(ad = ads.firstOrNull())
-                        }
-                    }
-                }
-            }
+					// There are no games and no search input
+					false to false -> {
+						Column(
+							verticalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+							modifier = Modifier.padding(horizontal = 16.dp)
+						) {
+							HelperBox(
+								message = stringResource(R.string.text_empty_games),
+								type = HelperBoxType.Missing,
+								maxLines = 2
+							)
+							HorizontalDivider()
+							LargeImageAdCard(ad = ads.firstOrNull())
+						}
+					}
+				}
+			}
 
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Adaptive(160.dp),
-                verticalItemSpacing = Spacing.sectionContent,
-                horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-                contentPadding = PaddingValues(
-                    start = Spacing.screenEdge,
-                    end = Spacing.screenEdge,
-                    top = if (searchInput.text.isBlank()) {
-                        0.dp
-                    } else {
-                        Spacing.sectionContent
-                    },
-                    bottom = Spacing.paddingForFab
-                ),
-            ) {
-                gameCards.forEachIndexed { i, card ->
-                    val showAd = (gameCards.size < 5 && i == gameCards.lastIndex)
-                        || ((i - 3) % 13 == 0 && i != gameCards.lastIndex)
+			LazyVerticalStaggeredGrid(
+				columns = StaggeredGridCells.Adaptive(160.dp),
+				verticalItemSpacing = Spacing.sectionContent,
+				horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+				contentPadding = PaddingValues(
+					start = Spacing.screenEdge,
+					end = Spacing.screenEdge,
+					top = if (searchInput.text.isBlank()) {
+						0.dp
+					} else {
+						Spacing.sectionContent
+					},
+					bottom = Spacing.paddingForFab
+				),
+			) {
+				gameCards.forEachIndexed { i, card ->
+					val showAd = (gameCards.size < 5 && i == gameCards.lastIndex)
+							|| ((i - 3) % 13 == 0 && i != gameCards.lastIndex)
 
-                    item(key = card.id) {
-                        NewGameCard(
-                            name = card.name,
-                            color = card.color
-                                .copy(alpha = 0.2f)
-                                .compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)),
-                            highScore = card.highScore,
-                            noOfMatches = card.noOfMatches,
-                            modifier = Modifier
-                                .clip(MaterialTheme.shapes.medium)
-                                .clickable {
-                                    onGameClick(card.id)
-                                }
-                                .animateItemPlacement()
-                        )
-                    }
+					item(key = card.id) {
+						NewGameCard(
+							name = card.name,
+							color = card.color
+								.copy(alpha = 0.2f)
+								.compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)),
+							highScore = card.highScore,
+							noOfMatches = card.noOfMatches,
+							modifier = Modifier
+								.clip(MaterialTheme.shapes.medium)
+								.clickable {
+									onGameClick(card.id)
+								}
+								.animateItemPlacement()
+						)
+					}
 
-                    if (showAd) {
-                        item(key = "ad$i") {
-                            val ad = if (ads.isNotEmpty()) {
-                                val previousAdCount = (i - 3) / 13
-                                ads[previousAdCount % ads.size]
-                            } else {
-                                null
-                            }
+					if (showAd) {
+						item(key = "ad$i") {
+							val ad = if (ads.isNotEmpty()) {
+								val previousAdCount = (i - 3) / 13
+								ads[previousAdCount % ads.size]
+							} else {
+								null
+							}
 
-                            SmallImageAdCard(
-                                ad = ad,
-                                modifier = Modifier.animateItemPlacement()
-                            )
-                        }
-                    }
-                }
+							SmallImageAdCard(
+								ad = ad,
+								modifier = Modifier.animateItemPlacement()
+							)
+						}
+					}
+				}
 
-                item {
-                    Spacer(
-                        Modifier
-                            .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                            .consumeWindowInsets(WindowInsets.navigationBars)
-                    )
-                }
-            }
-        }
-    }
+				item {
+					Spacer(
+						Modifier
+							.windowInsetsBottomHeight(WindowInsets.navigationBars)
+							.consumeWindowInsets(WindowInsets.navigationBars)
+					)
+				}
+			}
+		}
+	}
 }
 
 @Composable
 fun LibraryDefaultActionBar(
-    title: String,
-    onSearchClick: () -> Unit
+	title: String,
+	onSearchClick: () -> Unit,
+	onLoginClick: () -> Unit,
 ) {
 
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
+	Row(
+		horizontalArrangement = Arrangement.SpaceBetween,
+		verticalAlignment = Alignment.CenterVertically,
+		modifier = Modifier.fillMaxWidth()
+	) {
 
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge,
-            overflow = TextOverflow.Ellipsis,
-            maxLines = 1
-        )
+		Text(
+			text = title,
+			style = MaterialTheme.typography.titleLarge,
+			overflow = TextOverflow.Ellipsis,
+			maxLines = 1
+		)
 
-        Icon(
-            imageVector = Icons.Rounded.Search,
-            contentDescription = null,
-            modifier = Modifier
-                .minimumInteractiveComponentSize()
-                .clip(CircleShape)
-                .clickable(onClick = onSearchClick)
-                .padding(4.dp)
-        )
-    }
+		Icon(
+			imageVector = Icons.Rounded.Search,
+			contentDescription = null,
+			modifier = Modifier
+				.minimumInteractiveComponentSize()
+				.clip(CircleShape)
+				.clickable(onClick = onLoginClick)
+				.padding(4.dp)
+		)
+
+		Icon(
+			imageVector = Icons.Rounded.Search,
+			contentDescription = null,
+			modifier = Modifier
+				.minimumInteractiveComponentSize()
+				.clip(CircleShape)
+				.clickable(onClick = onSearchClick)
+				.padding(4.dp)
+		)
+	}
 }
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalAnimationApi::class)
 @Composable
 fun LibraryTopBar(
-    title: String,
-    searchInput: TextFieldValue,
-    onSearchInputChanged: (TextFieldValue) -> Unit,
-    modifier: Modifier = Modifier,
+	title: String,
+	searchInput: TextFieldValue,
+	onSearchInputChanged: (TextFieldValue) -> Unit,
+	onLoginClick: () -> Unit,
+	modifier: Modifier = Modifier,
 ) {
-    var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
-    Surface {
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = modifier
-                .padding(start = Spacing.screenEdge, end = 4.dp)
-                .defaultMinSize(minHeight = Size.topBarHeight)
-                .fillMaxWidth()
-        ) {
+	var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
+	Surface {
+		Row(
+			horizontalArrangement = Arrangement.SpaceBetween,
+			verticalAlignment = Alignment.CenterVertically,
+			modifier = modifier
+				.padding(start = Spacing.screenEdge, end = 4.dp)
+				.defaultMinSize(minHeight = Size.topBarHeight)
+				.fillMaxWidth()
+		) {
 
-            AnimatedContent(
-                targetState = isSearchBarVisible,
-                transitionSpec = { fadeInWithFadeOut },
-                label = LibraryConstants.TopBarAnimationTag,
-            ) {
+			AnimatedContent(
+				targetState = isSearchBarVisible,
+				transitionSpec = { fadeInWithFadeOut },
+				label = LibraryConstants.TopBarAnimationTag,
+			) {
 
-                if (it) {
-                    TopBarWithSearch(
-                        searchInput = searchInput,
-                        onSearchInputChanged = onSearchInputChanged,
-                        onCloseClick = {
-                            isSearchBarVisible = false
-                        },
-                        onClearClick = {
-                            onSearchInputChanged(TextFieldValue())
-                        }
-                    )
-                } else {
-                    LibraryDefaultActionBar(
-                        title = title,
-                        onSearchClick = { isSearchBarVisible = true }
-                    )
-                }
-            }
-        }
-    }
+				if (it) {
+					TopBarWithSearch(
+						searchInput = searchInput,
+						onSearchInputChanged = onSearchInputChanged,
+						onCloseClick = {
+							isSearchBarVisible = false
+						},
+						onClearClick = {
+							onSearchInputChanged(TextFieldValue())
+						}
+					)
+				} else {
+					LibraryDefaultActionBar(
+						title = title,
+						onSearchClick = { isSearchBarVisible = true },
+						onLoginClick = onLoginClick,
+					)
+				}
+			}
+		}
+	}
 }
 
 @Preview
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun Normal() {
-    MedianMeepleTheme {
-        LibraryScreen(
-            uiState = LibrarySampleData.Default,
-//            receiveAd = { emptyFlow<NativeAd>().single() },
-            onSearchInputChanged = {},
-            onAddGameClick = {},
-            onGameClick = {}
-        )
-    }
+	MedianMeepleTheme {
+		LibraryScreen(
+			uiState = LibrarySampleData.Default,
+			onSearchInputChanged = {},
+			onAddGameClick = {},
+			onGameClick = {},
+			onLoginClick = {},
+		)
+	}
 }
 
 @Preview
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun NoGames() {
-    MedianMeepleTheme {
-        LibraryScreen(
-            uiState = LibrarySampleData.NoGames,
-//            receiveAd = { emptyFlow<NativeAd>().single() },
-            onSearchInputChanged = {},
-            onAddGameClick = {},
-            onGameClick = {}
-        )
-    }
+	MedianMeepleTheme {
+		LibraryScreen(
+			uiState = LibrarySampleData.NoGames,
+			onSearchInputChanged = {},
+			onAddGameClick = {},
+			onGameClick = {},
+			onLoginClick = {},
+		)
+	}
 }
 
 @Preview
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun ActiveSearch() {
-    MedianMeepleTheme {
-        LibraryScreen(
-            uiState = LibrarySampleData.ActiveSearch,
-//            receiveAd = { emptyFlow<NativeAd>().single() },
-            onSearchInputChanged = {},
-            onAddGameClick = {},
-            onGameClick = {}
-        )
-    }
+	MedianMeepleTheme {
+		LibraryScreen(
+			uiState = LibrarySampleData.ActiveSearch,
+			onSearchInputChanged = {},
+			onAddGameClick = {},
+			onGameClick = {},
+			onLoginClick = {},
+		)
+	}
 }
 
 @Preview
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun EmptySearch() {
-    MedianMeepleTheme {
-        LibraryScreen(
-            uiState = LibrarySampleData.EmptySearch,
-//            receiveAd = { emptyFlow<NativeAd>().single() },
-            onSearchInputChanged = {},
-            onAddGameClick = {},
-            onGameClick = {}
-        )
-    }
+	MedianMeepleTheme {
+		LibraryScreen(
+			uiState = LibrarySampleData.EmptySearch,
+			onSearchInputChanged = {},
+			onAddGameClick = {},
+			onGameClick = {},
+			onLoginClick = {},
+		)
+	}
 }

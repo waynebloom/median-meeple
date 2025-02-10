@@ -26,7 +26,7 @@ fun MedianMeepleApp() {
 
     NavHost(
         navController = navController,
-        startDestination = Destination.Login.route,
+        startDestination = Destination.Library.route,
     ) {
 
         // Login
