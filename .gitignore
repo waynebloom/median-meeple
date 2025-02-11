@@ -1,6 +1,7 @@
 *.db
 *.iml
 .gradle
+.kotlin
 /app/release
 /local.properties
 .idea

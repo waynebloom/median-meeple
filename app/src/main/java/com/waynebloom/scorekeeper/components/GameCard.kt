@@ -28,6 +28,7 @@ import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
+// Fixme: Delete this on master
 @Composable
 fun GameCard(
     name: String,
