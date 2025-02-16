@@ -29,6 +29,12 @@ interface MatchRepository {
     @Query("SELECT * FROM `Match` WHERE game_owner_id = :id")
     suspend fun getByGameId(id: Long): List<MatchDataModel>
 
+    @Query("""
+        SELECT * FROM `Match`
+        WHERE date_millis > :begin AND date_millis < :end
+    """)
+    suspend fun getByDateRange(begin: Long, end: Long): List<MatchDataModel>
+
     @Insert
     suspend fun insert(match: MatchDataModel): Long
 

@@ -58,6 +58,7 @@ class EditGameViewModel @Inject constructor(
             .map(EditGameViewModelState::toUiState)
             .stateIn(viewModelScope, SharingStarted.Eagerly, viewModelState.value.toUiState())
 
+        // ASAP: All of my launched jobs have been running on the main thread by default. Fix this.
         viewModelScope.launch {
 
             if (gameId != -1L) {

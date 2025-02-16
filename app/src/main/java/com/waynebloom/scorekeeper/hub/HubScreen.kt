@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material3.Button
@@ -35,60 +34,39 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun HubScreen(
-	// uiState: HubUiState,
+	uiState: HubUiState,
 	onGameClick: (Long) -> Unit,
 	onLibraryClick: () -> Unit,
 	onSettingsClick: () -> Unit,
 ) {
-	Scaffold() { innerPadding ->
-		HubScreen(
-			quickGames = listOf(
-				GameDomainModel(
-					name = TextFieldValue("Carcassonne"),
-					displayColorIndex = 6,
-				),
-				GameDomainModel(
-					name = TextFieldValue("Harmonies"),
-					displayColorIndex = 14,
-				),
-				GameDomainModel(
-					name = TextFieldValue("Wingspan"),
-				),
-			),
-			dateRange = "2/9 - 2/16",
-			chartKey = mapOf(
-				"Wingspan" to (Color.Red to CircleShape),
-				"Carcassonne" to (Color.Green to CircleShape),
-				"Harmonies" to (Color.Blue to CircleShape),
-			),
-			weekActivity = mapOf(
-				"Su" to mapOf(
-					"Wingspan" to 2,
-					"Carcassonne" to 1,
-					"Harmonies" to 3,
-				),
-				"Mo" to mapOf("Harmonies" to 3),
-				"Tu" to mapOf(),
-				"We" to mapOf("Wingspan" to 1),
-				"Th" to mapOf(),
-				"Fr" to mapOf(),
-				"Sa" to mapOf("Carcassone" to 2),
-			),
-			modifier = Modifier.padding(innerPadding),
-			onGameClick = {},
-			onLibraryClick = {},
-			onSettingsClick = {},
-		)
+
+	when (uiState) {
+		is HubUiState.Loading -> Loading()
+		is HubUiState.Content -> {
+
+			Scaffold() { innerPadding ->
+				HubScreen(
+					quickGames = uiState.quickGames,
+					dateRange = uiState.dateRange,
+					weekActivity = uiState.weekActivity,
+					chartKey = uiState.chartKey,
+					modifier = Modifier.padding(innerPadding),
+					onGameClick,
+					onLibraryClick,
+					onSettingsClick,
+				)
+			}
+		}
 	}
 }
 
@@ -111,6 +89,7 @@ private fun HubScreen(
 	) {
 
 		TopBar(
+			// TODO: this needs to be the actual user's username OR a default state if not logged in.
 			"Welcome, Gigabyted.",
 			onSettingsClick,
 			Modifier.fillMaxWidth().padding(bottom = 12.dp),
@@ -144,8 +123,16 @@ private fun TopBar(
 
 		IconButton(
 			onClick = onSettingsClick,
+			modifier = Modifier.background(
+				color = MaterialTheme.colorScheme.primaryContainer,
+				shape = CircleShape,
+			)
 		) {
-			// cog wheel icon
+			Icon(
+				painter = painterResource(R.drawable.settings),
+				contentDescription = "Settings",
+				modifier = Modifier.size(24.dp)
+			)
 		}
 	}
 }
@@ -345,49 +332,6 @@ private fun ActivityChart(
 @Composable
 private fun HubPreview() {
 	MedianMeepleTheme {
-		Scaffold {
-			val shape = RoundedCornerShape(4.dp)
-			HubScreen(
-				quickGames = listOf(
-					GameDomainModel(
-						name = TextFieldValue("Carcassonne"),
-						displayColorIndex = 6,
-					),
-					GameDomainModel(
-						name = TextFieldValue("Harmonies"),
-						displayColorIndex = 14,
-					),
-					GameDomainModel(
-						name = TextFieldValue("Wingspan"),
-					),
-				),
-				dateRange = "2/9 - 2/16",
-				chartKey = mapOf(
-					"Wingspan" to (Color.Red to shape),
-					"Carcassonne" to (Color.Green to shape),
-					"Harmonies" to (Color.Blue to shape),
-				),
-				weekActivity = mapOf(
-					"Su" to mapOf(
-						"Wingspan" to 2,
-						"Harmonies" to 1,
-						"Carcassonne" to 15,
-					),
-					"Mo" to mapOf(
-						"Harmonies" to 4,
-						"Wingspan" to 1,
-					),
-					"Tu" to mapOf(),
-					"We" to mapOf("Wingspan" to 3),
-					"Th" to mapOf(),
-					"Fr" to mapOf(),
-					"Sa" to mapOf("Carcassonne" to 2),
-				),
-				modifier = Modifier.padding(it),
-				onGameClick = {},
-				onLibraryClick = {},
-				onSettingsClick = {},
-			)
-		}
+		HubScreen(uiState = HubSampleData.Default, {}, {}, {})
 	}
 }
