@@ -4,6 +4,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
@@ -26,7 +27,7 @@ import java.time.format.FormatStyle
 import java.time.temporal.ChronoField
 import javax.inject.Inject
 
-private const val LENGTH_DAYS = 7
+private const val LENGTH_DAYS = 6
 
 @HiltViewModel
 class HubViewModel @Inject constructor(
@@ -101,10 +102,7 @@ class HubViewModel @Inject constructor(
 		games: Map<Long, String>,
 	): Map<String, List<String>> {
 
-		var sortedMatches = recentMatches
-			.sortedBy { it.dateMillis }
-			.reversed()
-
+		var remainingMatches = recentMatches
 		val realStart = start
 			.withHour(23)
 			.withMinute(59)
@@ -120,24 +118,45 @@ class HubViewModel @Inject constructor(
 
 			for (days in 0..numberOfDays) {
 				val cutoffTime = realStart.plusDays(days)
-				val splitIndex = sortedMatches.indexOfFirst {
-					it.dateMillis > cutoffTime.getLong(ChronoField.INSTANT_SECONDS) * 1000
-				}
-
 				val dayLabel = cutoffTime.dayOfWeek.name.take(2)
 
-				if (splitIndex == -1) {
+				val results = remainingMatches.fastFilter {
+					it.dateMillis < cutoffTime.getLong(ChronoField.INSTANT_SECONDS) * 1000
+				}
+
+				this[dayLabel] = results.map {
+					games[it.gameId] ?: return@buildMap
+				}
+
+				remainingMatches = remainingMatches.minus(results.toSet())
+
+/*
+				if (sortedMatches.isEmpty()) {
+					this[dayLabel] = listOf()
+					continue
+				}
+
+				var splitIndex = sortedMatches.lastIndex
+				for (i in 0..splitIndex) {
+					if (sortedMatches[i].dateMillis > cutoffTime.getLong(ChronoField.INSTANT_SECONDS) * 1000) {
+						splitIndex = i
+						break
+					}
+				}
+
+				if (splitIndex == 0 && sortedMatches.lastIndex != 0) {
 					this[dayLabel] = listOf()
 					continue
 				}
 
 				this[dayLabel] = sortedMatches
-					.subList(0, splitIndex)
+					.slice(0..<splitIndex)
 					.map {
 						games[it.gameId] ?: return@buildMap
 					}
 
-				sortedMatches = sortedMatches.subList(splitIndex, sortedMatches.lastIndex)
+				sortedMatches = sortedMatches.slice(splitIndex..sortedMatches.lastIndex)
+*/
 			}
 		}
 	}

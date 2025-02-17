@@ -229,7 +229,10 @@ private fun ScoreCardScreen(
                 }
             }
         ) {
-            DatePicker(state = datePickerState)
+            DatePicker(
+                state = datePickerState,
+                dateFormatter = DatePickerDefaults.dateFormatter()
+            )
         }
     }
     if (showMoreDialog) {

@@ -7,7 +7,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import java.util.Date
+import java.time.Instant
 
 @Entity(
     tableName = "Match",
@@ -32,7 +32,7 @@ data class MatchDataModel(
     var notes: String = "",
 
     @ColumnInfo(name = "date_millis")
-    var dateMillis: Long = Date().time,
+    var dateMillis: Long = Instant.now().toEpochMilli(),
 
     @ColumnInfo(defaultValue = "")
     var location: String = "",
