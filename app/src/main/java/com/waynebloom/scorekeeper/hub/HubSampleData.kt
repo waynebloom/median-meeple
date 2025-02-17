@@ -28,18 +28,24 @@ internal object HubSampleData {
 			"Carcassonne" to (Color.Green to shape),
 			"Harmonies" to (Color.Blue to shape),
 		),
-		weekActivity = mapOf(
-			"Su" to mapOf(
-				"Wingspan" to 2,
-				"Carcassonne" to 1,
-				"Harmonies" to 3,
+		weekPlays = mapOf(
+			"Su" to listOf(
+				"Wingspan",
+				"Wingspan",
+				"Carcassonne",
+				"Harmonies",
+				"Harmonies",
 			),
-			"Mo" to mapOf("Harmonies" to 3),
-			"Tu" to mapOf(),
-			"We" to mapOf("Wingspan" to 1),
-			"Th" to mapOf(),
-			"Fr" to mapOf(),
-			"Sa" to mapOf("Carcassonne" to 2),
+			"Mo" to listOf("Harmonies"),
+			"Tu" to listOf(),
+			"We" to listOf("Wingspan"),
+			"Th" to listOf(),
+			"Fr" to listOf("Harmonies", "Harmonies", "Carcassonne"),
+			"Sa" to listOf(
+				"Carcassonne",
+				"Carcassonne",
+				"Carcassonne",
+			),
 		),
 	)
 }

@@ -58,7 +58,7 @@ fun HubScreen(
 				HubScreen(
 					quickGames = uiState.quickGames,
 					dateRange = uiState.dateRange,
-					weekActivity = uiState.weekActivity,
+					weekPlays = uiState.weekPlays,
 					chartKey = uiState.chartKey,
 					modifier = Modifier.padding(innerPadding),
 					onGameClick,
@@ -74,7 +74,7 @@ fun HubScreen(
 private fun HubScreen(
 	quickGames: List<GameDomainModel>,
 	dateRange: String,
-	weekActivity: Map<String, Map<String, Int>>,
+	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
 	modifier: Modifier = Modifier,
 	onGameClick: (Long) -> Unit,
@@ -100,7 +100,7 @@ private fun HubScreen(
 			onLibraryClick,
 			Modifier.fillMaxWidth().padding(bottom = 12.dp)
 		)
-		ActivityChart(dateRange, weekActivity, chartKey)
+		ActivityChart(dateRange, weekPlays, chartKey)
 	}
 }
 
@@ -199,23 +199,16 @@ private fun QuickGames(
 @Composable
 fun DayActivity(
 	modifier: Modifier = Modifier,
-	dayActivity: Map<String, Int>,
+	dayPlays: List<String>,
 	chartKey: Map<String, Pair<Color, Shape>>,
 ) {
 
-	val totalPlays = dayActivity.values.sum()
+	val totalPlays = dayPlays.size
 	val cols = 2
 	val rows = if (totalPlays % cols == 0) {
 		totalPlays / cols
 	} else {
 		(totalPlays / cols) + 1
-	}
-	val pips = dayActivity.flatMap { (game, amount) ->
-		buildList {
-			for(i in 0..<amount) {
-				add(game)
-			}
-		}
 	}
 	var i = 0
 
@@ -234,12 +227,12 @@ fun DayActivity(
 			Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
 				repeat (cols) {
 
-					if (i == pips.size) {
+					if (i == dayPlays.size) {
 						return@repeat
 					}
 
-					val color = chartKey[pips[i]]?.first ?: Color.Black
-					val shape = chartKey[pips[i]]?.second ?: CircleShape
+					val color = chartKey[dayPlays[i]]?.first ?: Color.Black
+					val shape = chartKey[dayPlays[i]]?.second ?: CircleShape
 					i++
 
 					Box(
@@ -254,11 +247,7 @@ fun DayActivity(
 @Composable
 private fun ActivityChart(
 	dateRange: String,
-
-	// Mapping day of week TO a mapping of name of game TO number of matches
-	weekActivity: Map<String, Map<String, Int>>,
-
-	// Mapping name of game TO the color and shape representing it
+	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
 	modifier: Modifier = Modifier,
 ) {
@@ -280,9 +269,9 @@ private fun ActivityChart(
 			) {
 
 				// 1 each per day of week
-				weekActivity.forEach { (_, dayActivity) ->
+				weekPlays.forEach { (_, dayPlays) ->
 					DayActivity(
-						dayActivity = dayActivity,
+						dayPlays = dayPlays,
 						chartKey = chartKey,
 					)
 				}
@@ -293,7 +282,7 @@ private fun ActivityChart(
 				modifier = Modifier.fillMaxWidth()
 			) {
 
-				weekActivity.keys.forEach {
+				weekPlays.keys.forEach {
 					Box(
 						contentAlignment = Alignment.Center,
 						modifier = Modifier.width(48.dp),

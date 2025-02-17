@@ -31,9 +31,9 @@ interface MatchRepository {
 
     @Query("""
         SELECT * FROM `Match`
-        WHERE date_millis > :begin AND date_millis < :end
+        WHERE date_millis > :begin AND date_millis < (:begin + :duration)
     """)
-    suspend fun getByDateRange(begin: Long, end: Long): List<MatchDataModel>
+    fun getByDateRange(begin: Long, duration: Long): Flow<List<MatchDataModel>>
 
     @Insert
     suspend fun insert(match: MatchDataModel): Long
