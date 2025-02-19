@@ -24,7 +24,7 @@ import com.waynebloom.scorekeeper.room.domain.repository.MatchRepository
 import com.waynebloom.scorekeeper.room.domain.repository.PlayerRepository
 
 @Database(
-    version = 14,
+    version = 15,
     entities = [
         GameDataModel::class,
         MatchDataModel::class,
@@ -41,7 +41,8 @@ import com.waynebloom.scorekeeper.room.domain.repository.PlayerRepository
         AutoMigration(from = 5, to = 6),
         AutoMigration(from = 6, to = 7),
         AutoMigration(from = 11, to = 12),
-        AutoMigration(from = 13, to = 14, spec = AppDatabase.AutoMigration13to14::class)
+        AutoMigration(from = 13, to = 14, spec = AppDatabase.AutoMigration13to14::class),
+        AutoMigration(from = 14, to = 15),
     ]
 )
 abstract class AppDatabase : RoomDatabase() {

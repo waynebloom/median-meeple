@@ -42,6 +42,9 @@ import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
+private const val BTN_COLOR_ALPHA = 0.2f
+private const val CHART_COLOR_ALPHA = 0.8f
+
 @Composable
 fun HubScreen(
 	uiState: HubUiState,
@@ -94,13 +97,13 @@ private fun HubScreen(
 			onSettingsClick,
 			Modifier.fillMaxWidth().padding(bottom = 12.dp),
 		)
-		QuickGames(
+		QuickStart(
 			quickGames,
 			onGameClick,
 			onLibraryClick,
-			Modifier.fillMaxWidth().padding(bottom = 12.dp)
+			Modifier.fillMaxWidth().padding(bottom = 36.dp)
 		)
-		ActivityChart(dateRange, weekPlays, chartKey)
+		RecentPlaysChart(dateRange, weekPlays, chartKey)
 	}
 }
 
@@ -138,7 +141,7 @@ private fun TopBar(
 }
 
 @Composable
-private fun QuickGames(
+private fun QuickStart(
 	games: List<GameDomainModel>,
 	onGameClick: (Long) -> Unit,
 	onLibraryClick: () -> Unit,
@@ -159,7 +162,7 @@ private fun QuickGames(
 			games.forEach {
 				val color = GameDomainModel.DisplayColors[it.displayColorIndex]
 				val buttonColor = color
-					.copy(alpha = 0.2f)
+					.copy(alpha = BTN_COLOR_ALPHA)
 					.compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
 
 				Button(
@@ -231,12 +234,15 @@ fun DayActivity(
 						return@repeat
 					}
 
-					val color = chartKey[dayPlays[i]]?.first ?: Color.Black
+					val baseColor = chartKey[dayPlays[i]]?.first ?: Color.Black
+					val composited = baseColor
+						.copy(alpha = CHART_COLOR_ALPHA)
+						.compositeOver(MaterialTheme.colorScheme.surface)
 					val shape = chartKey[dayPlays[i]]?.second ?: CircleShape
 					i++
 
 					Box(
-						modifier = Modifier.background(color, shape).size(pipSize)
+						modifier = Modifier.background(composited, shape).size(pipSize)
 					) {}
 				}
 			}
@@ -245,7 +251,7 @@ fun DayActivity(
 }
 
 @Composable
-private fun ActivityChart(
+private fun RecentPlaysChart(
 	dateRange: String,
 	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
@@ -265,7 +271,9 @@ private fun ActivityChart(
 			Row(
 				horizontalArrangement = Arrangement.SpaceBetween,
 				verticalAlignment = Alignment.Bottom,
-				modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+				modifier = Modifier
+					.fillMaxWidth()
+					.padding(top = 12.dp, bottom = 4.dp)
 			) {
 
 				// 1 each per day of week
@@ -293,7 +301,10 @@ private fun ActivityChart(
 				}
 			}
 
-			HorizontalDivider(Modifier.padding(vertical = 8.dp))
+			HorizontalDivider(
+				modifier = Modifier.padding(vertical = 8.dp),
+				color = MaterialTheme.colorScheme.onPrimaryContainer
+			)
 
 			FlowRow(
 				horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -305,8 +316,12 @@ private fun ActivityChart(
 						verticalAlignment = Alignment.CenterVertically,
 					) {
 
+						val color = display.first
+							.copy(alpha = CHART_COLOR_ALPHA)
+							.compositeOver(MaterialTheme.colorScheme.surface)
+
 						Box(
-							modifier = Modifier.size(12.dp).background(display.first, display.second)
+							modifier = Modifier.size(12.dp).background(color, display.second)
 						) {}
 						
 						Text(text = game, style = MaterialTheme.typography.labelSmall)

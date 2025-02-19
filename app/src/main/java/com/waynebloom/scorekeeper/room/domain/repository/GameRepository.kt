@@ -19,6 +19,9 @@ interface GameRepository {
     @Delete
     suspend fun delete(entity: GameDataModel)
 
+    @Query("SELECT * FROM GAME WHERE isFavorite = 1")
+    suspend fun getFavorites(): List<GameDataRelationModel>
+
     @Query("SELECT * FROM GAME WHERE ID = :id")
     suspend fun getOne(id: Long): GameDataModel
 
@@ -29,10 +32,6 @@ interface GameRepository {
     @Transaction
     @Query("SELECT * FROM GAME WHERE ID = :id")
     fun getOneWithRelationsAsFlow(id: Long): Flow<GameDataRelationModel?>
-
-    @Transaction
-    @Query("SELECT * FROM GAME")
-    suspend fun getAll(): List<GameDataRelationModel>
 
     @Transaction
     @Query("SELECT * FROM GAME")

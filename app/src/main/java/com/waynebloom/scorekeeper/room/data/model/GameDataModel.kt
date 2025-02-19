@@ -18,7 +18,10 @@ data class GameDataModel(
     var name: String = "",
 
     @ColumnInfo(name = "scoring_mode", defaultValue = "1")
-    var scoringMode: Int = ScoringMode.Descending.ordinal
+    var scoringMode: Int = ScoringMode.Descending.ordinal,
+
+    @ColumnInfo(defaultValue = "false")
+    var isFavorite: Boolean = false,
 )
 
 data class GameDataRelationModel(
@@ -29,5 +32,5 @@ data class GameDataRelationModel(
     var matches: List<MatchDataRelationModel> = listOf(),
 
     @Relation(parentColumn = "id", entityColumn = "game_id", entity = CategoryDataModel::class)
-    var categories: List<CategoryDataModel> = listOf()
+    var categories: List<CategoryDataModel> = listOf(),
 )
