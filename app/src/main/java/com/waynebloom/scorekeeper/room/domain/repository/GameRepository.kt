@@ -19,8 +19,11 @@ interface GameRepository {
     @Delete
     suspend fun delete(entity: GameDataModel)
 
+    @Query("SELECT * FROM GAME")
+    suspend fun getAll(): List<GameDataModel>
+
     @Query("SELECT * FROM GAME WHERE isFavorite = 1")
-    suspend fun getFavorites(): List<GameDataRelationModel>
+    suspend fun getFavorites(): List<GameDataModel>
 
     @Query("SELECT * FROM GAME WHERE ID = :id")
     suspend fun getOne(id: Long): GameDataModel

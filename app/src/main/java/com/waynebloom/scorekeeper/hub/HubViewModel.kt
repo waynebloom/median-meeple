@@ -10,13 +10,15 @@ import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.room.domain.usecase.GetFavoriteGames
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
+import com.waynebloom.scorekeeper.room.domain.usecase.GetGames
 import com.waynebloom.scorekeeper.room.domain.usecase.GetMatchesByDate
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -31,44 +33,34 @@ private const val LENGTH_DAYS = 6
 
 @HiltViewModel
 class HubViewModel @Inject constructor(
+	private val getFavoriteGames: GetFavoriteGames,
+	private val getAllGames: GetGames,
 	private val getGame: GetGame,
 	private val getMatchesByDate: GetMatchesByDate,
 	// updateGame (need to update data model first)
 	mutableStateFlowFactory: MutableStateFlowFactory,
+) : ViewModel() {
 
-	) : ViewModel() {
-	private val viewModelState: MutableStateFlow<HubState>
-	val uiState: StateFlow<HubUiState>
+	private val _uiState = mutableStateFlowFactory.newInstance(HubState())
+	val uiState = _uiState
+		.onStart { loadData() }
+		.map(HubState::toUiState)
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(5000),
+			initialValue = _uiState.value.toUiState()
+		)
 
-	init {
-		viewModelState = mutableStateFlowFactory.newInstance(HubState())
-		uiState = viewModelState
-			.map(HubState::toUiState)
-			.stateIn(
-				scope = viewModelScope,
-				started = SharingStarted.Eagerly,
-				initialValue = viewModelState.value.toUiState()
-			)
-
-		viewModelScope.launch {
+	private fun loadData() {
+		viewModelScope.launch(Dispatchers.IO) {
 			// TODO: conciseness
 			// 	consider simply using period, since start is derived from it anyway
 			val start = ZonedDateTime.now().minusDays(LENGTH_DAYS.toLong())
 			val period = Period.ofDays(LENGTH_DAYS)
+			val matches = getMatchesByDate(start, period)
+			val favoriteGames = getFavoriteGames()
 
-			getMatchesByDate(start, period).collect { matches ->
-
-				if (matches.isEmpty()) {
-					viewModelState.update {
-						it.copy(
-							loading = false,
-							quickGames = listOf(),
-							period = period
-						)
-					}
-					return@collect
-				}
-
+			if (matches.isNotEmpty()) {
 				val games = matches
 					.map { it.gameId }
 					.distinct()
@@ -81,19 +73,29 @@ class HubViewModel @Inject constructor(
 				)
 				val chartKey = generateChartKey(games)
 
-				viewModelState.update {
+				_uiState.update {
 					it.copy(
 						loading = false,
-						quickGames = listOf(),
+						quickGames = favoriteGames,
 						period = period,
 						weekPlays = weekPlays,
 						chartKey = chartKey,
 					)
 				}
+
+				return@launch
 			}
 
+			_uiState.update {
+				it.copy(
+					loading = false,
+					quickGames = favoriteGames,
+					period = period
+				)
+			}
 		}
 	}
+
 
 	private fun findPlaysInPeriod(
 		start: ZonedDateTime,
@@ -129,34 +131,6 @@ class HubViewModel @Inject constructor(
 				}
 
 				remainingMatches = remainingMatches.minus(results.toSet())
-
-/*
-				if (sortedMatches.isEmpty()) {
-					this[dayLabel] = listOf()
-					continue
-				}
-
-				var splitIndex = sortedMatches.lastIndex
-				for (i in 0..splitIndex) {
-					if (sortedMatches[i].dateMillis > cutoffTime.getLong(ChronoField.INSTANT_SECONDS) * 1000) {
-						splitIndex = i
-						break
-					}
-				}
-
-				if (splitIndex == 0 && sortedMatches.lastIndex != 0) {
-					this[dayLabel] = listOf()
-					continue
-				}
-
-				this[dayLabel] = sortedMatches
-					.slice(0..<splitIndex)
-					.map {
-						games[it.gameId] ?: return@buildMap
-					}
-
-				sortedMatches = sortedMatches.slice(splitIndex..sortedMatches.lastIndex)
-*/
 			}
 		}
 	}
@@ -172,11 +146,29 @@ class HubViewModel @Inject constructor(
 				this[game.name.text] = display
 			}
 		}
+
+	fun onAddQuickGameClick() {
+		viewModelScope.launch(Dispatchers.IO) {
+			_uiState.update {
+				it.copy(allGames = getAllGames().associateBy { it.id })
+			}
+		}
+	}
+
+	fun addQuickGame(id: Long) {
+		_uiState.update {
+			// TODO: persist this
+			val allGames = it.allGames ?: return
+			val addedGame = allGames[id] ?: return
+			it.copy(quickGames = it.quickGames.plus(addedGame))
+		}
+	}
 }
 
 private data class HubState(
 	val loading: Boolean = true,
 	val quickGames: List<GameDomainModel> = listOf(),
+	val allGames: Map<Long, GameDomainModel>? = null,
 	val period: Period = Period.ZERO,
 	val weekPlays: Map<String, List<String>> = mapOf(),
 	val chartKey: Map<String, Pair<Color, Shape>> = mapOf(),
@@ -198,9 +190,10 @@ private data class HubState(
 
 		return HubUiState.Content(
 			quickGames = quickGames,
+			allGames = allGames?.values?.toList(),
 			dateRange = dateRange,
 			weekPlays = weekPlays,
-			chartKey = chartKey
+			chartKey = chartKey,
 		)
 	}
 }
@@ -209,6 +202,7 @@ sealed interface HubUiState {
 	data object Loading : HubUiState
 	data class Content(
 		val quickGames: List<GameDomainModel>,
+		val allGames: List<GameDomainModel>?,
 		val dateRange: String,
 		val weekPlays: Map<String, List<String>>,
 		val chartKey: Map<String, Pair<Color, Shape>>,

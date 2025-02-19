@@ -33,7 +33,7 @@ interface MatchRepository {
         SELECT * FROM `Match`
         WHERE date_millis > :begin AND date_millis < (:begin + :duration)
     """)
-    fun getByDateRange(begin: Long, duration: Long): Flow<List<MatchDataModel>>
+    suspend fun getByDateRange(begin: Long, duration: Long): List<MatchDataModel>
 
     @Insert
     suspend fun insert(match: MatchDataModel): Long

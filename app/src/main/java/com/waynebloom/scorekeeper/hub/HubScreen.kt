@@ -17,8 +17,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,6 +31,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,6 +57,8 @@ private const val CHART_COLOR_ALPHA = 0.8f
 fun HubScreen(
 	uiState: HubUiState,
 	onGameClick: (Long) -> Unit,
+	onAddQuickGameClick: () -> Unit,
+	onGameSelect: (Long) -> Unit,
 	onLibraryClick: () -> Unit,
 	onSettingsClick: () -> Unit,
 ) {
@@ -60,11 +70,15 @@ fun HubScreen(
 			Scaffold() { innerPadding ->
 				HubScreen(
 					quickGames = uiState.quickGames,
+					allGames = uiState.allGames ?: listOf(),
+					isGamePickerLoading = uiState.allGames == null,
 					dateRange = uiState.dateRange,
 					weekPlays = uiState.weekPlays,
 					chartKey = uiState.chartKey,
 					modifier = Modifier.padding(innerPadding),
 					onGameClick,
+					onAddQuickGameClick,
+					onGameSelect,
 					onLibraryClick,
 					onSettingsClick,
 				)
@@ -76,11 +90,15 @@ fun HubScreen(
 @Composable
 private fun HubScreen(
 	quickGames: List<GameDomainModel>,
+	allGames: List<GameDomainModel>,
+	isGamePickerLoading: Boolean,
 	dateRange: String,
 	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
 	modifier: Modifier = Modifier,
 	onGameClick: (Long) -> Unit,
+	onAddQuickGameClick: () -> Unit,
+	onGameSelect: (Long) -> Unit,
 	onLibraryClick: () -> Unit,
 	onSettingsClick: () -> Unit,
 ) {
@@ -95,13 +113,21 @@ private fun HubScreen(
 			// TODO: this needs to be the actual user's username OR a default state if not logged in.
 			"Welcome, Gigabyted.",
 			onSettingsClick,
-			Modifier.fillMaxWidth().padding(bottom = 12.dp),
+			Modifier
+				.fillMaxWidth()
+				.padding(bottom = 12.dp),
 		)
 		QuickStart(
 			quickGames,
+			allGames,
+			isGamePickerLoading,
 			onGameClick,
+			onAddQuickGameClick,
+			onGameSelect,
 			onLibraryClick,
-			Modifier.fillMaxWidth().padding(bottom = 36.dp)
+			Modifier
+				.fillMaxWidth()
+				.padding(bottom = 36.dp)
 		)
 		RecentPlaysChart(dateRange, weekPlays, chartKey)
 	}
@@ -142,44 +168,69 @@ private fun TopBar(
 
 @Composable
 private fun QuickStart(
-	games: List<GameDomainModel>,
+	quickGames: List<GameDomainModel>,
+	allGames: List<GameDomainModel>,
+	isGamePickerLoading: Boolean,
 	onGameClick: (Long) -> Unit,
+	onAddQuickGameClick: () -> Unit,
+	onGameSelect: (Long) -> Unit,
 	onLibraryClick: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Column(modifier = modifier) {
 
-		Text(
-			text = "Quick Start",
-			style = MaterialTheme.typography.titleMedium,
-			modifier = Modifier.padding(bottom = Dimensions.Spacing.sectionContent)
-		)
-
-		FlowRow(
-			horizontalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent)
+		Row(
+			verticalAlignment = Alignment.Bottom,
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(bottom = Dimensions.Spacing.sectionContent),
 		) {
 
-			games.forEach {
-				val color = GameDomainModel.DisplayColors[it.displayColorIndex]
-				val buttonColor = color
-					.copy(alpha = BTN_COLOR_ALPHA)
-					.compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
+			Text(
+				text = "Quick Start",
+				style = MaterialTheme.typography.titleMedium,
+				modifier = Modifier
+					.fillMaxWidth()
+					.weight(1f, fill = false)
+			)
 
-				Button(
-					onClick = { onGameClick(it.id) },
-					colors = ButtonDefaults.buttonColors(
-						containerColor = buttonColor,
-						contentColor = MaterialTheme.colorScheme.onSurface,
+			Box(
+				contentAlignment = Alignment.TopEnd
+			) {
+				var isExpanded by remember { mutableStateOf(false) }
+
+				FilledIconButton(onClick = {
+					onAddQuickGameClick()
+					isExpanded = true
+				}) {
+					Icon(
+						imageVector = Icons.Rounded.Add,
+						contentDescription = null,
+						modifier = Modifier.size(16.dp)
 					)
+				}
+
+				DropdownMenu(
+					expanded = isExpanded,
+					onDismissRequest = { isExpanded = !isExpanded },
+					modifier = Modifier.width(196.dp)
 				) {
-					Text(text = it.name.text)
+					// TODO: needs a loading state
+
+					allGames.minus(quickGames.toSet()).forEach {
+
+						DropdownMenuItem(
+							text = { Text(it.name.text) },
+							onClick = {
+								onGameSelect(it.id)
+								isExpanded = false
+							}
+						)
+					}
 				}
 			}
 
-			Button(
-				onClick = onLibraryClick,
-			) {
-
+			FilledIconButton(onClick = onLibraryClick) {
 				Row {
 
 					Icon(
@@ -195,6 +246,30 @@ private fun QuickStart(
 					)
 				}
 			}
+		}
+
+		FlowRow(
+			horizontalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent),
+			modifier = Modifier.fillMaxWidth()
+		) {
+
+			quickGames.forEach {
+				val color = GameDomainModel.DisplayColors[it.displayColorIndex]
+				val displayColor = color
+					.copy(alpha = BTN_COLOR_ALPHA)
+					.compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
+
+				Button(
+					onClick = { onGameClick(it.id) },
+					colors = ButtonDefaults.buttonColors(
+						containerColor = displayColor,
+						contentColor = MaterialTheme.colorScheme.onSurface,
+					)
+				) {
+					Text(text = it.name.text)
+				}
+			}
+
 		}
 	}
 }
@@ -221,14 +296,16 @@ fun DayActivity(
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
 		verticalArrangement = Arrangement.spacedBy(gap),
-		modifier = modifier.width(48.dp).graphicsLayer {
-			rotationZ += 180
-		}
+		modifier = modifier
+			.width(48.dp)
+			.graphicsLayer {
+				rotationZ += 180
+			}
 	) {
 
 		repeat(rows) {
 			Row(horizontalArrangement = Arrangement.spacedBy(gap)) {
-				repeat (cols) {
+				repeat(cols) {
 
 					if (i == dayPlays.size) {
 						return@repeat
@@ -242,7 +319,9 @@ fun DayActivity(
 					i++
 
 					Box(
-						modifier = Modifier.background(composited, shape).size(pipSize)
+						modifier = Modifier
+							.background(composited, shape)
+							.size(pipSize)
 					) {}
 				}
 			}
@@ -321,9 +400,11 @@ private fun RecentPlaysChart(
 							.compositeOver(MaterialTheme.colorScheme.surface)
 
 						Box(
-							modifier = Modifier.size(12.dp).background(color, display.second)
+							modifier = Modifier
+								.size(12.dp)
+								.background(color, display.second)
 						) {}
-						
+
 						Text(text = game, style = MaterialTheme.typography.labelSmall)
 					}
 				}
@@ -336,6 +417,6 @@ private fun RecentPlaysChart(
 @Composable
 private fun HubPreview() {
 	MedianMeepleTheme {
-		HubScreen(uiState = HubSampleData.Default, {}, {}, {})
+		HubScreen(uiState = HubSampleData.Default, {}, {}, {}, {}, {})
 	}
 }

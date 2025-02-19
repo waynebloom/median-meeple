@@ -22,6 +22,7 @@ internal object HubSampleData {
 				name = TextFieldValue("Wingspan"),
 			),
 		),
+		allGames = null,
 		dateRange = "2/9 - 2/16",
 		chartKey = mapOf(
 			"Wingspan" to (Color.Red to shape),
