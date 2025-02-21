@@ -504,7 +504,7 @@ fun MatchesForGameScreen(
                                     }
                                     .animateItemPlacement(
                                         animationSpec = tween(
-                                            durationMillis = DurationMs.medium,
+                                            durationMillis = DurationMs.MEDIUM,
                                             easing = Ease
                                         )
                                     )

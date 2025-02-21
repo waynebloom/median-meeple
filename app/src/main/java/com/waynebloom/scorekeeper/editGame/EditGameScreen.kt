@@ -695,7 +695,7 @@ private fun EditCategoriesBottomSheetContent(
 										focusedTextColor = MaterialTheme.colorScheme.onBackground,
 										unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
 										focusedBorderColor = MaterialTheme.colorScheme.onBackground.copy(
-											alpha = Alpha.disabled
+											alpha = Alpha.MEDIUM_ALPHA
 										),
 									),
 								)

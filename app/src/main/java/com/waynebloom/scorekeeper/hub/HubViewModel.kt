@@ -16,6 +16,7 @@ import com.waynebloom.scorekeeper.room.domain.usecase.GetGames
 import com.waynebloom.scorekeeper.room.domain.usecase.GetMatchesByDate
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
@@ -57,8 +58,14 @@ class HubViewModel @Inject constructor(
 			// 	consider simply using period, since start is derived from it anyway
 			val start = ZonedDateTime.now().minusDays(LENGTH_DAYS.toLong())
 			val period = Period.ofDays(LENGTH_DAYS)
-			val matches = getMatchesByDate(start, period)
-			val favoriteGames = getFavoriteGames()
+			val matchesDeferred = async {
+				getMatchesByDate(start, period)
+			}
+			val favoriteGamesDeferred = async {
+				getFavoriteGames()
+			}
+			val matches = matchesDeferred.await()
+			val favoriteGames = favoriteGamesDeferred.await()
 
 			if (matches.isNotEmpty()) {
 				val games = matches
@@ -148,9 +155,11 @@ class HubViewModel @Inject constructor(
 		}
 
 	fun onAddQuickGameClick() {
-		viewModelScope.launch(Dispatchers.IO) {
-			_uiState.update {
-				it.copy(allGames = getAllGames().associateBy { it.id })
+		if (_uiState.value.allGames == null) {
+			viewModelScope.launch(Dispatchers.IO) {
+				_uiState.update {
+					it.copy(allGames = getAllGames().associateBy { game -> game.id })
+				}
 			}
 		}
 	}
@@ -203,6 +212,8 @@ sealed interface HubUiState {
 	data class Content(
 		val quickGames: List<GameDomainModel>,
 		val allGames: List<GameDomainModel>?,
+
+		// TODO: this is currently unused, maybe remove it?
 		val dateRange: String,
 		val weekPlays: Map<String, List<String>>,
 		val chartKey: Map<String, Pair<Color, Shape>>,

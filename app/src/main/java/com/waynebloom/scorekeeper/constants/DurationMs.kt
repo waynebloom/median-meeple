@@ -1,8 +1,7 @@
 package com.waynebloom.scorekeeper.constants
 
 object DurationMs {
-    const val veryShort = 50
-    const val short = 150
-    const val medium = 300
-    const val long = 500
+    const val SHORT = 150
+    const val MEDIUM = 300
+    const val LONG = 500
 }

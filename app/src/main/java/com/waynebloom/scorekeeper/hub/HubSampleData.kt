@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.hub
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
@@ -25,9 +24,9 @@ internal object HubSampleData {
 		allGames = null,
 		dateRange = "2/9 - 2/16",
 		chartKey = mapOf(
-			"Wingspan" to (Color.Red to shape),
-			"Carcassonne" to (Color.Green to shape),
-			"Harmonies" to (Color.Blue to shape),
+			"Wingspan" to (GameDomainModel.DisplayColors[0] to shape),
+			"Carcassonne" to (GameDomainModel.DisplayColors[14] to shape),
+			"Harmonies" to (GameDomainModel.DisplayColors[7] to shape),
 		),
 		weekPlays = mapOf(
 			"Su" to listOf(

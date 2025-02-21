@@ -14,14 +14,14 @@ import com.waynebloom.scorekeeper.constants.DurationMs
 object Animation {
     private val enterTransitionWithDelay = fadeIn(
         animationSpec = tween(
-            durationMillis = DurationMs.short,
-            delayMillis = DurationMs.short))
-    private val exitTransition = fadeOut(animationSpec = tween(durationMillis = DurationMs.short))
+            durationMillis = DurationMs.SHORT,
+            delayMillis = DurationMs.SHORT))
+    private val exitTransition = fadeOut(animationSpec = tween(durationMillis = DurationMs.SHORT))
 
     val fadeInWithFadeOut = fadeIn() with fadeOut()
     val delayedFadeInWithFadeOut = enterTransitionWithDelay with exitTransition
     val sizeTransformWithDelay = SizeTransform { initialSize, targetSize ->
-        val delay = if (targetSize.height > initialSize.height) 0 else DurationMs.short
-        tween(DurationMs.short, delay, Ease)
+        val delay = if (targetSize.height > initialSize.height) 0 else DurationMs.SHORT
+        tween(DurationMs.SHORT, delay, Ease)
     }
 }

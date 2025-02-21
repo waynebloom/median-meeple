@@ -15,26 +15,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ArrowForward
-import androidx.compose.material.icons.rounded.Add
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -42,16 +30,14 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.Loading
+import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
-
-private const val BTN_COLOR_ALPHA = 0.2f
-private const val CHART_COLOR_ALPHA = 0.8f
 
 @Composable
 fun HubScreen(
@@ -72,7 +58,6 @@ fun HubScreen(
 					quickGames = uiState.quickGames,
 					allGames = uiState.allGames ?: listOf(),
 					isGamePickerLoading = uiState.allGames == null,
-					dateRange = uiState.dateRange,
 					weekPlays = uiState.weekPlays,
 					chartKey = uiState.chartKey,
 					modifier = Modifier.padding(innerPadding),
@@ -92,7 +77,6 @@ private fun HubScreen(
 	quickGames: List<GameDomainModel>,
 	allGames: List<GameDomainModel>,
 	isGamePickerLoading: Boolean,
-	dateRange: String,
 	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
 	modifier: Modifier = Modifier,
@@ -110,10 +94,9 @@ private fun HubScreen(
 	) {
 
 		TopBar(
-			// TODO: this needs to be the actual user's username OR a default state if not logged in.
-			"Welcome, Gigabyted.",
 			onSettingsClick,
-			Modifier
+			onLibraryClick, // TODO: this is temporary until bottom nav exists
+			modifier = Modifier
 				.fillMaxWidth()
 				.padding(bottom = 12.dp),
 		)
@@ -124,19 +107,18 @@ private fun HubScreen(
 			onGameClick,
 			onAddQuickGameClick,
 			onGameSelect,
-			onLibraryClick,
 			Modifier
 				.fillMaxWidth()
 				.padding(bottom = 36.dp)
 		)
-		RecentPlaysChart(dateRange, weekPlays, chartKey)
+		RecentPlaysChart(weekPlays, chartKey)
 	}
 }
 
 @Composable
 private fun TopBar(
-	title: String,
 	onSettingsClick: () -> Unit,
+	onLibraryClick: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 
@@ -146,130 +128,29 @@ private fun TopBar(
 		modifier = modifier.heightIn(min = Dimensions.Size.topBarHeight),
 	) {
 		Text(
-			text = title,
-			style = MaterialTheme.typography.titleLarge,
+			text = "Hub",
+			style = MaterialTheme.typography.titleMedium,
 		)
 
-		IconButton(
-			onClick = onSettingsClick,
-			modifier = Modifier.background(
-				color = MaterialTheme.colorScheme.primaryContainer,
-				shape = CircleShape,
-			)
-		) {
-			Icon(
-				painter = painterResource(R.drawable.settings),
-				contentDescription = "Settings",
-				modifier = Modifier.size(24.dp)
-			)
-		}
-	}
-}
-
-@Composable
-private fun QuickStart(
-	quickGames: List<GameDomainModel>,
-	allGames: List<GameDomainModel>,
-	isGamePickerLoading: Boolean,
-	onGameClick: (Long) -> Unit,
-	onAddQuickGameClick: () -> Unit,
-	onGameSelect: (Long) -> Unit,
-	onLibraryClick: () -> Unit,
-	modifier: Modifier = Modifier,
-) {
-	Column(modifier = modifier) {
-
-		Row(
-			verticalAlignment = Alignment.Bottom,
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(bottom = Dimensions.Spacing.sectionContent),
-		) {
-
-			Text(
-				text = "Quick Start",
-				style = MaterialTheme.typography.titleMedium,
-				modifier = Modifier
-					.fillMaxWidth()
-					.weight(1f, fill = false)
-			)
-
-			Box(
-				contentAlignment = Alignment.TopEnd
+		Row {
+			IconButton(
+				onClick = onLibraryClick,
+				modifier = Modifier.padding(end = 8.dp)
 			) {
-				var isExpanded by remember { mutableStateOf(false) }
-
-				FilledIconButton(onClick = {
-					onAddQuickGameClick()
-					isExpanded = true
-				}) {
-					Icon(
-						imageVector = Icons.Rounded.Add,
-						contentDescription = null,
-						modifier = Modifier.size(16.dp)
-					)
-				}
-
-				DropdownMenu(
-					expanded = isExpanded,
-					onDismissRequest = { isExpanded = !isExpanded },
-					modifier = Modifier.width(196.dp)
-				) {
-					// TODO: needs a loading state
-
-					allGames.minus(quickGames.toSet()).forEach {
-
-						DropdownMenuItem(
-							text = { Text(it.name.text) },
-							onClick = {
-								onGameSelect(it.id)
-								isExpanded = false
-							}
-						)
-					}
-				}
+				Icon(
+					painter = painterResource(R.drawable.ic_grid),
+					contentDescription = "Library",
+					modifier = Modifier.size(20.dp)
+				)
 			}
 
-			FilledIconButton(onClick = onLibraryClick) {
-				Row {
-
-					Icon(
-						imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
-						contentDescription = null,
-						modifier = Modifier.size(16.dp)
-					)
-
-					Icon(
-						painter = painterResource(R.drawable.ic_grid),
-						contentDescription = null,
-						modifier = Modifier.size(16.dp)
-					)
-				}
+			IconButton(onSettingsClick) {
+				Icon(
+					painter = painterResource(R.drawable.ic_settings),
+					contentDescription = "Settings",
+					modifier = Modifier.size(20.dp)
+				)
 			}
-		}
-
-		FlowRow(
-			horizontalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent),
-			modifier = Modifier.fillMaxWidth()
-		) {
-
-			quickGames.forEach {
-				val color = GameDomainModel.DisplayColors[it.displayColorIndex]
-				val displayColor = color
-					.copy(alpha = BTN_COLOR_ALPHA)
-					.compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp))
-
-				Button(
-					onClick = { onGameClick(it.id) },
-					colors = ButtonDefaults.buttonColors(
-						containerColor = displayColor,
-						contentColor = MaterialTheme.colorScheme.onSurface,
-					)
-				) {
-					Text(text = it.name.text)
-				}
-			}
-
 		}
 	}
 }
@@ -313,7 +194,7 @@ fun DayActivity(
 
 					val baseColor = chartKey[dayPlays[i]]?.first ?: Color.Black
 					val composited = baseColor
-						.copy(alpha = CHART_COLOR_ALPHA)
+						.copy(alpha = Alpha.HIGH_ALPHA)
 						.compositeOver(MaterialTheme.colorScheme.surface)
 					val shape = chartKey[dayPlays[i]]?.second ?: CircleShape
 					i++
@@ -331,81 +212,103 @@ fun DayActivity(
 
 @Composable
 private fun RecentPlaysChart(
-	dateRange: String,
 	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
 	modifier: Modifier = Modifier,
 ) {
 
-	Column(modifier) {
+	Surface(
+		shape = MaterialTheme.shapes.large,
+		tonalElevation = 2.dp,
+		modifier = modifier
+	) {
 
-		Text(text = "Activity")
+		Column(modifier = Modifier.padding(Dimensions.Spacing.sectionContent)) {
 
-		Column(
-			horizontalAlignment = Alignment.CenterHorizontally,
-		) {
+			Row(verticalAlignment = Alignment.CenterVertically) {
+				Box(
+					modifier = Modifier
+						.padding(end = 8.dp)
+						.background(
+							color = MaterialTheme.colorScheme.primaryContainer,
+							shape = CircleShape,
+						)
+				) {
 
-			Text(text = dateRange, style = MaterialTheme.typography.titleSmall)
-
-			Row(
-				horizontalArrangement = Arrangement.SpaceBetween,
-				verticalAlignment = Alignment.Bottom,
-				modifier = Modifier
-					.fillMaxWidth()
-					.padding(top = 12.dp, bottom = 4.dp)
-			) {
-
-				// 1 each per day of week
-				weekPlays.forEach { (_, dayPlays) ->
-					DayActivity(
-						dayPlays = dayPlays,
-						chartKey = chartKey,
+					Icon(
+						painter = painterResource(R.drawable.ic_activity),
+						contentDescription = null,
+						modifier = Modifier
+							.padding(4.dp)
+							.size(16.dp)
 					)
 				}
+
+				Text(text = "Activity")
 			}
 
-			Row(
-				horizontalArrangement = Arrangement.SpaceBetween,
-				modifier = Modifier.fillMaxWidth()
-			) {
+			Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-				weekPlays.keys.forEach {
-					Box(
-						contentAlignment = Alignment.Center,
-						modifier = Modifier.width(48.dp),
-					) {
+				Row(
+					horizontalArrangement = Arrangement.SpaceBetween,
+					verticalAlignment = Alignment.Bottom,
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(top = 24.dp, bottom = 4.dp)
+				) {
 
-						Text(text = it, style = MaterialTheme.typography.labelMedium)
+					// 1 each per day of week
+					weekPlays.forEach { (_, dayPlays) ->
+						DayActivity(
+							dayPlays = dayPlays,
+							chartKey = chartKey,
+						)
 					}
 				}
-			}
 
-			HorizontalDivider(
-				modifier = Modifier.padding(vertical = 8.dp),
-				color = MaterialTheme.colorScheme.onPrimaryContainer
-			)
+				Row(
+					horizontalArrangement = Arrangement.SpaceBetween,
+					modifier = Modifier.fillMaxWidth()
+				) {
 
-			FlowRow(
-				horizontalArrangement = Arrangement.spacedBy(8.dp),
-				verticalArrangement = Arrangement.spacedBy(8.dp),
-			) {
-				chartKey.forEach { (game, display) ->
-					Row(
-						horizontalArrangement = Arrangement.spacedBy(4.dp),
-						verticalAlignment = Alignment.CenterVertically,
-					) {
-
-						val color = display.first
-							.copy(alpha = CHART_COLOR_ALPHA)
-							.compositeOver(MaterialTheme.colorScheme.surface)
-
+					weekPlays.keys.forEach {
 						Box(
-							modifier = Modifier
-								.size(12.dp)
-								.background(color, display.second)
-						) {}
+							contentAlignment = Alignment.Center,
+							modifier = Modifier.width(48.dp),
+						) {
 
-						Text(text = game, style = MaterialTheme.typography.labelSmall)
+							Text(text = it, style = MaterialTheme.typography.labelMedium)
+						}
+					}
+				}
+
+				HorizontalDivider(
+					modifier = Modifier.padding(vertical = 8.dp),
+					color = MaterialTheme.colorScheme.background,
+				)
+
+				FlowRow(
+					horizontalArrangement = Arrangement.spacedBy(8.dp),
+					verticalArrangement = Arrangement.spacedBy(8.dp),
+				) {
+					chartKey.forEach { (game, display) ->
+						Row(
+							horizontalArrangement = Arrangement.spacedBy(4.dp),
+							verticalAlignment = Alignment.CenterVertically,
+						) {
+
+							val color = display.first
+								.copy(alpha = Alpha.HIGH_ALPHA)
+								.compositeOver(MaterialTheme.colorScheme.surface)
+
+							Box(
+								modifier = Modifier
+									.size(12.dp)
+									.background(color, display.second)
+							) {}
+
+							Text(text = game, style = MaterialTheme.typography.labelSmall)
+						}
 					}
 				}
 			}
@@ -413,7 +316,7 @@ private fun RecentPlaysChart(
 	}
 }
 
-@Preview
+@PreviewLightDark
 @Composable
 private fun HubPreview() {
 	MedianMeepleTheme {

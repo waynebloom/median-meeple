@@ -96,7 +96,7 @@ class SingleGameViewModel @Inject constructor(
     }
 
     private fun scrollToTop() = viewModelScope.launch {
-        delay(DurationMs.long.toLong())
+        delay(DurationMs.LONG.toLong())
         viewModelState.value
             .matchesLazyListState
             .animateScrollToItem(0)
