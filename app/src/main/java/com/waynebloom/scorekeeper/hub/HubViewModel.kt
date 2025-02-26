@@ -14,6 +14,7 @@ import com.waynebloom.scorekeeper.room.domain.usecase.GetFavoriteGames
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
 import com.waynebloom.scorekeeper.room.domain.usecase.GetGames
 import com.waynebloom.scorekeeper.room.domain.usecase.GetMatchesByDate
+import com.waynebloom.scorekeeper.room.domain.usecase.UpdateGame
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -38,6 +39,7 @@ class HubViewModel @Inject constructor(
 	private val getAllGames: GetGames,
 	private val getGame: GetGame,
 	private val getMatchesByDate: GetMatchesByDate,
+	private val updateGame: UpdateGame,
 	// updateGame (need to update data model first)
 	mutableStateFlowFactory: MutableStateFlowFactory,
 ) : ViewModel() {
@@ -166,9 +168,11 @@ class HubViewModel @Inject constructor(
 
 	fun addQuickGame(id: Long) {
 		_uiState.update {
-			// TODO: persist this
 			val allGames = it.allGames ?: return
 			val addedGame = allGames[id] ?: return
+			viewModelScope.launch(Dispatchers.IO) {
+				updateGame(addedGame.copy(isFavorite = true))
+			}
 			it.copy(quickGames = it.quickGames.plus(addedGame))
 		}
 	}
@@ -184,6 +188,10 @@ private data class HubState(
 ) {
 
 	fun toUiState(): HubUiState {
+		if (loading) {
+			return HubUiState.Loading
+		}
+
 		val formatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.SHORT)
 		val dateRange = ZonedDateTime.now().let { now ->
 			val firstDate = now

@@ -9,15 +9,17 @@ class CredentialManager @Inject constructor() {
         var jwt = JWT.empty()
     }
 
-    fun requireLogin(): Boolean {
-        return Instant.now().isBefore(jwt.expiresOn)
-    }
-
     fun clear() {
         jwt = JWT.empty()
     }
 
     fun get() = jwt
+
+    fun isEmpty() = jwt == JWT.empty()
+
+    fun requireLogin(): Boolean {
+        return Instant.now().isBefore(jwt.expiresOn)
+    }
 
     fun store(newJWT: JWT) {
         jwt = newJWT

@@ -10,12 +10,12 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun Loading() {
-    Surface {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CircularProgressIndicator()
-        }
-    }
+	Surface {
+		Box(
+			contentAlignment = Alignment.Center,
+			modifier = Modifier.fillMaxSize()
+		) {
+			CircularProgressIndicator()
+		}
+	}
 }

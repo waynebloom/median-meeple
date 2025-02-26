@@ -26,7 +26,7 @@ fun HubRoute(
 			navController.navigate(Destination.Library.route)
 		},
 		onSettingsClick = {
-			navController.navigate(Destination.Login.route)
+			navController.navigate(Destination.Settings.route)
 		},
 	)
 }

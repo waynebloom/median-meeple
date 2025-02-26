@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.login
+package com.waynebloom.scorekeeper.settings.login
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -91,9 +91,10 @@ private fun LoginScreen(
 @Composable
 private fun LoginPreview() {
 	MedianMeepleTheme {
-		Box(Modifier
-			.fillMaxSize()
-			.background(MaterialTheme.colorScheme.background)
+		Box(
+			Modifier
+				.fillMaxSize()
+				.background(MaterialTheme.colorScheme.background)
 		) {
 			LoginScreen(
 				email = TextFieldValue("admin@test.com"),

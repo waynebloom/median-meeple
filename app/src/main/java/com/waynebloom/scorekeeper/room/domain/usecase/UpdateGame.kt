@@ -6,16 +6,18 @@ import com.waynebloom.scorekeeper.room.domain.repository.GameRepository
 import javax.inject.Inject
 
 class UpdateGame @Inject constructor(
-    private val gameRepository: GameRepository
+	private val gameRepository: GameRepository
 ) {
 
-    suspend operator fun invoke(game: GameDomainModel) =
-        gameRepository.update(game.toDataModel())
+	suspend operator fun invoke(game: GameDomainModel) {
+		gameRepository.update(game.toDataModel())
+	}
 
-    private fun GameDomainModel.toDataModel() = GameDataModel(
-        id = id,
-        color = displayColorIndex,
-        name = name.text,
-        scoringMode = scoringMode.ordinal
-    )
+	private fun GameDomainModel.toDataModel() = GameDataModel(
+		id = id,
+		color = displayColorIndex,
+		name = name.text,
+		scoringMode = scoringMode.ordinal,
+		isFavorite = isFavorite
+	)
 }

@@ -14,8 +14,9 @@ import androidx.navigation.navArgument
 import com.waynebloom.scorekeeper.editGame.EditGameRoute
 import com.waynebloom.scorekeeper.hub.HubRoute
 import com.waynebloom.scorekeeper.library.LibraryRoute
-import com.waynebloom.scorekeeper.login.LoginRoute
 import com.waynebloom.scorekeeper.scorecard.ScoreCardRoute
+import com.waynebloom.scorekeeper.settings.SettingsRoute
+import com.waynebloom.scorekeeper.settings.login.LoginRoute
 import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
 import com.waynebloom.scorekeeper.singleGame.matchesForGame.MatchesForGameRoute
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameRoute
@@ -23,88 +24,94 @@ import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGame
 @SuppressWarnings("CyclomaticComplexMethod")
 @Composable
 fun MedianMeepleApp() {
-    val navController = rememberNavController()
+	val navController = rememberNavController()
 
-    NavHost(
-        navController = navController,
-        startDestination = Destination.Hub.route,
-    ) {
+	NavHost(
+		navController = navController,
+		startDestination = Destination.Hub.route,
+	) {
 
-        // Hub
+		// Hub
 
-        composable(Destination.Hub.route) {
-            HubRoute(navController)
-        }
+		composable(Destination.Hub.route) {
+			HubRoute(navController)
+		}
 
-        // Login
+		// Settings
 
-        composable(Destination.Login.route) {
-            LoginRoute(navController)
-        }
+		composable(Destination.Settings.route) {
+			SettingsRoute(navController)
+		}
 
-        // Library
+		// Login
 
-        composable(Destination.Library.route) {
-            LibraryRoute(navController)
-        }
+		composable(Destination.Login.route) {
+			LoginRoute(navController)
+		}
 
-        // MatchesForGame
+		// Library
 
-        composable(
-            route = "${Destination.MatchesForGame.route}/{gameId}",
-            arguments = listOf(
-                navArgument(name = "gameId") { type = NavType.LongType }
-            )
-        ) {
-            val viewModel = it.sharedViewModel<SingleGameViewModel>(navController)
-            MatchesForGameRoute(navController, viewModel)
-        }
+		composable(Destination.Library.route) {
+			LibraryRoute(navController)
+		}
 
-        // StatisticsForGame
+		// MatchesForGame
 
-        composable(
-            route = "${Destination.StatisticsForGame.route}/{gameId}",
-            arguments = listOf(
-                navArgument(name = "gameId") { type = NavType.LongType }
-            )
-        ) {
-            val viewModel = it.sharedViewModel<SingleGameViewModel>(navController)
-            StatisticsForGameRoute(navController, viewModel)
-        }
+		composable(
+			route = "${Destination.MatchesForGame.route}/{gameId}",
+			arguments = listOf(
+				navArgument(name = "gameId") { type = NavType.LongType }
+			)
+		) {
+			val viewModel = it.sharedViewModel<SingleGameViewModel>(navController)
+			MatchesForGameRoute(navController, viewModel)
+		}
 
-        // EditGame
+		// StatisticsForGame
 
-        composable(
-            route = "${Destination.EditGame.route}/{gameId}",
-            arguments = listOf(
-                navArgument(name = "gameId") { type = NavType.LongType }
-            )
-        ) {
+		composable(
+			route = "${Destination.StatisticsForGame.route}/{gameId}",
+			arguments = listOf(
+				navArgument(name = "gameId") { type = NavType.LongType }
+			)
+		) {
+			val viewModel = it.sharedViewModel<SingleGameViewModel>(navController)
+			StatisticsForGameRoute(navController, viewModel)
+		}
 
-            EditGameRoute(navController)
-        }
+		// EditGame
 
-        // ScoreCard
+		composable(
+			route = "${Destination.EditGame.route}/{gameId}",
+			arguments = listOf(
+				navArgument(name = "gameId") { type = NavType.LongType }
+			)
+		) {
 
-        composable(
-            route = "${Destination.ScoreCard.route}/{gameId}/{matchId}",
-            arguments = listOf(
-                navArgument(name = "gameId") { type = NavType.LongType },
-                navArgument(name = "matchId") { type = NavType.LongType },
-            )
-        ) {
-            ScoreCardRoute(navController)
-        }
-    }
+			EditGameRoute(navController)
+		}
+
+		// ScoreCard
+
+		composable(
+			route = "${Destination.ScoreCard.route}/{gameId}/{matchId}",
+			arguments = listOf(
+				navArgument(name = "gameId") { type = NavType.LongType },
+				navArgument(name = "matchId") { type = NavType.LongType },
+			)
+		) {
+			ScoreCardRoute(navController)
+		}
+	}
 }
 
 @Composable
 inline fun <reified T : ViewModel> NavBackStackEntry.sharedViewModel(
-    navController: NavHostController
+	navController: NavHostController
 ): T {
-    val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
-    val parentEntry = remember(this) {
-        navController.getBackStackEntry(navGraphRoute)
-    }
-    return hiltViewModel(parentEntry)
+	val navGraphRoute = destination.parent?.route ?: return hiltViewModel()
+	val parentEntry = remember(this) {
+		navController.getBackStackEntry(navGraphRoute)
+	}
+	return hiltViewModel(parentEntry)
 }

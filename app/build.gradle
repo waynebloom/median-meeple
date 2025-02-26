@@ -81,6 +81,7 @@ dependencies {
     implementation libs.compose.ui.tooling.preview
     implementation libs.compose.ui.viewbinding
     implementation libs.constraintlayout
+    implementation libs.datastore
     implementation libs.hilt.android
     implementation libs.hilt.navigation.compose
     implementation libs.junit.ktx
