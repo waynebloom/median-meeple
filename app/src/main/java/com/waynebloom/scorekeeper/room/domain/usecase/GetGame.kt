@@ -7,16 +7,17 @@ import com.waynebloom.scorekeeper.room.domain.repository.GameRepository
 import javax.inject.Inject
 
 class GetGame @Inject constructor(
-    private val gameRepository: GameRepository
+	private val gameRepository: GameRepository
 ) {
 
-    suspend operator fun invoke(id: Long): GameDomainModel = gameRepository.getOne(id)
-        .let { game ->
-            GameDomainModel(
-                id = id,
-                displayColorIndex = game.color,
-                name = TextFieldValue(game.name),
-                scoringMode = game.scoringMode.toScoringMode()
-            )
-        }
+	suspend operator fun invoke(id: Long): GameDomainModel = gameRepository.getOne(id)
+		.let { game ->
+			GameDomainModel(
+				id = id,
+				displayColorIndex = game.color,
+				name = TextFieldValue(game.name),
+				scoringMode = game.scoringMode.toScoringMode(),
+				isFavorite = game.isFavorite,
+			)
+		}
 }

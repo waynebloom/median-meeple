@@ -58,8 +58,8 @@ class LoginViewModel @Inject constructor(
 
 			viewModelState.update {
 				/** TODO:
-				 * show an error
-				 * clear password
+				 * 		show an error
+				 * 		clear password
 				 */
 				it.copy(loading = false)
 			}
