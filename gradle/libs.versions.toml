@@ -19,7 +19,7 @@ runner = "1.5.2"
 work = "2.10.0"
 
 # plugins
-android = "8.5.0"
+android = "8.7.3"
 daggerHilt = "2.49"
 detekt = "1.23.0"
 googleServices = "4.4.2"
