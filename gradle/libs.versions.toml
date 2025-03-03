@@ -16,6 +16,7 @@ playServicesAds = "23.1.0"
 retrofit = "2.11.0"
 room = "2.6.1"
 runner = "1.5.2"
+work = "2.10.0"
 
 # plugins
 android = "8.5.0"
@@ -47,6 +48,7 @@ lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-com
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 
 # XML ad views still need material for the button
 # TODO LOW PRIO: look into replacing with normal button to reduce size

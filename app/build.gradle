@@ -14,12 +14,12 @@ detekt {
 }
 
 android {
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.waynebloom.scorekeeper"
         minSdk 26
-        targetSdk 34
+        targetSdk 35
         versionCode 15
         versionName "2024.1.2"
 
@@ -99,6 +99,7 @@ dependencies {
     implementation libs.retrofit.converter.moshi
     implementation libs.room.runtime
     implementation libs.room.ktx
+    implementation libs.work.runtime.ktx
     implementation platform(libs.firebase.bom)
     androidTestImplementation libs.room.testing
     androidTestImplementation libs.runner
