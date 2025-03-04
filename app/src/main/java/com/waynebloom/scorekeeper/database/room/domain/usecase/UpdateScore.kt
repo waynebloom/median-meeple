@@ -1,0 +1,22 @@
+package com.waynebloom.scorekeeper.database.room.domain.usecase
+
+import com.waynebloom.scorekeeper.database.room.data.model.ScoreDataModel
+import com.waynebloom.scorekeeper.database.room.domain.model.ScoreDomainModel
+import com.waynebloom.scorekeeper.database.repository.ScoreRepository
+import javax.inject.Inject
+
+class UpdateScore @Inject constructor(
+    private val scoreRepository: ScoreRepository
+) {
+
+    suspend operator fun invoke(categoryScore: ScoreDomainModel) {
+        scoreRepository.update(
+            ScoreDataModel(
+                id = categoryScore.id,
+                playerId = categoryScore.playerId,
+                categoryId = categoryScore.categoryId,
+                value = categoryScore.scoreAsTextFieldValue.text
+            )
+        )
+    }
+}

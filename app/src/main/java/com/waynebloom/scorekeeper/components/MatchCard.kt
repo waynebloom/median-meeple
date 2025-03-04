@@ -24,17 +24,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun MatchCard(
-    number: String,
-    date: String,
-    location: String,
-    players: List<PlayerDomainModel>,
-    totals: List<String>,
-    modifier: Modifier = Modifier
+	number: String,
+	date: String,
+	location: String,
+	players: List<PlayerDomainModel>,
+	totals: List<String>,
+	modifier: Modifier = Modifier
 ) {
     val headline = if (location.isNotBlank()) {
         "$date ${stringResource(R.string.text_at)} $location"

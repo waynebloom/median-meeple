@@ -6,24 +6,24 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
-import com.waynebloom.scorekeeper.room.domain.usecase.DeleteMatch
-import com.waynebloom.scorekeeper.room.domain.usecase.DeletePlayer
-import com.waynebloom.scorekeeper.room.domain.usecase.GetCategoriesByGameId
-import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
-import com.waynebloom.scorekeeper.room.domain.usecase.GetIndexOfMatch
-import com.waynebloom.scorekeeper.room.domain.usecase.GetMatch
-import com.waynebloom.scorekeeper.room.domain.usecase.GetPlayersByMatchIdWithRelations
-import com.waynebloom.scorekeeper.room.domain.usecase.InsertCategoryScore
-import com.waynebloom.scorekeeper.room.domain.usecase.InsertMatch
-import com.waynebloom.scorekeeper.room.domain.usecase.InsertPlayer
-import com.waynebloom.scorekeeper.room.domain.usecase.UpdateCategoryScore
-import com.waynebloom.scorekeeper.room.domain.usecase.UpdateMatch
-import com.waynebloom.scorekeeper.room.domain.usecase.UpdatePlayer
+import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.ScoreDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.PlayerDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.usecase.DeleteMatch
+import com.waynebloom.scorekeeper.database.room.domain.usecase.DeletePlayer
+import com.waynebloom.scorekeeper.database.room.domain.usecase.GetCategoriesByGameId
+import com.waynebloom.scorekeeper.database.room.domain.usecase.GetGame
+import com.waynebloom.scorekeeper.database.room.domain.usecase.GetIndexOfMatch
+import com.waynebloom.scorekeeper.database.room.domain.usecase.GetMatch
+import com.waynebloom.scorekeeper.database.room.domain.usecase.GetPlayersByMatchIdWithRelations
+import com.waynebloom.scorekeeper.database.room.domain.usecase.InsertScore
+import com.waynebloom.scorekeeper.database.room.domain.usecase.InsertMatch
+import com.waynebloom.scorekeeper.database.room.domain.usecase.InsertPlayer
+import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdateScore
+import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdateMatch
+import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdatePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -49,8 +49,8 @@ class ScoreCardViewModel @Inject constructor(
 	private val updatePlayer: UpdatePlayer,
 	private val insertPlayer: InsertPlayer,
 	private val deletePlayer: DeletePlayer,
-	private val updateCategoryScore: UpdateCategoryScore,
-	private val insertCategoryScore: InsertCategoryScore,
+	private val updateScore: UpdateScore,
+	private val insertScore: InsertScore,
 	private val insertMatch: InsertMatch,
 	private val deleteMatch: DeleteMatch,
 ): ViewModel() {
@@ -112,7 +112,7 @@ class ScoreCardViewModel @Inject constructor(
 						val existingScore = player.categoryScores.find {
 							it.categoryId == category.id
 						}
-						existingScore ?: CategoryScoreDomainModel(
+						existingScore ?: ScoreDomainModel(
 							categoryId = category.id,
 							playerId = player.id
 						)
@@ -209,7 +209,7 @@ class ScoreCardViewModel @Inject constructor(
 		val newScoreCard = it.scoreCard.toMutableList().apply {
 			add(
 				List(dbCategories.size) { index ->
-					CategoryScoreDomainModel(
+					ScoreDomainModel(
 						categoryId = dbCategories[index].id,
 					)
 				}
@@ -333,7 +333,7 @@ class ScoreCardViewModel @Inject constructor(
 					val playerId = insertPlayer(player.copy(matchId = matchId))
 
 					state.scoreCard[colIndex].forEachIndexed { rowIndex, score ->
-						insertCategoryScore(score.copy(
+						insertScore(score.copy(
 							playerId = playerId,
 							categoryId = dbCategories[rowIndex].id
 						))
@@ -343,12 +343,12 @@ class ScoreCardViewModel @Inject constructor(
 
 					state.scoreCard[colIndex].forEachIndexed { rowIndex, score ->
 						if (score.id == -1L) {
-							insertCategoryScore(score.copy(
+							insertScore(score.copy(
 								playerId = player.id,
 								categoryId = dbCategories[rowIndex].id
 							))
 						} else {
-							updateCategoryScore(score)
+							updateScore(score)
 						}
 					}
 				}
@@ -375,7 +375,7 @@ private data class ScoreCardViewModelState(
 	val notes: TextFieldValue = TextFieldValue(),
 	val players: List<PlayerDomainModel> = listOf(),
 	val categoryNames: List<String> = listOf(),
-	val scoreCard: List<List<CategoryScoreDomainModel>> = mutableListOf(),
+	val scoreCard: List<List<ScoreDomainModel>> = mutableListOf(),
 	val playerIndexToChange: Int = 0,
 	val manualRanks: Boolean = false,
 	val dialogTextFieldValue: TextFieldValue = TextFieldValue(),
@@ -416,7 +416,7 @@ sealed interface ScoreCardUiState {
 		val players: List<PlayerDomainModel>,
 		val categoryNames: List<String>,
 		val hiddenCategories: List<Int>,
-		val scoreCard: List<List<CategoryScoreDomainModel>>,
+		val scoreCard: List<List<ScoreDomainModel>>,
 		val playerIndexToChange: Int,
 		val manualRanks: Boolean,
 		val dialogTextFieldValue: TextFieldValue,

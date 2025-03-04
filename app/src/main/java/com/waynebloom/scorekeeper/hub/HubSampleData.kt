@@ -3,7 +3,7 @@ package com.waynebloom.scorekeeper.hub
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 
 internal object HubSampleData {
 	val shape = RoundedCornerShape(4.dp)

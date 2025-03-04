@@ -3,8 +3,8 @@ plugins {
     alias libs.plugins.compose.compiler
     alias libs.plugins.dagger.hilt
     alias libs.plugins.detekt
-    alias libs.plugins.google.services
     alias libs.plugins.kotlin
+    alias libs.plugins.kotlin.serialization
     alias libs.plugins.ksp
     alias libs.plugins.room
 }
@@ -35,6 +35,13 @@ android {
             // incremental annotation processing speeds up builds
             arg("room.incremental", "true")
         }
+
+        File secretsFile = project.rootProject.file("secrets.properties")
+        Properties properties = new Properties()
+        properties.load(secretsFile.newInputStream())
+
+        buildConfigField("String", "SUPABASE_URL", properties.getProperty("SUPABASE_URL"))
+        buildConfigField("String", "SUPABASE_KEY", properties.getProperty("SUPABASE_ANON_KEY"))
     }
 
     sourceSets {
@@ -81,11 +88,13 @@ dependencies {
     implementation libs.compose.ui.tooling.preview
     implementation libs.compose.ui.viewbinding
     implementation libs.constraintlayout
-    implementation libs.datastore
-    implementation libs.hilt.android
+    implementation libs.datastore.preferences
+    implementation libs.dagger.hilt
     implementation libs.hilt.navigation.compose
+    implementation libs.hilt.work
     implementation libs.junit.ktx
     implementation libs.ksp.symbol.processing.api
+    implementation libs.ktor.client.android
     implementation libs.lifecycle.runtime.compose
     implementation libs.lifecycle.runtime.ktx
     implementation libs.lifecycle.viewmodel.compose
@@ -99,13 +108,13 @@ dependencies {
     implementation libs.retrofit.converter.moshi
     implementation libs.room.runtime
     implementation libs.room.ktx
+    implementation libs.supabase.postgrest
     implementation libs.work.runtime.ktx
-    implementation platform(libs.firebase.bom)
     androidTestImplementation libs.room.testing
     androidTestImplementation libs.runner
     debugImplementation libs.compose.ui.tooling
     debugImplementation libs.compose.ui.test.manifest
-    ksp libs.hilt.android.compiler
+    ksp libs.dagger.hilt.compiler
     ksp libs.hilt.compiler
     ksp libs.room.compiler
 }

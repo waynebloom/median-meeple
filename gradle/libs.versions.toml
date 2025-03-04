@@ -5,8 +5,9 @@ compose = "1.6.8"
 constraintlayout = "2.1.4"
 datastore = "1.1.2"
 firebaseBom = "33.1.0"
-hiltNavigationCompose = "1.2.0"
+hilt = "1.2.0"
 junitKtx = "1.1.5"
+ktor = "3.1.1"
 lifecycle = "2.8.2"
 material = "1.12.0"
 material3 = "1.2.1"
@@ -16,11 +17,12 @@ playServicesAds = "23.1.0"
 retrofit = "2.11.0"
 room = "2.6.1"
 runner = "1.5.2"
+supabase = "3.1.2"
 work = "2.10.0"
 
 # plugins
 android = "8.7.3"
-daggerHilt = "2.49"
+daggerHilt = "2.54"
 detekt = "1.23.0"
 googleServices = "4.4.2"
 kotlin = "2.0.0"
@@ -36,18 +38,20 @@ compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = 
 compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "compose" }
 compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding", version.ref = "compose" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
-datastore = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
-firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltNavigationCompose" }
-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
-hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "daggerHilt" }
-hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "daggerHilt" }
+dagger-hilt = { module = "com.google.dagger:hilt-android", version.ref = "daggerHilt" }
+dagger-hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "daggerHilt" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt" }
+hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt" }
 junit-ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "junitKtx" }
 ksp-symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt", version.ref = "supabase" }
 work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 
 # XML ad views still need material for the button
@@ -73,5 +77,6 @@ dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt
 detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
 google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 room = { id = "androidx.room", version.ref = "room" }

@@ -101,8 +101,8 @@ import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.ext.onFocusSelectAll
 import com.waynebloom.scorekeeper.ext.toRank
 import com.waynebloom.scorekeeper.ext.toShortFormatString
-import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.ScoreDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.util.SetDialogDestinationToEdgeToEdge
 import java.math.BigDecimal
@@ -170,7 +170,7 @@ private fun ScoreCardScreen(
     categoryNames: List<String>,
     hiddenCategories: List<Int>,
     players: List<PlayerDomainModel>,
-    scoreCard: List<List<CategoryScoreDomainModel>>,
+    scoreCard: List<List<ScoreDomainModel>>,
     totals: List<BigDecimal>,
     dateMillis: Long,
     location: String,
@@ -824,7 +824,7 @@ private fun ScoreCardScreen(
 private fun ScoreColumn(
     playerName: String,
     playerRank: Int,
-    scores: List<CategoryScoreDomainModel>,
+    scores: List<ScoreDomainModel>,
     total: String,
     modifier: Modifier = Modifier,
     onPlayerClick: () -> Unit,

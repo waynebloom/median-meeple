@@ -1,10 +1,10 @@
 package com.waynebloom.scorekeeper.singleGame
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.ScoreDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.PlayerDomainModel
 import java.math.BigDecimal
 
 object SingleGameSampleData {
@@ -25,17 +25,17 @@ object SingleGameSampleData {
     )
 
     val CategoryScores = listOf(
-        CategoryScoreDomainModel(
+        ScoreDomainModel(
             category = Categories[0],
             scoreAsBigDecimal = BigDecimal(20),
             scoreAsTextFieldValue = TextFieldValue("20")
         ),
-        CategoryScoreDomainModel(
+        ScoreDomainModel(
             category = Categories[1],
             scoreAsBigDecimal = BigDecimal(30),
             scoreAsTextFieldValue = TextFieldValue("30")
         ),
-        CategoryScoreDomainModel(
+        ScoreDomainModel(
             category = Categories[2],
             scoreAsBigDecimal = BigDecimal(40),
             scoreAsTextFieldValue = TextFieldValue("40")
