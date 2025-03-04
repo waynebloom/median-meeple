@@ -4,6 +4,7 @@
 .kotlin
 /app/release
 /local.properties
+/secrets.properties
 .idea
 .DS_Store
 /build

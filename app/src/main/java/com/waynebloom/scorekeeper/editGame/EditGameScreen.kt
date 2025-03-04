@@ -105,8 +105,8 @@ import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.util.SetDialogDestinationToEdgeToEdge
 

@@ -9,7 +9,7 @@ import com.waynebloom.scorekeeper.auth.domain.usecase.Login
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.ext.toShortFormatString
 import com.waynebloom.scorekeeper.network.domain.usecase.GetGamesFromBase
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

@@ -36,7 +36,7 @@ import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable

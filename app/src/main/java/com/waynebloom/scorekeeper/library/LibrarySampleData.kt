@@ -1,7 +1,7 @@
 package com.waynebloom.scorekeeper.library
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 
 object LibrarySampleData {
     private val gameCards = listOf(

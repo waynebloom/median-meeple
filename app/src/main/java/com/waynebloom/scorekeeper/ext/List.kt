@@ -1,7 +1,7 @@
 package com.waynebloom.scorekeeper.ext
 
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.PlayerDomainModel
 import java.math.BigDecimal
 
 /**

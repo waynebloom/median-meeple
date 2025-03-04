@@ -11,16 +11,16 @@ import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.transformElement
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.room.domain.usecase.DeleteCategory
-import com.waynebloom.scorekeeper.room.domain.usecase.DeleteGame
-import com.waynebloom.scorekeeper.room.domain.usecase.GetCategoriesByGameId
-import com.waynebloom.scorekeeper.room.domain.usecase.GetGame
-import com.waynebloom.scorekeeper.room.domain.usecase.InsertCategory
-import com.waynebloom.scorekeeper.room.domain.usecase.InsertGame
-import com.waynebloom.scorekeeper.room.domain.usecase.UpdateCategory
-import com.waynebloom.scorekeeper.room.domain.usecase.UpdateGame
+import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.usecase.DeleteCategory
+import com.waynebloom.scorekeeper.database.room.domain.usecase.DeleteGame
+import com.waynebloom.scorekeeper.database.room.domain.usecase.GetCategoriesByGameId
+import com.waynebloom.scorekeeper.database.room.domain.usecase.GetGame
+import com.waynebloom.scorekeeper.database.room.domain.usecase.InsertCategory
+import com.waynebloom.scorekeeper.database.room.domain.usecase.InsertGame
+import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdateCategory
+import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdateGame
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,22 +34,24 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EditGameViewModel @Inject constructor(
-    private val deleteCategory: DeleteCategory,
-    private val deleteGame: DeleteGame,
-    getCategoriesByGameId: GetCategoriesByGameId,
-    getGame: GetGame,
-    private val insertCategory: InsertCategory,
-    private val insertGame: InsertGame,
-    mutableStateFlowFactory: MutableStateFlowFactory,
-    savedStateHandle: SavedStateHandle,
-    private val updateCategoryUseCase: UpdateCategory,
-    private val updateGameUseCase: UpdateGame,
+	private val deleteCategory: DeleteCategory,
+	private val deleteGame: DeleteGame,
+	getCategoriesByGameId: GetCategoriesByGameId,
+	getGame: GetGame,
+	private val insertCategory: InsertCategory,
+	private val insertGame: InsertGame,
+	mutableStateFlowFactory: MutableStateFlowFactory,
+	savedStateHandle: SavedStateHandle,
+	private val updateCategoryUseCase: UpdateCategory,
+	private val updateGameUseCase: UpdateGame,
 ): ViewModel() {
 
     private val viewModelState: MutableStateFlow<EditGameViewModelState>
     val uiState: StateFlow<EditGameUiState>
 
     private var gameId = savedStateHandle.get<Long>("gameId")!!
+
+    // ASAP: Make sure whatever uses this is using it correctly.
     lateinit var composableCoroutineScope: CoroutineScope
 
     init {
@@ -287,15 +289,15 @@ class EditGameViewModel @Inject constructor(
 }
 
 private data class EditGameViewModelState(
-    val loading: Boolean = true,
-    val categories: List<CategoryDomainModel> = emptyList(),
-    val colorIndex: Int = 0,
-    val dragState: DragState = DragState(),
-    val indexOfSelectedCategory: Int = -1,
-    val isCategoryDialogOpen: Boolean = false,
-    val name: TextFieldValue = TextFieldValue(),
-    val scoringMode: ScoringMode = ScoringMode.Descending,
-    val showColorMenu: Boolean = false,
+	val loading: Boolean = true,
+	val categories: List<CategoryDomainModel> = emptyList(),
+	val colorIndex: Int = 0,
+	val dragState: DragState = DragState(),
+	val indexOfSelectedCategory: Int = -1,
+	val isCategoryDialogOpen: Boolean = false,
+	val name: TextFieldValue = TextFieldValue(),
+	val scoringMode: ScoringMode = ScoringMode.Descending,
+	val showColorMenu: Boolean = false,
 ) {
 
     fun toUiState() = if (loading) {
@@ -330,14 +332,14 @@ sealed interface EditGameUiState {
     data object Loading: EditGameUiState
 
     data class Content(
-        val categories: List<CategoryDomainModel>,
-        val colorIndex: Int,
-        val dragState: DragState,
-        val indexOfSelectedCategory: Int,
-        val isCategoryDialogOpen: Boolean,
-        val name: TextFieldValue,
-        val scoringMode: ScoringMode,
-        val showColorMenu: Boolean,
+			val categories: List<CategoryDomainModel>,
+			val colorIndex: Int,
+			val dragState: DragState,
+			val indexOfSelectedCategory: Int,
+			val isCategoryDialogOpen: Boolean,
+			val name: TextFieldValue,
+			val scoringMode: ScoringMode,
+			val showColorMenu: Boolean,
     ): EditGameUiState
 }
 

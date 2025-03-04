@@ -1,9 +1,9 @@
 package com.waynebloom.scorekeeper.scorecard
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.waynebloom.scorekeeper.room.domain.model.CategoryScoreDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.PlayerDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.ScoreDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.PlayerDomainModel
 import java.math.BigDecimal
 
 object ScoreCardSampleData {
@@ -32,7 +32,7 @@ object ScoreCardSampleData {
         1 until 10 step 2,
     ).map { row ->
         row.map { col ->
-            CategoryScoreDomainModel(
+            ScoreDomainModel(
                 scoreAsTextFieldValue = TextFieldValue(col.toString()),
                 scoreAsBigDecimal = BigDecimal(col)
             )
@@ -45,7 +45,7 @@ object ScoreCardSampleData {
         100000 until 200000 step 20000,
     ).map { row ->
         row.map { col ->
-            CategoryScoreDomainModel(
+            ScoreDomainModel(
                 scoreAsTextFieldValue = TextFieldValue(col.toString()),
                 scoreAsBigDecimal = BigDecimal(col)
             )

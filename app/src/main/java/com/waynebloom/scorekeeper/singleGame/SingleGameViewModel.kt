@@ -14,9 +14,9 @@ import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.toStringForDisplay
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
-import com.waynebloom.scorekeeper.room.domain.usecase.GetGameWithRelationsAsFlow
+import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.usecase.GetGameWithRelationsAsFlow
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameConstants
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
@@ -37,10 +37,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SingleGameViewModel @Inject constructor(
-    getGameWithRelationsAsFlow: GetGameWithRelationsAsFlow,
-    mutableStateFlowFactory: MutableStateFlowFactory,
-    getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
-    savedStateHandle: SavedStateHandle,
+	getGameWithRelationsAsFlow: GetGameWithRelationsAsFlow,
+	mutableStateFlowFactory: MutableStateFlowFactory,
+	getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
+	savedStateHandle: SavedStateHandle,
 ): ViewModel() {
 
     private val viewModelState: MutableStateFlow<SingleGameViewModelState>
@@ -152,27 +152,27 @@ class SingleGameViewModel @Inject constructor(
 
 data class SingleGameViewModelState(
     // region Shared
-    val loading: Boolean = true,
-    val nameOfGame: String = "",
-    val ads: List<NativeAd> = emptyList(),
+	val loading: Boolean = true,
+	val nameOfGame: String = "",
+	val ads: List<NativeAd> = emptyList(),
     // endregion
 
     // region Matches
-    val searchValue: TextFieldValue = TextFieldValue(),
-    val isSortDialogShowing: Boolean = false,
-    val sortDirection: SortDirection = SortDirection.Descending,
-    val sortMode: MatchSortMode = MatchSortMode.ByMatchAge,
-    val matchesLazyListState: LazyListState = LazyListState(),
-    val matches: List<MatchDomainModel> = listOf(),
-    val scoringMode: ScoringMode = ScoringMode.Descending,
+	val searchValue: TextFieldValue = TextFieldValue(),
+	val isSortDialogShowing: Boolean = false,
+	val sortDirection: SortDirection = SortDirection.Descending,
+	val sortMode: MatchSortMode = MatchSortMode.ByMatchAge,
+	val matchesLazyListState: LazyListState = LazyListState(),
+	val matches: List<MatchDomainModel> = listOf(),
+	val scoringMode: ScoringMode = ScoringMode.Descending,
     // endregion
 
     // region Statistics
-    val isBestWinnerExpanded: Boolean = false,
-    val isHighScoreExpanded: Boolean = false,
-    val isUniqueWinnersExpanded: Boolean = false,
-    val categories: List<CategoryDomainModel> = listOf(),
-    val indexOfSelectedCategory: Int = 0,
+	val isBestWinnerExpanded: Boolean = false,
+	val isHighScoreExpanded: Boolean = false,
+	val isUniqueWinnersExpanded: Boolean = false,
+	val categories: List<CategoryDomainModel> = listOf(),
+	val indexOfSelectedCategory: Int = 0,
     // endregion
 ) {
 
@@ -238,8 +238,8 @@ data class SingleGameViewModelState(
     )
 
     private fun generateCategoryStatistics(
-        categories: List<CategoryDomainModel>,
-        matches: List<MatchDomainModel>
+			categories: List<CategoryDomainModel>,
+			matches: List<MatchDomainModel>
     ): List<StatisticsForCategory?> {
         return categories.map { category ->
             val categoryData = matches.flatMap { match ->
@@ -277,8 +277,8 @@ data class SingleGameViewModelState(
         .count()
 
     private fun getWinnersOrderedByNumberOfWins(
-        matches: List<MatchDomainModel>,
-        scoringMode: ScoringMode
+			matches: List<MatchDomainModel>,
+			scoringMode: ScoringMode
     ): List<WinningPlayerDomainModel> {
         val winners = mutableMapOf<String, Int>()
 
@@ -395,16 +395,16 @@ sealed interface MatchesForGameUiState {
     val screenTitle: String
 
     data class Content(
-        override val screenTitle: String,
-        val ads: List<NativeAd>,
-        val searchInput: TextFieldValue,
-        val isSortDialogShowing: Boolean,
-        val sortDirection: SortDirection,
-        val sortMode: MatchSortMode,
-        val matchesLazyListState: LazyListState,
-        val matches: List<MatchDomainModel>,
-        val filteredIndices: List<Int>,
-        val scoringMode: ScoringMode,
+			override val screenTitle: String,
+			val ads: List<NativeAd>,
+			val searchInput: TextFieldValue,
+			val isSortDialogShowing: Boolean,
+			val sortDirection: SortDirection,
+			val sortMode: MatchSortMode,
+			val matchesLazyListState: LazyListState,
+			val matches: List<MatchDomainModel>,
+			val filteredIndices: List<Int>,
+			val scoringMode: ScoringMode,
     ): MatchesForGameUiState
 
     data class Loading(

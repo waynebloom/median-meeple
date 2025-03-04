@@ -2,7 +2,7 @@ package com.waynebloom.scorekeeper.dagger.module
 
 import android.content.Context
 import androidx.room.Room
-import com.waynebloom.scorekeeper.room.data.datasource.AppDatabase
+import com.waynebloom.scorekeeper.database.room.data.datasource.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

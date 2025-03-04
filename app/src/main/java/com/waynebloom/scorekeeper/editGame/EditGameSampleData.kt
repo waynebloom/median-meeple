@@ -2,8 +2,8 @@ package com.waynebloom.scorekeeper.editGame
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 
 object EditGameSampleData {
     private val Games = listOf(

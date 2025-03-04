@@ -75,7 +75,7 @@ import com.waynebloom.scorekeeper.enums.MatchSortMode
 import com.waynebloom.scorekeeper.enums.SingleGameScreen
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.toShortFormatString
-import com.waynebloom.scorekeeper.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.singleGame.MatchesForGameUiState
 import com.waynebloom.scorekeeper.singleGame.SingleGameSampleData
 import com.waynebloom.scorekeeper.theme.Animation.delayedFadeInWithFadeOut
@@ -329,24 +329,24 @@ fun MatchesForGameSortOptionsDialog(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MatchesForGameScreen(
-    screenTitle: String,
-    searchInput: TextFieldValue,
-    isSortDialogShowing: Boolean,
-    sortDirection: SortDirection,
-    sortMode: MatchSortMode,
-    matches: List<MatchDomainModel>,
-    filteredIndices: List<Int>,
-    listState: LazyListState,
-    ads: List<NativeAd>,
-    onEditGameClick: () -> Unit,
-    onSortButtonClick: () -> Unit,
-    onStatisticsTabClick: () -> Unit,
-    onMatchClick: (Long) -> Unit,
-    onAddMatchClick: () -> Unit,
-    onSearchInputChanged: (TextFieldValue) -> Unit,
-    onSortModeChanged: (MatchSortMode) -> Unit,
-    onSortDirectionChanged: (SortDirection) -> Unit,
-    onSortDialogDismiss: () -> Unit,
+	screenTitle: String,
+	searchInput: TextFieldValue,
+	isSortDialogShowing: Boolean,
+	sortDirection: SortDirection,
+	sortMode: MatchSortMode,
+	matches: List<MatchDomainModel>,
+	filteredIndices: List<Int>,
+	listState: LazyListState,
+	ads: List<NativeAd>,
+	onEditGameClick: () -> Unit,
+	onSortButtonClick: () -> Unit,
+	onStatisticsTabClick: () -> Unit,
+	onMatchClick: (Long) -> Unit,
+	onAddMatchClick: () -> Unit,
+	onSearchInputChanged: (TextFieldValue) -> Unit,
+	onSortModeChanged: (MatchSortMode) -> Unit,
+	onSortDirectionChanged: (SortDirection) -> Unit,
+	onSortDialogDismiss: () -> Unit,
 ) {
 
     Box {
