@@ -2,13 +2,14 @@ package com.waynebloom.scorekeeper.database.room.domain.usecase
 
 import com.waynebloom.scorekeeper.database.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.database.repository.MatchRepository
+import com.waynebloom.scorekeeper.database.room.data.datasource.MatchDao
 import java.time.Period
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 class GetMatchesByDate @Inject constructor(
-	private val matchRepository: MatchRepository
+	private val matchRepository: MatchDao
 ) {
 
 	suspend operator fun invoke(

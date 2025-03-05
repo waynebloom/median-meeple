@@ -110,6 +110,7 @@ dependencies {
     implementation libs.room.ktx
     implementation libs.supabase.postgrest
     implementation libs.work.runtime.ktx
+    implementation platform(libs.supabase.bom)
     androidTestImplementation libs.room.testing
     androidTestImplementation libs.runner
     debugImplementation libs.compose.ui.tooling

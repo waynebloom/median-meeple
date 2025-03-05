@@ -17,9 +17,6 @@ class MedianMeepleApplication : Application(), Configuration.Provider {
 	@Inject
 	lateinit var workerFactory: HiltWorkerFactory
 
-	@Inject
-	lateinit var syncWorker: SyncWorker
-
 	override val workManagerConfiguration: Configuration
 		get() = Configuration.Builder()
 			.setWorkerFactory(workerFactory)
@@ -30,7 +27,7 @@ class MedianMeepleApplication : Application(), Configuration.Provider {
 
 		WorkManager.getInstance(this).apply {
 			enqueueUniqueWork(
-				"SyncWithRemote",
+				SyncWorker.SYNC_WORK_NAME,
 				ExistingWorkPolicy.KEEP,
 				SyncWorker.expeditedSync()
 			)

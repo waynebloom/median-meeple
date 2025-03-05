@@ -3,10 +3,11 @@ package com.waynebloom.scorekeeper.database.room.domain.usecase
 import com.waynebloom.scorekeeper.database.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.repository.CategoryRepository
+import com.waynebloom.scorekeeper.database.room.data.datasource.CategoryDao
 import javax.inject.Inject
 
 class UpdateCategory @Inject constructor(
-    private val categoryRepository: CategoryRepository
+    private val categoryRepository: CategoryDao
 ) {
 
     suspend operator fun invoke(category: CategoryDomainModel, gameId: Long) =
