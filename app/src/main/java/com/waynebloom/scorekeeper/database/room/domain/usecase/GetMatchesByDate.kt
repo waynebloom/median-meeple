@@ -1,8 +1,8 @@
 package com.waynebloom.scorekeeper.database.room.domain.usecase
 
-import com.waynebloom.scorekeeper.database.room.data.model.MatchDataModel
-import com.waynebloom.scorekeeper.database.repository.MatchRepository
 import com.waynebloom.scorekeeper.database.room.data.datasource.MatchDao
+import com.waynebloom.scorekeeper.database.room.data.model.MatchDataModel
+import kotlinx.coroutines.flow.first
 import java.time.Period
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -19,9 +19,12 @@ class GetMatchesByDate @Inject constructor(
 
 		// NOTE: Due to DST, this will sometimes be inaccurate. That is okay for this use case.
 		val durationMillis = period[ChronoUnit.DAYS] * 24 * 60 * 60 * 1000
-		return matchRepository.getByDateRange(
-			begin = start.toEpochSecond() * 1000,
-			duration = durationMillis,
-		)
+		return matchRepository
+			.getByDateRange(
+				begin = start.toEpochSecond() * 1000,
+				duration = durationMillis,
+			)
+			// FIXME: migrate dependents to new pattern
+			.first()
 	}
 }

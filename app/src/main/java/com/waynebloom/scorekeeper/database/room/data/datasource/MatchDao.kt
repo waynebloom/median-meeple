@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface MatchDao {
 
 	@Query("DELETE FROM `match` WHERE id = :id")
-	suspend fun delete(id: Long)
+	fun delete(id: Long)
 
 	@Transaction
 	@Query("SELECT * FROM `match` WHERE id = :id")
@@ -21,23 +21,23 @@ interface MatchDao {
 
 	@Transaction
 	@Query("SELECT * FROM `match` WHERE id = :id")
-	suspend fun getOneWithRelations(id: Long): MatchDataRelationModel
+	fun getOneWithRelations(id: Long): Flow<MatchDataRelationModel>
 
 	@Query("SELECT * FROM `Match` WHERE id = :id")
-	suspend fun getOne(id: Long): MatchDataModel
+	fun getOne(id: Long): Flow<MatchDataModel>
 
 	@Query("SELECT * FROM `Match` WHERE game_owner_id = :id")
-	suspend fun getByGameId(id: Long): List<MatchDataModel>
+	fun getByGameId(id: Long): Flow<List<MatchDataModel>>
 
 	@Query("""
         SELECT * FROM `Match`
         WHERE date_millis > :begin AND date_millis < (:begin + :duration)
     """)
-	suspend fun getByDateRange(begin: Long, duration: Long): List<MatchDataModel>
+	fun getByDateRange(begin: Long, duration: Long): Flow<List<MatchDataModel>>
 
 	@Insert
-	suspend fun insert(match: MatchDataModel): Long
+	fun insert(match: MatchDataModel): Long
 
 	@Update
-	suspend fun update(match: MatchDataModel)
+	fun update(match: MatchDataModel)
 }

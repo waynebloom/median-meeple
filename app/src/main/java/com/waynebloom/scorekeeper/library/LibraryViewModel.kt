@@ -8,9 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.admob.domain.usecase.GetMultipleAdsAsFlow
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
-import com.waynebloom.scorekeeper.ext.toShortFormatString
+import com.waynebloom.scorekeeper.database.domain.GameRepository
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetGamesWithRelationsAsFlow
+import com.waynebloom.scorekeeper.ext.toShortFormatString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -25,7 +25,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-	getGamesWithRelationsAsFlow: GetGamesWithRelationsAsFlow,
+	gameRepository: GameRepository,
 	mutableStateFlowFactory: MutableStateFlowFactory,
 	getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
 ) : ViewModel() {
@@ -44,7 +44,7 @@ class LibraryViewModel @Inject constructor(
 			)
 
 		viewModelScope.launch {
-			getGamesWithRelationsAsFlow().collectLatest { games ->
+			gameRepository.getAllWithRelations().collectLatest { games ->
 				val gameCards = games.filterNotNull().map { game ->
 					val highScore = game.matches
 						.flatMap { it.players }

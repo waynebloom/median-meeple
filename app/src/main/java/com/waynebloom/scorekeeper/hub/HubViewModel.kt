@@ -8,17 +8,15 @@ import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
+import com.waynebloom.scorekeeper.database.domain.GameRepository
+import com.waynebloom.scorekeeper.database.domain.MatchRepository
 import com.waynebloom.scorekeeper.database.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetFavoriteGames
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetGame
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetGames
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetMatchesByDate
-import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdateGame
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -35,12 +33,8 @@ private const val LENGTH_DAYS = 6
 
 @HiltViewModel
 class HubViewModel @Inject constructor(
-	private val getFavoriteGames: GetFavoriteGames,
-	private val getAllGames: GetGames,
-	private val getGame: GetGame,
-	private val getMatchesByDate: GetMatchesByDate,
-	private val updateGame: UpdateGame,
-	// updateGame (need to update data model first)
+	private val gameRepository: GameRepository,
+	private val matchRepository: MatchRepository,
 	mutableStateFlowFactory: MutableStateFlowFactory,
 ) : ViewModel() {
 
@@ -58,25 +52,28 @@ class HubViewModel @Inject constructor(
 		viewModelScope.launch(Dispatchers.IO) {
 			// TODO: conciseness
 			// 	consider simply using period, since start is derived from it anyway
+			// FIXME: make all db access in this launch observable
 			val start = ZonedDateTime.now().minusDays(LENGTH_DAYS.toLong())
 			val period = Period.ofDays(LENGTH_DAYS)
 			val matchesDeferred = async {
-				getMatchesByDate(start, period)
+				matchRepository.getByDate(start, period).first()
 			}
 			val favoriteGamesDeferred = async {
-				getFavoriteGames()
+				gameRepository.getFavorites().first()
 			}
 			val matches = matchesDeferred.await()
 			val favoriteGames = favoriteGamesDeferred.await()
 
 			if (matches.isNotEmpty()) {
-				val games = matches
+				val gameIDs = matches
 					.map { it.gameId }
 					.distinct()
-					.map { getGame(it) }
+				val games = gameRepository.getMultiple(gameIDs).first()
 				val weekPlays = findPlaysInPeriod(
 					start = start,
 					period = period,
+
+					// FIXME: this should use the domain model, I think
 					recentMatches = matches,
 					games = games.associate { it.id to it.name.text }
 				)
@@ -160,7 +157,8 @@ class HubViewModel @Inject constructor(
 		if (_uiState.value.allGames == null) {
 			viewModelScope.launch(Dispatchers.IO) {
 				_uiState.update {
-					it.copy(allGames = getAllGames().associateBy { game -> game.id })
+					// FIXME: make this observable
+					it.copy(allGames = gameRepository.getAll().first().associateBy { game -> game.id })
 				}
 			}
 		}
@@ -171,7 +169,7 @@ class HubViewModel @Inject constructor(
 			val allGames = it.allGames ?: return
 			val addedGame = allGames[id] ?: return
 			viewModelScope.launch(Dispatchers.IO) {
-				updateGame(addedGame.copy(isFavorite = true))
+				gameRepository.upsert(addedGame.copy(isFavorite = true))
 			}
 			it.copy(quickGames = it.quickGames.plus(addedGame))
 		}

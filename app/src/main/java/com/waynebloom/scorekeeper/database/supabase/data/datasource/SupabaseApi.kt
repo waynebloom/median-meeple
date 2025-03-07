@@ -1,6 +1,6 @@
 package com.waynebloom.scorekeeper.database.supabase.data.datasource
 
-import com.waynebloom.scorekeeper.database.supabase.data.model.Change
+import com.waynebloom.scorekeeper.database.supabase.data.model.ChangeNetworkModel
 import io.github.jan.supabase.postgrest.Postgrest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,16 +10,16 @@ class SupabaseApi @Inject constructor(
 	private val postgrest: Postgrest,
 ) {
 
-	suspend fun getChangesAfter(timestamp: String): List<Change> {
+	suspend fun getChangesAfter(timestamp: String): List<ChangeNetworkModel> {
 		return withContext(Dispatchers.IO) {
 			postgrest
 				.from("changelog")
 				.select {
 					filter {
-						Change::timestamp gt timestamp
+						ChangeNetworkModel::timestamp gt timestamp
 					}
 				}
-				.decodeList<Change>()
+				.decodeList<ChangeNetworkModel>()
 		}
 	}
 }

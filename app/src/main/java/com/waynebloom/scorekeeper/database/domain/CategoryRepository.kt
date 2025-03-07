@@ -1,4 +1,4 @@
-package com.waynebloom.scorekeeper.database.repository
+package com.waynebloom.scorekeeper.database.domain
 
 import com.waynebloom.scorekeeper.database.room.data.datasource.CategoryDao
 import javax.inject.Inject

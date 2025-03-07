@@ -7,16 +7,11 @@ import androidx.room.RenameColumn
 import androidx.room.RenameTable
 import androidx.room.RoomDatabase
 import androidx.room.migration.AutoMigrationSpec
-import com.waynebloom.scorekeeper.database.repository.CategoryRepository
-import com.waynebloom.scorekeeper.database.repository.GameRepository
-import com.waynebloom.scorekeeper.database.repository.MatchRepository
-import com.waynebloom.scorekeeper.database.repository.PlayerRepository
-import com.waynebloom.scorekeeper.database.repository.ScoreRepository
 import com.waynebloom.scorekeeper.database.room.data.model.CategoryDataModel
-import com.waynebloom.scorekeeper.database.room.data.model.ScoreDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.PlayerDataModel
+import com.waynebloom.scorekeeper.database.room.data.model.ScoreDataModel
 
 @Database(
 	version = 15,
@@ -41,11 +36,11 @@ import com.waynebloom.scorekeeper.database.room.data.model.PlayerDataModel
 	]
 )
 abstract class AppDatabase : RoomDatabase() {
-	abstract fun getCategoryRepository(): CategoryDao
-	abstract fun getCategoryScoreRepository(): ScoreDao
-	abstract fun getGameRepository(): GameDao
-	abstract fun getMatchRepository(): MatchDao
-	abstract fun getPlayerRepository(): PlayerDao
+	abstract fun getCategoryDao(): CategoryDao
+	abstract fun getCategoryScoreDao(): ScoreDao
+	abstract fun getGameDao(): GameDao
+	abstract fun getMatchDao(): MatchDao
+	abstract fun getPlayerDao(): PlayerDao
 
 	@DeleteColumn(tableName = "Game", columnName = "image")
 	class DeleteGameImage : AutoMigrationSpec

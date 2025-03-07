@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 
 @Serializable
-data class Change(
+data class ChangeNetworkModel(
 	val timestamp: String,
 	val action: String,
 

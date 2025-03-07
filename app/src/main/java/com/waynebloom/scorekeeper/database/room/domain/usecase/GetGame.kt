@@ -1,24 +1,19 @@
 package com.waynebloom.scorekeeper.database.room.domain.usecase
 
-import androidx.compose.ui.text.input.TextFieldValue
-import com.waynebloom.scorekeeper.ext.toScoringMode
-import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.database.repository.GameRepository
 import com.waynebloom.scorekeeper.database.room.data.datasource.GameDao
+import com.waynebloom.scorekeeper.database.room.domain.mapper.GameMapper
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetGame @Inject constructor(
-	private val gameRepository: GameDao
+	private val gameRepository: GameDao,
+	private val gameMapper: GameMapper,
 ) {
 
 	suspend operator fun invoke(id: Long): GameDomainModel = gameRepository.getOne(id)
-		.let { game ->
-			GameDomainModel(
-				id = id,
-				displayColorIndex = game.color,
-				name = TextFieldValue(game.name),
-				scoringMode = game.scoringMode.toScoringMode(),
-				isFavorite = game.isFavorite,
-			)
-		}
+		.map(gameMapper::toDomain)
+		// FIXME: migrate dependents to new pattern
+		.first()
 }

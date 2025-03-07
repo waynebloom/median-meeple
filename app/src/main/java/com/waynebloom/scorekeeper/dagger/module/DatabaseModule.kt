@@ -27,19 +27,19 @@ object DatabaseModule {
         .build()
 
     @Provides
-    fun providesCategoryRepository(appDatabase: AppDatabase) = appDatabase.getCategoryRepository()
+    fun providesCategoryDao(appDatabase: AppDatabase) = appDatabase.getCategoryDao()
 
     @Provides
-    fun providesCategoryScoreRepository(appDatabase: AppDatabase) = appDatabase.getCategoryScoreRepository()
+    fun providesCategoryScoreDao(appDatabase: AppDatabase) = appDatabase.getCategoryScoreDao()
 
     @Provides
-    fun providesGameRepository(appDatabase: AppDatabase) = appDatabase.getGameRepository()
+    fun providesGameDao(appDatabase: AppDatabase) = appDatabase.getGameDao()
 
     @Provides
-    fun providesMatchRepository(appDatabase: AppDatabase) = appDatabase.getMatchRepository()
+    fun providesMatchDao(appDatabase: AppDatabase) = appDatabase.getMatchDao()
 
     @Provides
-    fun providesPlayerRepository(appDatabase: AppDatabase) = appDatabase.getPlayerRepository()
+    fun providesPlayerDao(appDatabase: AppDatabase) = appDatabase.getPlayerDao()
 }
 
 

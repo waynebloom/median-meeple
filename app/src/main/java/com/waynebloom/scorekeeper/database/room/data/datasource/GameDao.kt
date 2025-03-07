@@ -2,10 +2,10 @@ package com.waynebloom.scorekeeper.database.room.data.datasource
 
 import androidx.room.Dao
 import androidx.room.Delete
-import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import com.waynebloom.scorekeeper.database.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.GameDataRelationModel
 import kotlinx.coroutines.flow.Flow
@@ -14,35 +14,40 @@ import kotlinx.coroutines.flow.Flow
 interface GameDao {
 
 	@Query("DELETE FROM GAME WHERE ID = :id")
-	suspend fun delete(id: Long)
+	fun delete(id: Long)
 
 	@Delete
-	suspend fun delete(entity: GameDataModel)
+	fun delete(entity: GameDataModel)
 
 	@Query("SELECT * FROM GAME")
-	suspend fun getAll(): List<GameDataModel>
+	fun getAll(): Flow<List<GameDataModel>>
+
+	@Transaction
+	@Query("SELECT * FROM GAME")
+	fun getAllWithRelations(): Flow<List<GameDataRelationModel>>
 
 	@Query("SELECT * FROM GAME WHERE isFavorite = 1")
-	suspend fun getFavorites(): List<GameDataModel>
+	fun getFavorites(): Flow<List<GameDataModel>>
 
 	@Query("SELECT * FROM GAME WHERE ID = :id")
-	suspend fun getOne(id: Long): GameDataModel
+	fun getOne(id: Long): Flow<GameDataModel>
 
 	@Transaction
 	@Query("SELECT * FROM GAME WHERE ID = :id")
-	suspend fun getOneWithRelations(id: Long): GameDataRelationModel
+	fun getOneWithRelations(id: Long): Flow<GameDataRelationModel>
 
+	@Query("SELECT * FROM GAME WHERE ID IN (:ids)")
+	fun getMultiple(ids: List<Long>): Flow<List<GameDataModel>>
+
+	// TODO: remove this method
 	@Transaction
 	@Query("SELECT * FROM GAME WHERE ID = :id")
 	fun getOneWithRelationsAsFlow(id: Long): Flow<GameDataRelationModel?>
 
-	@Transaction
-	@Query("SELECT * FROM GAME")
-	fun getAllAsFlow(): Flow<List<GameDataRelationModel>>
+	@Upsert
+	fun upsert(game: GameDataModel): Long
 
-	@Insert
-	suspend fun insert(game: GameDataModel): Long
-
+	// TODO: remove this method
 	@Update
-	suspend fun update(game: GameDataModel)
+	fun update(game: GameDataModel)
 }

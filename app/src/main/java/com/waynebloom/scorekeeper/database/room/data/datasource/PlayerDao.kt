@@ -13,22 +13,22 @@ import kotlinx.coroutines.flow.Flow
 interface PlayerDao {
 
 	@Query("DELETE FROM Player WHERE id = :id")
-	suspend fun delete(id: Long)
+	fun delete(id: Long)
 
 	@Transaction
 	@Query("SELECT * FROM Player WHERE id = :id")
 	fun getOneWithRelations(id: Long): Flow<PlayerDataRelationModel>
 
 	@Query("SELECT * FROM Player WHERE match_id = :id")
-	suspend fun getByMatchId(id: Long): List<PlayerDataModel>
+	fun getByMatchId(id: Long): Flow<List<PlayerDataModel>>
 
 	@Transaction
 	@Query("SELECT * FROM Player WHERE match_id = :id")
-	suspend fun getByMatchIdWithRelations(id: Long): List<PlayerDataRelationModel>
+	fun getByMatchIdWithRelations(id: Long): Flow<List<PlayerDataRelationModel>>
 
 	@Insert
-	suspend fun insert(player: PlayerDataModel): Long
+	fun insert(player: PlayerDataModel): Long
 
 	@Update
-	suspend fun update(player: PlayerDataModel)
+	fun update(player: PlayerDataModel)
 }
