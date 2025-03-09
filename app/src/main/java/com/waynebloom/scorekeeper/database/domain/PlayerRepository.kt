@@ -18,7 +18,7 @@ class PlayerRepository @Inject constructor(
 	private val supabaseApi: SupabaseApi,
 ) : SyncHandler {
 
-	override fun sync(change: Pair<Action, JsonObject>) {
+	override suspend fun sync(change: Pair<Action, JsonObject>) {
 		Log.d(this::class.simpleName, "Handling sync for change: $change")
 		val entity = playerMapper.toData(change.second)
 
@@ -29,7 +29,7 @@ class PlayerRepository @Inject constructor(
 		}
 	}
 
-	fun deleteBy(id: Long) {
+	suspend fun deleteBy(id: Long) {
 		playerDao.delete(id)
 	}
 
@@ -37,7 +37,7 @@ class PlayerRepository @Inject constructor(
 		return playerDao.getByMatchIDWithRelations(matchID).map(playerMapper::toDomainWithRelations)
 	}
 
-	fun upsert(player: PlayerDomainModel) {
+	suspend fun upsert(player: PlayerDomainModel) {
 		playerDao.upsert(playerMapper.toData(player))
 	}
 

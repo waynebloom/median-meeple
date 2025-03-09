@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface PlayerDao {
 
 	@Query("DELETE FROM Player WHERE id = :id")
-	fun delete(id: Long)
+	suspend fun delete(id: Long)
 
 	@Transaction
 	@Query("SELECT * FROM Player WHERE id = :id")
@@ -27,7 +27,7 @@ interface PlayerDao {
 	fun getByMatchIDWithRelations(id: Long): Flow<List<PlayerDataRelationModel>>
 
 	@Upsert
-	fun upsert(player: PlayerDataModel)
+	suspend fun upsert(player: PlayerDataModel)
 
 	@Upsert
 	suspend fun upsertReturningID(player: PlayerDataModel): Long

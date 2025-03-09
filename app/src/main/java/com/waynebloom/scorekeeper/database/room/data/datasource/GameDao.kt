@@ -14,10 +14,10 @@ import kotlinx.coroutines.flow.Flow
 interface GameDao {
 
 	@Query("DELETE FROM GAME WHERE ID = :id")
-	fun delete(id: Long)
+	suspend fun delete(id: Long)
 
 	@Delete
-	fun delete(entity: GameDataModel)
+	suspend fun delete(entity: GameDataModel)
 
 	@Query("SELECT * FROM GAME")
 	fun getAll(): Flow<List<GameDataModel>>
@@ -45,7 +45,7 @@ interface GameDao {
 	fun getOneWithRelationsAsFlow(id: Long): Flow<GameDataRelationModel?>
 
 	@Upsert
-	fun upsert(game: GameDataModel)
+	suspend fun upsert(game: GameDataModel)
 
 	@Upsert
 	suspend fun upsertReturningID(game: GameDataModel): Long

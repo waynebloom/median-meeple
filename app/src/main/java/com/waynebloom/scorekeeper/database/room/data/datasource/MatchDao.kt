@@ -36,7 +36,7 @@ interface MatchDao {
 	fun getByDateRange(begin: Long, duration: Long): Flow<List<MatchDataModel>>
 
 	@Upsert
-	fun upsert(match: MatchDataModel)
+	suspend fun upsert(match: MatchDataModel)
 
 	@Upsert
 	suspend fun upsertReturningID(match: MatchDataModel): Long

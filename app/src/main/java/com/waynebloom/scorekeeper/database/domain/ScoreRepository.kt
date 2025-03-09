@@ -16,7 +16,7 @@ class ScoreRepository @Inject constructor(
 	private val supabaseApi: SupabaseApi,
 ) : SyncHandler {
 
-	override fun sync(change: Pair<Action, JsonObject>) {
+	override suspend fun sync(change: Pair<Action, JsonObject>) {
 		Log.d(this::class.simpleName, "Handling sync for change: $change")
 		val entity = scoreMapper.toData(change.second)
 
@@ -27,7 +27,7 @@ class ScoreRepository @Inject constructor(
 		}
 	}
 
-	fun upsert(score: ScoreDomainModel) {
+	suspend fun upsert(score: ScoreDomainModel) {
 		scoreDao.upsert(scoreMapper.toData(score))
 	}
 

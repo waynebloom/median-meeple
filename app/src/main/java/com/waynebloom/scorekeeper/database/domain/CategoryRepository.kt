@@ -18,7 +18,7 @@ class CategoryRepository @Inject constructor(
 	private val supabaseApi: SupabaseApi,
 ) : SyncHandler {
 
-	override fun sync(change: Pair<Action, JsonObject>) {
+	override suspend fun sync(change: Pair<Action, JsonObject>) {
 		Log.d(this::class.simpleName, "Handling sync for change: $change")
 		val entity = categoryMapper.toData(change.second)
 
@@ -29,7 +29,7 @@ class CategoryRepository @Inject constructor(
 		}
 	}
 
-	fun deleteBy(id: Long) {
+	suspend fun deleteBy(id: Long) {
 		categoryDao.delete(id)
 	}
 
@@ -37,7 +37,7 @@ class CategoryRepository @Inject constructor(
 		return categoryDao.getByGameID(matchID).map(categoryMapper::toDomain)
 	}
 
-	fun upsert(category: CategoryDomainModel, gameID: Long) {
+	suspend fun upsert(category: CategoryDomainModel, gameID: Long) {
 		categoryDao.upsert(categoryMapper.toData(category, gameID))
 	}
 

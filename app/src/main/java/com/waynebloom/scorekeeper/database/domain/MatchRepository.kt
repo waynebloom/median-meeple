@@ -22,7 +22,7 @@ class MatchRepository @Inject constructor(
 	private val supabaseApi: SupabaseApi,
 ) : SyncHandler {
 
-	override fun sync(change: Pair<Action, JsonObject>) {
+	override suspend fun sync(change: Pair<Action, JsonObject>) {
 		Log.d(this::class.simpleName, "Handling sync for change: $change")
 		val entity = matchMapper.toData(change.second)
 
@@ -38,7 +38,7 @@ class MatchRepository @Inject constructor(
 	// TODO: pick back up by updating deletes and upserts to always suspend. Looks like they need to
 	// 	no matter what.
 
-	fun deleteBy(id: Long) {
+	suspend fun deleteBy(id: Long) {
 		matchDao.delete(id)
 	}
 
@@ -72,7 +72,7 @@ class MatchRepository @Inject constructor(
 		}
 	}
 
-	fun upsert(match: MatchDomainModel) {
+	suspend fun upsert(match: MatchDomainModel) {
 		matchDao.upsert(matchMapper.toData(match))
 	}
 

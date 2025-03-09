@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface CategoryDao {
 
 	@Query("DELETE FROM CATEGORY WHERE id = :id")
-	fun delete(id: Long)
+	suspend fun delete(id: Long)
 
 	@Query("SELECT * FROM CATEGORY WHERE game_id = :id")
 	fun getByGameID(id: Long): Flow<List<CategoryDataModel>>
@@ -20,7 +20,7 @@ interface CategoryDao {
 	suspend fun upsertReturningID(entity: CategoryDataModel): Long
 
 	@Upsert
-	fun upsert(entity: CategoryDataModel)
+	suspend fun upsert(entity: CategoryDataModel)
 
 	// TODO: remove this
 	@Update

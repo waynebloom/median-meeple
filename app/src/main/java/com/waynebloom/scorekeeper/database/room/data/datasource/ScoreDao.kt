@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 interface ScoreDao {
 
 	@Query("DELETE FROM CATEGORYSCORE WHERE id = :id")
-	fun delete(id: Long)
+	suspend fun delete(id: Long)
 
 	@Query("SELECT * FROM CATEGORYSCORE WHERE player_id = :id")
 	fun getByPlayerID(id: Long): Flow<List<ScoreDataModel>>
@@ -20,7 +20,7 @@ interface ScoreDao {
 	suspend fun upsertReturningID(score: ScoreDataModel): Long
 
 	@Upsert
-	fun upsert(score: ScoreDataModel)
+	suspend fun upsert(score: ScoreDataModel)
 
 	// TODO: remove this
 	@Update
