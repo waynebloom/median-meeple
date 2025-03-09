@@ -30,9 +30,6 @@ object DatabaseModule {
 	fun providesCategoryDao(appDatabase: AppDatabase) = appDatabase.getCategoryDao()
 
 	@Provides
-	fun providesCategoryScoreDao(appDatabase: AppDatabase) = appDatabase.getCategoryScoreDao()
-
-	@Provides
 	fun providesGameDao(appDatabase: AppDatabase) = appDatabase.getGameDao()
 
 	@Provides
@@ -40,6 +37,9 @@ object DatabaseModule {
 
 	@Provides
 	fun providesPlayerDao(appDatabase: AppDatabase) = appDatabase.getPlayerDao()
+
+	@Provides
+	fun providesScoreDao(appDatabase: AppDatabase) = appDatabase.getScoreDao()
 }
 
 

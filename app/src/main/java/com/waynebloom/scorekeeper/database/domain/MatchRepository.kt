@@ -35,9 +35,6 @@ class MatchRepository @Inject constructor(
 		}
 	}
 
-	// TODO: pick back up by updating deletes and upserts to always suspend. Looks like they need to
-	// 	no matter what.
-
 	suspend fun deleteBy(id: Long) {
 		matchDao.delete(id)
 	}

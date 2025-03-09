@@ -5,6 +5,9 @@ import java.time.Instant
 import javax.inject.Inject
 
 class CredentialManager @Inject constructor() {
+
+	// FIXME: reimplement auth w/ Supabase
+
 	private companion object {
 		var jwt = JWT.empty()
 	}

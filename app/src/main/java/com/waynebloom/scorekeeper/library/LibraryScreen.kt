@@ -71,7 +71,6 @@ fun LibraryScreen(
 	onSearchInputChanged: (TextFieldValue) -> Unit,
 	onAddGameClick: () -> Unit,
 	onGameClick: (Long) -> Unit,
-	onLoginClick: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 
@@ -87,7 +86,6 @@ fun LibraryScreen(
 				ads = uiState.ads,
 				onGameClick = onGameClick,
 				onAddNewGameClick = onAddGameClick,
-				onLoginClick = onLoginClick,
 				onSearchInputChanged = onSearchInputChanged,
 				modifier = modifier
 			)
@@ -103,7 +101,6 @@ fun LibraryScreen(
 	ads: List<NativeAd>,
 	onGameClick: (Long) -> Unit,
 	onAddNewGameClick: () -> Unit,
-	onLoginClick: () -> Unit,
 	onSearchInputChanged: (TextFieldValue) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
@@ -114,7 +111,6 @@ fun LibraryScreen(
 				title = stringResource(id = R.string.header_games),
 				searchInput = searchInput,
 				onSearchInputChanged = onSearchInputChanged,
-				onLoginClick = onLoginClick,
 				modifier = Modifier.windowInsetsPadding(WindowInsets.statusBars)
 			)
 		},
@@ -268,7 +264,6 @@ fun LibraryScreen(
 fun LibraryDefaultActionBar(
 	title: String,
 	onSearchClick: () -> Unit,
-	onLoginClick: () -> Unit,
 ) {
 
 	Row(
@@ -290,16 +285,6 @@ fun LibraryDefaultActionBar(
 			modifier = Modifier
 				.minimumInteractiveComponentSize()
 				.clip(CircleShape)
-				.clickable(onClick = onLoginClick)
-				.padding(4.dp)
-		)
-
-		Icon(
-			imageVector = Icons.Rounded.Search,
-			contentDescription = null,
-			modifier = Modifier
-				.minimumInteractiveComponentSize()
-				.clip(CircleShape)
 				.clickable(onClick = onSearchClick)
 				.padding(4.dp)
 		)
@@ -312,7 +297,6 @@ fun LibraryTopBar(
 	title: String,
 	searchInput: TextFieldValue,
 	onSearchInputChanged: (TextFieldValue) -> Unit,
-	onLoginClick: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	var isSearchBarVisible by rememberSaveable { mutableStateOf(false) }
@@ -347,7 +331,6 @@ fun LibraryTopBar(
 					LibraryDefaultActionBar(
 						title = title,
 						onSearchClick = { isSearchBarVisible = true },
-						onLoginClick = onLoginClick,
 					)
 				}
 			}
@@ -365,7 +348,6 @@ private fun Normal() {
 			onSearchInputChanged = {},
 			onAddGameClick = {},
 			onGameClick = {},
-			onLoginClick = {},
 		)
 	}
 }
@@ -380,7 +362,6 @@ private fun NoGames() {
 			onSearchInputChanged = {},
 			onAddGameClick = {},
 			onGameClick = {},
-			onLoginClick = {},
 		)
 	}
 }
@@ -395,7 +376,6 @@ private fun ActiveSearch() {
 			onSearchInputChanged = {},
 			onAddGameClick = {},
 			onGameClick = {},
-			onLoginClick = {},
 		)
 	}
 }
@@ -410,7 +390,6 @@ private fun EmptySearch() {
 			onSearchInputChanged = {},
 			onAddGameClick = {},
 			onGameClick = {},
-			onLoginClick = {},
 		)
 	}
 }

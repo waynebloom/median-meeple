@@ -38,10 +38,10 @@ import com.waynebloom.scorekeeper.database.room.data.model.ScoreDataModel
 )
 abstract class AppDatabase : RoomDatabase() {
 	abstract fun getCategoryDao(): CategoryDao
-	abstract fun getCategoryScoreDao(): ScoreDao
 	abstract fun getGameDao(): GameDao
 	abstract fun getMatchDao(): MatchDao
 	abstract fun getPlayerDao(): PlayerDao
+	abstract fun getScoreDao(): ScoreDao
 
 	@DeleteColumn(tableName = "Game", columnName = "image")
 	class DeleteGameImage : AutoMigrationSpec

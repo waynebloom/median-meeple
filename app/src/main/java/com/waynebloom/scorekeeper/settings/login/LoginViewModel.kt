@@ -3,7 +3,6 @@ package com.waynebloom.scorekeeper.settings.login
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.waynebloom.scorekeeper.auth.domain.usecase.Login
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,9 +16,11 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-	private val login: Login,
+//	private val login: Login,
 	mutableStateFlowFactory: MutableStateFlowFactory,
 ) : ViewModel() {
+
+	// FIXME: reimplement auth w/ Supabase
 
 	private val viewModelState: MutableStateFlow<LoginViewModelState>
 	val uiState: StateFlow<LoginUiState>
@@ -51,19 +52,23 @@ class LoginViewModel @Inject constructor(
 		val email = viewModelState.value.email.text
 		val pw = viewModelState.value.pw.text
 
-		login(email, pw).collect { isSuccess ->
-			if (isSuccess) {
-				onSuccess()
-			}
+		// FIXME: stubbed this off for now until reimplementation
+		onSuccess()
+		/*
+				login(email, pw).collect { isSuccess ->
+					if (isSuccess) {
+						onSuccess()
+					}
 
-			viewModelState.update {
-				/** TODO:
-				 * 		show an error
-				 * 		clear password
-				 */
-				it.copy(loading = false)
-			}
-		}
+					viewModelState.update {
+					TODO:
+						show an error
+						clear password
+
+						it.copy(loading = false)
+					}
+				}
+		*/
 	}
 }
 
