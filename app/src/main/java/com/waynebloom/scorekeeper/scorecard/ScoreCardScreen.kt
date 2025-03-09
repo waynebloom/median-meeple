@@ -266,7 +266,7 @@ private fun ScoreCardScreen(
             }
             var rank by remember {
                 if (manualRanks) {
-                    players[playerIndexToChange].rank.let {
+                    players[playerIndexToChange].position.let {
                         val validRanks = (1..players.size)
                         if (validRanks.contains(it)) {
                             mutableIntStateOf(it)
@@ -785,7 +785,7 @@ private fun ScoreCardScreen(
                             ) {
                                 ScoreColumn(
                                     playerName = player.name,
-                                    playerRank = player.rank,
+                                    playerRank = player.position,
                                     scores = scoreCard[index]
                                         .filterIndexed { i, _ -> !hiddenCategories.contains(i) },
                                     total = totals[index].toShortFormatString(),

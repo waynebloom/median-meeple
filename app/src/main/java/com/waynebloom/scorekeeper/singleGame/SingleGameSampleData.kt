@@ -45,17 +45,17 @@ object SingleGameSampleData {
     val Players = listOf(
         PlayerDomainModel(
             name = "Alice",
-            rank = 0,
+            position = 0,
             categoryScores = CategoryScores
         ),
         PlayerDomainModel(
             name = "Bob",
-            rank = 1,
+            position = 1,
             categoryScores = CategoryScores
         ),
         PlayerDomainModel(
             name = "Charlie",
-            rank = 2,
+            position = 2,
             categoryScores = CategoryScores
         )
     )

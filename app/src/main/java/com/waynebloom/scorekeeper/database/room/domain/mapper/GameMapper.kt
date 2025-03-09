@@ -7,15 +7,17 @@ import com.waynebloom.scorekeeper.database.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.ext.toScoringMode
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import javax.inject.Inject
 
 class GameMapper @Inject constructor(
-	private val matchDataMapper: MatchDataMapper,
-	private val jsonAdapter: JsonAdapter<GameDataModel>,
+	private val matchMapper: MatchMapper,
 ) {
 
-	fun toData(json: String): GameDataModel? {
-		return jsonAdapter.fromJson(json)
+	fun toData(json: JsonObject): GameDataModel {
+		return Json.decodeFromJsonElement(json)
 	}
 
 	fun toData(game: GameDomainModel) = game.let {
@@ -27,20 +29,20 @@ class GameMapper @Inject constructor(
 		)
 	}
 
-	fun toDomain(game: GameDataModel): GameDomainModel {
-		return GameDomainModel(
-			id = game.id,
-			displayColorIndex = game.color,
-			name = TextFieldValue(game.name),
-			scoringMode = game.scoringMode.toScoringMode()
+	fun toDomain(game: GameDataModel) = game.let {
+		GameDomainModel(
+			id = it.id,
+			displayColorIndex = it.color,
+			name = TextFieldValue(it.name),
+			scoringMode = it.scoringMode.toScoringMode()
 		)
 	}
 
 	fun toDomain(games: List<GameDataModel>) = games.map { this.toDomain(it) }
 
-	fun toDomainWithRelations(gameData: GameDataRelationModel?): GameDomainModel? {
-		if (gameData == null) return null
-		val categoryDomainModels = gameData.categories
+	fun toDomainWithRelations(game: GameDataRelationModel?): GameDomainModel? {
+		if (game == null) return null
+		val categories = game.categories
 			.map {
 				CategoryDomainModel(
 					id = it.id,
@@ -53,14 +55,14 @@ class GameMapper @Inject constructor(
 			}
 
 		return GameDomainModel(
-			id = gameData.entity.id,
-			categories = categoryDomainModels.values.toList(),
-			displayColorIndex = gameData.entity.color,
-			matches = gameData.matches.map {
-				matchDataMapper.mapWithRelations(it, categoryDomainModels)
+			id = game.entity.id,
+			categories = categories.values.toList(),
+			displayColorIndex = game.entity.color,
+			matches = game.matches.map {
+				matchMapper.toDomainWithRelations(it, categories)
 			},
-			name = TextFieldValue(gameData.entity.name),
-			scoringMode = gameData.entity.scoringMode.toScoringMode()
+			name = TextFieldValue(game.entity.name),
+			scoringMode = game.entity.scoringMode.toScoringMode()
 		)
 	}
 

@@ -45,7 +45,10 @@ interface GameDao {
 	fun getOneWithRelationsAsFlow(id: Long): Flow<GameDataRelationModel?>
 
 	@Upsert
-	fun upsert(game: GameDataModel): Long
+	fun upsert(game: GameDataModel)
+
+	@Upsert
+	suspend fun upsertReturningID(game: GameDataModel): Long
 
 	// TODO: remove this method
 	@Update

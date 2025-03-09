@@ -1,10 +1,10 @@
 package com.waynebloom.scorekeeper.database.room.data.datasource
 
 import androidx.room.Dao
-import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import com.waynebloom.scorekeeper.database.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.MatchDataRelationModel
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +13,7 @@ import kotlinx.coroutines.flow.Flow
 interface MatchDao {
 
 	@Query("DELETE FROM `match` WHERE id = :id")
-	fun delete(id: Long)
+	suspend fun delete(id: Long)
 
 	@Transaction
 	@Query("SELECT * FROM `match` WHERE id = :id")
@@ -35,9 +35,13 @@ interface MatchDao {
     """)
 	fun getByDateRange(begin: Long, duration: Long): Flow<List<MatchDataModel>>
 
-	@Insert
-	fun insert(match: MatchDataModel): Long
+	@Upsert
+	fun upsert(match: MatchDataModel)
 
+	@Upsert
+	suspend fun upsertReturningID(match: MatchDataModel): Long
+
+	// TODO: remove this
 	@Update
 	fun update(match: MatchDataModel)
 }

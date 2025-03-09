@@ -5,29 +5,24 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
+import com.waynebloom.scorekeeper.database.domain.CategoryRepository
+import com.waynebloom.scorekeeper.database.domain.GameRepository
+import com.waynebloom.scorekeeper.database.domain.MatchRepository
+import com.waynebloom.scorekeeper.database.domain.PlayerRepository
+import com.waynebloom.scorekeeper.database.domain.ScoreRepository
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.ScoreDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.PlayerDomainModel
-import com.waynebloom.scorekeeper.database.room.domain.usecase.DeleteMatch
-import com.waynebloom.scorekeeper.database.room.domain.usecase.DeletePlayer
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetCategoriesByGameId
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetGame
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetIndexOfMatch
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetMatch
-import com.waynebloom.scorekeeper.database.room.domain.usecase.GetPlayersByMatchIdWithRelations
-import com.waynebloom.scorekeeper.database.room.domain.usecase.InsertScore
-import com.waynebloom.scorekeeper.database.room.domain.usecase.InsertMatch
-import com.waynebloom.scorekeeper.database.room.domain.usecase.InsertPlayer
-import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdateScore
-import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdateMatch
-import com.waynebloom.scorekeeper.database.room.domain.usecase.UpdatePlayer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -40,19 +35,11 @@ import javax.inject.Inject
 class ScoreCardViewModel @Inject constructor(
 	savedStateHandle: SavedStateHandle,
 	mutableStateFlowFactory: MutableStateFlowFactory,
-	getGame: GetGame,
-	getMatch: GetMatch,
-	getIndexOfMatch: GetIndexOfMatch,
-	getCategoriesByGameId: GetCategoriesByGameId,
-	getPlayersByMatchIdWithRelations: GetPlayersByMatchIdWithRelations,
-	private val updateMatch: UpdateMatch,
-	private val updatePlayer: UpdatePlayer,
-	private val insertPlayer: InsertPlayer,
-	private val deletePlayer: DeletePlayer,
-	private val updateScore: UpdateScore,
-	private val insertScore: InsertScore,
-	private val insertMatch: InsertMatch,
-	private val deleteMatch: DeleteMatch,
+	private val gameRepository: GameRepository,
+	private val matchRepository: MatchRepository,
+	private val playerRepository: PlayerRepository,
+	private val categoryRepository: CategoryRepository,
+	private val scoreRepository: ScoreRepository,
 ): ViewModel() {
 
 	// TODO: POST-RELEASE
@@ -77,8 +64,8 @@ class ScoreCardViewModel @Inject constructor(
 				initialValue = viewModelState.value.toUiState())
 
 		viewModelScope.launch {
-			val game = getGame(gameId)
-			dbCategories = getCategoriesByGameId(gameId)
+			val game = gameRepository.getOne(gameId).first()
+			dbCategories = categoryRepository.getByGameID(gameId).first()
 			dbCategories = dbCategories
 
 				// Display a readable name for the default category.
@@ -105,16 +92,16 @@ class ScoreCardViewModel @Inject constructor(
 				}
 
 			if (matchId != -1L) {
-				var players = getPlayersByMatchIdWithRelations(matchId)
-				val match = getMatch(matchId)
+				var players = playerRepository.getByMatchIDWithRelations(matchId).first()
+				val match = matchRepository.getOne(matchId).first()
 				val scoreCard = players.map { player ->
 					dbCategories.map { category ->
 						val existingScore = player.categoryScores.find {
-							it.categoryId == category.id
+							it.categoryID == category.id
 						}
 						existingScore ?: ScoreDomainModel(
-							categoryId = category.id,
-							playerId = player.id
+							categoryID = category.id,
+							playerID = player.id
 						)
 					}
 				}
@@ -127,7 +114,7 @@ class ScoreCardViewModel @Inject constructor(
 				val miscDataExists = players.flatMap { it.categoryScores }
 					.filter { categoryScore ->
 						// The default category is forced to be the last in the list.
-						categoryScore.categoryId == dbCategories.last().id
+						categoryScore.categoryID == dbCategories.last().id
 					}
 					.any {
 						(it.scoreAsBigDecimal ?: BigDecimal.ZERO) != BigDecimal.ZERO
@@ -146,12 +133,13 @@ class ScoreCardViewModel @Inject constructor(
 					assignRanksByTotalScore(players, totals)
 				}
 
+				val indexOfMatch = matchRepository.getIndexOf(gameId, matchId).first() + 1
 				viewModelState.update {
 					it.copy(
 						loading = false,
 						totals = totals,
 						game = game,
-						indexOfMatch = getIndexOfMatch(gameId, matchId) + 1,
+						indexOfMatch = indexOfMatch,
 						dateMillis = match.dateMillis,
 						location = match.location,
 						notes = TextFieldValue(match.notes),
@@ -168,11 +156,13 @@ class ScoreCardViewModel @Inject constructor(
 				} else {
 					listOf(dbCategories.lastIndex)
 				}
+
+				val indexOfMatch = matchRepository.getIndexOf(gameId, matchId).first() + 1
 				viewModelState.update { state ->
 					state.copy(
 						loading = false,
 						game = game,
-						indexOfMatch = getIndexOfMatch(gameId, matchId) + 1,
+						indexOfMatch = indexOfMatch,
 						dateMillis = Date().time,
 						categoryNames = dbCategories.map { category ->
 							category.name.text
@@ -193,7 +183,7 @@ class ScoreCardViewModel @Inject constructor(
 			val rank = totals.count { total ->
 				total > totals[index]
 			}
-			player.copy(rank = rank)
+			player.copy(position = rank)
 		}
 	}
 
@@ -210,14 +200,14 @@ class ScoreCardViewModel @Inject constructor(
 			add(
 				List(dbCategories.size) { index ->
 					ScoreDomainModel(
-						categoryId = dbCategories[index].id,
+						categoryID = dbCategories[index].id,
 					)
 				}
 			)
 		}
 		val newPlayers = it.players.plus(
 			if (manualRank != -1) {
-				PlayerDomainModel(name = name, rank = manualRank)
+				PlayerDomainModel(name = name, position = manualRank)
 			} else {
 				PlayerDomainModel(name = name)
 			}
@@ -229,7 +219,7 @@ class ScoreCardViewModel @Inject constructor(
 		val deletedPlayer = it.players[index]
 		if (deletedPlayer.id != -1L) {
 			viewModelScope.launch {
-				deletePlayer(deletedPlayer.id)
+				playerRepository.deleteBy(deletedPlayer.id)
 			}
 		}
 		val newScoreCard = it.scoreCard.toMutableList().apply {
@@ -261,7 +251,7 @@ class ScoreCardViewModel @Inject constructor(
 		val newPlayers = it.players.mapIndexed { index, player ->
 			if (index == it.playerIndexToChange) {
 				if (manualRank != -1) {
-					player.copy(name = value, rank = manualRank)
+					player.copy(name = value, position = manualRank)
 				} else {
 					player.copy(name = value)
 				}
@@ -305,21 +295,12 @@ class ScoreCardViewModel @Inject constructor(
 		}
 	}
 
-	fun onSaveClick(onFinish: () -> Unit) = viewModelScope.launch {
-		viewModelState.value.let { state ->
-			if (matchId == -1L) {
-				matchId = insertMatch(
+	fun onSaveClick(onFinish: () -> Unit) {
+		val state = viewModelState.value
+		if (matchId == -1L) {
+			viewModelScope.launch(Dispatchers.IO) {
+				matchId = matchRepository.upsertReturningID(
 					MatchDomainModel(
-						gameId = gameId,
-						notes = state.notes.text,
-						location = state.location,
-						dateMillis = state.dateMillis,
-					)
-				)
-			} else {
-				updateMatch(
-					MatchDomainModel(
-						id = matchId,
 						gameId = gameId,
 						notes = state.notes.text,
 						location = state.location,
@@ -327,38 +308,54 @@ class ScoreCardViewModel @Inject constructor(
 					)
 				)
 			}
+		} else {
+			matchRepository.upsert(
+				MatchDomainModel(
+					id = matchId,
+					gameId = gameId,
+					notes = state.notes.text,
+					location = state.location,
+					dateMillis = state.dateMillis,
+				)
+			)
+		}
 
-			state.players.forEachIndexed { colIndex, player ->
-				if (player.id == -1L) {
-					val playerId = insertPlayer(player.copy(matchId = matchId))
+		state.players.forEachIndexed { colIndex, player ->
+			if (player.id == -1L) {
+				viewModelScope.launch(Dispatchers.IO) {
+					val playerID = async {
+						playerRepository.upsertReturningID(player.copy(matchID = matchId))
+					}
 
 					state.scoreCard[colIndex].forEachIndexed { rowIndex, score ->
-						insertScore(score.copy(
-							playerId = playerId,
-							categoryId = dbCategories[rowIndex].id
+						scoreRepository.upsert(score.copy(
+							playerID = playerID.await(),
+							categoryID = dbCategories[rowIndex].id
 						))
 					}
-				} else {
-					updatePlayer(player)
+				}
 
-					state.scoreCard[colIndex].forEachIndexed { rowIndex, score ->
-						if (score.id == -1L) {
-							insertScore(score.copy(
-								playerId = player.id,
-								categoryId = dbCategories[rowIndex].id
-							))
-						} else {
-							updateScore(score)
-						}
+			} else {
+				playerRepository.upsert(player)
+
+				state.scoreCard[colIndex].forEachIndexed { rowIndex, score ->
+					if (score.id == -1L) {
+						scoreRepository.upsert(score.copy(
+							playerID = player.id,
+							categoryID = dbCategories[rowIndex].id
+						))
+					} else {
+						scoreRepository.upsert(score)
 					}
 				}
 			}
 		}
+
 		onFinish()
 	}
 
-	fun onDeleteClick(onFinish: () -> Unit) = viewModelScope.launch {
-		deleteMatch(matchId)
+	fun onDeleteClick(onFinish: () -> Unit) {
+		matchRepository.deleteBy(matchId)
 		onFinish()
 	}
 }

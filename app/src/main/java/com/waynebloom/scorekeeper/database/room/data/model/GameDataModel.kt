@@ -6,7 +6,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.waynebloom.scorekeeper.enums.ScoringMode
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "Game")
 data class GameDataModel(
 
@@ -17,9 +20,11 @@ data class GameDataModel(
 
 	var name: String = "",
 
+	@SerialName("scoring_mode")
 	@ColumnInfo(name = "scoring_mode", defaultValue = "1")
 	var scoringMode: Int = ScoringMode.Descending.ordinal,
 
+	@SerialName("is_favorite")
 	@ColumnInfo(defaultValue = "false")
 	var isFavorite: Boolean = false,
 )

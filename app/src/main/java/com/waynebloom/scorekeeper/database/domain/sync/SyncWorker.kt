@@ -37,7 +37,6 @@ class SyncWorker @AssistedInject constructor(
 	private val playerRepository: PlayerRepository,
 	private val categoryRepository: CategoryRepository,
 	private val scoreRepository: ScoreRepository,
-	private val moshi: Moshi,
 ) : CoroutineWorker(appContext, workerParams) {
 
 	companion object {
@@ -115,11 +114,17 @@ class SyncWorker @AssistedInject constructor(
 							it.newData
 								?: throw Exception("No entity provided for ${action.name} sync operation.")
 						}
-					}.toString()
+					}
 
-					val syncHandler = when (it.tableName) {
+					val syncHandler: SyncHandler = when (it.tableName) {
 						"games" -> gameRepository
-						else -> gameRepository
+						"matches" -> matchRepository
+						"players" -> playerRepository
+						"categories" -> categoryRepository
+						"scores" -> scoreRepository
+						else -> {
+							throw Exception("Encountered an invalid table name: \"${it.tableName}\".")
+						}
 					}
 
 					syncHandler.sync(change = Pair(action, jsonEntity))

@@ -5,8 +5,8 @@ import java.math.BigDecimal
 
 data class ScoreDomainModel(
 	val id: Long = -1,
-	val playerId: Long = -1,
-	val categoryId: Long = -1,
+	val playerID: Long = -1,
+	val categoryID: Long = -1,
 	val category: CategoryDomainModel? = null,
 	val scoreAsBigDecimal: BigDecimal? = null,
 	val scoreAsTextFieldValue: TextFieldValue = TextFieldValue(),

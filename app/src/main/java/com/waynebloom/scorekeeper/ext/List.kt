@@ -27,6 +27,6 @@ fun List<PlayerDomainModel>.getWinningPlayer(scoringMode: ScoringMode) =
             }
         }
         ScoringMode.Manual -> minBy {
-            it.rank
+            it.position
         }
     }

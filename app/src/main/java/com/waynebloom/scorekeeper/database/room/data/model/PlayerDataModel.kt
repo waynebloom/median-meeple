@@ -7,7 +7,10 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(
     tableName = "Player",
     foreignKeys = [ForeignKey(
@@ -25,8 +28,9 @@ data class PlayerDataModel(
     @ColumnInfo(defaultValue = "0")
     var id: Long = 0,
 
+    @SerialName("match_id")
     @ColumnInfo(name = "match_id")
-    var matchId: Long = 0,
+    var matchID: Long = 0,
 
     var name: String = "",
 

@@ -1,10 +1,10 @@
 package com.waynebloom.scorekeeper.database.room.data.datasource
 
 import androidx.room.Dao
-import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import androidx.room.Upsert
 import com.waynebloom.scorekeeper.database.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.PlayerDataRelationModel
 import kotlinx.coroutines.flow.Flow
@@ -20,15 +20,19 @@ interface PlayerDao {
 	fun getOneWithRelations(id: Long): Flow<PlayerDataRelationModel>
 
 	@Query("SELECT * FROM Player WHERE match_id = :id")
-	fun getByMatchId(id: Long): Flow<List<PlayerDataModel>>
+	fun getByMatchID(id: Long): Flow<List<PlayerDataModel>>
 
 	@Transaction
 	@Query("SELECT * FROM Player WHERE match_id = :id")
-	fun getByMatchIdWithRelations(id: Long): Flow<List<PlayerDataRelationModel>>
+	fun getByMatchIDWithRelations(id: Long): Flow<List<PlayerDataRelationModel>>
 
-	@Insert
-	fun insert(player: PlayerDataModel): Long
+	@Upsert
+	fun upsert(player: PlayerDataModel)
 
+	@Upsert
+	suspend fun upsertReturningID(player: PlayerDataModel): Long
+
+	// TODO: remove this
 	@Update
 	fun update(player: PlayerDataModel)
 }

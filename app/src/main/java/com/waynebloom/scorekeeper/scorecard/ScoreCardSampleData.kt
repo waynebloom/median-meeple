@@ -59,7 +59,7 @@ object ScoreCardSampleData {
         location = "Wayne's House",
         notes = TextFieldValue("This was a fun game."),
         players = listOf("Wayne", "Conor", "Alyssa", "Brock", "Tim", "Benjamin").mapIndexed { index, it ->
-            PlayerDomainModel(name = it, rank = index)
+            PlayerDomainModel(name = it, position = index)
         },
         categoryNames = listOf("Red", "Orange", "Yellow", "Green", "Blue"),
         hiddenCategories = listOf(),
@@ -73,7 +73,7 @@ object ScoreCardSampleData {
         game = GameDomainModel(name = TextFieldValue("Ticket to Ride: Rails and Sails")),
         categoryNames = listOf("Very Long Name", "Even Longer Name Somehow", "Tickets", "Trains", "Ships"),
         players = listOf("Benjamin", "Mr. Long Name Person", "Jaina Proudmoore", "Anduin Wrynn").mapIndexed { index, it ->
-            PlayerDomainModel(name = it, rank = index)
+            PlayerDomainModel(name = it, position = index)
         },
         scoreCard = longScoreCard,
     )

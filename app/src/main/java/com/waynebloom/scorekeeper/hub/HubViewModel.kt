@@ -169,7 +169,7 @@ class HubViewModel @Inject constructor(
 			val allGames = it.allGames ?: return
 			val addedGame = allGames[id] ?: return
 			viewModelScope.launch(Dispatchers.IO) {
-				gameRepository.upsert(addedGame.copy(isFavorite = true))
+				gameRepository.upsertReturningID(addedGame.copy(isFavorite = true))
 			}
 			it.copy(quickGames = it.quickGames.plus(addedGame))
 		}

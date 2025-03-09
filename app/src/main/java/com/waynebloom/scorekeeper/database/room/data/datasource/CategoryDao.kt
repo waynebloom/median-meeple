@@ -1,9 +1,9 @@
 package com.waynebloom.scorekeeper.database.room.data.datasource
 
 import androidx.room.Dao
-import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Upsert
 import com.waynebloom.scorekeeper.database.room.data.model.CategoryDataModel
 import kotlinx.coroutines.flow.Flow
 
@@ -11,14 +11,18 @@ import kotlinx.coroutines.flow.Flow
 interface CategoryDao {
 
 	@Query("DELETE FROM CATEGORY WHERE id = :id")
-	fun deleteById(id: Long)
+	fun delete(id: Long)
 
 	@Query("SELECT * FROM CATEGORY WHERE game_id = :id")
-	fun getByGameId(id: Long): Flow<List<CategoryDataModel>>
+	fun getByGameID(id: Long): Flow<List<CategoryDataModel>>
 
-	@Insert
-	fun insert(entity: CategoryDataModel): Long
+	@Upsert
+	suspend fun upsertReturningID(entity: CategoryDataModel): Long
 
+	@Upsert
+	fun upsert(entity: CategoryDataModel)
+
+	// TODO: remove this
 	@Update
 	fun update(entity: CategoryDataModel)
 }

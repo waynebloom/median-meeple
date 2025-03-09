@@ -62,7 +62,7 @@ fun MatchCard(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                val textStyle = if (players[i].rank == 0) {
+                                val textStyle = if (players[i].position == 0) {
                                     MaterialTheme.typography.bodyLarge.copy(
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.SemiBold
@@ -92,7 +92,7 @@ fun MatchCard(
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                val textStyle = if (players[i].rank == 0) {
+                                val textStyle = if (players[i].position == 0) {
                                     MaterialTheme.typography.bodyLarge.copy(
                                         color = MaterialTheme.colorScheme.primary,
                                         fontWeight = FontWeight.SemiBold
@@ -150,7 +150,7 @@ private fun MatchCardPreview() {
             players = (0..5).map {
                 PlayerDomainModel(
                     name = "Player $it",
-                    rank = it,
+                    position = it,
                 )
             },
             totals = (0..10 step 2).map { it.toString() }

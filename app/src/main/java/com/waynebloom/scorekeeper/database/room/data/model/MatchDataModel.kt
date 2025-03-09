@@ -7,8 +7,11 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import androidx.room.Relation
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.time.Instant
 
+@Serializable
 @Entity(
     tableName = "Match",
     foreignKeys = [ForeignKey(
@@ -25,12 +28,14 @@ data class MatchDataModel(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
+    @SerialName("game_id")
     @ColumnInfo(name = "game_owner_id")
     val gameId: Long = 0,
 
     @ColumnInfo(name = "match_notes")
     var notes: String = "",
 
+    @SerialName("date_millis")
     @ColumnInfo(name = "date_millis")
     var dateMillis: Long = Instant.now().toEpochMilli(),
 
