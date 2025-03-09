@@ -8,17 +8,17 @@ import androidx.navigation.NavHostController
 
 @Composable
 fun MeepleBaseRoute(
-    navController: NavHostController,
-    viewModel: MeepleBaseViewModel = hiltViewModel()
+	navController: NavHostController,
+	viewModel: MeepleBaseViewModel = hiltViewModel()
 ) {
 
-    val uiState by viewModel.uiState.collectAsState()
+	val uiState by viewModel.uiState.collectAsState()
 
-    MeepleBaseScreen(
-        uiState = uiState,
-        onEmailChange = viewModel::onEmailChange,
-        onPwChange = viewModel::onPwChange,
-        onLoginClick = viewModel::onLoginClick,
-        onRequestGames = viewModel::onRequestGames,
-    )
+	MeepleBaseScreen(
+		uiState = uiState,
+		onEmailChange = viewModel::onEmailChange,
+		onPwChange = viewModel::onPwChange,
+		onLoginClick = viewModel::onLoginClick,
+		onRequestGames = viewModel::onRequestGames,
+	)
 }

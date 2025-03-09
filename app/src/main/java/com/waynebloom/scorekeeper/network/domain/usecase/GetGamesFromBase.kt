@@ -1,9 +1,9 @@
 package com.waynebloom.scorekeeper.network.domain.usecase
 
 import androidx.compose.ui.text.input.TextFieldValue
+import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.ext.toScoringMode
 import com.waynebloom.scorekeeper.network.data.datasource.MeepleBaseApi
-import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject

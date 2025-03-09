@@ -16,25 +16,25 @@ import com.waynebloom.scorekeeper.enums.MenuOption
 
 @Composable
 fun RadioButtonOption(
-    menuOption: MenuOption,
-    isSelected: Boolean,
-    onSelected: (MenuOption) -> Unit,
-    unselectedColor: Color = MaterialTheme.colorScheme.onSurface,
+	menuOption: MenuOption,
+	isSelected: Boolean,
+	onSelected: (MenuOption) -> Unit,
+	unselectedColor: Color = MaterialTheme.colorScheme.onSurface,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .clip(MaterialTheme.shapes.medium)
-            .clickable { onSelected(menuOption) }
-            .fillMaxWidth()
-    ) {
-        RadioButton(
-            selected = isSelected,
-            onClick = { onSelected(menuOption) },
-        )
-        Text(
-            text = stringResource(menuOption.label),
-            color = unselectedColor
-        )
-    }
+	Row(
+		verticalAlignment = Alignment.CenterVertically,
+		modifier = Modifier
+			.clip(MaterialTheme.shapes.medium)
+			.clickable { onSelected(menuOption) }
+			.fillMaxWidth()
+	) {
+		RadioButton(
+			selected = isSelected,
+			onClick = { onSelected(menuOption) },
+		)
+		Text(
+			text = stringResource(menuOption.label),
+			color = unselectedColor
+		)
+	}
 }

@@ -10,37 +10,37 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun MatchesForGameRoute(
-    navController: NavHostController,
-    viewModel: SingleGameViewModel,
+	navController: NavHostController,
+	viewModel: SingleGameViewModel,
 ) {
 
-    val uiState by viewModel.matchesForGameUiState.collectAsState()
+	val uiState by viewModel.matchesForGameUiState.collectAsState()
 
-    MedianMeepleTheme {
-        MatchesForGameScreen(
-            uiState = uiState,
-            onSearchInputChanged = viewModel::onSearchInputChanged,
-            onSortModeChanged = viewModel::onSortModeChanged,
-            onSortDirectionChanged = viewModel::onSortDirectionChanged,
-            onEditGameClick = {
-                navController.navigate("${Destination.EditGame.route}/${viewModel.gameId}")
-            },
-            onStatisticsTabClick = {
-                val route = "${Destination.StatisticsForGame.route}/${viewModel.gameId}"
-                if (!navController.popBackStack(route = route, inclusive = false)) {
-                    navController.navigate(route)
-                }
-            },
-            onSortButtonClick = viewModel::onSortButtonClick,
-            onMatchClick = {
-                val route = "${Destination.ScoreCard.route}/${viewModel.gameId}/$it"
-                navController.navigate(route)
-            },
-            onAddMatchClick = {
-                val route = "${Destination.ScoreCard.route}/${viewModel.gameId}/-1"
-                navController.navigate(route)
-            },
-            onSortDialogDismiss = viewModel::onSortDialogDismiss,
-        )
-    }
+	MedianMeepleTheme {
+		MatchesForGameScreen(
+			uiState = uiState,
+			onSearchInputChanged = viewModel::onSearchInputChanged,
+			onSortModeChanged = viewModel::onSortModeChanged,
+			onSortDirectionChanged = viewModel::onSortDirectionChanged,
+			onEditGameClick = {
+				navController.navigate("${Destination.EditGame.route}/${viewModel.gameId}")
+			},
+			onStatisticsTabClick = {
+				val route = "${Destination.StatisticsForGame.route}/${viewModel.gameId}"
+				if (!navController.popBackStack(route = route, inclusive = false)) {
+					navController.navigate(route)
+				}
+			},
+			onSortButtonClick = viewModel::onSortButtonClick,
+			onMatchClick = {
+				val route = "${Destination.ScoreCard.route}/${viewModel.gameId}/$it"
+				navController.navigate(route)
+			},
+			onAddMatchClick = {
+				val route = "${Destination.ScoreCard.route}/${viewModel.gameId}/-1"
+				navController.navigate(route)
+			},
+			onSortDialogDismiss = viewModel::onSortDialogDismiss,
+		)
+	}
 }

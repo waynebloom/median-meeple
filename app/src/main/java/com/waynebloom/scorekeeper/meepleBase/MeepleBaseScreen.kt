@@ -36,127 +36,128 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun MeepleBaseScreen(
-    uiState: MeepleBaseUiState,
-    modifier: Modifier = Modifier,
-    onEmailChange: (TextFieldValue) -> Unit,
-    onPwChange: (TextFieldValue) -> Unit,
-    onLoginClick: () -> Unit,
-    onRequestGames: () -> Unit,
+	uiState: MeepleBaseUiState,
+	modifier: Modifier = Modifier,
+	onEmailChange: (TextFieldValue) -> Unit,
+	onPwChange: (TextFieldValue) -> Unit,
+	onLoginClick: () -> Unit,
+	onRequestGames: () -> Unit,
 ) {
 
-    when(uiState) {
-        is MeepleBaseUiState.Loading -> {
-            Loading()
-        }
-        is MeepleBaseUiState.Content -> {
-            MeepleBaseScreen(
-                email = uiState.email,
-                pw = uiState.pw,
-                gameCards = uiState.gameCards,
-                modifier = modifier,
-                onEmailChange,
-                onPwChange,
-                onLoginClick,
-                onRequestGames,
-            )
-        }
-    }
+	when (uiState) {
+		is MeepleBaseUiState.Loading -> {
+			Loading()
+		}
+
+		is MeepleBaseUiState.Content -> {
+			MeepleBaseScreen(
+				email = uiState.email,
+				pw = uiState.pw,
+				gameCards = uiState.gameCards,
+				modifier = modifier,
+				onEmailChange,
+				onPwChange,
+				onLoginClick,
+				onRequestGames,
+			)
+		}
+	}
 }
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MeepleBaseScreen(
-    email: TextFieldValue,
-    pw: TextFieldValue,
-    gameCards: List<LibraryGameCard>,
-    modifier: Modifier = Modifier,
-    onEmailChange: (TextFieldValue) -> Unit,
-    onPwChange: (TextFieldValue) -> Unit,
-    onLoginClick: () -> Unit,
-    onRequestGames: () -> Unit,
+	email: TextFieldValue,
+	pw: TextFieldValue,
+	gameCards: List<LibraryGameCard>,
+	modifier: Modifier = Modifier,
+	onEmailChange: (TextFieldValue) -> Unit,
+	onPwChange: (TextFieldValue) -> Unit,
+	onLoginClick: () -> Unit,
+	onRequestGames: () -> Unit,
 ) {
 
-    Scaffold(
-        topBar = {
-            // TODO: top bar
-        },
-        contentWindowInsets = WindowInsets(0.dp),
-        modifier = modifier,
-    ) { innerPadding ->
+	Scaffold(
+		topBar = {
+			// TODO: top bar
+		},
+		contentWindowInsets = WindowInsets(0.dp),
+		modifier = modifier,
+	) { innerPadding ->
 
-        Column(Modifier.padding(innerPadding)) {
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Adaptive(160.dp),
-                verticalItemSpacing = Dimensions.Spacing.sectionContent,
-                horizontalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent),
-                contentPadding = PaddingValues(Dimensions.Spacing.screenEdge),
-            ) {
-                item {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent)
-                    ) {
-                        OutlinedTextField(
-                            value = email,
-                            onValueChange = onEmailChange,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                        OutlinedTextField(
-                            value = pw,
-                            onValueChange = onPwChange,
-                            modifier = Modifier.fillMaxWidth(),
-                            visualTransformation = PasswordVisualTransformation()
-                        )
-                        Button(
-                            onClick = onLoginClick,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Login")
-                        }
-                        Button(
-                            onClick = onRequestGames,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("Request Games")
-                        }
-                    }
-                }
+		Column(Modifier.padding(innerPadding)) {
+			LazyVerticalStaggeredGrid(
+				columns = StaggeredGridCells.Adaptive(160.dp),
+				verticalItemSpacing = Dimensions.Spacing.sectionContent,
+				horizontalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent),
+				contentPadding = PaddingValues(Dimensions.Spacing.screenEdge),
+			) {
+				item {
+					Column(
+						verticalArrangement = Arrangement.spacedBy(Dimensions.Spacing.sectionContent)
+					) {
+						OutlinedTextField(
+							value = email,
+							onValueChange = onEmailChange,
+							modifier = Modifier.fillMaxWidth(),
+						)
+						OutlinedTextField(
+							value = pw,
+							onValueChange = onPwChange,
+							modifier = Modifier.fillMaxWidth(),
+							visualTransformation = PasswordVisualTransformation()
+						)
+						Button(
+							onClick = onLoginClick,
+							modifier = Modifier.fillMaxWidth(),
+						) {
+							Text("Login")
+						}
+						Button(
+							onClick = onRequestGames,
+							modifier = Modifier.fillMaxWidth(),
+						) {
+							Text("Request Games")
+						}
+					}
+				}
 
-                gameCards.forEach { card ->
-                    item(key = card.id) {
-                        NewGameCard(
-                            name = card.name,
-                            color = card.color
-                                .copy(alpha = 0.2f)
-                                .compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)),
-                            highScore = card.highScore,
-                            noOfMatches = card.noOfMatches,
-                            modifier = Modifier
-                                .clip(MaterialTheme.shapes.medium)
-                                .clickable {
-                                    // TODO: onClick for game cards
-                                }
-                                .animateItemPlacement()
-                        )
-                    }
-                }
+				gameCards.forEach { card ->
+					item(key = card.id) {
+						NewGameCard(
+							name = card.name,
+							color = card.color
+								.copy(alpha = 0.2f)
+								.compositeOver(MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)),
+							highScore = card.highScore,
+							noOfMatches = card.noOfMatches,
+							modifier = Modifier
+								.clip(MaterialTheme.shapes.medium)
+								.clickable {
+									// TODO: onClick for game cards
+								}
+								.animateItemPlacement()
+						)
+					}
+				}
 
-                item {
-                    Spacer(
-                        Modifier
-                            .windowInsetsBottomHeight(WindowInsets.navigationBars)
-                            .consumeWindowInsets(WindowInsets.navigationBars)
-                    )
-                }
-            }
-        }
-    }
+				item {
+					Spacer(
+						Modifier
+							.windowInsetsBottomHeight(WindowInsets.navigationBars)
+							.consumeWindowInsets(WindowInsets.navigationBars)
+					)
+				}
+			}
+		}
+	}
 }
 
 @Preview
 @Preview(uiMode = UI_MODE_NIGHT_YES)
 @Composable
 private fun Normal() {
-    MedianMeepleTheme {
-        // TODO: previews
-    }
+	MedianMeepleTheme {
+		// TODO: previews
+	}
 }

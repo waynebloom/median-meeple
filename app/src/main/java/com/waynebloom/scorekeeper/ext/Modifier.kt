@@ -13,31 +13,31 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 
 fun Modifier.onFocusSelectAll(
-    textFieldValueState: TextFieldValue,
-    onTextFieldValueChanged: (TextFieldValue) -> Unit
+	textFieldValueState: TextFieldValue,
+	onTextFieldValueChanged: (TextFieldValue) -> Unit
 ): Modifier =
-    composed(
-        inspectorInfo = debugInspectorInfo {
-            name = "textFieldValueState"
-            properties["textFieldValueState"] = textFieldValueState
-        }
-    ) {
-        var triggerEffect: Boolean? by remember { mutableStateOf(null) }
-        if (triggerEffect != null) {
-            LaunchedEffect(triggerEffect) {
-                textFieldValueState.let {
-                    val updatedTextFieldValue = it.copy(selection = TextRange(0, it.text.length))
-                    onTextFieldValueChanged(updatedTextFieldValue)
-                }
-            }
-        }
-        this.then(
-            Modifier.onFocusChanged { focusState ->
-                if (focusState.isFocused) {
-                    triggerEffect = triggerEffect?.let { bool ->
-                        !bool
-                    } ?: true
-                }
-            }
-        )
-    }
+	composed(
+		inspectorInfo = debugInspectorInfo {
+			name = "textFieldValueState"
+			properties["textFieldValueState"] = textFieldValueState
+		}
+	) {
+		var triggerEffect: Boolean? by remember { mutableStateOf(null) }
+		if (triggerEffect != null) {
+			LaunchedEffect(triggerEffect) {
+				textFieldValueState.let {
+					val updatedTextFieldValue = it.copy(selection = TextRange(0, it.text.length))
+					onTextFieldValueChanged(updatedTextFieldValue)
+				}
+			}
+		}
+		this.then(
+			Modifier.onFocusChanged { focusState ->
+				if (focusState.isFocused) {
+					triggerEffect = triggerEffect?.let { bool ->
+						!bool
+					} ?: true
+				}
+			}
+		)
+	}

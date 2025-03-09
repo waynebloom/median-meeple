@@ -16,26 +16,26 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MedianMeepleActivity : ComponentActivity() {
 
-    @Inject
-    lateinit var initializeAdLoader: InitializeAdLoader
+	@Inject
+	lateinit var initializeAdLoader: InitializeAdLoader
 
-    @Inject
-    lateinit var coroutineScope: CoroutineScope
+	@Inject
+	lateinit var coroutineScope: CoroutineScope
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+	override fun onCreate(savedInstanceState: Bundle?) {
+		super.onCreate(savedInstanceState)
 
-        initializeAdLoader()
-        coroutineScope.launch {
-            MobileAds.initialize(this@MedianMeepleActivity)
-        }
+		initializeAdLoader()
+		coroutineScope.launch {
+			MobileAds.initialize(this@MedianMeepleActivity)
+		}
 
-        enableEdgeToEdge()
+		enableEdgeToEdge()
 
-        setContent {
-            MedianMeepleTheme {
-                MedianMeepleApp()
-            }
-        }
-    }
+		setContent {
+			MedianMeepleTheme {
+				MedianMeepleApp()
+			}
+		}
+	}
 }

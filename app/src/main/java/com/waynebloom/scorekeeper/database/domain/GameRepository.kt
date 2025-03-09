@@ -17,7 +17,7 @@ class GameRepository @Inject constructor(
 	private val gameDao: GameDao,
 	private val gameMapper: GameMapper,
 	private val supabaseApi: SupabaseApi,
-): SyncHandler {
+) : SyncHandler {
 
 	override suspend fun sync(change: Pair<Action, JsonObject>) {
 		Log.d(this::class.simpleName, "Handling sync for change: $change")

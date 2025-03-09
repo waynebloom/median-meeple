@@ -13,40 +13,40 @@ import java.time.Instant
 
 @Serializable
 @Entity(
-    tableName = "Match",
-    foreignKeys = [ForeignKey(
-        entity = GameDataModel::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("game_owner_id"),
-        onDelete = ForeignKey.CASCADE,
-        onUpdate = ForeignKey.CASCADE
-    )],
-    indices = [Index(value = ["game_owner_id"])]
+	tableName = "Match",
+	foreignKeys = [ForeignKey(
+		entity = GameDataModel::class,
+		parentColumns = arrayOf("id"),
+		childColumns = arrayOf("game_owner_id"),
+		onDelete = ForeignKey.CASCADE,
+		onUpdate = ForeignKey.CASCADE
+	)],
+	indices = [Index(value = ["game_owner_id"])]
 )
 data class MatchDataModel(
 
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+	@PrimaryKey(autoGenerate = true)
+	val id: Long = 0,
 
-    @SerialName("game_id")
-    @ColumnInfo(name = "game_owner_id")
-    val gameId: Long = 0,
+	@SerialName("game_id")
+	@ColumnInfo(name = "game_owner_id")
+	val gameId: Long = 0,
 
-    @ColumnInfo(name = "match_notes")
-    var notes: String = "",
+	@ColumnInfo(name = "match_notes")
+	var notes: String = "",
 
-    @SerialName("date_millis")
-    @ColumnInfo(name = "date_millis")
-    var dateMillis: Long = Instant.now().toEpochMilli(),
+	@SerialName("date_millis")
+	@ColumnInfo(name = "date_millis")
+	var dateMillis: Long = Instant.now().toEpochMilli(),
 
-    @ColumnInfo(defaultValue = "")
-    var location: String = "",
+	@ColumnInfo(defaultValue = "")
+	var location: String = "",
 )
 
 data class MatchDataRelationModel(
 	@Embedded
-    var entity: MatchDataModel = MatchDataModel(),
+	var entity: MatchDataModel = MatchDataModel(),
 
 	@Relation(parentColumn = "id", entityColumn = "match_id", entity = PlayerDataModel::class)
-    var players: List<PlayerDataRelationModel> = listOf()
+	var players: List<PlayerDataRelationModel> = listOf()
 )

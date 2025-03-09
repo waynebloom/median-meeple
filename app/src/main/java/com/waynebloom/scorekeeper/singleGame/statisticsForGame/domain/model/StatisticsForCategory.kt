@@ -11,24 +11,24 @@ class StatisticsForCategory(
 	data: List<ScoringPlayerDomainModel>
 ) {
 
-    val dataHighToLow: List<ScoringPlayerDomainModel>
-    val topScorers: List<ScoringPlayerDomainModel>
-    val low: BigDecimal
-    val mean: BigDecimal
-    val range: BigDecimal
+	val dataHighToLow: List<ScoringPlayerDomainModel>
+	val topScorers: List<ScoringPlayerDomainModel>
+	val low: BigDecimal
+	val mean: BigDecimal
+	val range: BigDecimal
 
-    init {
-        dataHighToLow = data.sortedByDescending { it.score }
-        topScorers = dataHighToLow
-            .take(StatisticsForGameConstants.numberOfTopScorers)
-        low = dataHighToLow.last().score
-        mean = calculateMean()
-        range = calculateRange()
-    }
+	init {
+		dataHighToLow = data.sortedByDescending { it.score }
+		topScorers = dataHighToLow
+			.take(StatisticsForGameConstants.numberOfTopScorers)
+		low = dataHighToLow.last().score
+		mean = calculateMean()
+		range = calculateRange()
+	}
 
-    private fun calculateMean() = dataHighToLow
-        .sumOf { it.score }
-        .divide(dataHighToLow.size.toBigDecimal(), Constants.maximumDecimalPlaces, RoundingMode.HALF_UP)
+	private fun calculateMean() = dataHighToLow
+		.sumOf { it.score }
+		.divide(dataHighToLow.size.toBigDecimal(), Constants.maximumDecimalPlaces, RoundingMode.HALF_UP)
 
-    private fun calculateRange() = dataHighToLow.first().score - dataHighToLow.last().score
+	private fun calculateRange() = dataHighToLow.first().score - dataHighToLow.last().score
 }

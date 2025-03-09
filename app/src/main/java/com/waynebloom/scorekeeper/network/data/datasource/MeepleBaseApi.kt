@@ -5,20 +5,20 @@ import retrofit2.Response
 import retrofit2.http.GET
 
 interface MeepleBaseApi {
-    @GET("games")
-    suspend fun getGames(): Response<List<GameModelRemote>>
+	@GET("games")
+	suspend fun getGames(): Response<List<GameModelRemote>>
 }
 
 data class GameModelRemote(
-    @Json(name = "id")
-    val id: Int,
+	@Json(name = "id")
+	val id: Int,
 
-    @Json(name = "color")
-    val color: Int,
+	@Json(name = "color")
+	val color: Int,
 
-    @Json(name = "name")
-    val name: String,
+	@Json(name = "name")
+	val name: String,
 
-    @Json(name = "scoring_mode")
-    val scoringMode: Int,
+	@Json(name = "scoring_mode")
+	val scoringMode: Int,
 )

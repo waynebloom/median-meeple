@@ -22,7 +22,7 @@ class SettingsViewModel @Inject constructor(
 	mutableStateFlowFactory: MutableStateFlowFactory,
 	private val preferencesManager: PreferencesManager,
 	private val credentialManager: CredentialManager,
-): ViewModel() {
+) : ViewModel() {
 
 	private val _uiState = mutableStateFlowFactory.newInstance(SettingsState())
 	val uiState = _uiState
@@ -85,10 +85,10 @@ private data class SettingsState(
 }
 
 sealed interface SettingsUiState {
-	data object SignedOut: SettingsUiState
+	data object SignedOut : SettingsUiState
 	data class SignedIn(
 		val name: String,
 		val email: String,
 		val subDays: Int,
-	): SettingsUiState
+	) : SettingsUiState
 }

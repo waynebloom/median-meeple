@@ -14,13 +14,15 @@ class GameRepositoryImpl @Inject constructor(
 
 	override suspend fun getGames(): List<GameDataModel> {
 		return withContext(Dispatchers.IO) {
-			val columns = Columns.raw("""
+			val columns = Columns.raw(
+				"""
 				id,
 				name,
 				color,
 				scoring_mode,
 				is_favorite
-			""".trimIndent())
+			""".trimIndent()
+			)
 			postgrest.from("GAME")
 				.select(columns)
 				.decodeList<GameDataModel>()

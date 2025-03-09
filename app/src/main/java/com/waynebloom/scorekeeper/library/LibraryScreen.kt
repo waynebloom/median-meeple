@@ -75,10 +75,11 @@ fun LibraryScreen(
 	modifier: Modifier = Modifier,
 ) {
 
-	when(uiState) {
+	when (uiState) {
 		is LibraryUiState.Loading -> {
 			Loading()
 		}
+
 		is LibraryUiState.Content -> {
 			LibraryScreen(
 				gameCards = uiState.gameCards,
@@ -138,7 +139,7 @@ fun LibraryScreen(
 				label = LibraryConstants.ListAnimationTag,
 			) {
 
-				when(it) {
+				when (it) {
 
 					// There are games and there is search input
 					true to true -> {
@@ -147,7 +148,10 @@ fun LibraryScreen(
 							modifier = Modifier.padding(horizontal = 16.dp)
 						) {
 							HelperBox(
-								message = stringResource(id = R.string.text_showing_search_results, searchInput.text),
+								message = stringResource(
+									id = R.string.text_showing_search_results,
+									searchInput.text
+								),
 								type = HelperBoxType.Info,
 								maxLines = 2
 							)

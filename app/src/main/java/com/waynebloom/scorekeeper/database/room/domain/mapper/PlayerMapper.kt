@@ -71,5 +71,6 @@ class PlayerMapper @Inject constructor(
 		position = playerData.entity.position,
 	)
 
-	fun toDomainWithRelations(players: List<PlayerDataRelationModel>) = players.map { this.toDomainWithRelations(it) }
+	fun toDomainWithRelations(players: List<PlayerDataRelationModel>) =
+		players.map { this.toDomainWithRelations(it) }
 }

@@ -36,124 +36,124 @@ fun MatchCard(
 	totals: List<String>,
 	modifier: Modifier = Modifier
 ) {
-    val headline = if (location.isNotBlank()) {
-        "$date ${stringResource(R.string.text_at)} $location"
-    } else {
-        date
-    }
+	val headline = if (location.isNotBlank()) {
+		"$date ${stringResource(R.string.text_at)} $location"
+	} else {
+		date
+	}
 
-    Surface(
-        shape = MaterialTheme.shapes.medium,
-        tonalElevation = 2.dp,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Column(Modifier.padding(Spacing.screenEdge)) {
-            Text(text = headline, style = MaterialTheme.typography.titleLarge)
-            Text(
-                text = "${stringResource(R.string.text_match)} #$number",
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(Modifier.height(Spacing.sectionContent))
-            if (players.isNotEmpty()) {
-                Row(Modifier.height(IntrinsicSize.Max)) {
-                    Column(Modifier.weight(1f)) {
-                        for (i in players.indices step 2) {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                val textStyle = if (players[i].position == 0) {
-                                    MaterialTheme.typography.bodyLarge.copy(
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                } else {
-                                    MaterialTheme.typography.bodyLarge
-                                }
-                                Text(
-                                    text = players[i].name,
-                                    style = textStyle,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1,
-                                    modifier = Modifier
-                                        .weight(1f, fill = false)
-                                        .padding(end = 4.dp)
-                                )
-                                Text(text = totals[i], style = textStyle)
-                            }
-                        }
-                    }
-                    VerticalDivider(
-                        modifier = Modifier.padding(horizontal = Spacing.sectionContent)
-                    )
-                    Column(Modifier.weight(1f)) {
-                        for (i in 1 until players.size step 2) {
-                            Row(
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                val textStyle = if (players[i].position == 0) {
-                                    MaterialTheme.typography.bodyLarge.copy(
-                                        color = MaterialTheme.colorScheme.primary,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                } else {
-                                    MaterialTheme.typography.bodyLarge
-                                }
-                                Text(
-                                    text = players[i].name,
-                                    style = textStyle,
-                                    overflow = TextOverflow.Ellipsis,
-                                    maxLines = 1,
-                                    modifier = Modifier
-                                        .weight(1f, fill = false)
-                                        .padding(end = 4.dp)
-                                )
-                                Text(text = totals[i], style = textStyle)
-                            }
-                        }
-                    }
-                }
-            } else {
-                Row {
-                    Icon(painter = painterResource(R.drawable.ic_help_circle), contentDescription = null)
-                    Spacer(Modifier.width(Spacing.sectionContent))
-                    Text(text = stringResource(R.string.text_empty_match_players))
-                }
-            }
-        }
-    }
+	Surface(
+		shape = MaterialTheme.shapes.medium,
+		tonalElevation = 2.dp,
+		modifier = modifier.fillMaxWidth()
+	) {
+		Column(Modifier.padding(Spacing.screenEdge)) {
+			Text(text = headline, style = MaterialTheme.typography.titleLarge)
+			Text(
+				text = "${stringResource(R.string.text_match)} #$number",
+				style = MaterialTheme.typography.titleMedium
+			)
+			Spacer(Modifier.height(Spacing.sectionContent))
+			if (players.isNotEmpty()) {
+				Row(Modifier.height(IntrinsicSize.Max)) {
+					Column(Modifier.weight(1f)) {
+						for (i in players.indices step 2) {
+							Row(
+								horizontalArrangement = Arrangement.SpaceBetween,
+								modifier = Modifier.fillMaxWidth()
+							) {
+								val textStyle = if (players[i].position == 0) {
+									MaterialTheme.typography.bodyLarge.copy(
+										color = MaterialTheme.colorScheme.primary,
+										fontWeight = FontWeight.SemiBold
+									)
+								} else {
+									MaterialTheme.typography.bodyLarge
+								}
+								Text(
+									text = players[i].name,
+									style = textStyle,
+									overflow = TextOverflow.Ellipsis,
+									maxLines = 1,
+									modifier = Modifier
+										.weight(1f, fill = false)
+										.padding(end = 4.dp)
+								)
+								Text(text = totals[i], style = textStyle)
+							}
+						}
+					}
+					VerticalDivider(
+						modifier = Modifier.padding(horizontal = Spacing.sectionContent)
+					)
+					Column(Modifier.weight(1f)) {
+						for (i in 1 until players.size step 2) {
+							Row(
+								horizontalArrangement = Arrangement.SpaceBetween,
+								modifier = Modifier.fillMaxWidth()
+							) {
+								val textStyle = if (players[i].position == 0) {
+									MaterialTheme.typography.bodyLarge.copy(
+										color = MaterialTheme.colorScheme.primary,
+										fontWeight = FontWeight.SemiBold
+									)
+								} else {
+									MaterialTheme.typography.bodyLarge
+								}
+								Text(
+									text = players[i].name,
+									style = textStyle,
+									overflow = TextOverflow.Ellipsis,
+									maxLines = 1,
+									modifier = Modifier
+										.weight(1f, fill = false)
+										.padding(end = 4.dp)
+								)
+								Text(text = totals[i], style = textStyle)
+							}
+						}
+					}
+				}
+			} else {
+				Row {
+					Icon(painter = painterResource(R.drawable.ic_help_circle), contentDescription = null)
+					Spacer(Modifier.width(Spacing.sectionContent))
+					Text(text = stringResource(R.string.text_empty_match_players))
+				}
+			}
+		}
+	}
 }
 
 @Preview
 @Composable
 private fun EmptyMatchCardPreview() {
-    MedianMeepleTheme {
-        MatchCard(
-            number = "43",
-            date = "4/17/24",
-            location = "Conor's house",
-            players = emptyList(),
-            totals = (0..10 step 2).map { it.toString() }
-        )
-    }
+	MedianMeepleTheme {
+		MatchCard(
+			number = "43",
+			date = "4/17/24",
+			location = "Conor's house",
+			players = emptyList(),
+			totals = (0..10 step 2).map { it.toString() }
+		)
+	}
 }
 
 @Preview
 @Composable
 private fun MatchCardPreview() {
-    MedianMeepleTheme {
-        MatchCard(
-            number = "43",
-            date = "4/17/24",
-            location = "Conor's house",
-            players = (0..5).map {
-                PlayerDomainModel(
-                    name = "Player $it",
-                    position = it,
-                )
-            },
-            totals = (0..10 step 2).map { it.toString() }
-        )
-    }
+	MedianMeepleTheme {
+		MatchCard(
+			number = "43",
+			date = "4/17/24",
+			location = "Conor's house",
+			players = (0..5).map {
+				PlayerDomainModel(
+					name = "Player $it",
+					position = it,
+				)
+			},
+			totals = (0..10 step 2).map { it.toString() }
+		)
+	}
 }

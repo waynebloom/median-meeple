@@ -5,10 +5,10 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class GetAdAsFlow @Inject constructor(
-    private val adRepository: AdRepository
+	private val adRepository: AdRepository
 ) {
 
-    operator fun invoke() = adRepository.adFlow.map {
-        it.first()
-    }
+	operator fun invoke() = adRepository.adFlow.map {
+		it.first()
+	}
 }

@@ -23,135 +23,136 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
 fun HelperBox(
-    message: String,
-    type: HelperBoxType,
-    modifier: Modifier = Modifier,
-    maxLines: Int = 10,
+	message: String,
+	type: HelperBoxType,
+	modifier: Modifier = Modifier,
+	maxLines: Int = 10,
 ) {
-    val icon = when(type) {
-        HelperBoxType.Info -> painterResource(id = R.drawable.ic_info_circle)
-        HelperBoxType.Error -> painterResource(id = R.drawable.ic_error_circle)
-        HelperBoxType.Missing -> painterResource(id = R.drawable.ic_help_circle)
-    }
-    val cardColors = when(type) {
-        HelperBoxType.Error -> CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.errorContainer,
-            contentColor = MaterialTheme.colorScheme.onErrorContainer
-        )
-        HelperBoxType.Missing -> CardDefaults.cardColors()
-        else -> CardDefaults.cardColors()
-    }
+	val icon = when (type) {
+		HelperBoxType.Info -> painterResource(id = R.drawable.ic_info_circle)
+		HelperBoxType.Error -> painterResource(id = R.drawable.ic_error_circle)
+		HelperBoxType.Missing -> painterResource(id = R.drawable.ic_help_circle)
+	}
+	val cardColors = when (type) {
+		HelperBoxType.Error -> CardDefaults.cardColors(
+			containerColor = MaterialTheme.colorScheme.errorContainer,
+			contentColor = MaterialTheme.colorScheme.onErrorContainer
+		)
 
-    Card(
-        colors = cardColors,
-        modifier = modifier.fillMaxWidth()
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-            modifier = Modifier.padding(Spacing.sectionContent),
-        ) {
+		HelperBoxType.Missing -> CardDefaults.cardColors()
+		else -> CardDefaults.cardColors()
+	}
 
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                modifier = Modifier.align(Alignment.Top)
-            )
+	Card(
+		colors = cardColors,
+		modifier = modifier.fillMaxWidth()
+	) {
+		Row(
+			horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+			modifier = Modifier.padding(Spacing.sectionContent),
+		) {
 
-            Text(
-                text = message,
-                maxLines = maxLines,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-        }
-    }
-    /*Box(
-        contentAlignment = Alignment.CenterStart,
-        modifier = modifier
-            .border(
-                width = 1.dp,
-                color = borderColor,
-                shape = MaterialTheme.shapes.medium
-            )
-            .clip(MaterialTheme.shapes.medium)
-            .background(color = backgroundColor)
-            .fillMaxWidth()
-    ) {
+			Icon(
+				painter = icon,
+				contentDescription = null,
+				modifier = Modifier.align(Alignment.Top)
+			)
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
-            modifier = Modifier.padding(Spacing.sectionContent),
-        ) {
+			Text(
+				text = message,
+				maxLines = maxLines,
+				overflow = TextOverflow.Ellipsis,
+				modifier = Modifier.align(Alignment.CenterVertically)
+			)
+		}
+	}
+	/*Box(
+			contentAlignment = Alignment.CenterStart,
+			modifier = modifier
+					.border(
+							width = 1.dp,
+							color = borderColor,
+							shape = MaterialTheme.shapes.medium
+					)
+					.clip(MaterialTheme.shapes.medium)
+					.background(color = backgroundColor)
+					.fillMaxWidth()
+	) {
 
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                tint = foregroundColor,
-                modifier = Modifier.align(Alignment.Top))
+			Row(
+					horizontalArrangement = Arrangement.spacedBy(Spacing.sectionContent),
+					modifier = Modifier.padding(Spacing.sectionContent),
+			) {
 
-            Text(
-                text = message,
-                color = foregroundColor,
-                maxLines = maxLines,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(Alignment.CenterVertically))
-        }
-    }*/
+					Icon(
+							painter = icon,
+							contentDescription = null,
+							tint = foregroundColor,
+							modifier = Modifier.align(Alignment.Top))
+
+					Text(
+							text = message,
+							color = foregroundColor,
+							maxLines = maxLines,
+							overflow = TextOverflow.Ellipsis,
+							modifier = Modifier.align(Alignment.CenterVertically))
+			}
+	}*/
 }
 
 enum class HelperBoxType {
-    Info,
-    Error,
-    Missing;
+	Info,
+	Error,
+	Missing;
 }
 
 @Preview(name = "Short, Light")
 @Preview(uiMode = UI_MODE_NIGHT_YES, name = "Short, Dark")
 @Composable
 fun HelperBoxShortPreview() {
-    MedianMeepleTheme {
-        
-        Surface(color = MaterialTheme.colorScheme.background) {
-            HelperBox(message = "This is a test message.", type = HelperBoxType.Info)
-        }
-    }
+	MedianMeepleTheme {
+
+		Surface(color = MaterialTheme.colorScheme.background) {
+			HelperBox(message = "This is a test message.", type = HelperBoxType.Info)
+		}
+	}
 }
 
 @Preview(name = "Long, Light")
 @Preview(uiMode = UI_MODE_NIGHT_YES, name = "Long, Dark")
 @Composable
 fun HelperBoxLongPreview() {
-    MedianMeepleTheme {
+	MedianMeepleTheme {
 
-        Surface(color = MaterialTheme.colorScheme.background) {
-            HelperBox(
-                message = "This is a long test message. It should span more than one line.",
-                type = HelperBoxType.Info
-            )
-        }
-    }
+		Surface(color = MaterialTheme.colorScheme.background) {
+			HelperBox(
+				message = "This is a long test message. It should span more than one line.",
+				type = HelperBoxType.Info
+			)
+		}
+	}
 }
 
 @Preview(name = "Missing, Light")
 @Preview(uiMode = UI_MODE_NIGHT_YES, name = "Missing, Dark")
 @Composable
 fun HelperBoxMissingPreview() {
-    MedianMeepleTheme {
+	MedianMeepleTheme {
 
-        Surface(color = MaterialTheme.colorScheme.background) {
-            HelperBox(message = "This is a test message.", type = HelperBoxType.Missing)
-        }
-    }
+		Surface(color = MaterialTheme.colorScheme.background) {
+			HelperBox(message = "This is a test message.", type = HelperBoxType.Missing)
+		}
+	}
 }
 
 @Preview(name = "Error, Light")
 @Preview(uiMode = UI_MODE_NIGHT_YES, name = "Error, Dark")
 @Composable
 fun HelperBoxErrorPreview() {
-    MedianMeepleTheme {
+	MedianMeepleTheme {
 
-        Surface(color = MaterialTheme.colorScheme.background) {
-            HelperBox(message = "This is a test message.", type = HelperBoxType.Error)
-        }
-    }
+		Surface(color = MaterialTheme.colorScheme.background) {
+			HelperBox(message = "This is a test message.", type = HelperBoxType.Error)
+		}
+	}
 }

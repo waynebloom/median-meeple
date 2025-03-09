@@ -38,70 +38,70 @@ import com.waynebloom.scorekeeper.constants.Dimensions
 
 @Composable
 fun TopBarWithSearch(
-    searchInput: TextFieldValue,
-    onClearClick: () -> Unit,
-    onSearchInputChanged: (TextFieldValue) -> Unit,
-    onCloseClick: () -> Unit
+	searchInput: TextFieldValue,
+	onClearClick: () -> Unit,
+	onSearchInputChanged: (TextFieldValue) -> Unit,
+	onCloseClick: () -> Unit
 ) {
-    var isSearchFieldFocused by rememberSaveable { mutableStateOf(false) }
-    val focusRequester = remember { FocusRequester() }
+	var isSearchFieldFocused by rememberSaveable { mutableStateOf(false) }
+	val focusRequester = remember { FocusRequester() }
 
-    LaunchedEffect(isSearchFieldFocused) {
-        focusRequester.requestFocus()
-    }
+	LaunchedEffect(isSearchFieldFocused) {
+		focusRequester.requestFocus()
+	}
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
+	Row(
+		verticalAlignment = Alignment.CenterVertically,
+		modifier = Modifier.fillMaxWidth()
+	) {
 
-        Icon(
-            imageVector = Icons.Rounded.Search,
-            contentDescription = null,
-            modifier = Modifier.padding(end = Dimensions.Spacing.screenEdge),
-        )
+		Icon(
+			imageVector = Icons.Rounded.Search,
+			contentDescription = null,
+			modifier = Modifier.padding(end = Dimensions.Spacing.screenEdge),
+		)
 
-        Box(Modifier.weight(1f)) {
-            BasicTextField(
-                value = searchInput,
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface
-                ),
-                singleLine = true,
-                onValueChange = onSearchInputChanged,
-                keyboardActions = KeyboardActions(
-                    onDone = { onCloseClick() }
-                ),
-                cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .focusRequester(focusRequester)
-                    .onFocusChanged { isSearchFieldFocused = it.hasFocus }
-            )
+		Box(Modifier.weight(1f)) {
+			BasicTextField(
+				value = searchInput,
+				textStyle = MaterialTheme.typography.bodyLarge.copy(
+					color = MaterialTheme.colorScheme.onSurface
+				),
+				singleLine = true,
+				onValueChange = onSearchInputChanged,
+				keyboardActions = KeyboardActions(
+					onDone = { onCloseClick() }
+				),
+				cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+				modifier = Modifier
+					.fillMaxWidth()
+					.focusRequester(focusRequester)
+					.onFocusChanged { isSearchFieldFocused = it.hasFocus }
+			)
 
-            if (!isSearchFieldFocused) {
-                Text(text = stringResource(R.string.search_placeholder_match))
-            }
-        }
+			if (!isSearchFieldFocused) {
+				Text(text = stringResource(R.string.search_placeholder_match))
+			}
+		}
 
-        Icon(
-            painter = painterResource(id = R.drawable.ic_search_off),
-            contentDescription = null,
-            modifier = Modifier
-                .minimumInteractiveComponentSize()
-                .clip(CircleShape)
-                .clickable(onClick = onClearClick)
-                .padding(4.dp)
-        )
+		Icon(
+			painter = painterResource(id = R.drawable.ic_search_off),
+			contentDescription = null,
+			modifier = Modifier
+				.minimumInteractiveComponentSize()
+				.clip(CircleShape)
+				.clickable(onClick = onClearClick)
+				.padding(4.dp)
+		)
 
-        Icon(
-            imageVector = Icons.Rounded.Close,
-            contentDescription = null,
-            modifier = Modifier
-                .minimumInteractiveComponentSize()
-                .clip(CircleShape)
-                .clickable(onClick = onCloseClick)
-                .padding(4.dp)
-        )
-    }
+		Icon(
+			imageVector = Icons.Rounded.Close,
+			contentDescription = null,
+			modifier = Modifier
+				.minimumInteractiveComponentSize()
+				.clip(CircleShape)
+				.clickable(onClick = onCloseClick)
+				.padding(4.dp)
+		)
+	}
 }

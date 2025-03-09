@@ -5,23 +5,23 @@ import java.time.Instant
 import javax.inject.Inject
 
 class CredentialManager @Inject constructor() {
-    private companion object {
-        var jwt = JWT.empty()
-    }
+	private companion object {
+		var jwt = JWT.empty()
+	}
 
-    fun clear() {
-        jwt = JWT.empty()
-    }
+	fun clear() {
+		jwt = JWT.empty()
+	}
 
-    fun get() = jwt
+	fun get() = jwt
 
-    fun isEmpty() = jwt == JWT.empty()
+	fun isEmpty() = jwt == JWT.empty()
 
-    fun requireLogin(): Boolean {
-        return Instant.now().isBefore(jwt.expiresOn)
-    }
+	fun requireLogin(): Boolean {
+		return Instant.now().isBefore(jwt.expiresOn)
+	}
 
-    fun store(newJWT: JWT) {
-        jwt = newJWT
-    }
+	fun store(newJWT: JWT) {
+		jwt = newJWT
+	}
 }

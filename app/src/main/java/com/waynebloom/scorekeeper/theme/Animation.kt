@@ -12,16 +12,18 @@ import com.waynebloom.scorekeeper.constants.DurationMs
 
 @OptIn(ExperimentalAnimationApi::class)
 object Animation {
-    private val enterTransitionWithDelay = fadeIn(
-        animationSpec = tween(
-            durationMillis = DurationMs.SHORT,
-            delayMillis = DurationMs.SHORT))
-    private val exitTransition = fadeOut(animationSpec = tween(durationMillis = DurationMs.SHORT))
+	private val enterTransitionWithDelay = fadeIn(
+		animationSpec = tween(
+			durationMillis = DurationMs.SHORT,
+			delayMillis = DurationMs.SHORT
+		)
+	)
+	private val exitTransition = fadeOut(animationSpec = tween(durationMillis = DurationMs.SHORT))
 
-    val fadeInWithFadeOut = fadeIn() with fadeOut()
-    val delayedFadeInWithFadeOut = enterTransitionWithDelay with exitTransition
-    val sizeTransformWithDelay = SizeTransform { initialSize, targetSize ->
-        val delay = if (targetSize.height > initialSize.height) 0 else DurationMs.SHORT
-        tween(DurationMs.SHORT, delay, Ease)
-    }
+	val fadeInWithFadeOut = fadeIn() with fadeOut()
+	val delayedFadeInWithFadeOut = enterTransitionWithDelay with exitTransition
+	val sizeTransformWithDelay = SizeTransform { initialSize, targetSize ->
+		val delay = if (targetSize.height > initialSize.height) 0 else DurationMs.SHORT
+		tween(DurationMs.SHORT, delay, Ease)
+	}
 }

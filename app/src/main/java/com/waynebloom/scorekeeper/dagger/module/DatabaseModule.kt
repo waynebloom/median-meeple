@@ -14,32 +14,32 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    @Singleton
-    @Provides
-    fun providesAppDatabase(@ApplicationContext context: Context) =
-        Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "app_database"
-        )
-        .createFromAsset("database/scores_app.db")
-        .addMigrations(*AppDatabase.manualMigrations)
-        .build()
+	@Singleton
+	@Provides
+	fun providesAppDatabase(@ApplicationContext context: Context) =
+		Room.databaseBuilder(
+			context,
+			AppDatabase::class.java,
+			"app_database"
+		)
+			.createFromAsset("database/scores_app.db")
+			.addMigrations(*AppDatabase.manualMigrations)
+			.build()
 
-    @Provides
-    fun providesCategoryDao(appDatabase: AppDatabase) = appDatabase.getCategoryDao()
+	@Provides
+	fun providesCategoryDao(appDatabase: AppDatabase) = appDatabase.getCategoryDao()
 
-    @Provides
-    fun providesCategoryScoreDao(appDatabase: AppDatabase) = appDatabase.getCategoryScoreDao()
+	@Provides
+	fun providesCategoryScoreDao(appDatabase: AppDatabase) = appDatabase.getCategoryScoreDao()
 
-    @Provides
-    fun providesGameDao(appDatabase: AppDatabase) = appDatabase.getGameDao()
+	@Provides
+	fun providesGameDao(appDatabase: AppDatabase) = appDatabase.getGameDao()
 
-    @Provides
-    fun providesMatchDao(appDatabase: AppDatabase) = appDatabase.getMatchDao()
+	@Provides
+	fun providesMatchDao(appDatabase: AppDatabase) = appDatabase.getMatchDao()
 
-    @Provides
-    fun providesPlayerDao(appDatabase: AppDatabase) = appDatabase.getPlayerDao()
+	@Provides
+	fun providesPlayerDao(appDatabase: AppDatabase) = appDatabase.getPlayerDao()
 }
 
 

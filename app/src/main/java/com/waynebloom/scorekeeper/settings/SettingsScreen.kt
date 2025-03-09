@@ -116,7 +116,9 @@ fun NoAccountConnected(
 	Row(
 		horizontalArrangement = Arrangement.SpaceBetween,
 		verticalAlignment = Alignment.CenterVertically,
-		modifier = modifier.padding(16.dp).fillMaxWidth()
+		modifier = modifier
+			.padding(16.dp)
+			.fillMaxWidth()
 	) {
 
 		Row(verticalAlignment = Alignment.CenterVertically) {

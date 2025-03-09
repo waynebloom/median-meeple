@@ -188,10 +188,12 @@ fun QuickStartPicker(
 				DropdownMenuItem(
 					onClick = {},
 					text = { Text(text = "No games found.") },
-					leadingIcon = { Icon(
-						painter = painterResource(R.drawable.ic_help_circle),
-						contentDescription = null,
-					) },
+					leadingIcon = {
+						Icon(
+							painter = painterResource(R.drawable.ic_help_circle),
+							contentDescription = null,
+						)
+					},
 					enabled = false
 				)
 			}

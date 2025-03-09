@@ -38,151 +38,153 @@ import com.waynebloom.scorekeeper.ext.sentenceCase
 
 @Composable
 fun LargeImageAdCard(
-    modifier: Modifier = Modifier,
-    ad: NativeAd? = null,
-    primaryColor: Int = MaterialTheme.colorScheme.primary.toArgb(),
-    onPrimaryColor: Int = MaterialTheme.colorScheme.onPrimary.toArgb(),
-    onSurface: Int = MaterialTheme.colorScheme.onSurface.toArgb(),
+	modifier: Modifier = Modifier,
+	ad: NativeAd? = null,
+	primaryColor: Int = MaterialTheme.colorScheme.primary.toArgb(),
+	onPrimaryColor: Int = MaterialTheme.colorScheme.onPrimary.toArgb(),
+	onSurface: Int = MaterialTheme.colorScheme.onSurface.toArgb(),
 ) {
 
-    Surface(
-        shape = MaterialTheme.shapes.medium.copy(bottomEnd = CornerSize(32.dp)),
-        tonalElevation = 2.dp,
-        modifier = modifier
-            .heightIn(min = 280.dp)
-            .fillMaxWidth()
-    ) {
-        if (ad != null) {
-            AndroidViewBinding(LargeImageAdBinding::inflate) {
-                adView.apply {
-                    adTag.apply {
-                        background.setTint(primaryColor)
-                        setTextColor(onPrimaryColor)
-                    }
-                    callToActionView = adCtaButton.apply {
-                        text = ad.callToAction?.sentenceCase() ?: "Learn More"
-                        backgroundTintList = ColorStateList.valueOf(primaryColor)
-                        setTextColor(onPrimaryColor)
-                    }
-                    headlineView = adHeadline.apply {
-                        text = ad.headline
-                        setTextColor(onSurface)
-                    }
-                    mediaView = adImage.apply {
-                        mediaContent = ad.mediaContent
-                        setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
-                            override fun onChildViewAdded(parent: View?, child: View?) {
-                                if (child is ImageView) {
-                                    child.scaleType = ImageView.ScaleType.CENTER_CROP
-                                }
-                            }
-                            override fun onChildViewRemoved(parent: View?, child: View?) {}
-                        })
-                    }
-                    iconView = adAppIcon.apply {
-                        setImageDrawable(ad.icon?.drawable)
-                    }
-                    setNativeAd(ad)
-                }
-            }
-        } else {
-            AdLoadingIndicator(96.dp)
-        }
-    }
+	Surface(
+		shape = MaterialTheme.shapes.medium.copy(bottomEnd = CornerSize(32.dp)),
+		tonalElevation = 2.dp,
+		modifier = modifier
+			.heightIn(min = 280.dp)
+			.fillMaxWidth()
+	) {
+		if (ad != null) {
+			AndroidViewBinding(LargeImageAdBinding::inflate) {
+				adView.apply {
+					adTag.apply {
+						background.setTint(primaryColor)
+						setTextColor(onPrimaryColor)
+					}
+					callToActionView = adCtaButton.apply {
+						text = ad.callToAction?.sentenceCase() ?: "Learn More"
+						backgroundTintList = ColorStateList.valueOf(primaryColor)
+						setTextColor(onPrimaryColor)
+					}
+					headlineView = adHeadline.apply {
+						text = ad.headline
+						setTextColor(onSurface)
+					}
+					mediaView = adImage.apply {
+						mediaContent = ad.mediaContent
+						setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+							override fun onChildViewAdded(parent: View?, child: View?) {
+								if (child is ImageView) {
+									child.scaleType = ImageView.ScaleType.CENTER_CROP
+								}
+							}
+
+							override fun onChildViewRemoved(parent: View?, child: View?) {}
+						})
+					}
+					iconView = adAppIcon.apply {
+						setImageDrawable(ad.icon?.drawable)
+					}
+					setNativeAd(ad)
+				}
+			}
+		} else {
+			AdLoadingIndicator(96.dp)
+		}
+	}
 }
 
 @Composable
 fun SmallImageAdCard(
-    modifier: Modifier = Modifier,
-    ad: NativeAd? = null,
-    primaryColor: Int = MaterialTheme.colorScheme.primary.toArgb(),
-    onPrimaryColor: Int = MaterialTheme.colorScheme.onPrimary.toArgb(),
-    onSurface: Int = MaterialTheme.colorScheme.onSurface.toArgb(),
+	modifier: Modifier = Modifier,
+	ad: NativeAd? = null,
+	primaryColor: Int = MaterialTheme.colorScheme.primary.toArgb(),
+	onPrimaryColor: Int = MaterialTheme.colorScheme.onPrimary.toArgb(),
+	onSurface: Int = MaterialTheme.colorScheme.onSurface.toArgb(),
 ) {
 
-    Surface(
-        shape = MaterialTheme.shapes.medium.copy(
-            bottomEnd = CornerSize(32.dp),
-            bottomStart = CornerSize(32.dp),
-        ),
-        tonalElevation = 2.dp,
-        modifier = modifier.heightIn(min = 230.dp)
-    ) {
-        if (ad != null)  {
-            AndroidViewBinding(SmallImageAdBinding::inflate) {
-                adView.apply {
-                    adTag.apply {
-                        background.setTint(primaryColor)
-                        setTextColor(onPrimaryColor)
-                    }
-                    callToActionView = adCtaButton.apply {
-                        text = ad.callToAction?.sentenceCase() ?: "Learn More"
-                        backgroundTintList = ColorStateList.valueOf(primaryColor)
-                        setTextColor(onPrimaryColor)
-                    }
-                    headlineView = adHeadline.apply {
-                        text = ad.headline
-                        setTextColor(onSurface)
-                    }
-                    mediaView = adImage.apply {
-                        mediaContent = ad.mediaContent
-                        setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
-                            override fun onChildViewAdded(parent: View?, child: View?) {
-                                if (child is ImageView) {
-                                    child.scaleType = ImageView.ScaleType.CENTER_CROP
-                                }
-                            }
-                            override fun onChildViewRemoved(parent: View?, child: View?) {}
-                        })
-                    }
-                    iconView = adAppIcon.apply {
-                        setImageDrawable(ad.icon?.drawable)
-                    }
-                    setNativeAd(ad)
-                }
-            }
-        } else {
-            AdLoadingIndicator(48.dp)
-        }
-    }
+	Surface(
+		shape = MaterialTheme.shapes.medium.copy(
+			bottomEnd = CornerSize(32.dp),
+			bottomStart = CornerSize(32.dp),
+		),
+		tonalElevation = 2.dp,
+		modifier = modifier.heightIn(min = 230.dp)
+	) {
+		if (ad != null) {
+			AndroidViewBinding(SmallImageAdBinding::inflate) {
+				adView.apply {
+					adTag.apply {
+						background.setTint(primaryColor)
+						setTextColor(onPrimaryColor)
+					}
+					callToActionView = adCtaButton.apply {
+						text = ad.callToAction?.sentenceCase() ?: "Learn More"
+						backgroundTintList = ColorStateList.valueOf(primaryColor)
+						setTextColor(onPrimaryColor)
+					}
+					headlineView = adHeadline.apply {
+						text = ad.headline
+						setTextColor(onSurface)
+					}
+					mediaView = adImage.apply {
+						mediaContent = ad.mediaContent
+						setOnHierarchyChangeListener(object : ViewGroup.OnHierarchyChangeListener {
+							override fun onChildViewAdded(parent: View?, child: View?) {
+								if (child is ImageView) {
+									child.scaleType = ImageView.ScaleType.CENTER_CROP
+								}
+							}
+
+							override fun onChildViewRemoved(parent: View?, child: View?) {}
+						})
+					}
+					iconView = adAppIcon.apply {
+						setImageDrawable(ad.icon?.drawable)
+					}
+					setNativeAd(ad)
+				}
+			}
+		} else {
+			AdLoadingIndicator(48.dp)
+		}
+	}
 }
 
 @Composable
 fun AdLoadingIndicator(
-    size: Dp,
-    modifier: Modifier = Modifier,
-    transition: InfiniteTransition = rememberInfiniteTransition(label = ""),
+	size: Dp,
+	modifier: Modifier = Modifier,
+	transition: InfiniteTransition = rememberInfiniteTransition(label = ""),
 ) {
-    val alpha by transition.animateFloat(
-        initialValue = 0.1f,
-        targetValue = 1f,
-        label = "",
-        animationSpec = infiniteRepeatable(
-            animation = tween(
-                durationMillis = 1500,
-                easing = EaseInOut
-            ),
-            repeatMode = RepeatMode.Reverse
-        )
-    )
-    Box(modifier, contentAlignment = Alignment.Center) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .size(size)
-                .background(
-                    MaterialTheme.colorScheme.primary.copy(alpha = alpha),
-                    CircleShape
-                )
-        ) {
-            Text(
-                text = "Ad",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.surface
-                    .copy(alpha = alpha)
-                    .compositeOver(MaterialTheme.colorScheme.primary),
-                textAlign = TextAlign.Center,
-            )
-        }
-    }
+	val alpha by transition.animateFloat(
+		initialValue = 0.1f,
+		targetValue = 1f,
+		label = "",
+		animationSpec = infiniteRepeatable(
+			animation = tween(
+				durationMillis = 1500,
+				easing = EaseInOut
+			),
+			repeatMode = RepeatMode.Reverse
+		)
+	)
+	Box(modifier, contentAlignment = Alignment.Center) {
+		Box(
+			contentAlignment = Alignment.Center,
+			modifier = Modifier
+				.size(size)
+				.background(
+					MaterialTheme.colorScheme.primary.copy(alpha = alpha),
+					CircleShape
+				)
+		) {
+			Text(
+				text = "Ad",
+				style = MaterialTheme.typography.titleLarge,
+				color = MaterialTheme.colorScheme.surface
+					.copy(alpha = alpha)
+					.compositeOver(MaterialTheme.colorScheme.primary),
+				textAlign = TextAlign.Center,
+			)
+		}
+	}
 }

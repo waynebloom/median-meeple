@@ -1,5 +1,5 @@
 package com.waynebloom.scorekeeper.enums
 
 interface MenuOption {
-    val label: Int
+	val label: Int
 }

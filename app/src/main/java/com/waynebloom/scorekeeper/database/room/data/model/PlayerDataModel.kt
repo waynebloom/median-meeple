@@ -12,35 +12,35 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Entity(
-    tableName = "Player",
-    foreignKeys = [ForeignKey(
-        entity = MatchDataModel::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("match_id"),
-        onDelete = ForeignKey.CASCADE,
-        onUpdate = ForeignKey.CASCADE
-    )],
-    indices = [Index(value = ["match_id"])]
+	tableName = "Player",
+	foreignKeys = [ForeignKey(
+		entity = MatchDataModel::class,
+		parentColumns = arrayOf("id"),
+		childColumns = arrayOf("match_id"),
+		onDelete = ForeignKey.CASCADE,
+		onUpdate = ForeignKey.CASCADE
+	)],
+	indices = [Index(value = ["match_id"])]
 )
 data class PlayerDataModel(
 
-    @PrimaryKey(autoGenerate = true)
-    @ColumnInfo(defaultValue = "0")
-    var id: Long = 0,
+	@PrimaryKey(autoGenerate = true)
+	@ColumnInfo(defaultValue = "0")
+	var id: Long = 0,
 
-    @SerialName("match_id")
-    @ColumnInfo(name = "match_id")
-    var matchID: Long = 0,
+	@SerialName("match_id")
+	@ColumnInfo(name = "match_id")
+	var matchID: Long = 0,
 
-    var name: String = "",
+	var name: String = "",
 
-    var position: Int = 0,
+	var position: Int = 0,
 )
 
 class PlayerDataRelationModel(
 	@Embedded
-    var entity: PlayerDataModel = PlayerDataModel(),
+	var entity: PlayerDataModel = PlayerDataModel(),
 
 	@Relation(parentColumn = "id", entityColumn = "player_id", entity = ScoreDataModel::class)
-    var score: List<ScoreDataModel> = listOf()
+	var score: List<ScoreDataModel> = listOf()
 )

@@ -29,64 +29,69 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun ExpandCollapseButton(
-    text: String?,
-    expanded: Boolean,
-    onClick: () -> Unit,
+	text: String?,
+	expanded: Boolean,
+	onClick: () -> Unit,
 ) {
 
-    Surface(
-        color = MaterialTheme.colorScheme.secondaryContainer,
-        shape = CircleShape,
-        modifier = Modifier
-            .minimumInteractiveComponentSize()
-            .clip(CircleShape)
-            .clickable(onClick = onClick)
-    ) {
+	Surface(
+		color = MaterialTheme.colorScheme.secondaryContainer,
+		shape = CircleShape,
+		modifier = Modifier
+			.minimumInteractiveComponentSize()
+			.clip(CircleShape)
+			.clickable(onClick = onClick)
+	) {
 
-        Box(contentAlignment = Alignment.Center) {
-            AnimatedContent(
-                targetState = expanded,
-                transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
-                label = "",
-            ) { buttonIsExpanded ->
-                if (buttonIsExpanded) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_chevron_up),
-                        contentDescription = null,
-                        modifier = Modifier.padding(Dimensions.Spacing.sectionContent).size(20.dp)
-                    )
-                } else {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = Dimensions.Spacing.sectionContent, vertical = 8.dp)
-                    ) {
-                        if (text != null) {
-                            Text(
-                                text = text,
-                                modifier = Modifier.padding(end = 4.dp)
-                            )
-                        }
+		Box(contentAlignment = Alignment.Center) {
+			AnimatedContent(
+				targetState = expanded,
+				transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
+				label = "",
+			) { buttonIsExpanded ->
+				if (buttonIsExpanded) {
+					Icon(
+						painter = painterResource(id = R.drawable.ic_chevron_up),
+						contentDescription = null,
+						modifier = Modifier
+							.padding(Dimensions.Spacing.sectionContent)
+							.size(20.dp)
+					)
+				} else {
+					Row(
+						verticalAlignment = Alignment.CenterVertically,
+						modifier = Modifier.padding(
+							horizontal = Dimensions.Spacing.sectionContent,
+							vertical = 8.dp
+						)
+					) {
+						if (text != null) {
+							Text(
+								text = text,
+								modifier = Modifier.padding(end = 4.dp)
+							)
+						}
 
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_chevron_down),
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-        }
-    }
+						Icon(
+							painter = painterResource(id = R.drawable.ic_chevron_down),
+							contentDescription = null,
+							modifier = Modifier.size(20.dp)
+						)
+					}
+				}
+			}
+		}
+	}
 }
 
 @Preview
 @Composable
 fun ExpandCollapseButtonPreview() {
-    MedianMeepleTheme {
-        ExpandCollapseButton(
-            text = "Expand",
-            expanded = false,
-            onClick = {}
-        )
-    }
+	MedianMeepleTheme {
+		ExpandCollapseButton(
+			text = "Expand",
+			expanded = false,
+			onClick = {}
+		)
+	}
 }

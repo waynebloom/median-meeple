@@ -5,5 +5,5 @@ import javax.inject.Inject
 
 class MutableStateFlowFactory @Inject constructor() {
 
-    fun <T> newInstance(initialValue: T) = MutableStateFlow(initialValue)
+	fun <T> newInstance(initialValue: T) = MutableStateFlow(initialValue)
 }

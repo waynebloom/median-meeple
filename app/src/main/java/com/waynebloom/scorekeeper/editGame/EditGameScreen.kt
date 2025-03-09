@@ -104,9 +104,9 @@ import com.waynebloom.scorekeeper.components.RadioButtonOption
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.constants.Dimensions.Spacing
-import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 import com.waynebloom.scorekeeper.util.SetDialogDestinationToEdgeToEdge
 
@@ -131,7 +131,7 @@ fun EditGameScreen(
 	onScoringModeChanged: (ScoringMode) -> Unit,
 ) {
 
-	when(uiState) {
+	when (uiState) {
 		is EditGameUiState.Loading -> Loading()
 		is EditGameUiState.Content -> {
 
@@ -555,7 +555,8 @@ private fun EditCategoriesBottomSheetContent(
 					horizontalArrangement = Arrangement.End,
 					modifier = Modifier.fillMaxWidth()
 				) {
-					val deletedToast = Toast.makeText(LocalContext.current, "Category deleted.", Toast.LENGTH_SHORT)
+					val deletedToast =
+						Toast.makeText(LocalContext.current, "Category deleted.", Toast.LENGTH_SHORT)
 
 					TextButton(
 						onClick = {
@@ -650,6 +651,7 @@ private fun EditCategoriesBottomSheetContent(
 											tint = MaterialTheme.colorScheme.onBackground,
 										)
 									}
+
 									else -> {   // visual placeholder dot
 										Box(
 											Modifier
@@ -812,7 +814,8 @@ private fun EditCategoriesBottomSheet(
 			Box(
 				Modifier
 					.clickable(onClick = onDismiss)
-					.fillMaxSize())
+					.fillMaxSize()
+			)
 
 			EditCategoriesBottomSheetContent(
 				categories,
@@ -903,7 +906,7 @@ private fun Normal() {
 			onSaveClick = {},
 			onCategoryClick = {},
 			onCategoryDialogDismiss = {},
-			onCategoryInputChanged = {_,_->},
+			onCategoryInputChanged = { _, _ -> },
 			onColorClick = {},
 			onDeleteCategoryClick = {},
 			onDeleteClick = {},
@@ -929,7 +932,7 @@ private fun NoCategories() {
 			onSaveClick = {},
 			onCategoryClick = {},
 			onCategoryDialogDismiss = {},
-			onCategoryInputChanged = {_,_->},
+			onCategoryInputChanged = { _, _ -> },
 			onColorClick = {},
 			onDeleteCategoryClick = {},
 			onDeleteClick = {},
@@ -962,7 +965,7 @@ private fun EditingCategories() {
 			onDragEnd = {},
 			onDragStart = {},
 			onHideInputField = {},
-			onInputChanged = {_,_->},
+			onInputChanged = { _, _ -> },
 			onNewClick = {}
 		)
 	}

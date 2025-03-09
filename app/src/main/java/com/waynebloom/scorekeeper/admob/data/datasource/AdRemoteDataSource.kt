@@ -11,28 +11,28 @@ import javax.inject.Singleton
 
 @Singleton
 class AdRemoteDataSource @Inject constructor(
-    private val googleAdsWrapper: GoogleAdsWrapper,
+	private val googleAdsWrapper: GoogleAdsWrapper,
 ) {
 
-    private lateinit var loader: AdLoader
+	private lateinit var loader: AdLoader
 
-    internal fun initializeLoader(onNativeAdLoaded: (NativeAd) -> Unit) {
-        val adUnitId = if (BuildConfig.DEBUG) AdmobID.DEBUG.id else AdmobID.RELEASE.id
-        val options = googleAdsWrapper.getNativeAdOptionsBuilder()
-            .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_LEFT)
-            .build()
+	internal fun initializeLoader(onNativeAdLoaded: (NativeAd) -> Unit) {
+		val adUnitId = if (BuildConfig.DEBUG) AdmobID.DEBUG.id else AdmobID.RELEASE.id
+		val options = googleAdsWrapper.getNativeAdOptionsBuilder()
+			.setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_LEFT)
+			.build()
 
-        loader = googleAdsWrapper
-            .getAdLoaderBuilder(adUnitId)
-            .withNativeAdOptions(options)
-            .forNativeAd { onNativeAdLoaded(it) }
-            .build()
-    }
+		loader = googleAdsWrapper
+			.getAdLoaderBuilder(adUnitId)
+			.withNativeAdOptions(options)
+			.forNativeAd { onNativeAdLoaded(it) }
+			.build()
+	}
 
-    fun loadAds(count: Int) {
-        repeat(count) {
-            val request = googleAdsWrapper.getAdRequestBuilder().build()
-            loader.loadAd(request)
-        }
-    }
+	fun loadAds(count: Int) {
+		repeat(count) {
+			val request = googleAdsWrapper.getAdRequestBuilder().build()
+			loader.loadAd(request)
+		}
+	}
 }
