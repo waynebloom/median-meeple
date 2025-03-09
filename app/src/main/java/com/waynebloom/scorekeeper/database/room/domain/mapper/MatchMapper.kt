@@ -19,7 +19,7 @@ class MatchMapper @Inject constructor(
 
 	fun toData(match: MatchDomainModel) = match.let {
 		MatchDataModel(
-			id = it.id,
+			id = it.id.let { id -> if (id == -1L) 0 else id },
 			gameId = it.gameId,
 			notes = it.notes,
 			dateMillis = it.dateMillis,

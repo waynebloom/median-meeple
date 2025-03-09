@@ -11,10 +11,10 @@ import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.database.domain.CategoryRepository
 import com.waynebloom.scorekeeper.database.domain.GameRepository
-import com.waynebloom.scorekeeper.enums.ScoringMode
-import com.waynebloom.scorekeeper.ext.transformElement
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.ext.transformElement
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow

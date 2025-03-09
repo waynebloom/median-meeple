@@ -26,7 +26,7 @@ interface GameDao {
 	@Query("SELECT * FROM GAME")
 	fun getAllWithRelations(): Flow<List<GameDataRelationModel>>
 
-	@Query("SELECT * FROM GAME WHERE isFavorite = 1")
+	@Query("SELECT * FROM GAME WHERE is_favorite = 1")
 	fun getFavorites(): Flow<List<GameDataModel>>
 
 	@Query("SELECT * FROM GAME WHERE ID = :id")
@@ -52,5 +52,5 @@ interface GameDao {
 
 	// TODO: remove this method
 	@Update
-	fun update(game: GameDataModel)
+	suspend fun update(game: GameDataModel)
 }

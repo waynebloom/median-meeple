@@ -14,7 +14,7 @@ import com.waynebloom.scorekeeper.database.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.ScoreDataModel
 
 @Database(
-	version = 15,
+	version = 16,
 	entities = [
 		GameDataModel::class,
 		MatchDataModel::class,
@@ -33,6 +33,7 @@ import com.waynebloom.scorekeeper.database.room.data.model.ScoreDataModel
 		AutoMigration(from = 11, to = 12),
 		AutoMigration(from = 13, to = 14, spec = AppDatabase.AutoMigration13to14::class),
 		AutoMigration(from = 14, to = 15),
+		AutoMigration(from = 15, to = 16, spec = AppDatabase.AutoMigration15to16::class),
 	]
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -52,6 +53,9 @@ abstract class AppDatabase : RoomDatabase() {
 	@DeleteColumn(tableName = "Player", columnName = "show_detailed_score")
 	@DeleteColumn(tableName = "Player", columnName = "score")
 	class AutoMigration13to14 : AutoMigrationSpec
+
+	@RenameColumn(tableName = "Game", toColumnName = "is_favorite", fromColumnName = "isFavorite")
+	class AutoMigration15to16 : AutoMigrationSpec
 
 	companion object {
 		val manualMigrations = arrayOf(

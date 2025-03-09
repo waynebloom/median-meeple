@@ -1,6 +1,5 @@
 package com.waynebloom.scorekeeper.database.room.domain.mapper
 
-import com.squareup.moshi.JsonAdapter
 import com.waynebloom.scorekeeper.database.room.data.model.PlayerDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.PlayerDataRelationModel
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
@@ -20,7 +19,7 @@ class PlayerMapper @Inject constructor(
 
 	fun toData(player: PlayerDomainModel) = player.let {
 		PlayerDataModel(
-			id = it.id,
+			id = it.id.let { id -> if (id == -1L) 0 else id },
 			matchID = it.matchID,
 			name = it.name,
 			position = it.position,

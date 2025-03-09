@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 15,
-    "identityHash": "f9de7823d94d9bdbea0e87c03a151710",
+    "version": 16,
+    "identityHash": "0d8214e2fad07e92c01f7b7b9f5367fa",
     "entities": [
       {
         "tableName": "Game",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `color` INTEGER NOT NULL, `name` TEXT NOT NULL, `scoring_mode` INTEGER NOT NULL DEFAULT 1, `isFavorite` INTEGER NOT NULL DEFAULT false)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `color` INTEGER NOT NULL, `name` TEXT NOT NULL, `scoring_mode` INTEGER NOT NULL DEFAULT 1, `is_favorite` INTEGER NOT NULL DEFAULT false)",
         "fields": [
           {
             "fieldPath": "id",
@@ -35,7 +35,7 @@
           },
           {
             "fieldPath": "isFavorite",
-            "columnName": "isFavorite",
+            "columnName": "is_favorite",
             "affinity": "INTEGER",
             "notNull": true,
             "defaultValue": "false"
@@ -322,7 +322,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f9de7823d94d9bdbea0e87c03a151710')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0d8214e2fad07e92c01f7b7b9f5367fa')"
     ]
   }
 }

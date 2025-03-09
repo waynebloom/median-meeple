@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.database.room.domain.mapper
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.squareup.moshi.JsonAdapter
 import com.waynebloom.scorekeeper.database.room.data.model.ScoreDataModel
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.ScoreDomainModel
@@ -18,7 +17,7 @@ class ScoreMapper @Inject constructor() {
 
 	fun toData(score: ScoreDomainModel) = score.let {
 		ScoreDataModel(
-			id = it.id,
+			id = it.id.let { id -> if (id == -1L) 0 else id },
 			playerID = it.playerID,
 			categoryID = it.categoryID,
 			value = it.scoreAsTextFieldValue.text

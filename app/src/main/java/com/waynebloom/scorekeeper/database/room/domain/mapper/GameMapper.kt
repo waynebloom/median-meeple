@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.database.room.domain.mapper
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.squareup.moshi.JsonAdapter
 import com.waynebloom.scorekeeper.database.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
@@ -22,7 +21,7 @@ class GameMapper @Inject constructor(
 
 	fun toData(game: GameDomainModel) = game.let {
 		GameDataModel(
-			id = it.id,
+			id = it.id.let { id -> if (id == -1L) 0 else id },
 			color = it.displayColorIndex,
 			name = it.name.text,
 			scoringMode = it.scoringMode.ordinal

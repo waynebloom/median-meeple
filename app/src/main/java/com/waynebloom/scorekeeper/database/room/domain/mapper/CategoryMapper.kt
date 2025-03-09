@@ -1,7 +1,6 @@
 package com.waynebloom.scorekeeper.database.room.domain.mapper
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.squareup.moshi.JsonAdapter
 import com.waynebloom.scorekeeper.database.room.data.model.CategoryDataModel
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import kotlinx.serialization.json.Json
@@ -17,7 +16,7 @@ class CategoryMapper @Inject constructor() {
 
 	fun toData(category: CategoryDomainModel, gameID: Long) = category.let {
 		CategoryDataModel(
-			id = it.id,
+			id = it.id.let { id -> if (id == -1L) 0 else id },
 			gameID = gameID,
 			name = it.name.text,
 			position = it.position,

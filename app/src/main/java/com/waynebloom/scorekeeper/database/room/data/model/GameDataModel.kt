@@ -25,7 +25,7 @@ data class GameDataModel(
 	var scoringMode: Int = ScoringMode.Descending.ordinal,
 
 	@SerialName("is_favorite")
-	@ColumnInfo(defaultValue = "false")
+	@ColumnInfo(name = "is_favorite", defaultValue = "false")
 	var isFavorite: Boolean = false,
 )
 
