@@ -39,6 +39,7 @@ class GameRepository @Inject constructor(
 	}
 
 	fun getOne(id: Long): Flow<GameDomainModel> {
+		Log.d(GameRepository::class.simpleName, "Fetching game with id $id.")
 		return gameDao.getOne(id).map(gameMapper::toDomain)
 	}
 
@@ -62,11 +63,7 @@ class GameRepository @Inject constructor(
 		return gameDao.getMultiple(ids).map(gameMapper::toDomain)
 	}
 
-	suspend fun upsert(game: GameDomainModel) {
-		gameDao.upsert(gameMapper.toData(game))
-	}
-
-	suspend fun upsertReturningID(game: GameDomainModel): Long {
+	suspend fun upsert(game: GameDomainModel): Long {
 		return gameDao.upsertReturningID(gameMapper.toData(game))
 	}
 }

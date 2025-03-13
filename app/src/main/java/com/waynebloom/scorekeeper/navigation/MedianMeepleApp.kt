@@ -58,9 +58,9 @@ fun MedianMeepleApp() {
 		// MatchesForGame
 
 		composable(
-			route = "${Destination.MatchesForGame.route}/{gameId}",
+			route = "${Destination.MatchesForGame.route}/{gameID}",
 			arguments = listOf(
-				navArgument(name = "gameId") { type = NavType.LongType }
+				navArgument(name = "gameID") { type = NavType.LongType }
 			)
 		) {
 			val viewModel = it.sharedViewModel<SingleGameViewModel>(navController)
@@ -70,9 +70,9 @@ fun MedianMeepleApp() {
 		// StatisticsForGame
 
 		composable(
-			route = "${Destination.StatisticsForGame.route}/{gameId}",
+			route = "${Destination.StatisticsForGame.route}/{gameID}",
 			arguments = listOf(
-				navArgument(name = "gameId") { type = NavType.LongType }
+				navArgument(name = "gameID") { type = NavType.LongType }
 			)
 		) {
 			val viewModel = it.sharedViewModel<SingleGameViewModel>(navController)
@@ -82,9 +82,9 @@ fun MedianMeepleApp() {
 		// EditGame
 
 		composable(
-			route = "${Destination.EditGame.route}/{gameId}",
+			route = "${Destination.EditGame.route}/{gameID}",
 			arguments = listOf(
-				navArgument(name = "gameId") { type = NavType.LongType }
+				navArgument(name = "gameID") { type = NavType.LongType }
 			)
 		) {
 
@@ -94,10 +94,10 @@ fun MedianMeepleApp() {
 		// ScoreCard
 
 		composable(
-			route = "${Destination.ScoreCard.route}/{gameId}/{matchId}",
+			route = "${Destination.ScoreCard.route}/{gameID}/{matchID}",
 			arguments = listOf(
-				navArgument(name = "gameId") { type = NavType.LongType },
-				navArgument(name = "matchId") { type = NavType.LongType },
+				navArgument(name = "gameID") { type = NavType.LongType },
+				navArgument(name = "matchID") { type = NavType.LongType },
 			)
 		) {
 			ScoreCardRoute(navController)

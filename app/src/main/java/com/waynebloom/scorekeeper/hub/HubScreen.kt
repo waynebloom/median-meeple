@@ -111,7 +111,7 @@ private fun HubScreen(
 				.fillMaxWidth()
 				.padding(bottom = 36.dp)
 		)
-		RecentPlaysChart(weekPlays, chartKey)
+		RecentActivityCard(weekPlays, chartKey)
 	}
 }
 
@@ -171,8 +171,8 @@ fun DayActivity(
 	}
 	var i = 0
 
-	val pipSize = 12.dp
-	val gap = 2.dp
+	val pipSize = 16.dp
+	val gap = 4.dp
 
 	Column(
 		horizontalAlignment = Alignment.CenterHorizontally,
@@ -195,7 +195,7 @@ fun DayActivity(
 					val baseColor = chartKey[dayPlays[i]]?.first ?: Color.Black
 					val composited = baseColor
 						.copy(alpha = Alpha.HIGH_ALPHA)
-						.compositeOver(MaterialTheme.colorScheme.surface)
+						.compositeOver(MaterialTheme.colorScheme.onSurface)
 					val shape = chartKey[dayPlays[i]]?.second ?: CircleShape
 					i++
 
@@ -211,17 +211,30 @@ fun DayActivity(
 }
 
 @Composable
-private fun RecentPlaysChart(
+private fun RecentActivityCard(
 	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
 	modifier: Modifier = Modifier,
 ) {
-
 	Surface(
 		shape = MaterialTheme.shapes.large,
 		tonalElevation = 2.dp,
 		modifier = modifier
 	) {
+
+		// ASAP: this needs to go below the header
+		if (weekPlays.isEmpty()) {
+			Box(
+				contentAlignment = Alignment.Center,
+				modifier = Modifier.fillMaxWidth().padding(16.dp),
+			) {
+				Text(
+					text = "No activity recorded in the past week.",
+					style = MaterialTheme.typography.bodyLarge,
+				)
+			}
+			return@Surface
+		}
 
 		Column(modifier = Modifier.padding(Dimensions.Spacing.sectionContent)) {
 
@@ -244,7 +257,7 @@ private fun RecentPlaysChart(
 					)
 				}
 
-				Text(text = "Activity")
+				Text(text = "Activity", style = MaterialTheme.typography.titleMedium)
 			}
 
 			Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -277,37 +290,44 @@ private fun RecentPlaysChart(
 							modifier = Modifier.width(48.dp),
 						) {
 
-							Text(text = it, style = MaterialTheme.typography.labelMedium)
+							Text(text = it, style = MaterialTheme.typography.labelLarge)
 						}
 					}
 				}
 
 				HorizontalDivider(
 					modifier = Modifier.padding(vertical = 8.dp),
-					color = MaterialTheme.colorScheme.background,
+					color = MaterialTheme.colorScheme.onSurface,
 				)
 
 				FlowRow(
-					horizontalArrangement = Arrangement.spacedBy(8.dp),
+					horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
 					verticalArrangement = Arrangement.spacedBy(8.dp),
 				) {
 					chartKey.forEach { (game, display) ->
 						Row(
-							horizontalArrangement = Arrangement.spacedBy(4.dp),
+							horizontalArrangement = Arrangement.spacedBy(8.dp),
 							verticalAlignment = Alignment.CenterVertically,
 						) {
 
-							val color = display.first
+							val pipColor = display.first
 								.copy(alpha = Alpha.HIGH_ALPHA)
-								.compositeOver(MaterialTheme.colorScheme.surface)
+								.compositeOver(MaterialTheme.colorScheme.onSurface)
+							val textColor = display.first
+								.copy(alpha = Alpha.MEDIUM_ALPHA)
+								.compositeOver(MaterialTheme.colorScheme.onSurface)
 
 							Box(
 								modifier = Modifier
-									.size(12.dp)
-									.background(color, display.second)
+									.size(16.dp)
+									.background(pipColor, display.second)
 							) {}
 
-							Text(text = game, style = MaterialTheme.typography.labelSmall)
+							Text(
+								text = game,
+								style = MaterialTheme.typography.labelLarge,
+								color = textColor
+							)
 						}
 					}
 				}
@@ -318,8 +338,16 @@ private fun RecentPlaysChart(
 
 @PreviewLightDark
 @Composable
-private fun HubPreview() {
+private fun HubDefaultPreview() {
 	MedianMeepleTheme {
 		HubScreen(uiState = HubSampleData.Default, {}, {}, {}, {}, {})
+	}
+}
+
+@PreviewLightDark
+@Composable
+private fun HubNoActivityPreview() {
+	MedianMeepleTheme {
+		HubScreen(uiState = HubSampleData.NoActivity, {}, {}, {}, {}, {})
 	}
 }

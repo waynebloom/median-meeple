@@ -37,11 +37,7 @@ class PlayerRepository @Inject constructor(
 		return playerDao.getByMatchIDWithRelations(matchID).map(playerMapper::toDomainWithRelations)
 	}
 
-	suspend fun upsert(player: PlayerDomainModel) {
-		playerDao.upsert(playerMapper.toData(player))
-	}
-
-	suspend fun upsertReturningID(player: PlayerDomainModel): Long {
+	suspend fun upsert(player: PlayerDomainModel): Long {
 		return playerDao.upsertReturningID(playerMapper.toData(player))
 	}
 }

@@ -4,7 +4,6 @@ import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -22,8 +21,6 @@ fun EditGameRoute(
 	val deletedToast = Toast.makeText(LocalContext.current, "Game deleted.", Toast.LENGTH_SHORT)
 	val savedToast =
 		Toast.makeText(LocalContext.current, "Your changes have been saved.", Toast.LENGTH_SHORT)
-
-	viewModel.composableCoroutineScope = rememberCoroutineScope()
 
 	EditGameScreen(
 		uiState = uiState,

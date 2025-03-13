@@ -27,11 +27,7 @@ class ScoreRepository @Inject constructor(
 		}
 	}
 
-	suspend fun upsert(score: ScoreDomainModel) {
-		scoreDao.upsert(scoreMapper.toData(score))
-	}
-
-	suspend fun upsertReturningID(score: ScoreDomainModel): Long {
+	suspend fun upsert(score: ScoreDomainModel): Long {
 		return scoreDao.upsertReturningID(scoreMapper.toData(score))
 	}
 }

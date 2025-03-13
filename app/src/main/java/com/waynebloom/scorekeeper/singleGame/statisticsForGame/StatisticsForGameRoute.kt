@@ -20,10 +20,10 @@ fun StatisticsForGameRoute(
 		StatisticsForGameScreen(
 			uiState = uiState,
 			onEditGameClick = {
-				navController.navigate("${Destination.EditGame.route}/${viewModel.gameId}")
+				navController.navigate("${Destination.EditGame.route}/${viewModel.gameID}")
 			},
 			onMatchesTabClick = {
-				val route = "${Destination.MatchesForGame.route}/${viewModel.gameId}"
+				val route = "${Destination.MatchesForGame.route}/${viewModel.gameID}"
 				if (!navController.popBackStack(route = route, inclusive = false)) {
 					navController.navigate(route)
 				}

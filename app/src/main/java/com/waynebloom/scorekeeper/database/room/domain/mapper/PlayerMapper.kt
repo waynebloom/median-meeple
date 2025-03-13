@@ -29,6 +29,7 @@ class PlayerMapper @Inject constructor(
 	fun toDomain(player: PlayerDataModel) = player.let {
 		PlayerDomainModel(
 			id = it.id,
+			matchID = it.matchID,
 			name = it.name,
 			position = it.position,
 		)

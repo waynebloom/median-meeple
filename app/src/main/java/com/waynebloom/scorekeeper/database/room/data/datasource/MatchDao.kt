@@ -27,15 +27,15 @@ interface MatchDao {
 	fun getOne(id: Long): Flow<MatchDataModel>
 
 	@Query("SELECT * FROM `Match` WHERE game_owner_id = :id")
-	fun getByGameId(id: Long): Flow<List<MatchDataModel>>
+	fun getByGameID(id: Long): Flow<List<MatchDataModel>>
 
 	@Query(
 		"""
         SELECT * FROM `Match`
-        WHERE date_millis > :begin AND date_millis < (:begin + :duration)
+        WHERE date_millis > :start AND date_millis < :end
     """
 	)
-	fun getByDateRange(begin: Long, duration: Long): Flow<List<MatchDataModel>>
+	fun getByDateRange(start: Long, end: Long): Flow<List<MatchDataModel>>
 
 	@Upsert
 	suspend fun upsert(match: MatchDataModel)

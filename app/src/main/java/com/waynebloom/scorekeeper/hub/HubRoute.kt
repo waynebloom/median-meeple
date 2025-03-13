@@ -20,7 +20,7 @@ fun HubRoute(
 		onGameClick = { id ->
 			navController.navigate("${Destination.ScoreCard.route}/$id/-1")
 		},
-		onAddQuickGameClick = viewModel::onAddQuickGameClick,
+		onAddQuickGameClick = viewModel::fetchAllGames,
 		onGameSelect = viewModel::addQuickGame,
 		onLibraryClick = {
 			navController.navigate(Destination.Library.route)

@@ -19,11 +19,10 @@ import com.waynebloom.scorekeeper.enums.ScoringMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -48,26 +47,24 @@ class ScoreCardViewModel @Inject constructor(
 	//  - Allow a user to un-hide the misc category.
 	//  - ? Display a meeple instead of the boring circle to highlight the winner
 
-	private val viewModelState: MutableStateFlow<ScoreCardViewModelState>
-	val uiState: StateFlow<ScoreCardUiState>
-
-	val gameId = savedStateHandle.get<Long>("gameId")!!
-	private var matchID = savedStateHandle.get<Long>("matchId")!!
+	val gameID = savedStateHandle.get<Long>("gameID")!!
+	private var matchID = savedStateHandle.get<Long>("matchID")!!
 	private lateinit var dbCategories: List<CategoryDomainModel>
 
-	init {
-		viewModelState = mutableStateFlowFactory.newInstance(ScoreCardViewModelState())
-		uiState = viewModelState
-			.map(ScoreCardViewModelState::toUiState)
-			.stateIn(
-				scope = viewModelScope,
-				started = SharingStarted.Eagerly,
-				initialValue = viewModelState.value.toUiState()
-			)
+	private val _uiState = mutableStateFlowFactory.newInstance(ScoreCardViewModelState())
+	val uiState = _uiState
+		.onStart { observeData() }
+		.map(ScoreCardViewModelState::toUiState)
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(5000),
+			initialValue = _uiState.value.toUiState()
+		)
 
-		viewModelScope.launch {
-			val game = gameRepository.getOne(gameId).first()
-			dbCategories = categoryRepository.getByGameID(gameId).first()
+	private fun observeData() {
+		viewModelScope.launch(Dispatchers.IO) {
+			val game = gameRepository.getOne(gameID).first()
+			dbCategories = categoryRepository.getByGameID(gameID).first()
 			dbCategories = dbCategories
 
 				// Display a readable name for the default category.
@@ -135,8 +132,8 @@ class ScoreCardViewModel @Inject constructor(
 					assignRanksByTotalScore(players, totals)
 				}
 
-				val indexOfMatch = matchRepository.getIndexOf(gameId, matchID).first() + 1
-				viewModelState.update {
+				val indexOfMatch = matchRepository.getIndexOf(gameID, matchID).first() + 1
+				_uiState.update {
 					it.copy(
 						loading = false,
 						totals = totals,
@@ -159,8 +156,8 @@ class ScoreCardViewModel @Inject constructor(
 					listOf(dbCategories.lastIndex)
 				}
 
-				val indexOfMatch = matchRepository.getIndexOf(gameId, matchID).first() + 1
-				viewModelState.update { state ->
+				val indexOfMatch = matchRepository.getIndexOf(gameID, matchID).first() + 1
+				_uiState.update { state ->
 					state.copy(
 						loading = false,
 						game = game,
@@ -189,14 +186,14 @@ class ScoreCardViewModel @Inject constructor(
 		}
 	}
 
-	fun onPlayerClick(index: Int) = viewModelState.update {
+	fun onPlayerClick(index: Int) = _uiState.update {
 		it.copy(
 			playerIndexToChange = index,
 			dialogTextFieldValue = TextFieldValue(it.players[index].name)
 		)
 	}
 
-	fun onAddPlayer(name: String, manualRank: Int) = viewModelState.update {
+	fun onAddPlayer(name: String, manualRank: Int) = _uiState.update {
 		val newTotals = it.totals.plus(BigDecimal.ZERO)
 		val newScoreCard = it.scoreCard.toMutableList().apply {
 			add(
@@ -217,7 +214,7 @@ class ScoreCardViewModel @Inject constructor(
 		it.copy(totals = newTotals, players = newPlayers, scoreCard = newScoreCard)
 	}
 
-	fun onDeletePlayerClick(index: Int) = viewModelState.update {
+	fun onDeletePlayerClick(index: Int) = _uiState.update {
 		val deletedPlayer = it.players[index]
 		if (deletedPlayer.id != -1L) {
 			viewModelScope.launch {
@@ -233,23 +230,23 @@ class ScoreCardViewModel @Inject constructor(
 		)
 	}
 
-	fun onDialogTextFieldChange(value: TextFieldValue) = viewModelState.update {
+	fun onDialogTextFieldChange(value: TextFieldValue) = _uiState.update {
 		it.copy(dialogTextFieldValue = value)
 	}
 
-	fun onDateChange(millis: Long) = viewModelState.update {
+	fun onDateChange(millis: Long) = _uiState.update {
 		it.copy(dateMillis = millis)
 	}
 
-	fun onLocationChange(value: String) = viewModelState.update {
+	fun onLocationChange(value: String) = _uiState.update {
 		it.copy(location = value)
 	}
 
-	fun onNotesChange(value: TextFieldValue) = viewModelState.update {
+	fun onNotesChange(value: TextFieldValue) = _uiState.update {
 		it.copy(notes = value)
 	}
 
-	fun onPlayerChange(value: String, manualRank: Int) = viewModelState.update {
+	fun onPlayerChange(value: String, manualRank: Int) = _uiState.update {
 		val newPlayers = it.players.mapIndexed { index, player ->
 			if (index == it.playerIndexToChange) {
 				if (manualRank != -1) {
@@ -264,7 +261,7 @@ class ScoreCardViewModel @Inject constructor(
 		it.copy(players = newPlayers)
 	}
 
-	fun onCellChange(value: TextFieldValue, row: Int, col: Int) = viewModelState.update {
+	fun onCellChange(value: TextFieldValue, row: Int, col: Int) = _uiState.update {
 		val newScoreCard = it.scoreCard.mapIndexed { colIndex, currentCol ->
 			if (colIndex == col) {
 				currentCol.mapIndexed { rowIndex, currentRow ->
@@ -303,9 +300,9 @@ class ScoreCardViewModel @Inject constructor(
 
 	private suspend fun writeMatch(matchID: Long, state: ScoreCardViewModelState): Long {
 		if (this.matchID == -1L) {
-			return matchRepository.upsertReturningID(
+			return matchRepository.upsert(
 				MatchDomainModel(
-					gameId = gameId,
+					gameID = gameID,
 					notes = state.notes.text,
 					location = state.location,
 					dateMillis = state.dateMillis,
@@ -315,7 +312,7 @@ class ScoreCardViewModel @Inject constructor(
 			matchRepository.upsert(
 				MatchDomainModel(
 					id = this.matchID,
-					gameId = gameId,
+					gameID = gameID,
 					notes = state.notes.text,
 					location = state.location,
 					dateMillis = state.dateMillis,
@@ -334,7 +331,7 @@ class ScoreCardViewModel @Inject constructor(
 
 			if (player.id == -1L) {
 				val playerID = async {
-					playerRepository.upsertReturningID(player.copy(matchID = matchID))
+					playerRepository.upsert(player.copy(matchID = matchID))
 				}
 
 				scores.forEachIndexed { rowIndex, score ->
@@ -366,12 +363,9 @@ class ScoreCardViewModel @Inject constructor(
 	}
 
 	fun onSaveClick(onFinish: () -> Unit) {
-		val state = viewModelState.value
+		val state = _uiState.value
 
 		viewModelScope.launch(Dispatchers.IO) {
-
-			// NOTE: the class-level property is 'fake' because, in the case of a newly created match, that id
-			// 	will equal -1. Could consider changing this to be less brittle?
 			val realMatchID = writeMatch(matchID, state)
 
 			state.players.forEachIndexed { i, player ->

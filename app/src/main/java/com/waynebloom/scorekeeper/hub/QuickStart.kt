@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,10 +15,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedAssistChip
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,11 +35,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
+import com.waynebloom.scorekeeper.util.PreviewContainer
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -80,25 +86,32 @@ internal fun QuickStart(
 				val color = GameDomainModel.DisplayColors[it.displayColorIndex]
 				val iconColor = color
 					.copy(alpha = Alpha.HIGH_ALPHA)
-					.compositeOver(MaterialTheme.colorScheme.surfaceVariant)
+					.compositeOver(MaterialTheme.colorScheme.onSurface)
+				val containerColor = color
+					.copy(alpha = Alpha.LOW_ALPHA)
+					.compositeOver(MaterialTheme.colorScheme.surface)
 
-				ElevatedAssistChip(
+				FilledTonalButton (
 					onClick = { onGameClick(it.id) },
-					label = { Text(it.name.text) },
-					leadingIcon = {
+					colors = ButtonDefaults.filledTonalButtonColors(
+						containerColor = containerColor
+					),
+					elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
+					contentPadding = PaddingValues(start = 12.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
+				) {
+
+					Row(verticalAlignment = Alignment.CenterVertically) {
+
 						Icon(
 							painter = painterResource(R.drawable.ic_zap),
 							contentDescription = null,
 							tint = iconColor,
-							modifier = Modifier.size(16.dp)
+							modifier = Modifier.size(24.dp).padding(end = 8.dp)
 						)
-					},
-					colors = AssistChipDefaults.elevatedAssistChipColors(
-						leadingIconContentColor = iconColor,
-					),
-					elevation = AssistChipDefaults.elevatedAssistChipElevation(elevation = 2.dp),
-					modifier = Modifier.height(32.dp)
-				)
+
+						Text(text = it.name.text, style = MaterialTheme.typography.labelLarge)
+					}
+				}
 			}
 
 			Box(contentAlignment = Alignment.TopEnd) {
@@ -109,14 +122,10 @@ internal fun QuickStart(
 						onAddQuickGameClick()
 						isExpanded = true
 					},
-					modifier = Modifier
-						.size(32.dp)
-						.padding(4.dp)
 				) {
 					Icon(
 						painter = painterResource(R.drawable.ic_plus),
 						contentDescription = null,
-						modifier = Modifier.size(16.dp)
 					)
 				}
 
@@ -207,6 +216,21 @@ fun QuickStartPicker(
 					}
 				)
 			}
+		}
+	}
+}
+
+@PreviewLightDark
+@Composable
+private fun QuickStartPreview() {
+	MedianMeepleTheme {
+		PreviewContainer {
+			QuickStart(
+				quickGames = HubSampleData.Default.quickGames,
+				allGames = HubSampleData.Default.allGames ?: listOf(),
+				isGamePickerLoading = false,
+				{}, {}, {}
+			)
 		}
 	}
 }

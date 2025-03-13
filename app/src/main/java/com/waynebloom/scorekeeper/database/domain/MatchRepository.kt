@@ -4,7 +4,6 @@ import android.util.Log
 import com.waynebloom.scorekeeper.database.domain.model.Action
 import com.waynebloom.scorekeeper.database.domain.sync.SyncHandler
 import com.waynebloom.scorekeeper.database.room.data.datasource.MatchDao
-import com.waynebloom.scorekeeper.database.room.data.model.MatchDataModel
 import com.waynebloom.scorekeeper.database.room.domain.mapper.MatchMapper
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.database.supabase.data.datasource.SupabaseApi
@@ -43,19 +42,22 @@ class MatchRepository @Inject constructor(
 		return matchDao.getOne(id).map(matchMapper::toDomain)
 	}
 
-	fun getByDate(start: ZonedDateTime, period: Period): Flow<List<MatchDataModel>> {
+	fun getByDate(start: ZonedDateTime, period: Period): Flow<List<MatchDomainModel>> {
 
-		// NOTE: Due to DST, this will sometimes be inaccurate. That is okay for this use case.
+		// NOTE: Due to DST, this will sometimes produce technically incorrect results.
+		//  That is okay for this use case.
+		val startMillis = start.toEpochSecond() * 1000
 		val durationMillis = period[ChronoUnit.DAYS] * 24 * 60 * 60 * 1000
 		return matchDao
 			.getByDateRange(
-				begin = start.toEpochSecond() * 1000,
-				duration = durationMillis,
+				start = start.toEpochSecond() * 1000,
+				end = startMillis + durationMillis,
 			)
+			.map(matchMapper::toDomain)
 	}
 
 	private fun getByGameID(gameID: Long): Flow<List<MatchDomainModel>> {
-		return matchDao.getByGameId(gameID).map(matchMapper::toDomain)
+		return matchDao.getByGameID(gameID).map(matchMapper::toDomain)
 	}
 
 	fun getIndexOf(gameID: Long, matchID: Long): Flow<Int> {
@@ -69,11 +71,7 @@ class MatchRepository @Inject constructor(
 		}
 	}
 
-	suspend fun upsert(match: MatchDomainModel) {
-		matchDao.upsert(matchMapper.toData(match))
-	}
-
-	suspend fun upsertReturningID(match: MatchDomainModel): Long {
+	suspend fun upsert(match: MatchDomainModel): Long {
 		return matchDao.upsertReturningID(matchMapper.toData(match))
 	}
 }

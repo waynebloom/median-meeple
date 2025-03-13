@@ -20,7 +20,7 @@ class MatchMapper @Inject constructor(
 	fun toData(match: MatchDomainModel) = match.let {
 		MatchDataModel(
 			id = it.id.let { id -> if (id == -1L) 0 else id },
-			gameId = it.gameId,
+			gameID = it.gameID,
 			notes = it.notes,
 			dateMillis = it.dateMillis,
 			location = it.location,
@@ -30,6 +30,7 @@ class MatchMapper @Inject constructor(
 	fun toDomain(match: MatchDataModel) = match.let {
 		MatchDomainModel(
 			id = it.id,
+			gameID = it.gameID,
 			notes = it.notes,
 			dateMillis = it.dateMillis,
 			location = it.location,
@@ -45,13 +46,12 @@ class MatchMapper @Inject constructor(
 	 * @param categories The scoring categories of the game for which this match is recorded. This
 	 * is used to map the category scores for each player.
 	 */
-	// FIXME: Give this structure some more thought. There may be a better way to provide the children
 	fun toDomainWithRelations(
 		match: MatchDataRelationModel,
 		categories: Map<Long, CategoryDomainModel>
 	) = MatchDomainModel(
 		id = match.entity.id,
-		gameId = match.entity.gameId,
+		gameID = match.entity.gameID,
 		notes = match.entity.notes,
 		location = match.entity.location,
 		dateMillis = match.entity.dateMillis,

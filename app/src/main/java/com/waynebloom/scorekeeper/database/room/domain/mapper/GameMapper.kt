@@ -24,7 +24,8 @@ class GameMapper @Inject constructor(
 			id = it.id.let { id -> if (id == -1L) 0 else id },
 			color = it.displayColorIndex,
 			name = it.name.text,
-			scoringMode = it.scoringMode.ordinal
+			scoringMode = it.scoringMode.ordinal,
+			isFavorite = it.isFavorite,
 		)
 	}
 
@@ -33,7 +34,8 @@ class GameMapper @Inject constructor(
 			id = it.id,
 			displayColorIndex = it.color,
 			name = TextFieldValue(it.name),
-			scoringMode = it.scoringMode.toScoringMode()
+			scoringMode = it.scoringMode.toScoringMode(),
+			isFavorite = it.isFavorite,
 		)
 	}
 
@@ -45,6 +47,7 @@ class GameMapper @Inject constructor(
 			.map {
 				CategoryDomainModel(
 					id = it.id,
+					gameID = it.gameID,
 					name = TextFieldValue(it.name),
 					position = it.position
 				)
@@ -57,9 +60,7 @@ class GameMapper @Inject constructor(
 			id = game.entity.id,
 			categories = categories.values.toList(),
 			displayColorIndex = game.entity.color,
-			matches = game.matches.map {
-				matchMapper.toDomainWithRelations(it, categories)
-			},
+			matches = matchMapper.toDomainWithRelations(game.matches, categories),
 			name = TextFieldValue(game.entity.name),
 			scoringMode = game.entity.scoringMode.toScoringMode()
 		)

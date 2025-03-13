@@ -12,11 +12,11 @@ import com.waynebloom.scorekeeper.database.domain.GameRepository
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.ext.toShortFormatString
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -25,25 +25,24 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(
-	gameRepository: GameRepository,
+	private val gameRepository: GameRepository,
+	private val getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
 	mutableStateFlowFactory: MutableStateFlowFactory,
-	getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
 ) : ViewModel() {
 
-	private val viewModelState: MutableStateFlow<LibraryViewModelState>
-	val uiState: StateFlow<LibraryUiState>
+	private val _uiState = mutableStateFlowFactory.newInstance(LibraryViewModelState())
+	val uiState = _uiState
+		.onStart { observeData() }
+		.map(LibraryViewModelState::toUiState)
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(5000),
+			initialValue = _uiState.value.toUiState()
+		)
 
-	init {
-		viewModelState = mutableStateFlowFactory.newInstance(LibraryViewModelState())
-		uiState = viewModelState
-			.map(LibraryViewModelState::toUiState)
-			.stateIn(
-				scope = viewModelScope,
-				started = SharingStarted.Eagerly,
-				initialValue = viewModelState.value.toUiState()
-			)
+	private fun observeData() {
+		viewModelScope.launch(Dispatchers.IO) {
 
-		viewModelScope.launch {
 			gameRepository.getAllWithRelations().collectLatest { games ->
 				val gameCards = games.filterNotNull().map { game ->
 					val highScore = game.matches
@@ -62,21 +61,20 @@ class LibraryViewModel @Inject constructor(
 						noOfMatches = game.matches.size.toString(),
 					)
 				}
-				viewModelState.update {
+				_uiState.update {
 					it.copy(loading = false, gameCards = gameCards)
 				}
 			}
-		}
-		viewModelScope.launch {
+
 			getMultipleAdsAsFlow().collectLatest { ads ->
-				viewModelState.update {
+				_uiState.update {
 					it.copy(ads = ads)
 				}
 			}
 		}
 	}
 
-	fun onSearchInputChanged(value: TextFieldValue) = viewModelState.update {
+	fun onSearchInputChanged(value: TextFieldValue) = _uiState.update {
 		it.copy(searchInput = value)
 	}
 }

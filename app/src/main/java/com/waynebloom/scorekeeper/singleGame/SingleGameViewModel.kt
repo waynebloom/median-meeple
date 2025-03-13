@@ -22,11 +22,10 @@ import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.Scor
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -37,37 +36,36 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SingleGameViewModel @Inject constructor(
-	gameRepository: GameRepository,
+	private val gameRepository: GameRepository,
+	private val getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
 	mutableStateFlowFactory: MutableStateFlowFactory,
-	getMultipleAdsAsFlow: GetMultipleAdsAsFlow,
 	savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-	private val viewModelState: MutableStateFlow<SingleGameViewModelState>
-	val matchesForGameUiState: StateFlow<MatchesForGameUiState>
-	val statisticsForGameUiState: StateFlow<StatisticsForGameUiState>
-
-	val gameId = savedStateHandle.get<Long>("gameId")!!
+	val gameID = savedStateHandle.get<Long>("gameID")!!
+	private val _uiState = mutableStateFlowFactory.newInstance(SingleGameViewModelState())
+	val matchesForGameUiState = _uiState
+		.map(SingleGameViewModelState::toMatchesForGameUiState)
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(),
+			initialValue = _uiState.value.toMatchesForGameUiState()
+		)
+	val statisticsForGameUiState = _uiState
+		.map(SingleGameViewModelState::toStatisticsForGameUiState)
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(),
+			initialValue = _uiState.value.toStatisticsForGameUiState()
+		)
 
 	init {
-		viewModelState = mutableStateFlowFactory.newInstance(SingleGameViewModelState())
-		matchesForGameUiState = viewModelState
-			.map(SingleGameViewModelState::toMatchesForGameUiState)
-			.stateIn(
-				scope = viewModelScope,
-				started = SharingStarted.WhileSubscribed(),
-				initialValue = viewModelState.value.toMatchesForGameUiState()
-			)
-		statisticsForGameUiState = viewModelState
-			.map(SingleGameViewModelState::toStatisticsForGameUiState)
-			.stateIn(
-				scope = viewModelScope,
-				started = SharingStarted.WhileSubscribed(),
-				initialValue = viewModelState.value.toStatisticsForGameUiState()
-			)
+		observeData()
+	}
 
-		viewModelScope.launch {
-			gameRepository.getOneWithRelations(gameId).collectLatest { latest ->
+	private fun observeData() {
+		viewModelScope.launch(Dispatchers.IO) {
+			gameRepository.getOneWithRelations(gameID).collectLatest { latest ->
 				if (latest == null) {
 					this.cancel()
 					return@collectLatest
@@ -77,7 +75,7 @@ class SingleGameViewModel @Inject constructor(
 					.filterNot { it.name.text == "defaultMiscCategory" }
 					.sortedBy { it.position }
 
-				viewModelState.update {
+				_uiState.update {
 					it.copy(
 						loading = false,
 						nameOfGame = latest.name.text,
@@ -87,10 +85,9 @@ class SingleGameViewModel @Inject constructor(
 					)
 				}
 			}
-		}
-		viewModelScope.launch {
+
 			getMultipleAdsAsFlow().collectLatest { ads ->
-				viewModelState.update {
+				_uiState.update {
 					it.copy(ads = ads)
 				}
 			}
@@ -99,33 +96,33 @@ class SingleGameViewModel @Inject constructor(
 
 	private fun scrollToTop() = viewModelScope.launch {
 		delay(DurationMs.LONG.toLong())
-		viewModelState.value
+		_uiState.value
 			.matchesLazyListState
 			.animateScrollToItem(0)
 	}
 
 	// region MatchesForGame
 
-	fun onSearchInputChanged(value: TextFieldValue) = viewModelState.update {
+	fun onSearchInputChanged(value: TextFieldValue) = _uiState.update {
 		scrollToTop()
 		it.copy(searchValue = value)
 	}
 
-	fun onSortButtonClick() = viewModelState.update {
+	fun onSortButtonClick() = _uiState.update {
 		it.copy(isSortDialogShowing = true)
 	}
 
-	fun onSortModeChanged(value: MatchSortMode) = viewModelState.update {
+	fun onSortModeChanged(value: MatchSortMode) = _uiState.update {
 		scrollToTop()
 		it.copy(sortMode = value)
 	}
 
-	fun onSortDirectionChanged(value: SortDirection) = viewModelState.update {
+	fun onSortDirectionChanged(value: SortDirection) = _uiState.update {
 		scrollToTop()
 		it.copy(sortDirection = value)
 	}
 
-	fun onSortDialogDismiss() = viewModelState.update {
+	fun onSortDialogDismiss() = _uiState.update {
 		it.copy(isSortDialogShowing = false)
 	}
 
@@ -133,19 +130,19 @@ class SingleGameViewModel @Inject constructor(
 
 	// region StatisticsForGame
 
-	fun onBestWinnerButtonClick() = viewModelState.update {
+	fun onBestWinnerButtonClick() = _uiState.update {
 		it.copy(isBestWinnerExpanded = !it.isBestWinnerExpanded)
 	}
 
-	fun onHighScoreButtonClick() = viewModelState.update {
+	fun onHighScoreButtonClick() = _uiState.update {
 		it.copy(isHighScoreExpanded = !it.isHighScoreExpanded)
 	}
 
-	fun onUniqueWinnersButtonClick() = viewModelState.update {
+	fun onUniqueWinnersButtonClick() = _uiState.update {
 		it.copy(isUniqueWinnersExpanded = !it.isUniqueWinnersExpanded)
 	}
 
-	fun onCategoryClick(index: Int) = viewModelState.update {
+	fun onCategoryClick(index: Int) = _uiState.update {
 		it.copy(indexOfSelectedCategory = index)
 	}
 

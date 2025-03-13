@@ -16,12 +16,12 @@ import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.transformElement
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -35,69 +35,79 @@ class EditGameViewModel @Inject constructor(
 	savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-	private val viewModelState: MutableStateFlow<EditGameViewModelState>
-	val uiState: StateFlow<EditGameUiState>
+	private val gameID = savedStateHandle.get<Long>("gameID")!!
+	private val _uiState = mutableStateFlowFactory.newInstance(EditGameViewModelState())
+	val uiState = _uiState
+		.onStart { loadData() }
+		.map(EditGameViewModelState::toUiState)
+		.stateIn(
+			scope = viewModelScope,
+			started = SharingStarted.WhileSubscribed(500),
+			initialValue = _uiState.value.toUiState()
+		)
 
-	private var gameID = savedStateHandle.get<Long>("gameId")!!
+	private fun loadData() {
+		if (gameID != -1L) {
+			observeData()
+			return
+		}
 
-	// ASAP: Make sure whatever uses this is using it correctly.
-	lateinit var composableCoroutineScope: CoroutineScope
-
-	init {
-		viewModelState = mutableStateFlowFactory.newInstance(EditGameViewModelState())
-		uiState = viewModelState
-			.map(EditGameViewModelState::toUiState)
-			.stateIn(viewModelScope, SharingStarted.Eagerly, viewModelState.value.toUiState())
-
-		// ASAP: All of my launched jobs have been running on the main thread by default. Fix this.
-		viewModelScope.launch {
-
-			if (gameID != -1L) {
-				val game = gameRepository.getOne(gameID).first()
-				val categories = categoryRepository.getByGameID(gameID)
-					.first()
-					.filterNot { it.name.text == "defaultMiscCategory" }
-					.sortedBy { it.position }
-
-				viewModelState.update {
-					it.copy(
-						loading = false,
-						categories = categories,
-						colorIndex = game.displayColorIndex,
-						name = game.name,
-						scoringMode = game.scoringMode
-					)
-				}
-			} else {
-				viewModelState.update {
-					it.copy(
-						loading = false,
-						scoringMode = ScoringMode.Descending
-					)
-				}
-			}
+		_uiState.update {
+			it.copy(
+				loading = false,
+				scoringMode = ScoringMode.Descending
+			)
 		}
 	}
 
-	fun onSaveClick(onFinish: () -> Unit) = viewModelScope.launch {
-		viewModelState.value.let { state ->
+	private fun observeData() {
+		viewModelScope.launch {
+			gameRepository
+				.getOne(gameID)
+				.combine(
+					flow = categoryRepository.getByGameID(gameID),
+					transform = { game, categories ->
+						val filteredCategories = categories
+							.filterNot { it.name.text == "defaultMiscCategory" }
+							.sortedBy { it.position }
+						Pair(game, filteredCategories)
+					}
+				)
+				.collectLatest { (game, categories) ->
+					_uiState.update {
+						it.copy(
+							loading = false,
+							categories = categories,
+							colorIndex = game.displayColorIndex,
+							name = game.name,
+							scoringMode = game.scoringMode
+						)
+					}
+				}
+		}
+	}
+
+	fun onSaveClick(onFinish: () -> Unit) {
+		val state = _uiState.value
+		var realGameID = gameID
+		viewModelScope.launch(Dispatchers.IO) {
 			if (gameID == -1L) {
-				gameID = gameRepository.upsertReturningID(
+				realGameID = gameRepository.upsert(
 					GameDomainModel(
 						name = state.name,
 						displayColorIndex = state.colorIndex,
 						scoringMode = state.scoringMode
 					)
 				)
-				categoryRepository.upsertReturningID(
+				categoryRepository.upsert(
 					category = CategoryDomainModel(
 						name = TextFieldValue("defaultMiscCategory"),
 						position = -1
 					),
-					gameID = gameID
+					gameID = realGameID
 				)
 			} else {
-				gameRepository.upsertReturningID(
+				gameRepository.upsert(
 					GameDomainModel(
 						id = gameID,
 						name = state.name,
@@ -107,15 +117,16 @@ class EditGameViewModel @Inject constructor(
 				)
 			}
 			state.categories.forEach { category ->
-				categoryRepository.upsertReturningID(category, gameID)
+				categoryRepository.upsert(category, realGameID)
 			}
 		}
+
 		onFinish()
 	}
 
 	// region Game Details
 
-	fun onColorClick(index: Int) = viewModelState.update {
+	fun onColorClick(index: Int) = _uiState.update {
 		it.copy(colorIndex = index, showColorMenu = false)
 	}
 
@@ -124,11 +135,11 @@ class EditGameViewModel @Inject constructor(
 		onFinish()
 	}
 
-	fun onNameChanged(value: TextFieldValue) = viewModelState.update {
+	fun onNameChanged(value: TextFieldValue) = _uiState.update {
 		it.copy(name = value)
 	}
 
-	fun onScoringModeChanged(value: ScoringMode) = viewModelState.update {
+	fun onScoringModeChanged(value: ScoringMode) = _uiState.update {
 		it.copy(scoringMode = value)
 	}
 
@@ -144,7 +155,7 @@ class EditGameViewModel @Inject constructor(
 	}
 
 	fun onCategoryClick(index: Int) {
-		viewModelState.update {
+		_uiState.update {
 			it.copy(
 				indexOfSelectedCategory = index,
 				isCategoryDialogOpen = true
@@ -152,11 +163,11 @@ class EditGameViewModel @Inject constructor(
 		}
 	}
 
-	fun onEditButtonClick() = viewModelState.update {
+	fun onEditButtonClick() = _uiState.update {
 		it.copy(isCategoryDialogOpen = true)
 	}
 
-	fun onCategoryInputChanged(input: TextFieldValue, index: Int) = viewModelState.update {
+	fun onCategoryInputChanged(input: TextFieldValue, index: Int) = _uiState.update {
 		val category = it.categories.getOrNull(index) ?: return@update it
 		val updatedCategories = it.categories.toMutableList().apply {
 			this[index] = category.copy(name = input)
@@ -164,14 +175,14 @@ class EditGameViewModel @Inject constructor(
 		it.copy(categories = updatedCategories)
 	}
 
-	fun onNewCategoryClick() = viewModelScope.launch {
-		val newCategoryPosition = viewModelState.value.categories.lastIndex + 1
+	fun onNewCategoryClick() {
+		val newCategoryPosition = _uiState.value.categories.lastIndex + 1
 		val newCategory = CategoryDomainModel(
 			name = TextFieldValue(),
 			position = newCategoryPosition
 		)
 
-		viewModelState.update {
+		_uiState.update {
 			val updatedCategories = it.categories.plus(newCategory)
 
 			it.copy(
@@ -182,7 +193,7 @@ class EditGameViewModel @Inject constructor(
 		}
 	}
 
-	fun onDrag(dragDistance: Offset, rowHeight: Float) = viewModelState.update {
+	fun onDrag(dragDistance: Offset, rowHeight: Float) = _uiState.update {
 		val newDistance = it.dragState.dragDistance + dragDistance
 		val dragDelta = newDistance.y / rowHeight
 		val draggedToIndex = it.dragState.dragStart + dragDelta
@@ -201,9 +212,9 @@ class EditGameViewModel @Inject constructor(
 	}
 
 	fun onDragEnd() {
-		val dragResult = viewModelState.value.dragState.let { it.dragStart to it.dragEnd }
+		val dragResult = _uiState.value.dragState.let { it.dragStart to it.dragEnd }
 
-		viewModelState.update { state ->
+		_uiState.update { state ->
 			val updatedCategories = state.categories.toMutableList().apply {
 
 				// swap positions in the List
@@ -229,15 +240,15 @@ class EditGameViewModel @Inject constructor(
 		}
 	}
 
-	fun onDragStart(index: Int) = viewModelState.update {
+	fun onDragStart(index: Int) = _uiState.update {
 		it.copy(dragState = it.dragState.copy(dragStart = index))
 	}
 
-	fun onCategoryDoneClick() = viewModelState.update {
+	fun onCategoryDoneClick() = _uiState.update {
 		it.copy(indexOfSelectedCategory = -1)
 	}
 
-	fun onDeleteCategoryClick(index: Int) = viewModelState.update { state ->
+	fun onDeleteCategoryClick(index: Int) = _uiState.update { state ->
 		val deletedCategory = state.categories[index]
 		if (deletedCategory.id != -1L) {
 			viewModelScope.launch {
@@ -265,7 +276,7 @@ class EditGameViewModel @Inject constructor(
 		)
 	}
 
-	fun onCategoryDialogDismiss() = viewModelState.update {
+	fun onCategoryDialogDismiss() = _uiState.update {
 		it.copy(
 			indexOfSelectedCategory = -1,
 			isCategoryDialogOpen = false

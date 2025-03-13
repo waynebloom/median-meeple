@@ -23,21 +23,21 @@ fun MatchesForGameRoute(
 			onSortModeChanged = viewModel::onSortModeChanged,
 			onSortDirectionChanged = viewModel::onSortDirectionChanged,
 			onEditGameClick = {
-				navController.navigate("${Destination.EditGame.route}/${viewModel.gameId}")
+				navController.navigate("${Destination.EditGame.route}/${viewModel.gameID}")
 			},
 			onStatisticsTabClick = {
-				val route = "${Destination.StatisticsForGame.route}/${viewModel.gameId}"
+				val route = "${Destination.StatisticsForGame.route}/${viewModel.gameID}"
 				if (!navController.popBackStack(route = route, inclusive = false)) {
 					navController.navigate(route)
 				}
 			},
 			onSortButtonClick = viewModel::onSortButtonClick,
 			onMatchClick = {
-				val route = "${Destination.ScoreCard.route}/${viewModel.gameId}/$it"
+				val route = "${Destination.ScoreCard.route}/${viewModel.gameID}/$it"
 				navController.navigate(route)
 			},
 			onAddMatchClick = {
-				val route = "${Destination.ScoreCard.route}/${viewModel.gameId}/-1"
+				val route = "${Destination.ScoreCard.route}/${viewModel.gameID}/-1"
 				navController.navigate(route)
 			},
 			onSortDialogDismiss = viewModel::onSortDialogDismiss,

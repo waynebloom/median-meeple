@@ -30,7 +30,7 @@ data class MatchDataModel(
 
 	@SerialName("game_id")
 	@ColumnInfo(name = "game_owner_id")
-	val gameId: Long = 0,
+	val gameID: Long = 0,
 
 	@ColumnInfo(name = "match_notes")
 	var notes: String = "",

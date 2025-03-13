@@ -1,6 +1,7 @@
 package com.waynebloom.scorekeeper.library
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -225,6 +226,7 @@ fun LibraryScreen(
 							modifier = Modifier
 								.clip(MaterialTheme.shapes.medium)
 								.clickable {
+									Log.d("LibraryScreen", "Game with id ${card.id} was clicked.")
 									onGameClick(card.id)
 								}
 								.animateItemPlacement()

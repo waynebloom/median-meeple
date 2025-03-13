@@ -26,6 +26,7 @@ class CategoryMapper @Inject constructor() {
 	fun toDomain(category: CategoryDataModel) = category.let {
 		CategoryDomainModel(
 			id = it.id,
+			gameID = it.gameID,
 			name = TextFieldValue(it.name),
 			position = it.position,
 		)

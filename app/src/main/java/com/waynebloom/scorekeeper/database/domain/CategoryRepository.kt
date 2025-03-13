@@ -37,11 +37,7 @@ class CategoryRepository @Inject constructor(
 		return categoryDao.getByGameID(matchID).map(categoryMapper::toDomain)
 	}
 
-	suspend fun upsert(category: CategoryDomainModel, gameID: Long) {
-		categoryDao.upsert(categoryMapper.toData(category, gameID))
-	}
-
-	suspend fun upsertReturningID(category: CategoryDomainModel, gameID: Long): Long {
+	suspend fun upsert(category: CategoryDomainModel, gameID: Long): Long {
 		return categoryDao.upsertReturningID(categoryMapper.toData(category, gameID))
 	}
 }
