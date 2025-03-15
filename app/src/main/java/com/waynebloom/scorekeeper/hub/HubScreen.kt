@@ -222,23 +222,11 @@ private fun RecentActivityCard(
 		modifier = modifier
 	) {
 
-		// ASAP: this needs to go below the header
-		if (weekPlays.isEmpty()) {
-			Box(
-				contentAlignment = Alignment.Center,
-				modifier = Modifier.fillMaxWidth().padding(16.dp),
-			) {
-				Text(
-					text = "No activity recorded in the past week.",
-					style = MaterialTheme.typography.bodyLarge,
-				)
-			}
-			return@Surface
-		}
-
 		Column(modifier = Modifier.padding(Dimensions.Spacing.sectionContent)) {
 
-			Row(verticalAlignment = Alignment.CenterVertically) {
+			Row(
+				verticalAlignment = Alignment.CenterVertically
+			) {
 				Box(
 					modifier = Modifier
 						.padding(end = 8.dp)
@@ -258,6 +246,19 @@ private fun RecentActivityCard(
 				}
 
 				Text(text = "Activity", style = MaterialTheme.typography.titleMedium)
+			}
+
+			if (weekPlays.isEmpty()) {
+				Box(
+					contentAlignment = Alignment.Center,
+					modifier = Modifier.fillMaxWidth().padding(16.dp),
+				) {
+					Text(
+						text = "No activity recorded in the past week.",
+						style = MaterialTheme.typography.bodyLarge,
+					)
+				}
+				return@Column
 			}
 
 			Column(horizontalAlignment = Alignment.CenterHorizontally) {

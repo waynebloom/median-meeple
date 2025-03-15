@@ -29,6 +29,9 @@ interface MatchDao {
 	@Query("SELECT * FROM `Match` WHERE game_owner_id = :id")
 	fun getByGameID(id: Long): Flow<List<MatchDataModel>>
 
+	@Query("SELECT COUNT(CASE WHEN game_owner_id = :id THEN 1 END) FROM `Match`")
+	fun getCountByGameID(id: Long): Flow<Int>
+
 	@Query(
 		"""
         SELECT * FROM `Match`

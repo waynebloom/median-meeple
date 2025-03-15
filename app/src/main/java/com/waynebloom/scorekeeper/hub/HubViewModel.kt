@@ -16,10 +16,12 @@ import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
@@ -55,6 +57,20 @@ class HubViewModel @Inject constructor(
 			val period = Period.ofDays(LENGTH_DAYS)
 			val start = ZonedDateTime.now().minus(period)
 
+			val favoriteGamesFlow = gameRepository.getFavorites()
+				.transformLatest { games ->
+
+					// ASAP: needs to be observable. Too tired to do it right now.
+					val gamesWithCounts = games.map {
+						val matchCountDef = async {
+							matchRepository.getCountByGameID(it.id)
+						}
+
+						Pair(it, matchCountDef.await())
+					}
+
+					emit(gamesWithCounts)
+				}
 			matchRepository.getByDate(start, period)
 				.transformLatest { matches ->
 
@@ -67,15 +83,15 @@ class HubViewModel @Inject constructor(
 						emit(Pair(matches, playedGames))
 					}
 				}
-				.combine(gameRepository.getFavorites()) { matchesAndPlayedGames, favoriteGames ->
+				.combine(favoriteGamesFlow) { matchesAndPlayedGames, favoriteGamesWithCounts ->
 					Pair(
 						matchesAndPlayedGames,
-						favoriteGames
+						favoriteGamesWithCounts
 					)
 				}
-				.collectLatest { (matchesAndPlayedGames, favoriteGames) ->
+				.collectLatest { (matchesAndPlayedGames, favoriteGamesWithCounts) ->
 					val (matches, playedGames) = matchesAndPlayedGames
-					Log.d(this::class.simpleName, "final collectLatest: returned \nmatches: $matches\nplayedGames: $playedGames\nfavoriteGames: $favoriteGames")
+					Log.d(this::class.simpleName, "final collectLatest: returned \nmatches: $matches\nplayedGames: $playedGames\nfavoriteGames: $favoriteGamesWithCounts")
 
 					if (matches.isNotEmpty()) {
 						val weekPlays = findPlaysInPeriod(
@@ -88,7 +104,7 @@ class HubViewModel @Inject constructor(
 						_uiState.update {
 							it.copy(
 								loading = false,
-								quickGames = favoriteGames,
+								quickGames = favoriteGamesWithCounts,
 								period = period,
 								weekPlays = weekPlays,
 								chartKey = chartKey,
@@ -101,7 +117,7 @@ class HubViewModel @Inject constructor(
 					_uiState.update {
 						it.copy(
 							loading = false,
-							quickGames = favoriteGames,
+							quickGames = favoriteGamesWithCounts,
 							period = period
 						)
 					}
@@ -178,7 +194,7 @@ class HubViewModel @Inject constructor(
 
 private data class HubState(
 	val loading: Boolean = true,
-	val quickGames: List<GameDomainModel> = listOf(),
+	val quickGames: List<Pair<GameDomainModel, Int>> = listOf(),
 	val allGames: Map<Long, GameDomainModel>? = null,
 	val period: Period = Period.ZERO,
 	val weekPlays: Map<String, List<String>> = mapOf(),
@@ -202,7 +218,7 @@ private data class HubState(
 sealed interface HubUiState {
 	data object Loading : HubUiState
 	data class Content(
-		val quickGames: List<GameDomainModel>,
+		val quickGames: List<Pair<GameDomainModel, Int>>,
 		val allGames: List<GameDomainModel>?,
 		val weekPlays: Map<String, List<String>>,
 		val chartKey: Map<String, Pair<Color, Shape>>,
