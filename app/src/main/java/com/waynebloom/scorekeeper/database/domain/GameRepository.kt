@@ -7,6 +7,7 @@ import com.waynebloom.scorekeeper.database.room.data.datasource.GameDao
 import com.waynebloom.scorekeeper.database.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.database.room.domain.mapper.GameMapper
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameWithMatchCount
 import com.waynebloom.scorekeeper.database.supabase.data.datasource.SupabaseApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -49,6 +50,14 @@ class GameRepository @Inject constructor(
 
 	fun getAll(): Flow<List<GameDomainModel>> {
 		return gameDao.getAll().map(gameMapper::toDomain)
+	}
+
+	fun getAllWithMatchCount(excludedIds: List<Long>): Flow<List<GameWithMatchCount>> {
+		return gameDao.getAllWithMatchCounts(excludedIds).map { games ->
+			games.map { (game, matchCount) ->
+				GameWithMatchCount(gameMapper.toDomain(game), matchCount)
+			}
+		}
 	}
 
 	fun getAllWithRelations(): Flow<List<GameDomainModel?>> {

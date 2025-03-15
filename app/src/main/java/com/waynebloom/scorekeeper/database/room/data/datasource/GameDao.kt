@@ -2,6 +2,7 @@ package com.waynebloom.scorekeeper.database.room.data.datasource
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.MapColumn
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
@@ -21,6 +22,20 @@ interface GameDao {
 
 	@Query("SELECT * FROM GAME")
 	fun getAll(): Flow<List<GameDataModel>>
+
+	@Query("""
+		select
+  		*,
+  		(select count(*) from `Match` m where m.game_owner_id = g.id) matchCount 
+		from Game g where id not in (:excludedIds)
+	""")
+	fun getAllWithMatchCounts(excludedIds: List<Long>):
+		Flow<
+			Map<
+				GameDataModel,
+				@MapColumn("matchCount") Int
+			>
+		>
 
 	@Transaction
 	@Query("SELECT * FROM GAME")

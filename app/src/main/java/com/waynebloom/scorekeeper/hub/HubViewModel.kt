@@ -1,6 +1,5 @@
 package com.waynebloom.scorekeeper.hub
 
-import android.util.Log
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -12,6 +11,7 @@ import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.database.domain.GameRepository
 import com.waynebloom.scorekeeper.database.domain.MatchRepository
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameWithMatchCount
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -63,19 +63,17 @@ class HubViewModel @Inject constructor(
 						.distinct()
 
 					gameRepository.getMultiple(gameIDs).collectLatest { playedGames ->
-						Log.d(this::class.simpleName, "transformLatest -> collectLatest: returned $playedGames")
 						emit(Pair(matches, playedGames))
 					}
 				}
-				.combine(gameRepository.getFavorites()) { matchesAndPlayedGames, favoriteGames ->
+				.combine(gameRepository.getFavorites()) { matchesAndPlayedGames, favoriteGamesWithCounts ->
 					Pair(
 						matchesAndPlayedGames,
-						favoriteGames
+						favoriteGamesWithCounts
 					)
 				}
-				.collectLatest { (matchesAndPlayedGames, favoriteGames) ->
+				.collectLatest { (matchesAndPlayedGames, favoriteGamesWithCounts) ->
 					val (matches, playedGames) = matchesAndPlayedGames
-					Log.d(this::class.simpleName, "final collectLatest: returned \nmatches: $matches\nplayedGames: $playedGames\nfavoriteGames: $favoriteGames")
 
 					if (matches.isNotEmpty()) {
 						val weekPlays = findPlaysInPeriod(
@@ -88,7 +86,7 @@ class HubViewModel @Inject constructor(
 						_uiState.update {
 							it.copy(
 								loading = false,
-								quickGames = favoriteGames,
+								favoriteGames = favoriteGamesWithCounts,
 								period = period,
 								weekPlays = weekPlays,
 								chartKey = chartKey,
@@ -101,7 +99,7 @@ class HubViewModel @Inject constructor(
 					_uiState.update {
 						it.copy(
 							loading = false,
-							quickGames = favoriteGames,
+							favoriteGames = favoriteGamesWithCounts,
 							period = period
 						)
 					}
@@ -155,21 +153,26 @@ class HubViewModel @Inject constructor(
 			}
 		}
 
-	fun fetchAllGames() {
-		if (_uiState.value.allGames == null) {
-			viewModelScope.launch(Dispatchers.IO) {
-				gameRepository.getAll().collectLatest { games ->
-					_uiState.update { state ->
-						state.copy(allGames = games.associateBy { it.id })
+	fun fetchNonFavoriteGamesWithMatchCount() {
+		viewModelScope.launch(Dispatchers.IO) {
+			val state = _uiState.value
+			if (state.nonFavoritesWithMatchCount != null) return@launch
+
+			val favoriteIds = state.favoriteGames.map { it.id }
+
+			gameRepository.getAllWithMatchCount(favoriteIds)
+				.collectLatest { gamesWithMatchCount ->
+					val nonFavoritesWithMatchCount = gamesWithMatchCount.associateBy { it.game.id }
+					_uiState.update {
+						it.copy(nonFavoritesWithMatchCount = nonFavoritesWithMatchCount)
 					}
 				}
-			}
 		}
 	}
 
 	fun addQuickGame(id: Long) {
-		val allGames = _uiState.value.allGames ?: return
-		val addedGame = allGames[id] ?: return
+		val allGames = _uiState.value.nonFavoritesWithMatchCount ?: return
+		val addedGame = allGames[id]?.game ?: return
 		viewModelScope.launch(Dispatchers.IO) {
 			gameRepository.upsert(addedGame.copy(isFavorite = true))
 		}
@@ -178,8 +181,8 @@ class HubViewModel @Inject constructor(
 
 private data class HubState(
 	val loading: Boolean = true,
-	val quickGames: List<GameDomainModel> = listOf(),
-	val allGames: Map<Long, GameDomainModel>? = null,
+	val favoriteGames: List<GameDomainModel> = listOf(),
+	val nonFavoritesWithMatchCount: Map<Long, GameWithMatchCount>? = null,
 	val period: Period = Period.ZERO,
 	val weekPlays: Map<String, List<String>> = mapOf(),
 	val chartKey: Map<String, Pair<Color, Shape>> = mapOf(),
@@ -191,8 +194,8 @@ private data class HubState(
 		}
 
 		return HubUiState.Content(
-			quickGames = quickGames,
-			allGames = allGames?.values?.toList(),
+			favoriteGames = favoriteGames,
+			nonFavoritesWithMatchCount = nonFavoritesWithMatchCount?.values?.toList(),
 			weekPlays = weekPlays,
 			chartKey = chartKey,
 		)
@@ -202,8 +205,8 @@ private data class HubState(
 sealed interface HubUiState {
 	data object Loading : HubUiState
 	data class Content(
-		val quickGames: List<GameDomainModel>,
-		val allGames: List<GameDomainModel>?,
+		val favoriteGames: List<GameDomainModel>,
+		val nonFavoritesWithMatchCount: List<GameWithMatchCount>?,
 		val weekPlays: Map<String, List<String>>,
 		val chartKey: Map<String, Pair<Color, Shape>>,
 	) : HubUiState

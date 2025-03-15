@@ -60,6 +60,10 @@ class MatchRepository @Inject constructor(
 		return matchDao.getByGameID(gameID).map(matchMapper::toDomain)
 	}
 
+	fun getCountByGameID(gameID: Long): Flow<Int> {
+		return matchDao.getCountByGameID(gameID)
+	}
+
 	fun getIndexOf(gameID: Long, matchID: Long): Flow<Int> {
 		return getByGameID(gameID).map { data ->
 

@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
@@ -37,6 +38,7 @@ import com.waynebloom.scorekeeper.components.Loading
 import com.waynebloom.scorekeeper.constants.Alpha
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameWithMatchCount
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
@@ -55,9 +57,9 @@ fun HubScreen(
 
 			Scaffold() { innerPadding ->
 				HubScreen(
-					quickGames = uiState.quickGames,
-					allGames = uiState.allGames ?: listOf(),
-					isGamePickerLoading = uiState.allGames == null,
+					favoriteGames = uiState.favoriteGames,
+					favoritePickerOptions = uiState.nonFavoritesWithMatchCount ?: listOf(),
+					isGamePickerLoading = uiState.nonFavoritesWithMatchCount == null,
 					weekPlays = uiState.weekPlays,
 					chartKey = uiState.chartKey,
 					modifier = Modifier.padding(innerPadding),
@@ -74,8 +76,8 @@ fun HubScreen(
 
 @Composable
 private fun HubScreen(
-	quickGames: List<GameDomainModel>,
-	allGames: List<GameDomainModel>,
+	favoriteGames: List<GameDomainModel>,
+	favoritePickerOptions: List<GameWithMatchCount>,
 	isGamePickerLoading: Boolean,
 	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
@@ -101,8 +103,8 @@ private fun HubScreen(
 				.padding(bottom = 12.dp),
 		)
 		QuickStart(
-			quickGames,
-			allGames,
+			favoriteGames,
+			favoritePickerOptions,
 			isGamePickerLoading,
 			onGameClick,
 			onAddQuickGameClick,
@@ -222,23 +224,11 @@ private fun RecentActivityCard(
 		modifier = modifier
 	) {
 
-		// ASAP: this needs to go below the header
-		if (weekPlays.isEmpty()) {
-			Box(
-				contentAlignment = Alignment.Center,
-				modifier = Modifier.fillMaxWidth().padding(16.dp),
-			) {
-				Text(
-					text = "No activity recorded in the past week.",
-					style = MaterialTheme.typography.bodyLarge,
-				)
-			}
-			return@Surface
-		}
-
 		Column(modifier = Modifier.padding(Dimensions.Spacing.sectionContent)) {
 
-			Row(verticalAlignment = Alignment.CenterVertically) {
+			Row(
+				verticalAlignment = Alignment.CenterVertically
+			) {
 				Box(
 					modifier = Modifier
 						.padding(end = 8.dp)
@@ -258,6 +248,19 @@ private fun RecentActivityCard(
 				}
 
 				Text(text = "Activity", style = MaterialTheme.typography.titleMedium)
+			}
+
+			if (weekPlays.isEmpty()) {
+				Box(
+					contentAlignment = Alignment.Center,
+					modifier = Modifier.fillMaxWidth().padding(16.dp),
+				) {
+					Text(
+						text = "No activity recorded in the past week.",
+						style = MaterialTheme.typography.bodyLarge,
+					)
+				}
+				return@Column
 			}
 
 			Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -326,7 +329,9 @@ private fun RecentActivityCard(
 							Text(
 								text = game,
 								style = MaterialTheme.typography.labelLarge,
-								color = textColor
+								color = textColor,
+								maxLines = 1,
+								overflow = TextOverflow.Ellipsis,
 							)
 						}
 					}

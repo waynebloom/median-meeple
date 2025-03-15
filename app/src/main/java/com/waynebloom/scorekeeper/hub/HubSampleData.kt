@@ -4,11 +4,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
+import com.waynebloom.scorekeeper.database.room.domain.model.GameWithMatchCount
 
 internal object HubSampleData {
 	val shape = RoundedCornerShape(4.dp)
 	val Default = HubUiState.Content(
-		quickGames = listOf(
+		favoriteGames = listOf(
 			GameDomainModel(
 				name = TextFieldValue("Game 1"),
 				displayColorIndex = 0,
@@ -74,7 +75,29 @@ internal object HubSampleData {
 				displayColorIndex = 15,
 			),
 		),
-		allGames = null,
+		nonFavoritesWithMatchCount = listOf(
+			GameWithMatchCount(
+				game = GameDomainModel(
+					name = TextFieldValue("Other Game"),
+					displayColorIndex = 17,
+				),
+				matchCount = 5,
+			),
+			GameWithMatchCount(
+				game = GameDomainModel(
+					name = TextFieldValue("Another Game"),
+					displayColorIndex = 4,
+				),
+				matchCount = 9,
+			),
+			GameWithMatchCount(
+				game = GameDomainModel(
+					name = TextFieldValue("Test Game"),
+					displayColorIndex = 13,
+				),
+				matchCount = 17,
+			),
+		),
 		chartKey = mapOf(
 			"Game 1" to (GameDomainModel.DisplayColors[0] to shape),
 			"Game 2" to (GameDomainModel.DisplayColors[1] to shape),
