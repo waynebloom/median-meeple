@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.google.android.gms.ads.MobileAds
 import com.waynebloom.scorekeeper.admob.domain.usecase.InitializeAdLoader
-import com.waynebloom.scorekeeper.navigation.MedianMeepleApp
+import com.waynebloom.scorekeeper.navigation.MedianMeepleNavHost
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +34,7 @@ class MedianMeepleActivity : ComponentActivity() {
 
 		setContent {
 			MedianMeepleTheme {
-				MedianMeepleApp()
+				MedianMeepleNavHost()
 			}
 		}
 	}

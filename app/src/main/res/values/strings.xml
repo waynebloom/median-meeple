@@ -55,6 +55,13 @@
 
     <!-- endregion -->
 
+    <!-- region Destination Labels -->
+
+    <string name="text_hub">Hub</string>
+    <string name="text_settings">Settings</string>
+
+    <!-- endregion -->
+
     <!-- region LibraryScreen -->
 
     <string name="text_empty_game_search_results">No games found containing \"%s\"</string>
