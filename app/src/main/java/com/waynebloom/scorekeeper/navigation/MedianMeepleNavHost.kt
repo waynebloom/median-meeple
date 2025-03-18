@@ -1,7 +1,12 @@
 package com.waynebloom.scorekeeper.navigation
 
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavBackStackEntry
@@ -23,8 +28,26 @@ import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGame
 
 @SuppressWarnings("CyclomaticComplexMethod")
 @Composable
-fun MedianMeepleApp() {
+fun MedianMeepleNavHost() {
 	val navController = rememberNavController()
+
+	NavigationSuiteScaffold(
+		navigationSuiteItems = {
+			TopLevelDestination.entries.forEach {
+				item(
+					icon = {
+						Icon(painterResource(it.icon), stringResource(it.label))
+					},
+					label = {
+						Text(stringResource(it.label))
+					},
+					onClick = {},
+					selected = false,
+				)
+			}
+		}
+	)
+
 
 	NavHost(
 		navController = navController,
