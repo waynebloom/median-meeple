@@ -7,6 +7,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.waynebloom.scorekeeper.constants.Dimensions
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.database.domain.CategoryRepository
@@ -15,6 +16,7 @@ import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.ext.transformElement
+import com.waynebloom.scorekeeper.navigation.graph.EditGame
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
@@ -35,7 +37,7 @@ class EditGameViewModel @Inject constructor(
 	savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-	private val gameID = savedStateHandle.get<Long>("gameID")!!
+	private val gameID = savedStateHandle.toRoute<EditGame>().gameID
 	private val _uiState = mutableStateFlowFactory.newInstance(EditGameViewModelState())
 	val uiState = _uiState
 		.onStart { loadData() }

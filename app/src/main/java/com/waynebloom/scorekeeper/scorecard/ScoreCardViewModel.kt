@@ -4,6 +4,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
 import com.waynebloom.scorekeeper.database.domain.CategoryRepository
 import com.waynebloom.scorekeeper.database.domain.GameRepository
@@ -16,6 +17,7 @@ import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.PlayerDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.ScoreDomainModel
 import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.navigation.graph.ScoreCard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -47,8 +49,10 @@ class ScoreCardViewModel @Inject constructor(
 	//  - Allow a user to un-hide the misc category.
 	//  - ? Display a meeple instead of the boring circle to highlight the winner
 
-	val gameID = savedStateHandle.get<Long>("gameID")!!
-	private var matchID = savedStateHandle.get<Long>("matchID")!!
+	private val route = savedStateHandle.toRoute<ScoreCard>()
+
+	val gameID = route.gameID
+	private var matchID = route.matchID
 	private lateinit var dbCategories: List<CategoryDomainModel>
 
 	private val _uiState = mutableStateFlowFactory.newInstance(ScoreCardViewModelState())

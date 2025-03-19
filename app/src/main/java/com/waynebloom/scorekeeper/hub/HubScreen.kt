@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -47,8 +46,6 @@ fun HubScreen(
 	onGameClick: (Long) -> Unit,
 	onAddQuickGameClick: () -> Unit,
 	onGameSelect: (Long) -> Unit,
-	onLibraryClick: () -> Unit,
-	onSettingsClick: () -> Unit,
 ) {
 
 	when (uiState) {
@@ -66,8 +63,6 @@ fun HubScreen(
 					onGameClick,
 					onAddQuickGameClick,
 					onGameSelect,
-					onLibraryClick,
-					onSettingsClick,
 				)
 			}
 		}
@@ -85,8 +80,6 @@ private fun HubScreen(
 	onGameClick: (Long) -> Unit,
 	onAddQuickGameClick: () -> Unit,
 	onGameSelect: (Long) -> Unit,
-	onLibraryClick: () -> Unit,
-	onSettingsClick: () -> Unit,
 ) {
 
 	Column(
@@ -95,13 +88,7 @@ private fun HubScreen(
 			.padding(horizontal = Dimensions.Spacing.screenEdge),
 	) {
 
-		TopBar(
-			onSettingsClick,
-			onLibraryClick, // TODO: this is temporary until bottom nav exists
-			modifier = Modifier
-				.fillMaxWidth()
-				.padding(bottom = 12.dp),
-		)
+		TopBar(Modifier.fillMaxWidth().padding(bottom = 12.dp))
 		QuickStart(
 			favoriteGames,
 			favoritePickerOptions,
@@ -118,42 +105,15 @@ private fun HubScreen(
 }
 
 @Composable
-private fun TopBar(
-	onSettingsClick: () -> Unit,
-	onLibraryClick: () -> Unit,
-	modifier: Modifier = Modifier,
-) {
-
+private fun TopBar(modifier: Modifier = Modifier) {
 	Row(
-		horizontalArrangement = Arrangement.SpaceBetween,
 		verticalAlignment = Alignment.CenterVertically,
-		modifier = modifier.heightIn(min = Dimensions.Size.topBarHeight),
+		modifier = modifier.heightIn(min = Dimensions.Size.topBarHeight)
 	) {
 		Text(
 			text = "Hub",
 			style = MaterialTheme.typography.titleMedium,
 		)
-
-		Row {
-			IconButton(
-				onClick = onLibraryClick,
-				modifier = Modifier.padding(end = 8.dp)
-			) {
-				Icon(
-					painter = painterResource(R.drawable.ic_grid),
-					contentDescription = "Library",
-					modifier = Modifier.size(20.dp)
-				)
-			}
-
-			IconButton(onSettingsClick) {
-				Icon(
-					painter = painterResource(R.drawable.ic_settings),
-					contentDescription = "Settings",
-					modifier = Modifier.size(20.dp)
-				)
-			}
-		}
 	}
 }
 
@@ -345,7 +305,7 @@ private fun RecentActivityCard(
 @Composable
 private fun HubDefaultPreview() {
 	MedianMeepleTheme {
-		HubScreen(uiState = HubSampleData.Default, {}, {}, {}, {}, {})
+		HubScreen(uiState = HubSampleData.Default, {}, {}, {})
 	}
 }
 
@@ -353,6 +313,6 @@ private fun HubDefaultPreview() {
 @Composable
 private fun HubNoActivityPreview() {
 	MedianMeepleTheme {
-		HubScreen(uiState = HubSampleData.NoActivity, {}, {}, {}, {}, {})
+		HubScreen(uiState = HubSampleData.NoActivity, {}, {}, {})
 	}
 }

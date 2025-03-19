@@ -98,7 +98,12 @@ internal fun QuickStart(
 								.padding(end = 8.dp)
 						)
 
-						Text(text = it.name.text, style = MaterialTheme.typography.labelLarge)
+						Text(
+							text = it.name.text,
+							style = MaterialTheme.typography.labelLarge,
+							overflow = TextOverflow.Ellipsis,
+							maxLines = 1,
+						)
 					}
 				}
 			}
@@ -205,6 +210,13 @@ fun QuickStartPicker(
 	dismissMenu: () -> Unit,
 	onGameSelect: (Long) -> Unit,
 ) {
+
+	// TODO:
+	// 	implement this as a dialog with a row for each game containing
+	// 	- checkbox
+	// 	- game name
+	// 	- match count
+	// 	with a search bar at the top
 
 	DropdownMenu(
 		expanded = expanded,

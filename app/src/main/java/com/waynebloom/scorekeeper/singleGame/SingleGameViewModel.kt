@@ -5,6 +5,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.admob.domain.usecase.GetMultipleAdsAsFlow
 import com.waynebloom.scorekeeper.constants.DurationMs
@@ -17,6 +18,7 @@ import com.waynebloom.scorekeeper.enums.ScoringMode
 import com.waynebloom.scorekeeper.enums.SortDirection
 import com.waynebloom.scorekeeper.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.ext.toStringForDisplay
+import com.waynebloom.scorekeeper.navigation.graph.SingleGame
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameConstants
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
 import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
@@ -42,7 +44,7 @@ class SingleGameViewModel @Inject constructor(
 	savedStateHandle: SavedStateHandle,
 ) : ViewModel() {
 
-	val gameID = savedStateHandle.get<Long>("gameID")!!
+	val gameID = savedStateHandle.toRoute<SingleGame>().gameID
 	private val _uiState = mutableStateFlowFactory.newInstance(SingleGameViewModelState())
 	val matchesForGameUiState = _uiState
 		.map(SingleGameViewModelState::toMatchesForGameUiState)
