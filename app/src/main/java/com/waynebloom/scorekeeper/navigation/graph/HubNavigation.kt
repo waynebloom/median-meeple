@@ -22,11 +22,12 @@ fun NavGraphBuilder.hubDestination(
 
 		HubScreen(
 			uiState,
-			onGameClick = { gameID ->
+			onQuickGameClick = { gameID ->
 				onNavigateToScoreCard(gameID, -1)
 			},
+			onRemoveQuickGame = viewModel::removeQuickGame,
 			onAddQuickGameClick = viewModel::fetchNonFavoriteGamesWithMatchCount,
-			onGameSelect = viewModel::addQuickGame,
+			onPickNewQuickGame = viewModel::addQuickGame,
 		)
 	}
 }

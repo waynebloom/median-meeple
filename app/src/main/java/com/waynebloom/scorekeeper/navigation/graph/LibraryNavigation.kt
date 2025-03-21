@@ -21,6 +21,7 @@ import kotlinx.serialization.Serializable
 
 fun NavGraphBuilder.libraryDestination(
 	onNavigateToMatchesForGame: (Long) -> Unit,
+	onNavigateToEditGame: (Long) -> Unit,
 ) {
 	composable<Library> {
 		val viewModel: LibraryViewModel = hiltViewModel()
@@ -30,7 +31,7 @@ fun NavGraphBuilder.libraryDestination(
 			uiState = uiState,
 			onSearchInputChanged = { viewModel.onSearchInputChanged(it) },
 			onAddGameClick = {
-				onNavigateToMatchesForGame(-1)
+				onNavigateToEditGame(-1)
 			},
 			onGameClick = onNavigateToMatchesForGame,
 		)
@@ -48,7 +49,7 @@ fun NavGraphBuilder.librarySection(
 ) {
 	navigation<LibrarySection>(startDestination = Library) {
 
-		libraryDestination(onNavigateToMatchesForGame)
+		libraryDestination(onNavigateToMatchesForGame, onNavigateToEditGame)
 
 		singleGameSection(
 			getSharedViewModel = getSharedViewModel,

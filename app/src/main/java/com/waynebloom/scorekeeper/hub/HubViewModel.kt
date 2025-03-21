@@ -177,6 +177,12 @@ class HubViewModel @Inject constructor(
 			gameRepository.upsert(addedGame.copy(isFavorite = true))
 		}
 	}
+
+	fun removeQuickGame(game: GameDomainModel) {
+		viewModelScope.launch(Dispatchers.IO) {
+			gameRepository.upsert(game.copy(isFavorite = false))
+		}
+	}
 }
 
 private data class HubState(

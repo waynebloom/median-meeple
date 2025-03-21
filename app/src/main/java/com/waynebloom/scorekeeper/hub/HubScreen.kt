@@ -43,9 +43,10 @@ import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 @Composable
 fun HubScreen(
 	uiState: HubUiState,
-	onGameClick: (Long) -> Unit,
+	onQuickGameClick: (Long) -> Unit,
+	onRemoveQuickGame: (GameDomainModel) -> Unit,
 	onAddQuickGameClick: () -> Unit,
-	onGameSelect: (Long) -> Unit,
+	onPickNewQuickGame: (Long) -> Unit,
 ) {
 
 	when (uiState) {
@@ -54,15 +55,16 @@ fun HubScreen(
 
 			Scaffold() { innerPadding ->
 				HubScreen(
-					favoriteGames = uiState.favoriteGames,
-					favoritePickerOptions = uiState.nonFavoritesWithMatchCount ?: listOf(),
-					isGamePickerLoading = uiState.nonFavoritesWithMatchCount == null,
+					quickStartGames = uiState.favoriteGames,
+					pickerOptions = uiState.nonFavoritesWithMatchCount ?: listOf(),
+					isPickerLoading = uiState.nonFavoritesWithMatchCount == null,
 					weekPlays = uiState.weekPlays,
 					chartKey = uiState.chartKey,
 					modifier = Modifier.padding(innerPadding),
-					onGameClick,
-					onAddQuickGameClick,
-					onGameSelect,
+					onQuickGameClick = onQuickGameClick,
+					onRemoveQuickGame = onRemoveQuickGame,
+					onAddQuickGameClick = onAddQuickGameClick,
+					onPickNewQuickGame = onPickNewQuickGame,
 				)
 			}
 		}
@@ -71,15 +73,16 @@ fun HubScreen(
 
 @Composable
 private fun HubScreen(
-	favoriteGames: List<GameDomainModel>,
-	favoritePickerOptions: List<GameWithMatchCount>,
-	isGamePickerLoading: Boolean,
+	quickStartGames: List<GameDomainModel>,
+	pickerOptions: List<GameWithMatchCount>,
+	isPickerLoading: Boolean,
 	weekPlays: Map<String, List<String>>,
 	chartKey: Map<String, Pair<Color, Shape>>,
 	modifier: Modifier = Modifier,
-	onGameClick: (Long) -> Unit,
+	onQuickGameClick: (Long) -> Unit,
+	onRemoveQuickGame: (GameDomainModel) -> Unit,
 	onAddQuickGameClick: () -> Unit,
-	onGameSelect: (Long) -> Unit,
+	onPickNewQuickGame: (Long) -> Unit,
 ) {
 
 	Column(
@@ -90,15 +93,14 @@ private fun HubScreen(
 
 		TopBar(Modifier.fillMaxWidth().padding(bottom = 12.dp))
 		QuickStart(
-			favoriteGames,
-			favoritePickerOptions,
-			isGamePickerLoading,
-			onGameClick,
-			onAddQuickGameClick,
-			onGameSelect,
-			Modifier
-				.fillMaxWidth()
-				.padding(bottom = 36.dp)
+			quickStartGames = quickStartGames,
+			pickerOptions = pickerOptions,
+			isPickerLoading = isPickerLoading,
+			onQuickGameClick = onQuickGameClick,
+			onRemoveClick = onRemoveQuickGame,
+			onAddClick = onAddQuickGameClick,
+			onPickNewQuickGame = onPickNewQuickGame,
+			modifier = Modifier.fillMaxWidth().padding(bottom = 36.dp)
 		)
 		RecentActivityCard(weekPlays, chartKey)
 	}
@@ -305,7 +307,7 @@ private fun RecentActivityCard(
 @Composable
 private fun HubDefaultPreview() {
 	MedianMeepleTheme {
-		HubScreen(uiState = HubSampleData.Default, {}, {}, {})
+		HubScreen(uiState = HubSampleData.Default, {}, {}, {}, {})
 	}
 }
 
@@ -313,6 +315,6 @@ private fun HubDefaultPreview() {
 @Composable
 private fun HubNoActivityPreview() {
 	MedianMeepleTheme {
-		HubScreen(uiState = HubSampleData.NoActivity, {}, {}, {})
+		HubScreen(uiState = HubSampleData.NoActivity, {}, {}, {}, {})
 	}
 }

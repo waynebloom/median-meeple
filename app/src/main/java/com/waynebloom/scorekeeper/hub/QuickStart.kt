@@ -1,7 +1,9 @@
 package com.waynebloom.scorekeeper.hub
 
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -33,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,12 +54,13 @@ import com.waynebloom.scorekeeper.util.PreviewContainer
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun QuickStart(
-	favoriteGames: List<GameDomainModel>,
+	quickStartGames: List<GameDomainModel>,
 	pickerOptions: List<GameWithMatchCount>,
-	isGamePickerLoading: Boolean,
-	onGameClick: (Long) -> Unit,
-	onAddQuickGameClick: () -> Unit,
-	onGameSelect: (Long) -> Unit,
+	isPickerLoading: Boolean,
+	onQuickGameClick: (Long) -> Unit,
+	onRemoveClick: (GameDomainModel) -> Unit,
+	onAddClick: () -> Unit,
+	onPickNewQuickGame: (Long) -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Column(modifier = modifier) {
@@ -69,7 +73,7 @@ internal fun QuickStart(
 			modifier = Modifier.fillMaxWidth()
 		) {
 
-			favoriteGames.forEach {
+			quickStartGames.forEach {
 				val color = GameDomainModel.DisplayColors[it.displayColorIndex]
 				val iconColor = color
 					.copy(alpha = Alpha.HIGH_ALPHA)
@@ -79,12 +83,12 @@ internal fun QuickStart(
 					.compositeOver(MaterialTheme.colorScheme.surface)
 
 				FilledTonalButton(
-					onClick = { onGameClick(it.id) },
+					onClick = { onQuickGameClick(it.id) },
 					colors = ButtonDefaults.filledTonalButtonColors(
 						containerColor = containerColor
 					),
 					elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
-					contentPadding = PaddingValues(start = 12.dp, end = 16.dp, top = 8.dp, bottom = 8.dp)
+					contentPadding = PaddingValues(0.dp),
 				) {
 
 					Row(verticalAlignment = Alignment.CenterVertically) {
@@ -94,8 +98,8 @@ internal fun QuickStart(
 							contentDescription = null,
 							tint = iconColor,
 							modifier = Modifier
-								.size(24.dp)
-								.padding(end = 8.dp)
+								.padding(start = 12.dp, end = 8.dp)
+								.size(16.dp)
 						)
 
 						Text(
@@ -103,6 +107,19 @@ internal fun QuickStart(
 							style = MaterialTheme.typography.labelLarge,
 							overflow = TextOverflow.Ellipsis,
 							maxLines = 1,
+						)
+
+						Icon(
+							painter = painterResource(R.drawable.ic_x),
+							contentDescription = null,
+							modifier = Modifier
+								.padding(8.dp)
+								.clip(CircleShape)
+								.clickable {
+									onRemoveClick(it)
+								}
+								.size(24.dp)
+								.padding(horizontal = 4.dp)
 						)
 					}
 				}
@@ -112,11 +129,11 @@ internal fun QuickStart(
 			Box(contentAlignment = Alignment.TopEnd) {
 				var isExpanded by remember { mutableStateOf(false) }
 
-				if (favoriteGames.isEmpty()) {
+				if (quickStartGames.isEmpty()) {
 
 					FilledTonalButton(
 						onClick = {
-							onAddQuickGameClick()
+							onAddClick()
 							isExpanded = true
 						},
 						elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
@@ -139,7 +156,7 @@ internal fun QuickStart(
 
 					FilledTonalIconButton(
 						onClick = {
-							onAddQuickGameClick()
+							onAddClick()
 							isExpanded = true
 						},
 					) {
@@ -155,12 +172,12 @@ internal fun QuickStart(
 				) {
 					QuickStartPicker(
 						expanded = isExpanded,
-						loading = isGamePickerLoading,
+						loading = isPickerLoading,
 						pickerOptions = pickerOptions.filterNot { option ->
-							favoriteGames.fastAny { it.id == option.game.id }
+							quickStartGames.fastAny { it.id == option.game.id }
 						},
 						dismissMenu = { isExpanded = false },
-						onGameSelect = onGameSelect
+						onGameSelect = onPickNewQuickGame
 					)
 				}
 			}
@@ -315,10 +332,10 @@ private fun QuickStartDefaultPreview() {
 	MedianMeepleTheme {
 		PreviewContainer {
 			QuickStart(
-				favoriteGames = HubSampleData.Default.favoriteGames,
+				quickStartGames = HubSampleData.Default.favoriteGames,
 				pickerOptions = HubSampleData.Default.nonFavoritesWithMatchCount ?: listOf(),
-				isGamePickerLoading = false,
-				{}, {}, {}
+				isPickerLoading = false,
+				{}, {}, {}, {}
 			)
 		}
 	}
@@ -330,10 +347,10 @@ private fun QuickStartEmptyPreview() {
 	MedianMeepleTheme {
 		PreviewContainer {
 			QuickStart(
-				favoriteGames = listOf(),
+				quickStartGames = listOf(),
 				pickerOptions = listOf(),
-				isGamePickerLoading = false,
-				{}, {}, {}
+				isPickerLoading = false,
+				{}, {}, {}, {}
 			)
 		}
 	}
