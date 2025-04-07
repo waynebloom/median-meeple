@@ -10,7 +10,7 @@ import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.admob.domain.usecase.GetMultipleAdsAsFlow
 import com.waynebloom.scorekeeper.constants.DurationMs
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
-import com.waynebloom.scorekeeper.database.domain.GameRepository
+import com.waynebloom.scorekeeper.database.repository.GameRepository
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.enums.MatchSortMode

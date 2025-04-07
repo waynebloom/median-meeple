@@ -1,15 +1,10 @@
-package com.waynebloom.scorekeeper.database.domain
+package com.waynebloom.scorekeeper.database.repository
 
-import android.util.Log
-import com.waynebloom.scorekeeper.database.domain.model.Action
-import com.waynebloom.scorekeeper.database.domain.sync.SyncHandler
 import com.waynebloom.scorekeeper.database.room.data.datasource.MatchDao
 import com.waynebloom.scorekeeper.database.room.domain.mapper.MatchMapper
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
-import com.waynebloom.scorekeeper.database.supabase.data.datasource.SupabaseApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.JsonObject
 import java.time.Period
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -18,21 +13,7 @@ import javax.inject.Inject
 class MatchRepository @Inject constructor(
 	private val matchDao: MatchDao,
 	private val matchMapper: MatchMapper,
-	private val supabaseApi: SupabaseApi,
-) : SyncHandler {
-
-	override suspend fun sync(change: Pair<Action, JsonObject>) {
-		Log.d(this::class.simpleName, "Handling sync for change: $change")
-		val entity = matchMapper.toData(change.second)
-
-		Log.d(this::class.simpleName, "Result of json parse: $entity")
-
-		if (change.first == Action.DELETE) {
-			matchDao.delete(entity.id)
-		} else {
-			matchDao.upsert(entity)
-		}
-	}
+) {
 
 	suspend fun deleteBy(id: Long) {
 		matchDao.delete(id)

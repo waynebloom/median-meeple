@@ -22,7 +22,6 @@ import androidx.core.net.toUri
 @Serializable object SettingsSection
 
 fun NavGraphBuilder.settingsDestination(
-	onNavigateToLogin: () -> Unit,
 	onSendFeedback: () -> Unit,
 ) {
 	composable<Settings> {
@@ -31,8 +30,6 @@ fun NavGraphBuilder.settingsDestination(
 
 		SettingsScreen(
 			uiState = uiState,
-			onSignInClick = onNavigateToLogin,
-			onSignOutClick = viewModel::logout,
 			onAppearanceModeSelect = viewModel::onAppearanceModeSelect,
 			onSendFeedback = onSendFeedback,
 		)

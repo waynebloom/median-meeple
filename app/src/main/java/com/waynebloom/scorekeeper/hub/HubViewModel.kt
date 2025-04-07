@@ -8,8 +8,8 @@ import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
-import com.waynebloom.scorekeeper.database.domain.GameRepository
-import com.waynebloom.scorekeeper.database.domain.MatchRepository
+import com.waynebloom.scorekeeper.database.repository.GameRepository
+import com.waynebloom.scorekeeper.database.repository.MatchRepository
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameWithMatchCount
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel

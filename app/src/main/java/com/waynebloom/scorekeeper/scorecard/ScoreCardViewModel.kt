@@ -6,11 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
-import com.waynebloom.scorekeeper.database.domain.CategoryRepository
-import com.waynebloom.scorekeeper.database.domain.GameRepository
-import com.waynebloom.scorekeeper.database.domain.MatchRepository
-import com.waynebloom.scorekeeper.database.domain.PlayerRepository
-import com.waynebloom.scorekeeper.database.domain.ScoreRepository
+import com.waynebloom.scorekeeper.database.repository.CategoryRepository
+import com.waynebloom.scorekeeper.database.repository.GameRepository
+import com.waynebloom.scorekeeper.database.repository.MatchRepository
+import com.waynebloom.scorekeeper.database.repository.PlayerRepository
+import com.waynebloom.scorekeeper.database.repository.ScoreRepository
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel

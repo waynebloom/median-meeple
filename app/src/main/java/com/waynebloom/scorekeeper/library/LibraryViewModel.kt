@@ -8,7 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.ads.nativead.NativeAd
 import com.waynebloom.scorekeeper.admob.domain.usecase.GetMultipleAdsAsFlow
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
-import com.waynebloom.scorekeeper.database.domain.GameRepository
+import com.waynebloom.scorekeeper.database.repository.GameRepository
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.ext.toShortFormatString
 import dagger.hilt.android.lifecycle.HiltViewModel

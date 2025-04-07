@@ -24,16 +24,13 @@ import com.waynebloom.scorekeeper.navigation.graph.Library
 import com.waynebloom.scorekeeper.navigation.graph.Settings
 import com.waynebloom.scorekeeper.navigation.graph.hubDestination
 import com.waynebloom.scorekeeper.navigation.graph.librarySection
-import com.waynebloom.scorekeeper.navigation.graph.loginDestination
 import com.waynebloom.scorekeeper.navigation.graph.navigateToEditGame
 import com.waynebloom.scorekeeper.navigation.graph.navigateToHub
 import com.waynebloom.scorekeeper.navigation.graph.navigateToLibrary
-import com.waynebloom.scorekeeper.navigation.graph.navigateToLogin
 import com.waynebloom.scorekeeper.navigation.graph.navigateToMatchesForGame
 import com.waynebloom.scorekeeper.navigation.graph.navigateToScoreCard
 import com.waynebloom.scorekeeper.navigation.graph.navigateToSettings
 import com.waynebloom.scorekeeper.navigation.graph.navigateToStatisticsForGame
-import com.waynebloom.scorekeeper.navigation.graph.sendFeedbackEmail
 import com.waynebloom.scorekeeper.navigation.graph.settingsDestination
 import com.waynebloom.scorekeeper.navigation.graph.settingsSection
 import kotlin.reflect.KClass
@@ -78,14 +75,7 @@ fun MedianMeepleNavHost(
 			)
 
 			settingsSection {
-				settingsDestination(
-					onNavigateToLogin = navController::navigateToLogin,
-					onSendFeedback = onSendFeedback,
-				)
-
-				loginDestination(
-					onPopBackStack = navController::popBackStack,
-				)
+				settingsDestination(onSendFeedback = onSendFeedback)
 			}
 
 			librarySection(
@@ -148,7 +138,7 @@ private fun getCurrentDestination(navController: NavHostController): NavDestinat
 private fun NavDestination?.isRouteInHierarchy(route: KClass<*>): Boolean {
 	return this?.hierarchy?.any {
 		it.hasRoute(route)
-	} ?: false
+	} == true
 }
 
 @Composable

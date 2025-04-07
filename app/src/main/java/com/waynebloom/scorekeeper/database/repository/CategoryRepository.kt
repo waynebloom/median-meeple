@@ -1,33 +1,16 @@
-package com.waynebloom.scorekeeper.database.domain
+package com.waynebloom.scorekeeper.database.repository
 
-import android.util.Log
-import com.waynebloom.scorekeeper.database.domain.model.Action
-import com.waynebloom.scorekeeper.database.domain.sync.SyncHandler
 import com.waynebloom.scorekeeper.database.room.data.datasource.CategoryDao
 import com.waynebloom.scorekeeper.database.room.domain.mapper.CategoryMapper
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
-import com.waynebloom.scorekeeper.database.supabase.data.datasource.SupabaseApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.JsonObject
 import javax.inject.Inject
 
 class CategoryRepository @Inject constructor(
 	private val categoryDao: CategoryDao,
 	private val categoryMapper: CategoryMapper,
-	private val supabaseApi: SupabaseApi,
-) : SyncHandler {
-
-	override suspend fun sync(change: Pair<Action, JsonObject>) {
-		Log.d(this::class.simpleName, "Handling sync for change: $change")
-		val entity = categoryMapper.toData(change.second)
-
-		if (change.first == Action.DELETE) {
-			categoryDao.delete(entity.id)
-		} else {
-			categoryDao.upsert(entity)
-		}
-	}
+) {
 
 	suspend fun deleteBy(id: Long) {
 		categoryDao.delete(id)
