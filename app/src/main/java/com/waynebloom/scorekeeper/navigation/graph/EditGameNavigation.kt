@@ -8,8 +8,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.waynebloom.scorekeeper.editGame.EditGameScreen
-import com.waynebloom.scorekeeper.editGame.EditGameViewModel
+import com.waynebloom.scorekeeper.feature.editGame.EditGameScreen
+import com.waynebloom.scorekeeper.feature.editGame.EditGameViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable

@@ -5,7 +5,7 @@ import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.Relation
-import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.common.ScoringMode
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

@@ -5,7 +5,7 @@ import com.waynebloom.scorekeeper.database.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.database.room.data.model.GameDataRelationModel
 import com.waynebloom.scorekeeper.database.room.domain.model.CategoryDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
-import com.waynebloom.scorekeeper.ext.toScoringMode
+import com.waynebloom.scorekeeper.util.ext.toScoringMode
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement

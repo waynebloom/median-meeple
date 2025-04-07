@@ -2,7 +2,7 @@ package com.waynebloom.scorekeeper.database.room.domain.model
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
-import com.waynebloom.scorekeeper.enums.ScoringMode
+import com.waynebloom.scorekeeper.common.ScoringMode
 
 data class GameDomainModel(
 	val id: Long = -1,
