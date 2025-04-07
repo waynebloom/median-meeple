@@ -299,9 +299,7 @@ fun MatchesForGameSortOptionsDialog(
 					RadioButtonOption(
 						menuOption = option,
 						isSelected = sortMode == option,
-						onSelected = {
-							onSortModeChanged(option)
-						},
+						onSelected = onSortModeChanged,
 						unselectedColor = MaterialTheme.colorScheme.onBackground,
 					)
 				}
@@ -316,9 +314,7 @@ fun MatchesForGameSortOptionsDialog(
 					RadioButtonOption(
 						menuOption = option,
 						isSelected = sortDirection == option,
-						onSelected = {
-							onSortDirectionChanged(option)
-						},
+						onSelected = onSortDirectionChanged,
 						unselectedColor = MaterialTheme.colorScheme.onBackground,
 					)
 				}

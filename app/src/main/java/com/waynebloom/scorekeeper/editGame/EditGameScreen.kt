@@ -474,7 +474,7 @@ private fun GameDetailsSection(
 				RadioButtonOption(
 					menuOption = option,
 					isSelected = selectedMode == option,
-					onSelected = { onScoringModeClick(it as ScoringMode) }
+					onSelected = onScoringModeClick,
 				)
 			}
 		}

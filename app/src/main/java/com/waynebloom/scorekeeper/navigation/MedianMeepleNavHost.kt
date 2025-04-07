@@ -20,6 +20,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.waynebloom.scorekeeper.navigation.graph.Hub
+import com.waynebloom.scorekeeper.navigation.graph.Library
+import com.waynebloom.scorekeeper.navigation.graph.Settings
 import com.waynebloom.scorekeeper.navigation.graph.hubDestination
 import com.waynebloom.scorekeeper.navigation.graph.librarySection
 import com.waynebloom.scorekeeper.navigation.graph.loginDestination
@@ -31,13 +33,17 @@ import com.waynebloom.scorekeeper.navigation.graph.navigateToMatchesForGame
 import com.waynebloom.scorekeeper.navigation.graph.navigateToScoreCard
 import com.waynebloom.scorekeeper.navigation.graph.navigateToSettings
 import com.waynebloom.scorekeeper.navigation.graph.navigateToStatisticsForGame
+import com.waynebloom.scorekeeper.navigation.graph.sendFeedbackEmail
 import com.waynebloom.scorekeeper.navigation.graph.settingsDestination
 import com.waynebloom.scorekeeper.navigation.graph.settingsSection
 import kotlin.reflect.KClass
 
 @SuppressWarnings("CyclomaticComplexMethod")
 @Composable
-fun MedianMeepleNavHost() {
+fun MedianMeepleNavHost(
+	onSendFeedback: () -> Unit,
+) {
+
 	val navController = rememberNavController()
 	val currentDestination = getCurrentDestination(navController)
 
@@ -74,6 +80,7 @@ fun MedianMeepleNavHost() {
 			settingsSection {
 				settingsDestination(
 					onNavigateToLogin = navController::navigateToLogin,
+					onSendFeedback = onSendFeedback,
 				)
 
 				loginDestination(
@@ -103,10 +110,30 @@ fun navigateToTopLevelDestination(
 		restoreState = true
 	}
 
-	when(topLevelDestination) {
-		TopLevelDestination.HUB -> navController.navigateToHub(navOptions = opts)
-		TopLevelDestination.LIBRARY -> navController.navigateToLibrary(navOptions = opts)
-		TopLevelDestination.SETTINGS -> navController.navigateToSettings(navOptions = opts)
+	when (topLevelDestination) {
+		TopLevelDestination.HUB -> {
+			val notAtHub =
+				navController.currentDestination?.hasRoute(Hub::class) == false
+			if (notAtHub) {
+				navController.navigateToHub(navOptions = opts)
+			}
+		}
+
+		TopLevelDestination.LIBRARY -> {
+			val notAtLibrary =
+				navController.currentDestination?.hasRoute(Library::class) == false
+			if (notAtLibrary) {
+				navController.navigateToLibrary(navOptions = opts)
+			}
+		}
+
+		TopLevelDestination.SETTINGS -> {
+			val notAtSettings =
+				navController.currentDestination?.hasRoute(Settings::class) == false
+			if (notAtSettings) {
+				navController.navigateToSettings(navOptions = opts)
+			}
+		}
 	}
 }
 

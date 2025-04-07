@@ -16,15 +16,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.settings.model.AppearanceMode
 import com.waynebloom.scorekeeper.theme.MedianMeepleTheme
 
 @Composable
@@ -32,14 +38,35 @@ fun SettingsScreen(
 	uiState: SettingsUiState,
 	onSignInClick: () -> Unit,
 	onSignOutClick: () -> Unit,
+	onAppearanceModeSelect: (AppearanceMode) -> Unit,
+	onSendFeedback: () -> Unit,
 ) {
+	var showAppearanceDialog by remember { mutableStateOf(false) }
+	var showFeedbackDialog by remember { mutableStateOf(false) }
+
+	if (showAppearanceDialog) {
+		AppearanceDialog(
+			selectedMode = uiState.appearanceMode,
+			onSelectMode = onAppearanceModeSelect,
+			onDismiss = { showAppearanceDialog = false }
+		)
+	}
+
+	if (showFeedbackDialog) {
+		FeedbackDialog(
+			onSendFeedback = onSendFeedback,
+			onDismiss = { showFeedbackDialog = false }
+		)
+	}
 
 	Scaffold() { innerPadding ->
 		when (uiState) {
 			is SettingsUiState.SignedOut -> {
 				SettingsScreenSignedOut(
-					onSignInClick,
-					Modifier.padding(innerPadding)
+					onLoginClick = onSignInClick,
+					onAppearanceClick = { showAppearanceDialog = true },
+					onFeedbackClick = { showFeedbackDialog = true },
+					modifier = Modifier.padding(innerPadding)
 				)
 			}
 
@@ -59,6 +86,8 @@ fun SettingsScreen(
 @Composable
 fun SettingsScreenSignedOut(
 	onLoginClick: () -> Unit,
+	onAppearanceClick: () -> Unit,
+	onFeedbackClick: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Column(modifier) {
@@ -68,9 +97,15 @@ fun SettingsScreenSignedOut(
 		HorizontalDivider(Modifier.padding(start = 16.dp, end = 16.dp, bottom = 12.dp))
 
 		SettingsListItem(
-			painterResource(R.drawable.ic_grid),
-			"Something Or Other",
-			{}
+			leadingIconPainter = painterResource(R.drawable.ic_image),
+			text = stringResource(R.string.text_appearance),
+			onClick = onAppearanceClick,
+		)
+
+		SettingsListItem(
+			leadingIconPainter = painterResource(R.drawable.ic_edit_page),
+			text = "Feedback",
+			onClick = onFeedbackClick,
 		)
 	}
 }
@@ -232,13 +267,13 @@ fun SettingsListItem(
 			null,
 			modifier = Modifier
 				.padding(end = 16.dp)
-				.size(16.dp)
+				.size(20.dp)
 		)
 
 		Text(
 			text = text,
 			style = MaterialTheme.typography.bodyMedium,
-			fontWeight = FontWeight.SemiBold
+			fontWeight = FontWeight.SemiBold,
 		)
 	}
 }
@@ -247,7 +282,7 @@ fun SettingsListItem(
 @Composable
 private fun SettingsSignedInPreview() {
 	MedianMeepleTheme {
-		SettingsScreen(uiState = SettingsSampleData.SignedIn, {}, {})
+		SettingsScreen(uiState = SettingsSampleData.SignedIn, {}, {}, {}, {})
 	}
 }
 
@@ -255,6 +290,6 @@ private fun SettingsSignedInPreview() {
 @Composable
 private fun SettingsSignedOutPreview() {
 	MedianMeepleTheme {
-		SettingsScreen(uiState = SettingsSampleData.SignedOut, {}, {})
+		SettingsScreen(uiState = SettingsSampleData.SignedOut, {}, {}, {}, {})
 	}
 }

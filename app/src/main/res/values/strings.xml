@@ -31,6 +31,17 @@
     <string name="text_at">at</string>
     <string name="text_save">Save</string>
     <string name="ad_attribution_content_desc">this image is part of an ad</string>
+    <string name="text_appearance">Appearance</string>
+    <string name="text_system">System</string>
+    <string name="text_light">Light</string>
+    <string name="text_dark">Dark</string>
+    <string name="text_open">Open</string>
+    <string name="text_feedback_request">
+        Hey there, I\'m Wayne, the sole developer of Median Meeple. I want to hear from you all!
+        Please send me a message with any feedback you\'d like to share, whether it be feature
+        requests or constructive criticism. The button below will open your default email app with
+        my address prefilled. Thanks!
+    </string>
 
     <!-- endregion -->
 

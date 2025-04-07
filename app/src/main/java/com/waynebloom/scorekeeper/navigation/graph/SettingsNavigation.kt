@@ -1,5 +1,9 @@
 package com.waynebloom.scorekeeper.navigation.graph
 
+import android.R.attr.scheme
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -11,6 +15,7 @@ import androidx.navigation.compose.navigation
 import com.waynebloom.scorekeeper.settings.SettingsScreen
 import com.waynebloom.scorekeeper.settings.SettingsViewModel
 import kotlinx.serialization.Serializable
+import androidx.core.net.toUri
 
 @Serializable object Settings
 
@@ -18,6 +23,7 @@ import kotlinx.serialization.Serializable
 
 fun NavGraphBuilder.settingsDestination(
 	onNavigateToLogin: () -> Unit,
+	onSendFeedback: () -> Unit,
 ) {
 	composable<Settings> {
 		val viewModel: SettingsViewModel = hiltViewModel()
@@ -27,6 +33,8 @@ fun NavGraphBuilder.settingsDestination(
 			uiState = uiState,
 			onSignInClick = onNavigateToLogin,
 			onSignOutClick = viewModel::logout,
+			onAppearanceModeSelect = viewModel::onAppearanceModeSelect,
+			onSendFeedback = onSendFeedback,
 		)
 	}
 }
@@ -37,4 +45,13 @@ fun NavGraphBuilder.settingsSection(builder: NavGraphBuilder.() -> Unit) {
 
 fun NavController.navigateToSettings(navOptions: NavOptions) {
 	navigate(route = Settings, navOptions = navOptions)
+}
+
+fun Activity.sendFeedbackEmail() {
+	val mailUri = "mailto:wayne.bloom224@gmail.com?subject=" + Uri.encode("Median Meeple Feedback")
+	Intent(Intent.ACTION_SENDTO, mailUri.toUri()).apply {
+		addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+	}.also {
+		startActivity(Intent.createChooser(it, "Send Email"))
+	}
 }

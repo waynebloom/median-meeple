@@ -1,15 +1,20 @@
 package com.waynebloom.scorekeeper.settings
 
+import android.R.attr.mode
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.waynebloom.scorekeeper.auth.CredentialManager
 import com.waynebloom.scorekeeper.dagger.factory.MutableStateFlowFactory
+import com.waynebloom.scorekeeper.settings.model.AppearanceMode
 import com.waynebloom.scorekeeper.util.PreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.combineTransform
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -35,24 +40,30 @@ class SettingsViewModel @Inject constructor(
 		)
 
 	private fun loadData() {
+/* TODO: do something with this
 		if (credentialManager.isEmpty()) {
 			return
 		}
+*/
 
 		viewModelScope.launch(Dispatchers.IO) {
-			preferencesManager.email.combine(
-				flow = preferencesManager.username
-			) { email, username ->
-				Pair(email, username)
-			}.collectLatest { data ->
-				_uiState.update {
-					it.copy(
-						isSignedIn = true,
-						email = data.first,
-						name = data.second ?: data.first
-					)
-				}
+			_uiState.update {
+				val appearanceMode = AppearanceMode.valueOf(preferencesManager.appearanceMode.first())
+				it.copy(
+					appearanceMode = appearanceMode,
+					email = preferencesManager.email.first(),
+					name = preferencesManager.username.first(),
+				)
 			}
+		}
+	}
+
+	fun onAppearanceModeSelect(mode: AppearanceMode) {
+		_uiState.update {
+			it.copy(appearanceMode = mode)
+		}
+		viewModelScope.launch(Dispatchers.IO) {
+			preferencesManager.setAppearanceMode(mode)
 		}
 	}
 
@@ -69,24 +80,32 @@ private data class SettingsState(
 	val subDays: Int = 0,
 	val name: String = "",
 	val email: String = "",
+	val appearanceMode: AppearanceMode = AppearanceMode.SYSTEM,
 ) {
 
 	fun toUiState(): SettingsUiState {
 		if (!isSignedIn) {
-			return SettingsUiState.SignedOut
+			return SettingsUiState.SignedOut(appearanceMode)
 		}
 
 		return SettingsUiState.SignedIn(
 			name = name,
 			email = email,
 			subDays = subDays,
+			appearanceMode = appearanceMode
 		)
 	}
 }
 
 sealed interface SettingsUiState {
-	data object SignedOut : SettingsUiState
+	val appearanceMode: AppearanceMode
+
+	data class SignedOut(
+		override val appearanceMode: AppearanceMode,
+	) : SettingsUiState
+
 	data class SignedIn(
+		override val appearanceMode: AppearanceMode,
 		val name: String,
 		val email: String,
 		val subDays: Int,
