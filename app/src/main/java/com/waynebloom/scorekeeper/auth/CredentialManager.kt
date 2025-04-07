@@ -9,19 +9,19 @@ class CredentialManager @Inject constructor() {
 	// FIXME: reimplement auth w/ Supabase
 
 	private companion object {
-		var jwt = JWT.empty()
+		var jwt: JWT? = null
 	}
 
 	fun clear() {
-		jwt = JWT.empty()
+		jwt = null
 	}
 
 	fun get() = jwt
 
-	fun isEmpty() = jwt == JWT.empty()
+	fun isEmpty() = jwt == null
 
 	fun requireLogin(): Boolean {
-		return Instant.now().isBefore(jwt.expiresOn)
+		return Instant.now().isBefore(jwt?.expiresOn)
 	}
 
 	fun store(newJWT: JWT) {

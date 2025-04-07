@@ -21,6 +21,7 @@ import com.waynebloom.scorekeeper.util.PreferencesManager
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 import java.time.Instant
 
@@ -76,7 +77,7 @@ class SyncWorker @AssistedInject constructor(
 		 */
 
 		return withContext(Dispatchers.IO) {
-			val lastSynced = preferencesManager.getLastSynced()
+			val lastSynced = preferencesManager.lastSynced.firstOrNull()
 
 			/**
 			 * TODO

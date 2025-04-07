@@ -9,8 +9,6 @@ data class JWT(
 ) {
 
 	companion object {
-		fun empty() = JWT("", Instant.now())
-
 		fun fromDataModel(jwt: JWTDataModel) = JWT(
 			token = jwt.token,
 			expiresOn = Instant.parse(jwt.exp)
