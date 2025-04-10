@@ -12,10 +12,10 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.waynebloom.scorekeeper.settings.SettingsScreen
-import com.waynebloom.scorekeeper.settings.SettingsViewModel
 import kotlinx.serialization.Serializable
 import androidx.core.net.toUri
+import com.waynebloom.scorekeeper.feature.settings.SettingsScreen
+import com.waynebloom.scorekeeper.feature.settings.SettingsViewModel
 
 @Serializable object Settings
 

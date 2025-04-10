@@ -25,12 +25,12 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.transformLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Instant
 import java.time.Period
-import java.time.ZonedDateTime
-import java.time.temporal.ChronoField
+import java.time.ZoneId
 import javax.inject.Inject
 
-private const val LENGTH_DAYS = 6
+private const val LENGTH_DAYS = 7
 
 @HiltViewModel
 class HubViewModel @Inject constructor(
@@ -53,7 +53,7 @@ class HubViewModel @Inject constructor(
 	private fun observeData() {
 		viewModelScope.launch(Dispatchers.IO) {
 			val period = Period.ofDays(LENGTH_DAYS)
-			val start = ZonedDateTime.now().minus(period)
+			val start = Instant.now().minus(period)
 
 			matchRepository.getByDate(start, period)
 				.transformLatest { matches ->
@@ -77,7 +77,7 @@ class HubViewModel @Inject constructor(
 
 					if (matches.isNotEmpty()) {
 						val weekPlays = findPlaysInPeriod(
-							start = start,
+							periodStart = start,
 							recentMatches = matches,
 							games = playedGames.associate { it.id to it.name.text }
 						)
@@ -108,28 +108,30 @@ class HubViewModel @Inject constructor(
 	}
 
 	private fun findPlaysInPeriod(
-		start: ZonedDateTime,
+		periodStart: Instant,
 		recentMatches: List<MatchDomainModel>,
 		games: Map<Long, String>,
 	): Map<String, List<String>> {
 
 		var remainingMatches = recentMatches
-		val realStart = start
+		val adjustedStartUTC = periodStart
+			.atZone(ZoneId.of("Z"))
 			.withHour(23)
 			.withMinute(59)
 			.withSecond(59)
 
 		return buildMap<String, List<String>> {
-
-			for (days in 0L..LENGTH_DAYS) {
-				val cutoffTime = realStart.plusDays(days)
-				val dayLabel = cutoffTime.dayOfWeek.name
+			for (days in 0L..<LENGTH_DAYS) {
+				val cutoff = adjustedStartUTC.plusDays(days)
+				val dayLabel = cutoff.withZoneSameInstant(ZoneId.systemDefault())
+					.dayOfWeek.name
 					.take(3)
 					.lowercase()
 					.replaceFirstChar { if (it.isLowerCase()) it.titlecaseChar() else it }
 
 				val results = remainingMatches.fastFilter {
-					it.dateMillis < cutoffTime.getLong(ChronoField.INSTANT_SECONDS) * 1000
+					val asInstant = Instant.ofEpochMilli(it.dateMillis)
+					asInstant.isBefore(cutoff.toInstant())
 				}
 
 				this[dayLabel] = results.map {

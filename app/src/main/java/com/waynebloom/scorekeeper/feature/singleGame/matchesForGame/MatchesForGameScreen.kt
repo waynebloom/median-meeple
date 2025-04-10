@@ -72,10 +72,10 @@ import com.waynebloom.scorekeeper.ui.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.ui.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.ui.constants.DurationMs
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
+import com.waynebloom.scorekeeper.feature.singleGame.MatchesForGameUiState
+import com.waynebloom.scorekeeper.feature.singleGame.SingleGameSampleData
 import com.waynebloom.scorekeeper.feature.singleGame.SingleGameScreen
 import com.waynebloom.scorekeeper.util.ext.toShortFormatString
-import com.waynebloom.scorekeeper.singleGame.MatchesForGameUiState
-import com.waynebloom.scorekeeper.singleGame.SingleGameSampleData
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.fadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay

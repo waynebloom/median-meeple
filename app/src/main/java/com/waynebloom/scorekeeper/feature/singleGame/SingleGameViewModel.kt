@@ -16,13 +16,13 @@ import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import com.waynebloom.scorekeeper.feature.singleGame.matchesForGame.MatchSortMode
 import com.waynebloom.scorekeeper.common.ScoringMode
 import com.waynebloom.scorekeeper.feature.singleGame.matchesForGame.SortDirection
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.StatisticsForGameConstants
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.domain.model.StatisticsForCategory
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import com.waynebloom.scorekeeper.util.ext.getWinningPlayer
 import com.waynebloom.scorekeeper.util.ext.toStringForDisplay
 import com.waynebloom.scorekeeper.navigation.graph.SingleGame
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameConstants
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.StatisticsForCategory
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
@@ -35,6 +35,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import javax.inject.Inject
+import kotlin.collections.first
+import kotlin.collections.takeWhile
 
 @HiltViewModel
 class SingleGameViewModel @Inject constructor(

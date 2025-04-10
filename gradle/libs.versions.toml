@@ -1,33 +1,26 @@
 [versions]
 
 activityCompose = "1.10.1"
+android = "8.9.1"
 compose = "1.7.8"
-constraintlayout = "2.1.4"
-datastore = "1.1.2"
-hilt = "1.2.0"
-junitKtx = "1.1.5"
-ktor = "3.1.1"
-lifecycle = "2.8.2"
-material = "1.12.0"
-material3 = "1.3.1"
-moshi = "1.15.2"
-navigationCompose = "2.8.9"
-playServicesAds = "23.1.0"
-retrofit = "2.11.0"
-room = "2.6.1"
-runner = "1.5.2"
-supabase = "3.1.2"
-work = "2.10.0"
-
-# plugins
-android = "8.7.3"
+constraintlayout = "2.2.1"
 daggerHilt = "2.54"
-detekt = "1.23.0"
-googleServices = "4.4.2"
-kotlin = "2.0.0"
-ksp = "2.0.0-1.0.22"
+datastore = "1.1.4"
+hilt = "1.2.0"
+junitKtx = "1.2.1"
+kotlin = "2.1.20"
+kotlinx = "1.8.0"
+ksp = "2.1.20-2.0.0"
+lifecycle = "2.8.7"
+material = "1.12.0"
+material3 = "1.3.2"
+navigationCompose = "2.8.9"
+playServicesAds = "24.2.0"
+room = "2.7.0"
+runner = "1.6.2"
 
 [libraries]
+
 activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 compose-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "compose" }
 compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
@@ -43,27 +36,19 @@ dagger-hilt-compiler = { module = "com.google.dagger:hilt-android-compiler", ver
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hilt" }
-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hilt" }
 junit-ktx = { module = "androidx.test.ext:junit-ktx", version.ref = "junitKtx" }
+kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx" }
 ksp-symbol-processing-api = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
-ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
-supabase-bom = { module = "io.github.jan-tennert.supabase:bom", version.ref = "supabase" }
-supabase-postgrest = { module = "io.github.jan-tennert.supabase:postgrest-kt" }
-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 
 # XML ad views still need material for the button
 # TODO LOW PRIO: look into replacing with normal button to reduce size
 material = { module = "com.google.android.material:material", version.ref = "material" }
-moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
-retrofit-converter-moshi = { module = "com.squareup.retrofit2:converter-moshi", version.ref = "retrofit" }
-moshi-kotlin = { module = "com.squareup.moshi:moshi-kotlin", version.ref = "moshi" }
 navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
-retrofit = { module = 'com.squareup.retrofit2:retrofit', version.ref = "retrofit"}
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
@@ -75,8 +60,6 @@ android-application = { id = "com.android.application", version.ref = "android" 
 android-library = { id = "com.android.library", version.ref = "android" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "daggerHilt" }
-detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
-google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
 kotlin = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

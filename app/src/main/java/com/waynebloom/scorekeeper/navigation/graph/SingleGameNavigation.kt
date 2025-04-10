@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.navigation
-import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
+import com.waynebloom.scorekeeper.feature.singleGame.SingleGameViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable data class SingleGame(val gameID: Long)

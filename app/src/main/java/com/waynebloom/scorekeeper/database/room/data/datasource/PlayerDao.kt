@@ -31,8 +31,4 @@ interface PlayerDao {
 
 	@Upsert
 	suspend fun upsertReturningID(player: PlayerDataModel): Long
-
-	// TODO: remove this
-	@Update
-	fun update(player: PlayerDataModel)
 }

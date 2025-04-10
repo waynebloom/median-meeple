@@ -8,8 +8,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
-import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
-import com.waynebloom.scorekeeper.singleGame.matchesForGame.MatchesForGameScreen
+import com.waynebloom.scorekeeper.feature.singleGame.SingleGameViewModel
+import com.waynebloom.scorekeeper.feature.singleGame.matchesForGame.MatchesForGameScreen
 import kotlinx.serialization.Serializable
 
 @Serializable data class MatchesForGame(

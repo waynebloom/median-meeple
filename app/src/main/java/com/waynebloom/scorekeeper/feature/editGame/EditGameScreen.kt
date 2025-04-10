@@ -878,7 +878,7 @@ fun CustomThemeSection(
 						.clickable { onColorClick(i) }
 				) {
 
-					AnimatedVisibility(
+					this@Column.AnimatedVisibility (
 						visible = i == colorIndex,
 						enter = fadeIn(),
 						exit = fadeOut(),

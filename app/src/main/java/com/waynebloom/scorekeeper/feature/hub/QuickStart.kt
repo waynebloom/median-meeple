@@ -227,13 +227,6 @@ fun QuickStartPicker(
 	onGameSelect: (Long) -> Unit,
 ) {
 
-	// TODO:
-	// 	implement this as a dialog with a row for each game containing
-	// 	- checkbox
-	// 	- game name
-	// 	- match count
-	// 	with a search bar at the top
-
 	DropdownMenu(
 		expanded = expanded,
 		onDismissRequest = dismissMenu,

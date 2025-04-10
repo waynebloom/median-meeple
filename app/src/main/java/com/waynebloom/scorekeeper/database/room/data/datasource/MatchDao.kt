@@ -45,8 +45,4 @@ interface MatchDao {
 
 	@Upsert
 	suspend fun upsertReturningID(match: MatchDataModel): Long
-
-	// TODO: remove this
-	@Update
-	fun update(match: MatchDataModel)
 }

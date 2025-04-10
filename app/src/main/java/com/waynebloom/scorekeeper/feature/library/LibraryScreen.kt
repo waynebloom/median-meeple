@@ -56,7 +56,7 @@ import com.waynebloom.scorekeeper.ui.components.HelperBox
 import com.waynebloom.scorekeeper.ui.components.HelperBoxType
 import com.waynebloom.scorekeeper.ui.components.LargeImageAdCard
 import com.waynebloom.scorekeeper.ui.components.Loading
-import com.waynebloom.scorekeeper.ui.components.NewGameCard
+import com.waynebloom.scorekeeper.ui.components.GameCard
 import com.waynebloom.scorekeeper.ui.components.SmallImageAdCard
 import com.waynebloom.scorekeeper.ui.components.TopBarWithSearch
 import com.waynebloom.scorekeeper.ui.constants.Dimensions.Size
@@ -216,7 +216,7 @@ fun LibraryScreen(
 							|| ((i - 3) % 13 == 0 && i != gameCards.lastIndex)
 
 					item(key = card.id) {
-						NewGameCard(
+						GameCard(
 							name = card.name,
 							color = card.color
 								.copy(alpha = 0.2f)

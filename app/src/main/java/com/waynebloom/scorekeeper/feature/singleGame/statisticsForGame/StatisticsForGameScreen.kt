@@ -60,14 +60,15 @@ import com.waynebloom.scorekeeper.ui.components.Loading
 import com.waynebloom.scorekeeper.ui.constants.Dimensions.Size
 import com.waynebloom.scorekeeper.ui.constants.Dimensions.Spacing
 import com.waynebloom.scorekeeper.feature.singleGame.SingleGameScreen
+import com.waynebloom.scorekeeper.feature.singleGame.StatisticsForGameUiState
+import com.waynebloom.scorekeeper.feature.singleGame.matchesForGame.SingleGameTabBar
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import com.waynebloom.scorekeeper.util.ext.toStringForDisplay
-import com.waynebloom.scorekeeper.singleGame.StatisticsForGameUiState
-import com.waynebloom.scorekeeper.singleGame.matchesForGame.SingleGameTabBar
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import com.waynebloom.scorekeeper.ui.theme.Animation.delayedFadeInWithFadeOut
 import com.waynebloom.scorekeeper.ui.theme.Animation.sizeTransformWithDelay
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
+import kotlin.collections.first
 
 @Composable
 fun StatisticsForGameScreen(

@@ -8,8 +8,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
-import com.waynebloom.scorekeeper.scorecard.ScoreCardScreen
-import com.waynebloom.scorekeeper.scorecard.ScoreCardViewModel
+import com.waynebloom.scorekeeper.feature.scorecard.ScoreCardScreen
+import com.waynebloom.scorekeeper.feature.scorecard.ScoreCardViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -26,7 +26,6 @@ fun NavGraphBuilder.scoreCardDestination(onPopBackStack: () -> Unit) {
 		val savedToast =
 			Toast.makeText(LocalContext.current, "Your changes have been saved.", Toast.LENGTH_SHORT)
 
-		// TODO: do I need this theme wrapper here?
 		ScoreCardScreen(
 			uiState = uiState,
 			onPlayerClick = viewModel::onPlayerClick,

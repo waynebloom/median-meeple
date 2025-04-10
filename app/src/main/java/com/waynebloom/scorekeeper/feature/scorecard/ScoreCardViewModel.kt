@@ -30,7 +30,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.math.BigDecimal
-import java.util.Date
+import java.time.Instant
+import java.time.OffsetTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 @HiltViewModel
@@ -143,7 +145,7 @@ class ScoreCardViewModel @Inject constructor(
 						totals = totals,
 						game = game,
 						indexOfMatch = indexOfMatch,
-						dateMillis = match.dateMillis,
+						dateMillis = match.dateMillis to 0,
 						location = match.location,
 						notes = TextFieldValue(match.notes),
 						players = players,
@@ -166,7 +168,7 @@ class ScoreCardViewModel @Inject constructor(
 						loading = false,
 						game = game,
 						indexOfMatch = indexOfMatch,
-						dateMillis = Date().time,
+						dateMillis = getNowWithOffset(),
 						categoryNames = dbCategories.map { category ->
 							category.name.text
 						},
@@ -176,6 +178,19 @@ class ScoreCardViewModel @Inject constructor(
 				}
 			}
 		}
+	}
+
+	/**
+	 * material3.DatePicker uses UTC across the board, and does not respect timezones. Thus, I created
+	 * this abomination so that I can simulate a world where Google cares about my feelings.
+	 *
+	 * Forcibly remove the offset to create a fake millis. This is only to trick the DatePicker into
+	 * showing the correct initial selected day.
+	 */
+	private fun getNowWithOffset(): Pair<Long, Long> {
+		val now = Instant.now()
+		val offset = ZoneOffset.systemDefault().rules.getOffset(now)
+		return now.epochSecond * 1000L to offset.totalSeconds * 1000L
 	}
 
 	private fun assignRanksByTotalScore(
@@ -239,7 +254,8 @@ class ScoreCardViewModel @Inject constructor(
 	}
 
 	fun onDateChange(millis: Long) = _uiState.update {
-		it.copy(dateMillis = millis)
+		// the fake offset is no longer needed now that the date is user-selected
+		it.copy(dateMillis = millis to 0)
 	}
 
 	fun onLocationChange(value: String) = _uiState.update {
@@ -309,7 +325,9 @@ class ScoreCardViewModel @Inject constructor(
 					gameID = gameID,
 					notes = state.notes.text,
 					location = state.location,
-					dateMillis = state.dateMillis,
+					dateMillis = state.dateMillis.let {
+						it.first + it.second
+					},
 				)
 			)
 		} else {
@@ -319,7 +337,9 @@ class ScoreCardViewModel @Inject constructor(
 					gameID = gameID,
 					notes = state.notes.text,
 					location = state.location,
-					dateMillis = state.dateMillis,
+					dateMillis = state.dateMillis.let {
+						it.first + it.second
+					},
 				)
 			)
 			return matchID
@@ -399,7 +419,9 @@ private data class ScoreCardViewModelState(
 	val totals: List<BigDecimal> = listOf(),
 	val game: GameDomainModel = GameDomainModel(),
 	val indexOfMatch: Int = 0,
-	val dateMillis: Long = 0,
+
+	// This is millis and the offset in millis. See [getNowWithOffset] for details.
+	val dateMillis: Pair<Long, Long> = Pair(0, 0),
 	val location: String = "",
 	val notes: TextFieldValue = TextFieldValue(),
 	val players: List<PlayerDomainModel> = listOf(),
@@ -417,7 +439,7 @@ private data class ScoreCardViewModelState(
 			totals = totals,
 			game = game,
 			indexOfMatch = indexOfMatch,
-			dateMillis = dateMillis,
+			dateMillis = dateMillis.first + dateMillis.second,
 			location = location,
 			notes = notes,
 			players = players,

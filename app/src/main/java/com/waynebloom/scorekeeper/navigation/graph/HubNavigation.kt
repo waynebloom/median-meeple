@@ -7,8 +7,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
-import com.waynebloom.scorekeeper.hub.HubScreen
-import com.waynebloom.scorekeeper.hub.HubViewModel
+import com.waynebloom.scorekeeper.feature.hub.HubScreen
+import com.waynebloom.scorekeeper.feature.hub.HubViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable object Hub

@@ -21,8 +21,4 @@ interface CategoryDao {
 
 	@Upsert
 	suspend fun upsert(entity: CategoryDataModel)
-
-	// TODO: remove this
-	@Update
-	fun update(entity: CategoryDataModel)
 }

@@ -54,18 +54,9 @@ interface GameDao {
 	@Query("SELECT * FROM GAME WHERE ID IN (:ids)")
 	fun getMultiple(ids: List<Long>): Flow<List<GameDataModel>>
 
-	// TODO: remove this method
-	@Transaction
-	@Query("SELECT * FROM GAME WHERE ID = :id")
-	fun getOneWithRelationsAsFlow(id: Long): Flow<GameDataRelationModel?>
-
 	@Upsert
 	suspend fun upsert(game: GameDataModel)
 
 	@Upsert
 	suspend fun upsertReturningID(game: GameDataModel): Long
-
-	// TODO: remove this method
-	@Update
-	suspend fun update(game: GameDataModel)
 }

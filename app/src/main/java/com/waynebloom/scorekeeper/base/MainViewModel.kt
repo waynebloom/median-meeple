@@ -2,7 +2,7 @@ package com.waynebloom.scorekeeper.base
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.waynebloom.scorekeeper.settings.model.AppearanceMode
+import com.waynebloom.scorekeeper.feature.settings.model.AppearanceMode
 import com.waynebloom.scorekeeper.util.PreferencesManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted

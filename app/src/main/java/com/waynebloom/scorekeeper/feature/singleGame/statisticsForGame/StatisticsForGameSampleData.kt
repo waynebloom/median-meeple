@@ -1,8 +1,8 @@
 package com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame
 
-import com.waynebloom.scorekeeper.singleGame.StatisticsForGameUiState
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
+import com.waynebloom.scorekeeper.feature.singleGame.StatisticsForGameUiState
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.domain.model.ScoringPlayerDomainModel
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.domain.model.WinningPlayerDomainModel
 import java.math.BigDecimal
 
 object StatisticsForGameSampleData {

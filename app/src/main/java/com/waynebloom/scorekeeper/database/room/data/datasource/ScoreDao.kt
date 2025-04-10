@@ -21,8 +21,4 @@ interface ScoreDao {
 
 	@Upsert
 	suspend fun upsert(score: ScoreDataModel)
-
-	// TODO: remove this
-	@Update
-	fun update(score: ScoreDataModel)
 }

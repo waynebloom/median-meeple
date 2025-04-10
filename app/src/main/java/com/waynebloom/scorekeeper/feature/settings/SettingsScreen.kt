@@ -25,7 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.waynebloom.scorekeeper.R
-import com.waynebloom.scorekeeper.settings.model.AppearanceMode
+import com.waynebloom.scorekeeper.feature.settings.model.AppearanceMode
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @Composable

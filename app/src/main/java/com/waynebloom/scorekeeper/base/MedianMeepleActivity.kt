@@ -10,9 +10,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.android.gms.ads.MobileAds
 import com.waynebloom.scorekeeper.feature.admob.domain.usecase.InitializeAdLoader
+import com.waynebloom.scorekeeper.feature.settings.model.AppearanceMode
 import com.waynebloom.scorekeeper.navigation.MedianMeepleNavHost
 import com.waynebloom.scorekeeper.navigation.graph.sendFeedbackEmail
-import com.waynebloom.scorekeeper.settings.model.AppearanceMode
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope

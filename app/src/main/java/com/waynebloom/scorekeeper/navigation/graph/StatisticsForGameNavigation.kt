@@ -8,8 +8,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import androidx.navigation.navOptions
-import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
-import com.waynebloom.scorekeeper.singleGame.statisticsForGame.StatisticsForGameScreen
+import com.waynebloom.scorekeeper.feature.singleGame.SingleGameViewModel
+import com.waynebloom.scorekeeper.feature.singleGame.statisticsForGame.StatisticsForGameScreen
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -27,11 +27,9 @@ fun NavGraphBuilder.statisticsForGameDestination(
 		StatisticsForGameScreen(
 			uiState = uiState,
 			onEditGameClick = {
-				// TODO: provide the game ID as an arg in this lambda
 				onNavigateToEditGame(viewModel.gameID)
 			},
 			onMatchesTabClick = {
-				// TODO: provide the game ID as an arg in this lambda
 				onNavigateToMatchesForGame(viewModel.gameID)
 			},
 			onBestWinnerButtonClick = viewModel::onBestWinnerButtonClick,

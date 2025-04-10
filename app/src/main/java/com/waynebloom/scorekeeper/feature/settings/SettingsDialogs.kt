@@ -29,8 +29,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.waynebloom.scorekeeper.R
+import com.waynebloom.scorekeeper.feature.settings.model.AppearanceMode
 import com.waynebloom.scorekeeper.ui.components.RadioButtonOption
-import com.waynebloom.scorekeeper.settings.model.AppearanceMode
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @Composable

@@ -10,9 +10,9 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
-import com.waynebloom.scorekeeper.library.LibraryScreen
-import com.waynebloom.scorekeeper.library.LibraryViewModel
-import com.waynebloom.scorekeeper.singleGame.SingleGameViewModel
+import com.waynebloom.scorekeeper.feature.library.LibraryScreen
+import com.waynebloom.scorekeeper.feature.library.LibraryViewModel
+import com.waynebloom.scorekeeper.feature.singleGame.SingleGameViewModel
 import kotlinx.serialization.Serializable
 
 @Serializable data object Library

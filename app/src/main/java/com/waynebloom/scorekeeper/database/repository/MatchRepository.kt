@@ -5,6 +5,7 @@ import com.waynebloom.scorekeeper.database.room.domain.mapper.MatchMapper
 import com.waynebloom.scorekeeper.database.room.domain.model.MatchDomainModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.Instant
 import java.time.Period
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
@@ -23,15 +24,15 @@ class MatchRepository @Inject constructor(
 		return matchDao.getOne(id).map(matchMapper::toDomain)
 	}
 
-	fun getByDate(start: ZonedDateTime, period: Period): Flow<List<MatchDomainModel>> {
+	fun getByDate(start: Instant, period: Period): Flow<List<MatchDomainModel>> {
 
 		// NOTE: Due to DST, this will sometimes produce technically incorrect results.
 		//  That is okay for this use case.
-		val startMillis = start.toEpochSecond() * 1000
+		val startMillis = start.toEpochMilli()
 		val durationMillis = period[ChronoUnit.DAYS] * 24 * 60 * 60 * 1000
 		return matchDao
 			.getByDateRange(
-				start = start.toEpochSecond() * 1000,
+				start = start.toEpochMilli(),
 				end = startMillis + durationMillis,
 			)
 			.map(matchMapper::toDomain)
