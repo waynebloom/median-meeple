@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -38,6 +39,7 @@ import com.waynebloom.scorekeeper.ui.constants.Alpha
 import com.waynebloom.scorekeeper.ui.constants.Dimensions
 import com.waynebloom.scorekeeper.database.room.domain.model.GameDomainModel
 import com.waynebloom.scorekeeper.database.room.domain.model.GameWithMatchCount
+import com.waynebloom.scorekeeper.ui.components.BasicTopBar
 import com.waynebloom.scorekeeper.ui.theme.MedianMeepleTheme
 
 @Composable
@@ -53,7 +55,10 @@ fun HubScreen(
 		is HubUiState.Loading -> Loading()
 		is HubUiState.Content -> {
 
-			Scaffold() { innerPadding ->
+			Scaffold(
+				topBar = { BasicTopBar("Hub") },
+				contentWindowInsets = WindowInsets(0.dp),
+			) { innerPadding ->
 				HubScreen(
 					quickStartGames = uiState.favoriteGames,
 					pickerOptions = uiState.nonFavoritesWithMatchCount ?: listOf(),
@@ -91,7 +96,6 @@ private fun HubScreen(
 			.padding(horizontal = Dimensions.Spacing.screenEdge),
 	) {
 
-		TopBar(Modifier.fillMaxWidth().padding(bottom = 12.dp))
 		QuickStart(
 			quickStartGames = quickStartGames,
 			pickerOptions = pickerOptions,
@@ -100,7 +104,9 @@ private fun HubScreen(
 			onRemoveClick = onRemoveQuickGame,
 			onAddClick = onAddQuickGameClick,
 			onPickNewQuickGame = onPickNewQuickGame,
-			modifier = Modifier.fillMaxWidth().padding(bottom = 36.dp)
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(bottom = 36.dp)
 		)
 		RecentActivityCard(weekPlays, chartKey)
 	}
@@ -215,7 +221,9 @@ private fun RecentActivityCard(
 			if (weekPlays.isEmpty()) {
 				Box(
 					contentAlignment = Alignment.Center,
-					modifier = Modifier.fillMaxWidth().padding(16.dp),
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(16.dp),
 				) {
 					Text(
 						text = "No activity recorded in the past week.",
