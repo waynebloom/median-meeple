@@ -22,18 +22,6 @@ class PreferencesManager @Inject constructor(
 		get() = dataStore.data.map { prefs ->
 			prefs[Keys.APPEARANCE] ?: AppearanceMode.SYSTEM.name
 		}
-	val email: Flow<String>
-		get() = dataStore.data.map { prefs ->
-			prefs[Keys.EMAIL] ?: ""
-		}
-	val lastSynced: Flow<String>
-		get() = dataStore.data.map { prefs ->
-			prefs[Keys.LAST_SYNCED] ?: ""
-		}
-	val username: Flow<String>
-		get() = dataStore.data.map { prefs ->
-			prefs[Keys.USERNAME] ?: ""
-		}
 
 	suspend fun setAppearanceMode(value: AppearanceMode) {
 		dataStore.edit { pref ->
@@ -41,28 +29,7 @@ class PreferencesManager @Inject constructor(
 		}
 	}
 
-	suspend fun setEmail(email: String) {
-		dataStore.edit { prefs ->
-			prefs[Keys.EMAIL] = email
-		}
-	}
-
-	suspend fun setLastSynced(lastSynced: String) {
-		dataStore.edit { prefs ->
-			prefs[Keys.LAST_SYNCED] = lastSynced
-		}
-	}
-
-	suspend fun setUsername(username: String) {
-		dataStore.edit { prefs ->
-			prefs[Keys.USERNAME] = username
-		}
-	}
-
 	private object Keys {
 		val APPEARANCE = stringPreferencesKey("appearance")
-		val EMAIL = stringPreferencesKey("email")
-		val LAST_SYNCED = stringPreferencesKey("last_synced")
-		val USERNAME = stringPreferencesKey("username")
 	}
 }
