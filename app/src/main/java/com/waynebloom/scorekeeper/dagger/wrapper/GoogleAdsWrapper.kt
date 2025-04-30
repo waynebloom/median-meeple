@@ -8,12 +8,12 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
 class GoogleAdsWrapper @Inject constructor(
-    @ApplicationContext private val context: Context
+	@ApplicationContext private val context: Context
 ) {
 
-    fun getAdLoaderBuilder(adUnitId: String) = AdLoader.Builder(context, adUnitId)
+	fun getAdLoaderBuilder(adUnitId: String) = AdLoader.Builder(context, adUnitId)
 
-    fun getAdRequestBuilder() = AdRequest.Builder()
+	fun getAdRequestBuilder() = AdRequest.Builder()
 
-    fun getNativeAdOptionsBuilder() = NativeAdOptions.Builder()
+	fun getNativeAdOptionsBuilder() = NativeAdOptions.Builder()
 }

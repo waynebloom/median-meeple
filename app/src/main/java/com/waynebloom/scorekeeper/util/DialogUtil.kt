@@ -16,11 +16,11 @@ import androidx.compose.ui.window.DialogWindowProvider
 fun getActivityWindow(): Window? = LocalView.current.context.getActivityWindow()
 
 private tailrec fun Context.getActivityWindow(): Window? =
-    when (this) {
-        is Activity -> window
-        is ContextWrapper -> baseContext.getActivityWindow()
-        else -> null
-    }
+	when (this) {
+		is Activity -> window
+		is ContextWrapper -> baseContext.getActivityWindow()
+		else -> null
+	}
 
 /**
  * A different [Window] is used to display dialogs, so enabling edge-to-edge in MedianMeepleActivity
@@ -33,24 +33,24 @@ private tailrec fun Context.getActivityWindow(): Window? =
  */
 @Composable
 fun SetDialogDestinationToEdgeToEdge() {
-    val activityWindow = getActivityWindow()
-    val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
-    val parentView = LocalView.current.parent as View
-    SideEffect {
-        if (activityWindow != null && dialogWindow != null) {
-            val attributes = WindowManager.LayoutParams().apply {
-                copyFrom(activityWindow.attributes)
-                type = dialogWindow.attributes.type
-                alpha = dialogWindow.attributes.alpha
-                dimAmount = dialogWindow.attributes.dimAmount
-                flags = dialogWindow.attributes.flags
-                windowAnimations = dialogWindow.attributes.windowAnimations
-            }
-            dialogWindow.attributes = attributes
-            parentView.layoutParams = FrameLayout.LayoutParams(
-                activityWindow.decorView.width,
-                activityWindow.decorView.height
-            )
-        }
-    }
+	val activityWindow = getActivityWindow()
+	val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
+	val parentView = LocalView.current.parent as View
+	SideEffect {
+		if (activityWindow != null && dialogWindow != null) {
+			val attributes = WindowManager.LayoutParams().apply {
+				copyFrom(activityWindow.attributes)
+				type = dialogWindow.attributes.type
+				alpha = dialogWindow.attributes.alpha
+				dimAmount = dialogWindow.attributes.dimAmount
+				flags = dialogWindow.attributes.flags
+				windowAnimations = dialogWindow.attributes.windowAnimations
+			}
+			dialogWindow.attributes = attributes
+			parentView.layoutParams = FrameLayout.LayoutParams(
+				activityWindow.decorView.width,
+				activityWindow.decorView.height
+			)
+		}
+	}
 }

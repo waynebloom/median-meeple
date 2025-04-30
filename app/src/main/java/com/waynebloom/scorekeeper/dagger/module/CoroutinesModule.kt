@@ -12,9 +12,9 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object CoroutinesModule {
 
-    @Singleton
-    @Provides
-    fun providesCoroutineScope(): CoroutineScope {
-        return CoroutineScope(Dispatchers.IO)
-    }
+	@Singleton
+	@Provides
+	fun providesCoroutineScope(): CoroutineScope {
+		return CoroutineScope(Dispatchers.IO)
+	}
 }

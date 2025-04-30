@@ -2,7 +2,7 @@ package com.waynebloom.scorekeeper.dagger.module
 
 import android.content.Context
 import androidx.room.Room
-import com.waynebloom.scorekeeper.room.data.datasource.AppDatabase
+import com.waynebloom.scorekeeper.database.room.data.datasource.AppDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -14,32 +14,32 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
-    @Singleton
-    @Provides
-    fun providesAppDatabase(@ApplicationContext context: Context) =
-        Room.databaseBuilder(
-            context,
-            AppDatabase::class.java,
-            "app_database"
-        )
-        .createFromAsset("database/scores_app.db")
-        .addMigrations(*AppDatabase.manualMigrations)
-        .build()
+	@Singleton
+	@Provides
+	fun providesAppDatabase(@ApplicationContext context: Context) =
+		Room.databaseBuilder(
+			context,
+			AppDatabase::class.java,
+			"app_database"
+		)
+			.createFromAsset("database/scores_app.db")
+			.addMigrations(*AppDatabase.manualMigrations)
+			.build()
 
-    @Provides
-    fun providesCategoryRepository(appDatabase: AppDatabase) = appDatabase.getCategoryRepository()
+	@Provides
+	fun providesCategoryDao(appDatabase: AppDatabase) = appDatabase.getCategoryDao()
 
-    @Provides
-    fun providesCategoryScoreRepository(appDatabase: AppDatabase) = appDatabase.getCategoryScoreRepository()
+	@Provides
+	fun providesGameDao(appDatabase: AppDatabase) = appDatabase.getGameDao()
 
-    @Provides
-    fun providesGameRepository(appDatabase: AppDatabase) = appDatabase.getGameRepository()
+	@Provides
+	fun providesMatchDao(appDatabase: AppDatabase) = appDatabase.getMatchDao()
 
-    @Provides
-    fun providesMatchRepository(appDatabase: AppDatabase) = appDatabase.getMatchRepository()
+	@Provides
+	fun providesPlayerDao(appDatabase: AppDatabase) = appDatabase.getPlayerDao()
 
-    @Provides
-    fun providesPlayerRepository(appDatabase: AppDatabase) = appDatabase.getPlayerRepository()
+	@Provides
+	fun providesScoreDao(appDatabase: AppDatabase) = appDatabase.getScoreDao()
 }
 
 

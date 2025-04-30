@@ -2,14 +2,14 @@
 <resources>
 
     <style name="Theme.MedianMeeple" parent="Theme.Material3.DayNight">
-        <item name="android:fontFamily">@font/dmsans_regular</item>
-        <item name="fontFamily">@font/dmsans_regular</item>
+        <item name="android:fontFamily">@font/dm_sans_regular</item>
+        <item name="fontFamily">@font/dm_sans_regular</item>
         <item name="android:textViewStyle">@style/MedianMeeple.TextView</item>
     </style>
 
     <style name="MedianMeeple"/>
     <style name="MedianMeeple.TextView">
-        <item name="android:fontFamily">@font/dmsans_regular</item>
-        <item name="fontFamily">@font/dmsans_regular</item>
+        <item name="android:fontFamily">@font/dm_sans_regular</item>
+        <item name="fontFamily">@font/dm_sans_regular</item>
     </style>
 </resources>
