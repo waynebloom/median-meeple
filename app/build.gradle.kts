@@ -17,8 +17,8 @@ android {
         applicationId = "com.waynebloom.scorekeeper"
         minSdk = 26
         targetSdk = 35
-        versionCode = 15
-        versionName = "2024.1.2"
+        versionCode = 16
+        versionName = "2025.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
