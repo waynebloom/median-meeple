@@ -37,6 +37,7 @@ import java.math.BigDecimal
 import javax.inject.Inject
 import kotlin.collections.first
 import kotlin.collections.takeWhile
+import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 class SingleGameViewModel @Inject constructor(
@@ -71,7 +72,7 @@ class SingleGameViewModel @Inject constructor(
 		viewModelScope.launch(Dispatchers.IO) {
 			gameRepository.getOneWithRelations(gameID).collectLatest { latest ->
 				if (latest == null) {
-					this.cancel()
+					this.cancel(CancellationException("The observed game no longer exists."))
 					return@collectLatest
 				}
 

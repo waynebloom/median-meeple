@@ -39,7 +39,19 @@ class GameMapper @Inject constructor(
 		)
 	}
 
-	fun toDomain(games: List<GameDataModel>) = games.map { this.toDomain(it) }
+	fun toDomainOrNull(game: GameDataModel?) = game.let {
+		if (it != null) {
+			GameDomainModel(
+				id = it.id,
+				displayColorIndex = it.color,
+				name = TextFieldValue(it.name),
+				scoringMode = it.scoringMode.toScoringMode(),
+				isFavorite = it.isFavorite,
+			)
+		} else null
+	}
+
+	fun toDomain(games: List<GameDataModel>) = games.mapNotNull { this.toDomain(it) }
 
 	fun toDomainWithRelations(game: GameDataRelationModel?): GameDomainModel? {
 		if (game == null) return null

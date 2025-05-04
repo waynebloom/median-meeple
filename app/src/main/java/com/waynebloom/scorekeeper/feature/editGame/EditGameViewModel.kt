@@ -19,6 +19,7 @@ import com.waynebloom.scorekeeper.util.ext.transformElement
 import com.waynebloom.scorekeeper.navigation.graph.EditGame
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 class EditGameViewModel @Inject constructor(
@@ -76,6 +78,11 @@ class EditGameViewModel @Inject constructor(
 					}
 				)
 				.collectLatest { (game, categories) ->
+					if (game == null) {
+						this.cancel(CancellationException("The observed game no longer exists."))
+						return@collectLatest
+					}
+
 					_uiState.update {
 						it.copy(
 							loading = false,

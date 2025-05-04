@@ -45,11 +45,11 @@ interface GameDao {
 	fun getFavorites(): Flow<List<GameDataModel>>
 
 	@Query("SELECT * FROM GAME WHERE ID = :id")
-	fun getOne(id: Long): Flow<GameDataModel>
+	fun getOne(id: Long): Flow<GameDataModel?>
 
 	@Transaction
 	@Query("SELECT * FROM GAME WHERE ID = :id")
-	fun getOneWithRelations(id: Long): Flow<GameDataRelationModel>
+	fun getOneWithRelations(id: Long): Flow<GameDataRelationModel?>
 
 	@Query("SELECT * FROM GAME WHERE ID IN (:ids)")
 	fun getMultiple(ids: List<Long>): Flow<List<GameDataModel>>

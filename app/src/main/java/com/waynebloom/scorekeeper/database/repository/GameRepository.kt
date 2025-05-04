@@ -1,6 +1,5 @@
 package com.waynebloom.scorekeeper.database.repository
 
-import android.util.Log
 import com.waynebloom.scorekeeper.database.room.data.datasource.GameDao
 import com.waynebloom.scorekeeper.database.room.data.model.GameDataModel
 import com.waynebloom.scorekeeper.database.room.domain.mapper.GameMapper
@@ -23,22 +22,21 @@ class GameRepository @Inject constructor(
 		gameDao.delete(entity)
 	}
 
-	fun getOne(id: Long): Flow<GameDomainModel> {
-		Log.d(GameRepository::class.simpleName, "Fetching game with id $id.")
-		return gameDao.getOne(id).map(gameMapper::toDomain)
+	fun getOne(id: Long): Flow<GameDomainModel?> {
+		return gameDao.getOne(id).map(gameMapper::toDomainOrNull)
 	}
 
 	fun getOneWithRelations(id: Long): Flow<GameDomainModel?> {
 		return gameDao.getOneWithRelations(id).map(gameMapper::toDomainWithRelations)
 	}
 
-	fun getAll(): Flow<List<GameDomainModel>> {
+	fun getAll(): Flow<List<GameDomainModel?>> {
 		return gameDao.getAll().map(gameMapper::toDomain)
 	}
 
 	fun getAllWithMatchCount(excludedIds: List<Long>): Flow<List<GameWithMatchCount>> {
 		return gameDao.getAllWithMatchCounts(excludedIds).map { games ->
-			games.map { (game, matchCount) ->
+			games.mapNotNull { (game, matchCount) ->
 				GameWithMatchCount(gameMapper.toDomain(game), matchCount)
 			}
 		}

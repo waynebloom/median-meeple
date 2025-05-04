@@ -136,33 +136,30 @@ fun EditGameScreen(
 		is EditGameUiState.Loading -> Loading()
 		is EditGameUiState.Content -> {
 
-			MedianMeepleTheme {
-
-				EditGameScreen(
-					name = uiState.name,
-					scoringMode = uiState.scoringMode,
-					categories = uiState.categories,
-					indexOfSelectedCategory = uiState.indexOfSelectedCategory,
-					isCategoryDialogOpen = uiState.isCategoryDialogOpen,
-					colorIndex = uiState.colorIndex,
-					modifier = modifier,
-					onSaveClick = onSaveClick,
-					onCategoryClick = onCategoryClick,
-					onCategoryDialogDismiss = onCategoryDialogDismiss,
-					onCategoryInputChanged = onCategoryInputChanged,
-					onColorClick = onColorClick,
-					onDeleteCategoryClick = onDeleteCategoryClick,
-					onDeleteClick = onDeleteClick,
-					onDrag = onDrag,
-					onDragEnd = onDragEnd,
-					onDragStart = onDragStart,
-					onEditButtonClick = onEditButtonClick,
-					onHideCategoryInputField = onHideCategoryInputField,
-					onNameChanged = onNameChanged,
-					onNewCategoryClick = onNewCategoryClick,
-					onScoringModeChanged = onScoringModeChanged
-				)
-			}
+			EditGameScreen(
+				name = uiState.name,
+				scoringMode = uiState.scoringMode,
+				categories = uiState.categories,
+				indexOfSelectedCategory = uiState.indexOfSelectedCategory,
+				isCategoryDialogOpen = uiState.isCategoryDialogOpen,
+				colorIndex = uiState.colorIndex,
+				modifier = modifier,
+				onSaveClick = onSaveClick,
+				onCategoryClick = onCategoryClick,
+				onCategoryDialogDismiss = onCategoryDialogDismiss,
+				onCategoryInputChanged = onCategoryInputChanged,
+				onColorClick = onColorClick,
+				onDeleteCategoryClick = onDeleteCategoryClick,
+				onDeleteClick = onDeleteClick,
+				onDrag = onDrag,
+				onDragEnd = onDragEnd,
+				onDragStart = onDragStart,
+				onEditButtonClick = onEditButtonClick,
+				onHideCategoryInputField = onHideCategoryInputField,
+				onNameChanged = onNameChanged,
+				onNewCategoryClick = onNewCategoryClick,
+				onScoringModeChanged = onScoringModeChanged
+			)
 		}
 	}
 }
@@ -427,14 +424,6 @@ fun EditGameScreen(
 					colorIndex = colorIndex,
 					onColorClick = onColorClick,
 					modifier = Modifier.padding(bottom = Spacing.betweenSections)
-				)
-			}
-
-			item {
-				Spacer(
-					Modifier
-						.windowInsetsBottomHeight(WindowInsets.navigationBars)
-						.consumeWindowInsets(WindowInsets.navigationBars)
 				)
 			}
 		}

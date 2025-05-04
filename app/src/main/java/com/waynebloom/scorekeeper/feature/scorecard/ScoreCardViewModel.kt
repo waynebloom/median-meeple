@@ -21,6 +21,7 @@ import com.waynebloom.scorekeeper.navigation.graph.ScoreCard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -33,6 +34,7 @@ import java.math.BigDecimal
 import java.time.Instant
 import java.time.OffsetTime
 import java.time.ZoneOffset
+import java.util.concurrent.CancellationException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -69,7 +71,16 @@ class ScoreCardViewModel @Inject constructor(
 
 	private fun observeData() {
 		viewModelScope.launch(Dispatchers.IO) {
-			val game = gameRepository.getOne(gameID).first()
+			val game = gameRepository.getOne(gameID).first().also {
+				if (it == null) {
+					this.cancel(CancellationException("The observed game no longer exists."))
+					return@launch
+				}
+			}
+
+			// make the compiler happy
+			check(game != null)
+
 			dbCategories = categoryRepository.getByGameID(gameID).first()
 			dbCategories = dbCategories
 
