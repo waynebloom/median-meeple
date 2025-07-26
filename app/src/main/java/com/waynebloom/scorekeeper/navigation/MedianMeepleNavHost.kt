@@ -1,13 +1,34 @@
 package com.waynebloom.scorekeeper.navigation
 
+import android.R.attr.label
+import android.R.attr.onClick
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavBackStackEntry
@@ -35,6 +56,8 @@ import com.waynebloom.scorekeeper.navigation.graph.settingsDestination
 import com.waynebloom.scorekeeper.navigation.graph.settingsSection
 import kotlin.reflect.KClass
 
+val LocalNavBarHeight = compositionLocalOf<Int?> { null }
+
 @SuppressWarnings("CyclomaticComplexMethod")
 @Composable
 fun MedianMeepleNavHost(
@@ -43,31 +66,48 @@ fun MedianMeepleNavHost(
 
 	val navController = rememberNavController()
 	val currentDestination = getCurrentDestination(navController)
+	var navBarHeight by remember {
+		mutableStateOf(0.dp)
+	}
+	val density = LocalDensity.current
 
-	NavigationSuiteScaffold(
-		navigationSuiteItems = {
-			TopLevelDestination.entries.forEach { destination ->
-				val selected = currentDestination.isRouteInHierarchy(destination.route)
+	Scaffold(
+		bottomBar = {
+			NavigationBar(
+				modifier = Modifier
+					.onSizeChanged { size ->
+						with(density) {
+							navBarHeight = size.height.toDp()
+						}
+					}
+			) {
+				TopLevelDestination.entries.forEach { destination ->
+					val selected = currentDestination.isRouteInHierarchy(destination.route)
 
-				item(
-					icon = {
-						Icon(painterResource(destination.icon), stringResource(destination.label))
-					},
-					label = {
-						Text(stringResource(destination.label))
-					},
-					onClick = {
-						navigateToTopLevelDestination(navController, destination)
-					},
-					selected = selected,
-				)
+					NavigationBarItem(
+						icon = {
+							Icon(painterResource(destination.icon), stringResource(destination.label))
+						},
+						label = {
+							Text(stringResource(destination.label))
+						},
+						onClick = {
+							navigateToTopLevelDestination(navController, destination)
+						},
+						selected = selected,
+					)
+				}
 			}
-		}
-	) {
+		},
+		contentWindowInsets = WindowInsets(0.dp)
+	) { innerPadding ->
 
 		NavHost(
 			navController = navController,
 			startDestination = Hub,
+			modifier = Modifier
+				.consumeWindowInsets(PaddingValues(bottom = navBarHeight))
+				.padding(innerPadding)
 		) {
 
 			hubDestination(
