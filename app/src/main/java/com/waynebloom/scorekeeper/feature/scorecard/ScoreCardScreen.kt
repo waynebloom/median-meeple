@@ -17,12 +17,14 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
@@ -584,13 +586,13 @@ private fun ScoreCardScreen(
 				}
 			}
 		},
-		contentWindowInsets = WindowInsets(0.dp)
+		contentWindowInsets = WindowInsets.ime
 	) { innerPadding ->
 
 		Column(
 			Modifier
 				.padding(innerPadding)
-				.imePadding()
+				.consumeWindowInsets(innerPadding)
 				.verticalScroll(rememberScrollState())
 		) {
 			Column(

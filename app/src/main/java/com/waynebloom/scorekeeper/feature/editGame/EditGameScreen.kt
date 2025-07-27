@@ -282,7 +282,7 @@ fun EditGameScreen(
 			},
 			text = {
 				Text(
-					text = stringResource(R.string.text_delete_match_confirm),
+					text = stringResource(R.string.text_delete_game_confirm),
 					style = MaterialTheme.typography.bodyLarge,
 				)
 			},

@@ -108,7 +108,6 @@ fun MatchesForGameScreen(
 				sortDirection = uiState.sortDirection,
 				sortMode = uiState.sortMode,
 				matches = uiState.matches,
-				filteredIndices = uiState.filteredIndices,
 				listState = rememberLazyListState(),
 				ads = uiState.ads,
 				onEditGameClick = onEditGameClick,
@@ -330,7 +329,6 @@ fun MatchesForGameScreen(
 	sortDirection: SortDirection,
 	sortMode: MatchSortMode,
 	matches: List<MatchDomainModel>,
-	filteredIndices: List<Int>,
 	listState: LazyListState,
 	ads: List<NativeAd>,
 	onEditGameClick: () -> Unit,
@@ -397,7 +395,7 @@ fun MatchesForGameScreen(
 			) {
 
 				AnimatedContent(
-					targetState = filteredIndices.isNotEmpty() to searchInput.text.isNotBlank(),
+					targetState = matches.isNotEmpty() to searchInput.text.isNotBlank(),
 					transitionSpec = { delayedFadeInWithFadeOut using sizeTransformWithDelay },
 					label = MatchesForGameConstants.AnimationLabel.HelperBox
 				) {
@@ -473,13 +471,8 @@ fun MatchesForGameScreen(
 					val formatter = SimpleDateFormat.getDateInstance(SimpleDateFormat.SHORT).apply {
 						timeZone = TimeZone.getTimeZone("UTC")
 					}
-					val items = if (searchInput.text.isBlank()) {
-						matches
-					} else {
-						matches.filterIndexed { index, _ -> filteredIndices.contains(index) }
-					}
 
-					items.forEachIndexed { i, match ->
+					matches.forEachIndexed { i, match ->
 						val showAd = (matches.size < 3 && i == matches.lastIndex)
 								|| ((i - 1) % 6 == 0 && i != matches.lastIndex)
 
