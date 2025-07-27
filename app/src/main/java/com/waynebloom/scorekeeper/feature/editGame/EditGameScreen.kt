@@ -22,14 +22,17 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -80,6 +83,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.input.key.Key.Companion.W
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -278,7 +282,7 @@ fun EditGameScreen(
 			},
 			text = {
 				Text(
-					text = stringResource(R.string.text_delete_match_confirm),
+					text = stringResource(R.string.text_delete_game_confirm),
 					style = MaterialTheme.typography.bodyLarge,
 				)
 			},
@@ -309,7 +313,7 @@ fun EditGameScreen(
 					horizontalArrangement = Arrangement.SpaceBetween,
 					verticalAlignment = Alignment.CenterVertically,
 					modifier = Modifier
-						.windowInsetsPadding(WindowInsets.statusBars)
+						.windowInsetsPadding(WindowInsets.statusBars.only(WindowInsetsSides.Top))
 						.padding(start = Spacing.screenEdge, end = 4.dp)
 						.defaultMinSize(minHeight = Size.topBarHeight)
 						.fillMaxWidth()
@@ -346,14 +350,14 @@ fun EditGameScreen(
 				}
 			}
 		},
-		contentWindowInsets = WindowInsets(0.dp),
-	) {
+		contentWindowInsets = WindowInsets.ime
+	) { innerPadding ->
 
 		LazyColumn(
 			contentPadding = PaddingValues(bottom = Spacing.screenEdge),
 			modifier = modifier
-				.padding(it)
-				.imePadding()
+				.padding(innerPadding)
+				.consumeWindowInsets(innerPadding)
 		) {
 
 			item {
@@ -423,7 +427,6 @@ fun EditGameScreen(
 				CustomThemeSection(
 					colorIndex = colorIndex,
 					onColorClick = onColorClick,
-					modifier = Modifier.padding(bottom = Spacing.betweenSections)
 				)
 			}
 		}
@@ -507,8 +510,8 @@ private fun EditCategoriesBottomSheetContent(
 		Column(
 			Modifier
 				.padding(Spacing.dialogPadding)
-				.imePadding()
 				.windowInsetsPadding(WindowInsets.navigationBars)
+				.imePadding()
 		) {
 
 			if (showDeleteConfirmState && indexOfSelectedCategory != -1) {
@@ -560,6 +563,7 @@ private fun EditCategoriesBottomSheetContent(
 					Button(
 						onClick = {
 							onDeleteCategoryClick(indexOfSelectedCategory)
+							showDeleteConfirmState = false
 							deletedToast.show()
 						},
 						colors = ButtonDefaults.buttonColors(

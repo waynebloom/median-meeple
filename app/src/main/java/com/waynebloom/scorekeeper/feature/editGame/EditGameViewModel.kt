@@ -23,6 +23,8 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
@@ -52,7 +54,29 @@ class EditGameViewModel @Inject constructor(
 
 	private fun loadData() {
 		if (gameID != -1L) {
-			observeData()
+			viewModelScope.launch(Dispatchers.IO) {
+				val game = gameRepository
+					.getOne(gameID)
+					.filterNotNull()
+					.first()
+				val categories = categoryRepository
+					.getByGameID(gameID)
+					.map {
+						it.filterNot { it.name.text == "defaultMiscCategory" }
+							.sortedBy { it.position }
+					}
+					.first()
+
+				_uiState.update {
+					it.copy(
+						loading = false,
+						categories = categories,
+						colorIndex = game.displayColorIndex,
+						name = game.name,
+						scoringMode = game.scoringMode
+					)
+				}
+			}
 			return
 		}
 
@@ -61,38 +85,6 @@ class EditGameViewModel @Inject constructor(
 				loading = false,
 				scoringMode = ScoringMode.Descending
 			)
-		}
-	}
-
-	private fun observeData() {
-		viewModelScope.launch {
-			gameRepository
-				.getOne(gameID)
-				.combine(
-					flow = categoryRepository.getByGameID(gameID),
-					transform = { game, categories ->
-						val filteredCategories = categories
-							.filterNot { it.name.text == "defaultMiscCategory" }
-							.sortedBy { it.position }
-						Pair(game, filteredCategories)
-					}
-				)
-				.collectLatest { (game, categories) ->
-					if (game == null) {
-						this.cancel(CancellationException("The observed game no longer exists."))
-						return@collectLatest
-					}
-
-					_uiState.update {
-						it.copy(
-							loading = false,
-							categories = categories,
-							colorIndex = game.displayColorIndex,
-							name = game.name,
-							scoringMode = game.scoringMode
-						)
-					}
-				}
 		}
 	}
 

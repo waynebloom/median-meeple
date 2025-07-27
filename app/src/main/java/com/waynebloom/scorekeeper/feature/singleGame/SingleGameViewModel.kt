@@ -1,6 +1,8 @@
 package com.waynebloom.scorekeeper.feature.singleGame
 
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -36,6 +38,7 @@ import kotlinx.coroutines.launch
 import java.math.BigDecimal
 import javax.inject.Inject
 import kotlin.collections.first
+import kotlin.collections.map
 import kotlin.collections.takeWhile
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -180,50 +183,52 @@ data class SingleGameViewModelState(
 	// endregion
 ) {
 
-	private fun getFilteredIndices(): List<Int> {
-		val filteredMatches: MutableList<Pair<Int, MatchDomainModel>> = mutableListOf()
-
-		matches.forEachIndexed { index, match ->
-			val shouldShow = if (searchValue.text.isNotEmpty()) {
-				match.players.any { it.name.lowercase().contains(searchValue.text.lowercase()) }
+	private fun MutableList<MatchDomainModel>.applySearchTerms(): MutableList<MatchDomainModel> {
+		val result = mutableListOf<MatchDomainModel>()
+		filterTo(result) { match ->
+			if (searchValue.text.isNotEmpty()) {
+				match.players.any {
+					it.name.lowercase().contains(searchValue.text.lowercase())
+				}
 			} else {
 				true
 			}
+		}
+		return result
+	}
 
-			if (shouldShow) {
-				filteredMatches.add(index to match)
-			}
+	private fun MutableList<MatchDomainModel>.applySortingMode(): MutableList<MatchDomainModel> {
+		sortWith(getMatchComparator(sortMode, sortDirection))
+		return this
+	}
+
+	private fun getMatchComparator(
+		sortMode: MatchSortMode,
+		sortDirection: SortDirection,
+	) = when (sortMode) {
+		MatchSortMode.ByMatchAge -> compareBy<MatchDomainModel> {
+			it.dateMillis
 		}
 
-		when (sortMode) {
-			MatchSortMode.ByMatchAge -> filteredMatches.sortBy { match ->
-				match.second.dateMillis
-			}
-
-			MatchSortMode.ByWinningPlayer -> filteredMatches.sortBy { match ->
-				match.second.players.getWinningPlayer(scoringMode).name
-			}
-
-			MatchSortMode.ByWinningScore -> filteredMatches.sortBy { match ->
-				match.second.players
-					.maxOfOrNull { player ->
-						player.categoryScores.sumOf {
-							it.scoreAsBigDecimal ?: BigDecimal.ZERO
-						}
-					}
-					?: BigDecimal.ZERO
-			}
-
-			MatchSortMode.ByPlayerCount -> filteredMatches.sortBy { match ->
-				match.second.players.size
-			}
+		MatchSortMode.ByWinningPlayer -> compareBy<MatchDomainModel> {
+			it.players.getWinningPlayer(scoringMode).name
 		}
 
-		return if (sortDirection == SortDirection.Descending) {
-			filteredMatches.map { it.first }.reversed()
-		} else {
-			filteredMatches.map { it.first }
+		MatchSortMode.ByWinningScore -> compareBy<MatchDomainModel> {
+			it.players.maxOfOrNull { player ->
+				player.categoryScores.sumOf {
+					it.scoreAsBigDecimal ?: BigDecimal.ZERO
+				}
+			} ?: BigDecimal.ZERO
 		}
+
+		MatchSortMode.ByPlayerCount -> compareBy<MatchDomainModel> {
+			it.players.size
+		}
+	}.let {
+		if (sortDirection == SortDirection.Descending) {
+			it.reversed()
+		} else it
 	}
 
 	// region Statistics Generation
@@ -326,8 +331,10 @@ data class SingleGameViewModelState(
 				sortMode = sortMode,
 				scoringMode = scoringMode,
 				matchesLazyListState = matchesLazyListState,
-				matches = matches,
-				filteredIndices = getFilteredIndices()
+				matches = matches
+					.toMutableList()
+					.applySearchTerms()
+					.applySortingMode(),
 			)
 		}
 	}
@@ -411,7 +418,6 @@ sealed interface MatchesForGameUiState {
 		val sortMode: MatchSortMode,
 		val matchesLazyListState: LazyListState,
 		val matches: List<MatchDomainModel>,
-		val filteredIndices: List<Int>,
 		val scoringMode: ScoringMode,
 	) : MatchesForGameUiState
 
